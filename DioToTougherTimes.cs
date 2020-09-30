@@ -9,9 +9,9 @@ using UnityEngine.Networking;
 namespace DioToTougherTimes
 {
 	[BepInDependency("com.bepis.r2api")]
-	[BepInPlugin("com.kking117.DioToTougherTimes", "Consumed Dio To Tougher Times", "1.0.0")]
+	[BepInPlugin("com.kking117.DioToTougherTimes", "DioToTougherTimes", "1.0.1")]
 
-	public class Main : BaseUnityPlugin
+	public class DioToTougherTimes : BaseUnityPlugin
 	{
 		private int[] tierlengths = new int[6];
 		private ItemIndex[] t1list = new ItemIndex[300];
@@ -65,7 +65,10 @@ namespace DioToTougherTimes
 						}
 					}
 				}
-				MonoBehaviour.print("DioToTougherTimes - Item Tiers recorded for this run.");
+				if (spamconsole)
+				{
+					MonoBehaviour.print("DioToTougherTimes - Item Tiers recorded for this run.");
+				}
 			};
 
 			void CleanLists()
@@ -158,8 +161,8 @@ namespace DioToTougherTimes
 			{
 				if (item == ItemIndex.ExtraLifeConsumed)
                 {
-					ItemIndex givenitem = (ItemIndex)dioconsumeditem;
-					if (dioconsumeditem < 0)
+					ItemIndex givenitem = dioconsumeditem;
+					if (dioconsumeditem == ItemIndex.None)
 					{
 						for (int i = 0; i < self.GetItemCount(ItemIndex.ExtraLifeConsumed);)
                         {
@@ -169,7 +172,10 @@ namespace DioToTougherTimes
 								{
 									givenitem = GetRandomFromTier(dioconsumedtier);
 									self.GiveItem((ItemIndex)givenitem, 1);
-									MonoBehaviour.print("DioToTougherTimes - Gained " + givenitem + " from consumed Dio.");
+									if (spamconsole)
+									{
+										MonoBehaviour.print("DioToTougherTimes - Gained " + givenitem + " from consumed Dio.");
+									}
 								}
 								self.GiveItem(ItemIndex.ExtraLifeConsumed, -1);
 							}
@@ -178,15 +184,22 @@ namespace DioToTougherTimes
 								givenitem = GetRandomFromTier(dioconsumedtier);
 								self.GiveItem((ItemIndex)givenitem, dioconsumedamount);
 								self.GiveItem(ItemIndex.ExtraLifeConsumed, -1);
-								MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount + "x " + givenitem + " from consumed Dio.");
+								if (spamconsole)
+								{
+									MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount + "x " + givenitem + " from consumed Dio.");
+								}
 							}
 						}
 					}
 					else
                     {
+						int diomult = self.GetItemCount(ItemIndex.ExtraLifeConsumed);
 						self.GiveItem((ItemIndex)givenitem, dioconsumedamount*self.GetItemCount(ItemIndex.ExtraLifeConsumed));
-						self.GiveItem(ItemIndex.ExtraLifeConsumed, self.GetItemCount(ItemIndex.ExtraLifeConsumed)*-1);
-						MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount + "x " + givenitem + " from consumed Dio.");
+						self.GiveItem(ItemIndex.ExtraLifeConsumed, diomult*-1);
+						if (spamconsole)
+						{
+							MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount*diomult + "x " + givenitem + " from consumed Dio.");
+						}
 					}
 					
 				}
@@ -196,8 +209,8 @@ namespace DioToTougherTimes
 
 		public static ConfigFile CustomConfigFile = new ConfigFile(Paths.ConfigPath + "\\kking117.DioToTougherTimes.cfg", true);
 
-		public static ConfigEntry<int> dioconsumeditem_config = CustomConfigFile.Bind<int>("DioToTougherTimes Config", "Given Item", 1, "Index of the item to give to the player when removing Consumed Dios.(Set to -1 or less to get a random item in the configured tier.)");
-		public int dioconsumeditem = dioconsumeditem_config.Value;
+		public static ConfigEntry<ItemIndex> dioconsumeditem_config = CustomConfigFile.Bind<ItemIndex>("DioToTougherTimes Config", "Given Item", ItemIndex.Bear, "Identifier of the item to give to the player when removing Consumed Dios.(Set to ''None'' to get a random item in the configured tier.)");
+		public ItemIndex dioconsumeditem = dioconsumeditem_config.Value;
 
 		public static ConfigEntry<int> dioconsumedamount_config = CustomConfigFile.Bind<int>("DioToTougherTimes Config", "Item Amount", 1, "How many of the selected item/tier to give per Consumed Dio.");
 		public int dioconsumedamount = dioconsumedamount_config.Value;
@@ -206,15 +219,18 @@ namespace DioToTougherTimes
 		public int dioconsumedtier = dioconsumedtier_config.Value;
 
 		public static ConfigEntry<bool> dioconsumedunique_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "Randomize Each Item", true, "When enabled all items given will be randomly selected instead of giving X amount of a random item.");
-		public bool dioconsumedunique = Convert.ToBoolean(dioconsumedunique_config.Value);
+		public bool dioconsumedunique = dioconsumedunique_config.Value;
 
 		public static ConfigEntry<bool> dioconsumednoscrap_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Scrap", true, "Will blacklist Scrap from being randomly given.");
-		public bool dioconsumednoscrap = Convert.ToBoolean(dioconsumednoscrap_config.Value);
+		public bool dioconsumednoscrap = dioconsumednoscrap_config.Value;
 
 		public static ConfigEntry<bool> dioconsumednoloop_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Infinite", true, "Will blacklist Dio's Best Friend from being randomly given.");
-		public bool dioconsumednoloop = Convert.ToBoolean(dioconsumednoloop_config.Value);
+		public bool dioconsumednoloop = dioconsumednoloop_config.Value;
 
 		public static ConfigEntry<bool> dioconsumednounique_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Unique", true, "Will blacklist any unique items from being randomly given. (Vanilla items tagged as unique are: Halcyon Seed, Artifact Key, Pearl, Irradiant Pearl and Microbots)");
-		public bool dioconsumednounique = Convert.ToBoolean(dioconsumednounique_config.Value);
+		public bool dioconsumednounique = dioconsumednounique_config.Value;
+
+		public static ConfigEntry<bool> spamconsole_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "Spam Console", false, "Enables all console debugging messages.");
+		public bool spamconsole = spamconsole_config.Value;
 	}
 }
