@@ -6,7 +6,7 @@ using RoR2;
 namespace ItemPoolRestriction
 {
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.kking117.ItemPoolLimiter", "ItemPoolLimiter", "1.0.0")]
+    [BepInPlugin("com.kking117.ItemPoolLimiter", "ItemPoolLimiter", "1.0.1")]
     //yeah a name change, restriction didn't sound right
     public class ItemPoolRestriction : BaseUnityPlugin
     {
@@ -140,7 +140,7 @@ namespace ItemPoolRestriction
                         }
                     }
                 }
-                BuiltList = false;
+                BuiltList = true;
             }
 
             void BuildWhitePool(Run run)
