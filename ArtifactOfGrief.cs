@@ -5,10 +5,11 @@ using BepInEx.Configuration;
 using RoR2;
 using EnigmaticThunder.Modules;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ArtifactOfGrief
 {
-    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "1.0.0")]
+    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "1.0.1")]
     [BepInDependency("com.EnigmaDev.EnigmaticThunder", "0.1.0")]
     public class ArtifactOfGrief : BaseUnityPlugin
     {
@@ -147,15 +148,7 @@ namespace ArtifactOfGrief
                     }
                 }
             }
-        }
-        static MethodInfo GetMethod(Type type, string methodName, BindingFlags flags)
-        {
-            var mi = type.GetMethod(methodName, flags);
-            if (mi != null)
-                return mi;
-            if (type.BaseType != null)
-                return GetMethod(type.BaseType, methodName, flags);
-            return null;
+            body.RemoveBuff(Thief);
         }
         public void SetupGriefFromDamageReport(CharacterMaster master, DamageReport report)
         {
@@ -493,25 +486,6 @@ namespace ArtifactOfGrief
                 }
             }
         }
-        public void SetupArtifact()
-        {
-            Grief.nameToken = "Artifact of Grief";
-            string desc = "Drop items when hit.";
-            if(EnemyCanPickup.Value)
-            {
-                desc += " Enemies can pick up items.";
-            }
-            Grief.descriptionToken = desc;
-            Grief.smallIconDeselectedSprite = Loadouts.CreateSkinIcon(Color.gray, Color.gray, Color.gray, Color.gray);
-            Grief.smallIconSelectedSprite = Loadouts.CreateSkinIcon(Color.white, Color.green, Color.red, Color.yellow);
-            Artifacts.RegisterArtifact(Grief);
-
-            //Thief.iconSprite = RoR2Content.Buffs.FullCrit.iconSprite;
-            Thief.canStack = true;
-            Thief.buffColor = Color.gray;
-            Buffs.RegisterBuff(Thief);
-        }
-
         void DropItem(CharacterMaster master, ItemIndex item, int amount, Vector3 force, bool drain)
         {
             if (item != ItemIndex.None)
@@ -538,12 +512,11 @@ namespace ArtifactOfGrief
             float rotation = UnityEngine.Random.Range(0.0f, 360.0f);
             float x = angle[0];
             float y = angle[2];
+            angle[1] = 3.0f;
             angle[0] = x * (float)Math.Cos(rotation) - y * (float)Math.Sin(rotation);
             angle[2] = x * (float)Math.Sin(rotation) + y * (float)Math.Cos(rotation);
             //Then normalize the angles
-            angle[0] = angle[0] / 3.0f;
-            angle[2] = angle[2] / 3.0f;
-            angle[1] = 1.0f;
+            angle = Vector3.Normalize(angle);
             return angle;
         }
 
@@ -558,7 +531,7 @@ namespace ArtifactOfGrief
         public void ReadConfig()
         {
             MinDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Min Drop Count"), 1, new ConfigDescription("The minimum amount of items you can lose from a single hit. (0 or less disables this.)", null, Array.Empty<object>()));
-            MaxDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Max Drop Count"), 30, new ConfigDescription("The maximum amount of items you can lose from a single hit. (0 or less disables this.)", null, Array.Empty<object>()));
+            MaxDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Max Drop Count"), 20, new ConfigDescription("The maximum amount of items you can lose from a single hit. (0 or less uses the current total of droppable items carried instead.)", null, Array.Empty<object>()));
             DropThresh = Config.Bind<float>(new ConfigDefinition("ArtifactofGrief", "Drop Threshold"), 0.05f, new ConfigDescription("The minimum percent of health to lose in a single hit to drop more than one item. (0.0 or less disables this.)", null, Array.Empty<object>()));
 
             OrderTier = Config.Bind<bool>(new ConfigDefinition("ArtifactofGrief", "Order Tier"), true, new ConfigDescription("Items drop in order of tiers (White, Green, Red, Boss, Lunar) instead of randomly.", null, Array.Empty<object>()));
@@ -575,6 +548,38 @@ namespace ArtifactOfGrief
             TriggerOther = Config.Bind<bool>(new ConfigDefinition("ArtifactofGrief", "Trigger from Other"), false, new ConfigDescription("Toggles if damage from environment and invalid attackers should trigger item dropping.", null, Array.Empty<object>()));
 
             EnemyCanPickup = Config.Bind<bool>(new ConfigDefinition("ArtifactofGrief", "Item Stealing"), true, new ConfigDescription("Enables any non-summoned character to grab items. (These stolen items will be dropped on their death)", null, Array.Empty<object>()));
+        }
+
+        //Asset Stuff
+        public void SetupArtifact()
+        {
+            Grief.nameToken = "Artifact of Grief";
+            string desc = "Drop items when hit.";
+            if (EnemyCanPickup.Value)
+            {
+                desc += " Enemies can pick up items.";
+            }
+            Grief.descriptionToken = desc;
+
+            Grief.smallIconDeselectedSprite = LoadAsSprite(Properties.Resources.texArtifactGriefDisabled, 128);
+            Grief.smallIconSelectedSprite = LoadAsSprite(Properties.Resources.texArtifactGriefEnabled, 128);
+            Artifacts.RegisterArtifact(Grief);
+
+            Thief.iconSprite = LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128);
+            Thief.canStack = true;
+            Thief.buffColor = new Color(27f/255f, 122f/255f, 6f/255f);
+            Buffs.RegisterBuff(Thief);
+        }
+        //Shamelessly taken from FW_Artifacts
+        public static Sprite LoadAsSprite(byte[] resourceBytes, int size)
+        {
+            if (resourceBytes == null)
+            {
+                throw new ArgumentNullException("resourceBytes");
+            }
+            Texture2D texture2D = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture2D.LoadImage(resourceBytes, false);
+            return Sprite.Create(texture2D, new Rect(0f, 0f, (float)size, (float)size), new Vector2(0f, 0f));
         }
     }
     public class StolenInventory : MonoBehaviour
