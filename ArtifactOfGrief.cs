@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 
 namespace ArtifactOfGrief
 {
-    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "1.0.1")]
+    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "1.1.0")]
     [BepInDependency("com.EnigmaDev.EnigmaticThunder", "0.1.0")]
     public class ArtifactOfGrief : BaseUnityPlugin
     {
