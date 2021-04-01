@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 
 namespace WarBannerBuff
 {
-	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "1.0.0")]
+	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "2.0.1")]
 	[BepInDependency("com.EnigmaDev.EnigmaticThunder", "0.1.0")]
 
 	public class warbannerbuff : BaseUnityPlugin
