@@ -1,104 +1,182 @@
 ﻿using System;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
-using R2API.Utils;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
-using TILER2;
 
 namespace WarBannerBuff
 {
 	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "1.0.0")]
-	[BepInDependency("com.bepis.r2api", "2.5.14")]
-	[BepInDependency("com.ThinkInvisible.TILER2", "2.2.2")]
+	[BepInDependency("com.EnigmaDev.EnigmaticThunder", "0.1.0")]
+
 	public class warbannerbuff : BaseUnityPlugin
     {
 		private float HealInterval = 1f;
+
+		public static ConfigEntry<float> RegenTick;
+		public static ConfigEntry<float> RegenMaxHealth;
+		public static ConfigEntry<float> RegenLevelHealth;
+		public static ConfigEntry<float> RegenMin;
+		public static ConfigEntry<float> RechargeMaxShield;
+		public static ConfigEntry<float> RechargeLevelShield;
+		public static ConfigEntry<float> RechargeMin;
+
+		public static ConfigEntry<float> DamageBonus;
+		public static ConfigEntry<float> CritBonus;
+		public static ConfigEntry<float> AttackSpeedBonus;
+		public static ConfigEntry<float> ArmorBonus;
+		public static ConfigEntry<float> MoveSpeedBonus;
+
+		public static ConfigEntry<float> VoidBanner;
+		public static ConfigEntry<float> PillarBanner;
+		public static ConfigEntry<float> BossBanner;
 		public void Awake()
 		{
-			StatHooks.GetStatCoefficients += new StatHooks.StatHookEventHandler(AddBannerBuffs);
-
-			void AddBannerBuffs(CharacterBody sender, StatHooks.StatHookEventArgs args)
+			ReadConfig();
+			On.RoR2.CharacterBody.RecalculateStats += (orig, self) =>
 			{
-				if (sender.HasBuff(BuffIndex.Warbanner))
-                {
-					args.armorAdd += armorbonus;
-					args.baseDamageAdd += damagebonus;
-					args.critAdd += critbonus;
-                }
-			}
-
-			On.RoR2.Run.Start += delegate (On.RoR2.Run.orig_Start orig, Run self)
+				orig(self);
+				if (self.HasBuff(RoR2Content.Buffs.Warbanner))
+				{
+					//I have really no idea how to set this without reflection
+					//From other plugins I've seen they were able to do it without reflection
+					//If anyone knows how I'd be very grateful if they'd share that with me
+					PropertyInfo propertyinfo;
+					if (self.moveSpeed > 0f)
+					{
+						if (MoveSpeedBonus.Value > 0f)
+						{
+							//Add the movement speed
+							propertyinfo = self.GetType().GetProperty("moveSpeed");
+							propertyinfo.SetValue(self, self.moveSpeed + MoveSpeedBonus.Value, null);
+							//Correct the acceleration
+							propertyinfo = self.GetType().GetProperty("acceleration");
+							propertyinfo.SetValue(self, self.moveSpeed / self.baseMoveSpeed * self.baseAcceleration, null);
+						}
+					}
+					//Add attack speed
+					if (AttackSpeedBonus.Value != 0f)
+					{
+						propertyinfo = self.GetType().GetProperty("attackSpeed");
+						propertyinfo.SetValue(self, self.attackSpeed + AttackSpeedBonus.Value, null);
+					}
+					//Add crit
+					if (CritBonus.Value != 0f)
+					{
+						propertyinfo = self.GetType().GetProperty("crit");
+						propertyinfo.SetValue(self, self.crit + CritBonus.Value, null);
+					}
+					//Add armor
+					if (ArmorBonus.Value != 0f)
+					{
+						propertyinfo = self.GetType().GetProperty("armor");
+						propertyinfo.SetValue(self, self.armor + ArmorBonus.Value, null);
+					}
+					//Add damage
+					if (DamageBonus.Value != 0f)
+					{
+						propertyinfo = self.GetType().GetProperty("damage");
+						propertyinfo.SetValue(self, self.damage + DamageBonus.Value, null);
+					}
+				}
+			};
+			On.RoR2.Run.Start += (orig, self) =>
 			{
 				orig(self);
 				HealInterval = 1f;
 			};
-			On.RoR2.Run.FixedUpdate += delegate (On.RoR2.Run.orig_FixedUpdate orig, Run self)
+			On.RoR2.Run.FixedUpdate += (orig, self) =>
 			{
 				orig(self);
-				if (HealInterval <= 0f)
-                {
-					HealInterval += regeninterval;
-				}
-				HealInterval -= Time.fixedDeltaTime;
-			};
-			On.RoR2.CharacterBody.FixedUpdate += delegate (On.RoR2.CharacterBody.orig_FixedUpdate orig, RoR2.CharacterBody self)
-			{
-				orig(self);
-				if (HealInterval<=0f)
+				if (RegenTick.Value > 0f)
 				{
-					if (self.HasBuff(BuffIndex.Warbanner))
+					if (HealInterval <= 0f)
+					{
+						HealInterval += RegenTick.Value;
+					}
+					HealInterval -= Time.fixedDeltaTime;
+				}
+			};
+			On.RoR2.CharacterBody.FixedUpdate += (orig, self) =>
+			{
+				orig(self);
+				if (RegenTick.Value > 0f && HealInterval <= 0f)
+				{
+					if (self.HasBuff(RoR2Content.Buffs.Warbanner))
 					{
 						HealthComponent healthComponent = self.healthComponent;
 						if (healthComponent)
 						{
-							float healing = healthComponent.fullHealth * regenmaxhealth;
-							healing += regenaddhealth * self.level;
-							if (healing < minheal)
+							float healing = healthComponent.fullHealth * RegenMaxHealth.Value;
+							healing += RegenLevelHealth.Value * self.level;
+							if (healing < RegenMin.Value)
 							{
-								healing = minheal;
+								healing = RegenMin.Value;
 							}
-							healthComponent.Heal(healing, default, true);
+							if (healing > 0f)
+							{
+								healthComponent.Heal(healing, default, true);
+							}
 
-							healing = healthComponent.fullShield * regenmaxshield;
-							healing += regenaddshield * self.level;
-							if (healing < minshield)
+							healing = healthComponent.fullShield * RechargeMaxShield.Value;
+							healing += RechargeLevelShield.Value * self.level;
+							if (healing < RechargeMin.Value)
 							{
-								healing = minshield;
+								healing = RechargeMin.Value;
 							}
-							healthComponent.RechargeShield(healing);
+							if (healing > 0f)
+							{
+								healthComponent.RechargeShield(healing);
+							}
 						}
 					}
 				}
 			};
 
-			On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += delegate (On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
+			On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (bossbanner)
+				if (BossBanner.Value > 0f)
 				{
-					SpawnTeamWarBanners(TeamIndex.Player);
+					SpawnTeamWarBanners(TeamIndex.Player, BossBanner.Value);
 				}
 			};
-			On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += delegate (On.EntityStates.Missions.BrotherEncounter.Phase2.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase2 self)
+			On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (bossbanner)
+				if (BossBanner.Value > 0f)
 				{
-					SpawnTeamWarBanners(TeamIndex.Player);
+					SpawnTeamWarBanners(TeamIndex.Player, BossBanner.Value);
 				}
 			};
-			On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += delegate (On.EntityStates.Missions.BrotherEncounter.Phase3.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase3 self)
+			On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (bossbanner)
+				if (BossBanner.Value > 0f)
 				{
-					SpawnTeamWarBanners(TeamIndex.Player);
+					SpawnTeamWarBanners(TeamIndex.Player, BossBanner.Value);
+				}
+			};
+			On.EntityStates.Missions.Moon.MoonBatteryActive.OnEnter += (orig, self) =>
+			{
+				orig(self);
+				if (PillarBanner.Value > 0f)
+				{
+					SpawnTeamWarBanners(TeamIndex.Player, PillarBanner.Value);
+				}
+			};
+			On.EntityStates.Missions.Arena.NullWard.Active.OnEnter += (orig, self) =>
+			{
+				orig(self);
+				if (VoidBanner.Value > 0f)
+				{
+					SpawnTeamWarBanners(TeamIndex.Player, VoidBanner.Value);
 				}
 			};
 
-			void SpawnTeamWarBanners(TeamIndex team)
+			void SpawnTeamWarBanners(TeamIndex team, float sizemult)
             {
 				for (int i = 0; i < RoR2.PlayerCharacterMasterController.instances.Count; i++)
 				{
@@ -114,12 +192,12 @@ namespace WarBannerBuff
 								CharacterMaster master = charbody.master;
 								if (master)
 								{
-									int itemCount = master.inventory.GetItemCount(ItemIndex.WardOnLevel);
+									int itemCount = master.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
 									if (itemCount > 0)
 									{
 										GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), teamComponent.transform.position, Quaternion.identity);
 										gameObject.GetComponent<TeamFilter>().teamIndex = teamComponent.teamIndex;
-										gameObject.GetComponent<BuffWard>().Networkradius = 8f + 8f * (float)itemCount;
+										gameObject.GetComponent<BuffWard>().Networkradius = (8f + 8f * (float)itemCount)*sizemult;
 										NetworkServer.Spawn(gameObject);
 									}
 								}
@@ -129,39 +207,23 @@ namespace WarBannerBuff
 				}
 			};
 		}
-		public static ConfigFile CustomConfigFile = new ConfigFile(Paths.ConfigPath + "\\kking117.WarBannerBuff.cfg", true);
-
-		public static ConfigEntry<float> regeninterval_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Regen Inteval", 0.5f, "Banners apply the configured regen/recharge effect every Xth second.");
-		public float regeninterval = regeninterval_config.Value;
-
-		public static ConfigEntry<float> regenmaxhealth_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Regen Max Health", 0.01f, "Banners regen this % of the target's max health per interval. (0.01f = 1%)");
-		public float regenmaxhealth = regenmaxhealth_config.Value;
-
-		public static ConfigEntry<float> regenaddhealth_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Regen Level Health", 1f, "Banners regen this amount of health multiplied by the target's level.");
-		public float regenaddhealth = regenaddhealth_config.Value;
-
-		public static ConfigEntry<float> minheal_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Minimum Heal", 1f, "The lowest possible amount of health banners can heal per interval.");
-		public float minheal = minheal_config.Value;
-
-		public static ConfigEntry<float> regenmaxshield_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Regen Max Shield", 0.0f, "Banners recharge this % of the target's max shield per interval. (0.01f = 1%)");
-		public float regenmaxshield = regenmaxshield_config.Value;
-
-		public static ConfigEntry<float> regenaddshield_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Regen Level Shield", 0f, "Banners recharge this amount of shield multiplied by the target's level.");
-		public float regenaddshield = regenaddshield_config.Value;
-
-		public static ConfigEntry<float> minshield_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Minimum Shield", 0f, "The lowest possible amount of shield banners can recharge per interval.");
-		public float minshield = minshield_config.Value;
-
-		public static ConfigEntry<int> armorbonus_config = CustomConfigFile.Bind<int>("WarBannerBuff Config", "Armor Bonus", 10, "Banners grant X armor to the target. (https://riskofrain2.gamepedia.com/Armor)");
-		public int armorbonus = armorbonus_config.Value;
-
-		public static ConfigEntry<int> damagebonus_config = CustomConfigFile.Bind<int>("WarBannerBuff Config", "Damage Bonus", 4, "Banners grant X base damage to the target.");
-		public int damagebonus = damagebonus_config.Value;
-
-		public static ConfigEntry<float> critbonus_config = CustomConfigFile.Bind<float>("WarBannerBuff Config", "Crit Bonus", 9.0f, "Banners grant X crit chance to the target.");
-		public float critbonus = critbonus_config.Value;
-
-		public static ConfigEntry<bool> bossbanner_config = CustomConfigFile.Bind<bool>("WarBannerBuff Config", "Mithrix Phase Banners", true, "Makes players equipped with war banners to place one down at the start of each of Mithrix's phases. (Except the item steal phase.)");
-		public bool bossbanner = bossbanner_config.Value;
+		public void ReadConfig()
+		{
+			RegenTick = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Interval"), 0.5f, new ConfigDescription("Delay between each regen/recharge effect. (0 or less disables this)", null, Array.Empty<object>()));
+			RegenMaxHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Max Health"), 0.005f, new ConfigDescription("Regen this % amount of the target's health based on their total combined health per interval. (0.01f = 1%)", null, Array.Empty<object>()));
+			RegenLevelHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Level Health"), 0.1f, new ConfigDescription("Regen this amount of health per the target's level per interval.", null, Array.Empty<object>()));
+			RegenMin = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Minimum Regen"), 1.0f, new ConfigDescription("The minimum amount of healing the target can gain per interval.", null, Array.Empty<object>()));
+			RechargeMaxShield = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Max Health"), 0.0f, new ConfigDescription("Recharge this % amount of the target's shield based on their total combined health per interval. (0.01f = 1%)", null, Array.Empty<object>()));
+			RechargeLevelShield = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Level Health"), 0.0f, new ConfigDescription("Recharge this amount of shield per the target's level per interval.", null, Array.Empty<object>()));
+			RechargeMin = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Minimum Recharge"), 0.0f, new ConfigDescription("The minimum amount of recharge the target can gain per interval.", null, Array.Empty<object>()));
+			DamageBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Damage Bonus"), 4.0f, new ConfigDescription("How much Damage to grant to the target.", null, Array.Empty<object>()));
+			CritBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Crit Bonus"), 10.0f, new ConfigDescription("How much Crit to grant to the target.", null, Array.Empty<object>()));
+			AttackSpeedBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Attack Speed Bonus"), 0.0f, new ConfigDescription("How much Attack Speed to grant to the target.", null, Array.Empty<object>()));
+			ArmorBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Armor Bonus"), 0.0f, new ConfigDescription("How much Armor to grant to the target.", null, Array.Empty<object>()));
+			MoveSpeedBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Move Speed Bonus"), 0.0f, new ConfigDescription("How much Move Speed to grant to the target.", null, Array.Empty<object>()));
+			BossBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Mithrix Phase Banners"), 1.0f, new ConfigDescription("Players equipped with war banners will place one down at the start of Mithrix's phases. (Except the item steal phase.) (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
+			PillarBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Moon Pillar Banners"), 0.25f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Moon Pillar event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
+			VoidBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Void Cell Banners"), 0.25f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
+		}
 	}
 }
