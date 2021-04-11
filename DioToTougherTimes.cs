@@ -1,236 +1,221 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Configuration;
-using R2API.Utils;
 using RoR2;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace DioToTougherTimes
 {
 	[BepInDependency("com.bepis.r2api")]
-	[BepInPlugin("com.kking117.DioToTougherTimes", "DioToTougherTimes", "1.0.1")]
+	[BepInPlugin("com.kking117.DioToTougherTimes", "DioToTougherTimes", "2.0.0")]
 
-	public class DioToTougherTimes : BaseUnityPlugin
+	public class MainPlugin : BaseUnityPlugin
 	{
-		private int[] tierlengths = new int[6];
-		private ItemIndex[] t1list = new ItemIndex[300];
-		private ItemIndex[] t2list = new ItemIndex[300];
-		private ItemIndex[] t3list = new ItemIndex[300];
-		private ItemIndex[] tblist = new ItemIndex[300];
-		private ItemIndex[] tylist = new ItemIndex[300];
-		private ItemIndex[] tnlist = new ItemIndex[300];
+		private bool Converted = false;
+		public static ConfigEntry <string> Config_SpecificItems;
+		private ItemIndex[] Config_Array_SpecificItems;
+		public static ConfigEntry<int> Config_ItemTier;
+		public static ConfigEntry<int> Config_GiveAmount;
+		public static ConfigEntry<bool> Config_GiveDiff;
+		public static ConfigEntry<bool> Config_NoLoop;
+		public static ConfigEntry<bool> Config_Debug;
+
 		public void Awake()
 		{
-			//generate tier lists manually
-			//for my brain's sake
-			On.RoR2.Run.Start += delegate (On.RoR2.Run.orig_Start orig, Run self)
+			ReadConfig();
+			On.RoR2.Inventory.RpcItemAdded += Inventory_OnItemAdded;
+			On.RoR2.Run.Start += Run_Start;
+		}
+		private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
+		{
+			orig(self);
+			if (!Converted)
 			{
-				orig.Invoke(self);
-				CleanLists();
-				for (int i = 0; i < ItemCatalog.itemCount; i++)
-				{
-					ItemDef iteminfo = ItemCatalog.GetItemDef((ItemIndex)i);
-					if (ValidItemTags(iteminfo))
-                    {
-						if (!dioconsumednoloop || (ItemIndex)i != ItemIndex.ExtraLife)
-						{
-							switch (iteminfo.tier)
-							{
-								case ItemTier.Tier1:
-									tierlengths[0]++;
-									t1list[tierlengths[0]] = (ItemIndex)i;
-									break;
-								case ItemTier.Tier2:
-									tierlengths[1]++;
-									t2list[tierlengths[1]] = (ItemIndex)i;
-									break;
-								case ItemTier.Tier3:
-									tierlengths[2]++;
-									t3list[tierlengths[2]] = (ItemIndex)i;
-									break;
-								case ItemTier.Lunar:
-									tierlengths[3]++;
-									tblist[tierlengths[3]] = (ItemIndex)i;
-									break;
-								case ItemTier.Boss:
-									tierlengths[4]++;
-									tylist[tierlengths[4]] = (ItemIndex)i;
-									break;
-								case ItemTier.NoTier:
-									tierlengths[5]++;
-									tnlist[tierlengths[5]] = (ItemIndex)i;
-									break;
-							}
-						}
-					}
-				}
-				if (spamconsole)
-				{
-					MonoBehaviour.print("DioToTougherTimes - Item Tiers recorded for this run.");
-				}
-			};
-
-			void CleanLists()
-            {
-				for (int i = 0; i < 300; i++)
-                {
-					t1list[i] = ItemIndex.None;
-					t2list[i] = ItemIndex.None;
-					t3list[i] = ItemIndex.None;
-					tblist[i] = ItemIndex.None;
-					tylist[i] = ItemIndex.None;
-					tnlist[i] = ItemIndex.None;
-				}
-				tierlengths[0] = -1;
-				tierlengths[1] = -1;
-				tierlengths[2] = -1;
-				tierlengths[3] = -1;
-				tierlengths[4] = -1;
-				tierlengths[5] = -1;
+				ConvertSpecItemsToArray();
+				Converted = true;
 			}
-
-			bool ValidItemTags(ItemDef iteminfo)
-            {
-				bool result = true;
-				bool IsScrap = false;
-				bool IsUnique = false;
-				ItemTag[] itemtags = iteminfo.tags;
-				if (itemtags.Length > 0)
+		}
+		public ItemIndex GetRandomItemFromTier(int tierlist)
+		{
+			Run run = Run.instance;
+			PickupIndex result = PickupIndex.none;
+			if (run)
+			{
+				PickupIndex[] items;
+				switch (tierlist)
 				{
-					for (int i = 0; i < itemtags.Length; i++)
-					{
-						if (itemtags[i] == ItemTag.Scrap)
-						{
-							IsScrap = true;
-						}
-						else if (itemtags[i] == ItemTag.WorldUnique)
-						{
-							IsUnique = true;
-						}
-					}
-				}
-				if(IsScrap)
-				{
-					if (dioconsumednoscrap)
-					{
-						result = false;
-					}
-				}
-				else if(IsUnique)
-                {
-					if (dioconsumednounique)
-					{
-						result = false;
-					}
-                }
-				return result;
-            }
-
-			ItemIndex GetRandomFromTier(int tierlist)
-            {
-				ItemIndex result = ItemIndex.None;
-				int length = ItemCatalog.itemCount;
-				switch (dioconsumedtier)
-				{
-					case 0:
-						result = (ItemIndex)UnityEngine.Random.Range(0, ItemCatalog.itemCount);
-						break;
 					case 1:
-						result = (ItemIndex)t1list[UnityEngine.Random.Range(0, tierlengths[0]+1)];
+						items = run.availableTier1DropList.ToArray();
+						if(Config_NoLoop.Value)
+                        {
+							items = RemoveDioFromList(items);
+						}
+						if (items.Length > 0)
+						{
+							result = items[UnityEngine.Random.Range(0, items.Length)];
+						}
 						break;
 					case 2:
-						result = (ItemIndex)t2list[UnityEngine.Random.Range(0, tierlengths[1]+1)];
+						items = run.availableTier2DropList.ToArray();
+						if (Config_NoLoop.Value)
+						{
+							items = RemoveDioFromList(items);
+						}
+						if (items.Length > 0)
+						{
+							result = items[UnityEngine.Random.Range(0, items.Length)];
+						}
 						break;
 					case 3:
-						result = (ItemIndex)t3list[UnityEngine.Random.Range(0, tierlengths[2]+1)];
+						items = run.availableTier3DropList.ToArray();
+						if (Config_NoLoop.Value)
+						{
+							items = RemoveDioFromList(items);
+						}
+						if (items.Length > 0)
+						{
+							result = items[UnityEngine.Random.Range(0, items.Length)];
+						}
 						break;
 					case 4:
-						result = (ItemIndex)tblist[UnityEngine.Random.Range(0, tierlengths[3]+1)];
+						items = run.availableBossDropList.ToArray();
+						if (Config_NoLoop.Value)
+						{
+							items = RemoveDioFromList(items);
+						}
+						if (items.Length > 0)
+						{
+							result = items[UnityEngine.Random.Range(0, items.Length)];
+						}
 						break;
 					case 5:
-						result = (ItemIndex)tylist[UnityEngine.Random.Range(0, tierlengths[4]+1)];
+						items = run.availableLunarDropList.ToArray();
+						if (Config_NoLoop.Value)
+						{
+							items = RemoveDioFromList(items);
+						}
+						if (items.Length > 0)
+						{
+							result = items[UnityEngine.Random.Range(0, items.Length)];
+						}
 						break;
 					case 6:
-						result = (ItemIndex)tnlist[UnityEngine.Random.Range(0, tierlengths[5]+1)];
+						if (Config_Array_SpecificItems.Length > 0)
+						{
+							return Config_Array_SpecificItems[UnityEngine.Random.Range(0, Config_Array_SpecificItems.Length)];
+						}
 						break;
 				}
-				return result;
 			}
-			On.RoR2.Inventory.RpcItemAdded += delegate (On.RoR2.Inventory.orig_RpcItemAdded orig, Inventory self, ItemIndex item)
+			if (result != PickupIndex.none)
 			{
-				if (item == ItemIndex.ExtraLifeConsumed)
-                {
-					ItemIndex givenitem = dioconsumeditem;
-					if (dioconsumeditem == ItemIndex.None)
-					{
-						for (int i = 0; i < self.GetItemCount(ItemIndex.ExtraLifeConsumed);)
-                        {
-							if (dioconsumedunique)
-							{
-								for (int f = 0; f < dioconsumedamount; f++)
-								{
-									givenitem = GetRandomFromTier(dioconsumedtier);
-									self.GiveItem((ItemIndex)givenitem, 1);
-									if (spamconsole)
-									{
-										MonoBehaviour.print("DioToTougherTimes - Gained " + givenitem + " from consumed Dio.");
-									}
-								}
-								self.GiveItem(ItemIndex.ExtraLifeConsumed, -1);
-							}
-							else
-							{
-								givenitem = GetRandomFromTier(dioconsumedtier);
-								self.GiveItem((ItemIndex)givenitem, dioconsumedamount);
-								self.GiveItem(ItemIndex.ExtraLifeConsumed, -1);
-								if (spamconsole)
-								{
-									MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount + "x " + givenitem + " from consumed Dio.");
-								}
-							}
-						}
-					}
-					else
-                    {
-						int diomult = self.GetItemCount(ItemIndex.ExtraLifeConsumed);
-						self.GiveItem((ItemIndex)givenitem, dioconsumedamount*self.GetItemCount(ItemIndex.ExtraLifeConsumed));
-						self.GiveItem(ItemIndex.ExtraLifeConsumed, diomult*-1);
-						if (spamconsole)
-						{
-							MonoBehaviour.print("DioToTougherTimes - Gained " + dioconsumedamount*diomult + "x " + givenitem + " from consumed Dio.");
-						}
-					}
-					
-				}
-				orig(self, item);
-			};
+				ItemIndex endresult = PickupCatalog.GetPickupDef(result).itemIndex;
+				return endresult;
+			}
+			else
+            {
+				return ItemIndex.None;
+            }
 		}
 
-		public static ConfigFile CustomConfigFile = new ConfigFile(Paths.ConfigPath + "\\kking117.DioToTougherTimes.cfg", true);
+		private PickupIndex[] RemoveDioFromList(PickupIndex[] thelist)
+        {
+			for(int i=0; i<thelist.Length; i++)
+            {
+				if(thelist[i]!=PickupIndex.none)
+                {
+					ItemIndex item = PickupCatalog.GetPickupDef(thelist[i]).itemIndex;
+					if(item == RoR2Content.Items.ExtraLife.itemIndex)
+                    {
+						thelist[i] = PickupIndex.none;
+                    }
+				}
+            }
+			
+			PickupIndex[] returnlist = new PickupIndex[0];
+			for (int i = 0; i < thelist.Length; i++)
+			{
+				if (thelist[i] != PickupIndex.none)
+				{
+					Array.Resize<PickupIndex>(ref returnlist, returnlist.Length + 1);
+					returnlist[returnlist.Length - 1] = thelist[i];
+				}
+			}
+			return returnlist;
+        }
 
-		public static ConfigEntry<ItemIndex> dioconsumeditem_config = CustomConfigFile.Bind<ItemIndex>("DioToTougherTimes Config", "Given Item", ItemIndex.Bear, "Identifier of the item to give to the player when removing Consumed Dios.(Set to ''None'' to get a random item in the configured tier.)");
-		public ItemIndex dioconsumeditem = dioconsumeditem_config.Value;
+		private void Inventory_OnItemAdded(On.RoR2.Inventory.orig_RpcItemAdded orig, Inventory self, ItemIndex item)
+		{
+			orig(self, item);
+			if (item == RoR2Content.Items.ExtraLifeConsumed.itemIndex)
+			{
+				for (int i = 0; i < self.GetItemCount(RoR2Content.Items.ExtraLifeConsumed.itemIndex);)
+				{
+					if (Config_GiveDiff.Value)
+					{
+						for (int f = 0; f < Config_GiveAmount.Value; f++)
+						{
+							ItemIndex givenitem = GetRandomItemFromTier(Config_ItemTier.Value);
+							self.GiveItem(givenitem, 1);
+							if (Config_Debug.Value)
+							{
+								 Logger.LogInfo("Gained " + ItemCatalog.GetItemDef(givenitem).name + " from consumed Dio.");
+							}
+						}
+						self.GiveItem(RoR2Content.Items.ExtraLifeConsumed.itemIndex, -1);
+					}
+					else
+					{
+						ItemIndex givenitem = GetRandomItemFromTier(Config_ItemTier.Value);
+						self.GiveItem(givenitem, Config_GiveAmount.Value);
+						self.GiveItem(RoR2Content.Items.ExtraLifeConsumed.itemIndex, -1);
+						if (Config_Debug.Value)
+						{
+							 Logger.LogInfo("Gained " + Config_GiveAmount.Value + "x " + ItemCatalog.GetItemDef(givenitem).name + " from consumed Dio.");
+						}
+					}
+				}
+			}
+		}
 
-		public static ConfigEntry<int> dioconsumedamount_config = CustomConfigFile.Bind<int>("DioToTougherTimes Config", "Item Amount", 1, "How many of the selected item/tier to give per Consumed Dio.");
-		public int dioconsumedamount = dioconsumedamount_config.Value;
+		private void ReadConfig()
+        {
+			Config_SpecificItems = Config.Bind<string>(new ConfigDefinition("DioToTougherTimes", "Given Items"), "Bear", new ConfigDescription("Custom list of items that a consumed Dio can randomly give. (Example: 'Bear, Syringe, Dagger' = TougherTimes, Soldier Syringe and Ceremonial Dagger.)", null, Array.Empty<object>()));
+			Config_ItemTier = Config.Bind<int>(new ConfigDefinition("DioToTougherTimes", "Item Tier"), 6, new ConfigDescription("What tier to randomly select an item from. (1 = white, 2 = green, 3 = red, 4 = boss, 5 = lunar, 6 = custom list)", null, Array.Empty<object>()));
+			Config_GiveAmount = Config.Bind<int>(new ConfigDefinition("DioToTougherTimes", "Item Amount"), 1, new ConfigDescription("How many items to give per consumed Dio.", null, Array.Empty<object>()));
+			Config_GiveDiff = Config.Bind<bool>(new ConfigDefinition("DioToTougherTimes", "Randomize Each Item"), true, new ConfigDescription("Items given will be randomly selected each instead of giving X amount of a random item.", null, Array.Empty<object>()));
+			Config_NoLoop = Config.Bind<bool>(new ConfigDefinition("DioToTougherTimes", "No Infinite"), true, new ConfigDescription("Removes Dio's Best Friend from being randomly selected from all but custom lists.", null, Array.Empty<object>()));
+			Config_Debug = Config.Bind<bool>(new ConfigDefinition("DioToTougherTimes", "Spam Console"), false, new ConfigDescription(" Logger.LogInfos console messages for debugging purposes.", null, Array.Empty<object>()));
+		}
 
-		public static ConfigEntry<int> dioconsumedtier_config = CustomConfigFile.Bind<int>("DioToTougherTimes Config", "Item Tier", 1, "What Tier to randomly select an item from when ''Given Item'' is -1 or less. (0 = anything tier even no tier, 1 = white, 2 = green, 3 = red, 4 = lunar, 5 = boss, 6 = no tier)");
-		public int dioconsumedtier = dioconsumedtier_config.Value;
-
-		public static ConfigEntry<bool> dioconsumedunique_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "Randomize Each Item", true, "When enabled all items given will be randomly selected instead of giving X amount of a random item.");
-		public bool dioconsumedunique = dioconsumedunique_config.Value;
-
-		public static ConfigEntry<bool> dioconsumednoscrap_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Scrap", true, "Will blacklist Scrap from being randomly given.");
-		public bool dioconsumednoscrap = dioconsumednoscrap_config.Value;
-
-		public static ConfigEntry<bool> dioconsumednoloop_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Infinite", true, "Will blacklist Dio's Best Friend from being randomly given.");
-		public bool dioconsumednoloop = dioconsumednoloop_config.Value;
-
-		public static ConfigEntry<bool> dioconsumednounique_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "No Unique", true, "Will blacklist any unique items from being randomly given. (Vanilla items tagged as unique are: Halcyon Seed, Artifact Key, Pearl, Irradiant Pearl and Microbots)");
-		public bool dioconsumednounique = dioconsumednounique_config.Value;
-
-		public static ConfigEntry<bool> spamconsole_config = CustomConfigFile.Bind<bool>("DioToTougherTimes Config", "Spam Console", false, "Enables all console debugging messages.");
-		public bool spamconsole = spamconsole_config.Value;
+		private void ConvertSpecItemsToArray()
+        {
+			if (Config_Debug.Value)
+			{
+				 Logger.LogInfo("Building Custom list.");
+			}
+			string[] items = Config_SpecificItems.Value.Split(',');
+			Config_Array_SpecificItems = new ItemIndex[0];
+			for (int i = 0; i < items.GetLength(0); i++)
+			{
+				if (!items[i].IsNullOrWhiteSpace())
+				{
+					items[i] = items[i].Trim();
+					ItemIndex item = ItemCatalog.FindItemIndex(items[i]);
+					if (item != ItemIndex.None)
+					{
+						Array.Resize<ItemIndex>(ref Config_Array_SpecificItems, Config_Array_SpecificItems.Length + 1);
+						Config_Array_SpecificItems[Config_Array_SpecificItems.Length-1] = item;
+						if (Config_Debug.Value)
+						{
+							 Logger.LogInfo("Added " + items[i] + " to Custom list.");
+						}
+					}
+				}
+			}
+			if (Config_Debug.Value)
+			{
+				 Logger.LogInfo("Custom list built with a total of " + Config_Array_SpecificItems.Length + " items.");
+			}
+		}
 	}
 }
