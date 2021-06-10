@@ -3,18 +3,24 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using RoR2;
-using EnigmaticThunder.Modules;
+using R2API;
+using R2API.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace ArtifactOfGrief
 {
-    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "1.1.0")]
-    [BepInDependency("com.EnigmaDev.EnigmaticThunder", "0.1.0")]
+    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "2.0.0")]
+    [BepInDependency("com.bepis.r2api")]
+    [R2APISubmoduleDependency(new string[]
+    {
+        "ArtifactAPI",
+        "BuffAPI",
+    })]
     public class ArtifactOfGrief : BaseUnityPlugin
     {
         private RoR2.ArtifactDef Grief = ScriptableObject.CreateInstance<RoR2.ArtifactDef>();
-        private RoR2.BuffDef Thief = ScriptableObject.CreateInstance<RoR2.BuffDef>();
+        private CustomBuff Thief;
         public static ConfigEntry<int> MinDropAmount;
         public static ConfigEntry<int> MaxDropAmount;
         public static ConfigEntry<float> DropThresh;
@@ -122,7 +128,7 @@ namespace ArtifactOfGrief
         //Stolen Inventory Functions
         void AddToStolenInventory(CharacterBody body, GameObject obj, ItemIndex item, int count)
         {
-            body.AddBuff(Thief);
+            body.AddBuff(Thief.BuffDef.buffIndex);
             StolenInventory inventory = obj.GetComponent<StolenInventory>();
             if (!inventory)
             {
@@ -148,7 +154,7 @@ namespace ArtifactOfGrief
                     }
                 }
             }
-            body.RemoveBuff(Thief);
+            body.RemoveBuff(Thief.BuffDef.buffIndex);
         }
         public void SetupGriefFromDamageReport(CharacterMaster master, DamageReport report)
         {
@@ -563,12 +569,13 @@ namespace ArtifactOfGrief
 
             Grief.smallIconDeselectedSprite = LoadAsSprite(Properties.Resources.texArtifactGriefDisabled, 128);
             Grief.smallIconSelectedSprite = LoadAsSprite(Properties.Resources.texArtifactGriefEnabled, 128);
-            Artifacts.RegisterArtifact(Grief);
+            ArtifactAPI.Add(Grief);
 
-            Thief.iconSprite = LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128);
-            Thief.canStack = true;
-            Thief.buffColor = new Color(27f/255f, 122f/255f, 6f/255f);
-            Buffs.RegisterBuff(Thief);
+            Thief = new CustomBuff("Thief", LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128), new Color(27f / 255f, 122f / 255f, 6f / 255f), false, true);
+            /*Thief.BuffDef.iconSprite = LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128);
+            Thief.BuffDef.canStack = true;
+            Thief.BuffDef.buffColor = new Color(27f/255f, 122f/255f, 6f/255f);*/
+            BuffAPI.Add(Thief);
         }
         //Shamelessly taken from FW_Artifacts
         public static Sprite LoadAsSprite(byte[] resourceBytes, int size)
