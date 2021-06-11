@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 
 namespace ArtifactOfGrief
 {
-    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "2.0.0")]
+    [BepInPlugin("com.kking117.ArtifactOfGrief", "ArtifactOfGrief", "2.1.0")]
     [BepInDependency("com.bepis.r2api")]
     [R2APISubmoduleDependency(new string[]
     {
@@ -21,9 +21,8 @@ namespace ArtifactOfGrief
     {
         private RoR2.ArtifactDef Grief = ScriptableObject.CreateInstance<RoR2.ArtifactDef>();
         private CustomBuff Thief;
-        public static ConfigEntry<int> MinDropAmount;
         public static ConfigEntry<int> MaxDropAmount;
-        public static ConfigEntry<float> DropThresh;
+        public static ConfigEntry<float> MinDropThresh;
         public static ConfigEntry<float> MinDamageForce;
         public static ConfigEntry<float> MaxDamageForce;
         public static ConfigEntry<float> MoveForce;
@@ -40,7 +39,6 @@ namespace ArtifactOfGrief
             ReadConfig();
             SetupArtifact();
             
-            //Enemy Item Pickup Related Hooks
             On.RoR2.CharacterMaster.OnBodyDeath += (orig, master, body) =>
             {
                 bool couldrespawn = false;
@@ -54,6 +52,12 @@ namespace ArtifactOfGrief
                     DropStolenInventory(body);
                 }
             };
+            On.RoR2.CharacterBody.Start += (orig, body) =>
+            {
+                UpdateThiefBuff(body);
+                orig(body);
+            };
+            //Enemy Item Pickup Related Hooks
             On.RoR2.GenericPickupController.BodyHasPickupPermission += (orig, body) =>
             {
                 if (body.masterObject)
@@ -128,33 +132,64 @@ namespace ArtifactOfGrief
         //Stolen Inventory Functions
         void AddToStolenInventory(CharacterBody body, GameObject obj, ItemIndex item, int count)
         {
-            body.AddBuff(Thief.BuffDef.buffIndex);
-            StolenInventory inventory = obj.GetComponent<StolenInventory>();
-            if (!inventory)
+            if (body.master)
             {
-                obj.AddComponent<StolenInventory>().amount[(int)item] += count;
-            }
-            else
-            {
-                inventory.amount[(int)item] += count;
+                body.AddBuff(Thief.BuffDef.buffIndex);
+                StolenInventory inventory = obj.GetComponent<StolenInventory>();
+                if (!inventory)
+                {
+                    obj.AddComponent<StolenInventory>().amount[(int)item] += count;
+                }
+                else
+                {
+                    inventory.amount[(int)item] += count;
+                }
             }
         }
         void DropStolenInventory(CharacterBody body)
         {
-            GameObject obj = body.master.gameObject;
-            StolenInventory inventory = obj.GetComponent<StolenInventory>();
-            if (inventory)
+            if (body.master)
             {
-                for (int i = 0; i < inventory.amount.Length; i++)
+                GameObject obj = body.master.gameObject;
+                StolenInventory inventory = obj.GetComponent<StolenInventory>();
+                if (inventory)
                 {
-                    if (inventory.amount[i] > 0)
+                    for (int i = 0; i < inventory.amount.Length; i++)
                     {
-                        DropItem(body.master, (ItemIndex)i, inventory.amount[i], new Vector3(0f, 0f, 0f), false);
-                        obj.AddComponent<StolenInventory>().amount[i] = 0;
+                        if (inventory.amount[i] > 0)
+                        {
+                            DropItem(body.master, (ItemIndex)i, inventory.amount[i], new Vector3(0f, 0f, 0f), false);
+                            obj.AddComponent<StolenInventory>().amount[i] = 0;
+                        }
+                    }
+                }
+                body.RemoveBuff(Thief.BuffDef.buffIndex);
+            }
+        }
+
+        void UpdateThiefBuff(CharacterBody body)
+        {
+            if (body.master)
+            {
+                int buffcount = 0;
+                GameObject obj = body.master.gameObject;
+                StolenInventory inventory = obj.GetComponent<StolenInventory>();
+                if (inventory)
+                {
+                    for (int i = 0; i < inventory.amount.Length; i++)
+                    {
+                        if (inventory.amount[i] > 0)
+                        {
+                            buffcount += inventory.amount[i];
+                        }
+                    }
+                    body.RemoveBuff(Thief.BuffDef.buffIndex);
+                    for (; body.GetBuffCount(Thief.BuffDef.buffIndex) != buffcount;)
+                    {
+                        body.AddBuff(Thief.BuffDef.buffIndex);
                     }
                 }
             }
-            body.RemoveBuff(Thief.BuffDef.buffIndex);
         }
         public void SetupGriefFromDamageReport(CharacterMaster master, DamageReport report)
         {
@@ -268,7 +303,7 @@ namespace ArtifactOfGrief
                     }
                     else
                     {
-                        if(def.tier == ItemTier.Tier1 && def.tier == ItemTier.Tier2 && def.tier == ItemTier.Tier3)
+                        if(def.tier == ItemTier.Tier1 || def.tier == ItemTier.Tier2 || def.tier == ItemTier.Tier3)
                         {
                             WhiteItems[MaxCounts[0], 0] = i;
                             WhiteItems[MaxCounts[0], 1] = amount;
@@ -276,14 +311,14 @@ namespace ArtifactOfGrief
                             TotalValidItems += inventory.GetItemCount((ItemIndex)i);
                         }
                         //very lazy
-                        if (def.tier == ItemTier.Boss && IncludeBoss.Value)
+                        else if (def.tier == ItemTier.Boss && IncludeBoss.Value)
                         {
                             WhiteItems[MaxCounts[0], 0] = i;
                             WhiteItems[MaxCounts[0], 1] = amount;
                             MaxCounts[0] += 1;
                             TotalValidItems += inventory.GetItemCount((ItemIndex)i);
                         }
-                        if (def.tier == ItemTier.Lunar && IncludeLunar.Value)
+                        else if (def.tier == ItemTier.Lunar && IncludeLunar.Value)
                         {
                             WhiteItems[MaxCounts[0], 0] = i;
                             WhiteItems[MaxCounts[0], 1] = amount;
@@ -292,10 +327,6 @@ namespace ArtifactOfGrief
                         }
                     }
                 }
-            }
-            if (TotalValidItems > MaxDropAmount.Value)
-            {
-                TotalValidItems = MaxDropAmount.Value;
             }
             if (MaxDropAmount.Value > 0 && TotalValidItems > MaxDropAmount.Value)
             {
@@ -307,14 +338,24 @@ namespace ArtifactOfGrief
             }
             force = ScaleVector(force, MinDamageForce.Value+((MaxDamageForce.Value-MinDamageForce.Value) * centdmg));
             //get how many items they will drop from the hit
-            int ItemDrops = (int)(TotalValidItems * centdmg);
-            if(MinDropAmount.Value > 0 && ItemDrops < MinDropAmount.Value && TotalValidItems > 0)
+            int ItemDrops;
+            //Logger.LogInfo("Dmg Percent = " + centdmg * 100.0);
+            if (MinDropThresh.Value > 0.0)
             {
-                ItemDrops = 1;
+                //Logger.LogInfo("Damage To Items = " + (centdmg - MinDropThresh.Value) / ((1.0 - MinDropThresh.Value) / TotalValidItems));
+                ItemDrops = (int)((centdmg - MinDropThresh.Value) / ((1.0 - MinDropThresh.Value) / TotalValidItems));
+                if (centdmg > MinDropThresh.Value)
+                {
+                    ItemDrops += 1;
+                }
             }
-            if (ItemDrops>1 && DropThresh.Value > centdmg)
+            else
             {
-                ItemDrops = 1;
+                ItemDrops = (int)(TotalValidItems * centdmg);
+            }
+            if (ItemDrops>MaxDropAmount.Value)
+            {
+                ItemDrops = MaxDropAmount.Value;
             }
             //shuffle arrays to randomize drops
             if (ItemDrops > 0)
@@ -536,10 +577,9 @@ namespace ArtifactOfGrief
         }
         public void ReadConfig()
         {
-            MinDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Min Drop Count"), 1, new ConfigDescription("The minimum amount of items you can lose from a single hit. (0 or less disables this.)", null, Array.Empty<object>()));
-            MaxDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Max Drop Count"), 20, new ConfigDescription("The maximum amount of items you can lose from a single hit. (0 or less uses the current total of droppable items carried instead.)", null, Array.Empty<object>()));
-            DropThresh = Config.Bind<float>(new ConfigDefinition("ArtifactofGrief", "Drop Threshold"), 0.05f, new ConfigDescription("The minimum percent of health to lose in a single hit to drop more than one item. (0.0 or less disables this.)", null, Array.Empty<object>()));
-
+            MinDropThresh = Config.Bind<float>(new ConfigDefinition("ArtifactofGrief", "Minimum Drop Threshold"), 0.05f, new ConfigDescription("The minimum percent of health to lose in a single hit to drop at least 1 item. (0.0 would make any amount of damage drop at least 1 item.)", null, Array.Empty<object>()));
+            MaxDropAmount = Config.Bind<int>(new ConfigDefinition("ArtifactofGrief", "Max Drop Count"), 20, new ConfigDescription("The maximum amount of items you can lose from a single hit. (That is a hit that deals 100% of your max health or more)(0 or less uses the current total of droppable items carried instead.)", null, Array.Empty<object>()));
+            
             OrderTier = Config.Bind<bool>(new ConfigDefinition("ArtifactofGrief", "Order Tier"), true, new ConfigDescription("Items drop in order of tiers (White, Green, Red, Boss, Lunar) instead of randomly.", null, Array.Empty<object>()));
 
             IncludeBoss = Config.Bind<bool>(new ConfigDefinition("ArtifactofGrief", "Allow Boss"), true, new ConfigDescription("Allows boss items to drop when enabled.", null, Array.Empty<object>()));
@@ -572,9 +612,6 @@ namespace ArtifactOfGrief
             ArtifactAPI.Add(Grief);
 
             Thief = new CustomBuff("Thief", LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128), new Color(27f / 255f, 122f / 255f, 6f / 255f), false, true);
-            /*Thief.BuffDef.iconSprite = LoadAsSprite(Properties.Resources.texBuffThiefIcon, 128);
-            Thief.BuffDef.canStack = true;
-            Thief.BuffDef.buffColor = new Color(27f/255f, 122f/255f, 6f/255f);*/
             BuffAPI.Add(Thief);
         }
         //Shamelessly taken from FW_Artifacts
