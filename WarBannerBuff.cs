@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 
 namespace WarBannerBuff
 {
-	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "3.0.0")]
+	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "3.1.0")]
 	[BepInDependency("com.bepis.r2api")]
 	[R2APISubmoduleDependency(new string[]
 	{
@@ -19,11 +19,14 @@ namespace WarBannerBuff
 	public class warbannerbuff : BaseUnityPlugin
     {
 		private float HealInterval = 1f;
+		private float RechargeInterval = 1f;
 
 		public static ConfigEntry<float> RegenTick;
 		public static ConfigEntry<float> RegenMaxHealth;
 		public static ConfigEntry<float> RegenLevelHealth;
 		public static ConfigEntry<float> RegenMin;
+		public static ConfigEntry<bool> RegenIsRegen;
+		public static ConfigEntry<float> RechargeTick;
 		public static ConfigEntry<float> RechargeMaxShield;
 		public static ConfigEntry<float> RechargeLevelShield;
 		public static ConfigEntry<float> RechargeMin;
@@ -31,6 +34,8 @@ namespace WarBannerBuff
 		public static ConfigEntry<float> DamageBonus;
 		public static ConfigEntry<float> CritBonus;
 		public static ConfigEntry<float> ArmorBonus;
+		public static ConfigEntry<float> AttackBonus;
+		public static ConfigEntry<float> MoveBonus;
 
 		public static ConfigEntry<float> VoidBanner;
 		public static ConfigEntry<float> PillarBanner;
@@ -56,17 +61,29 @@ namespace WarBannerBuff
 				args.critAdd += CritBonus.Value;
 				args.armorAdd += ArmorBonus.Value;
 				args.baseDamageAdd += DamageBonus.Value;
+				args.attackSpeedMultAdd += AttackBonus.Value - 0.3f;
+				args.moveSpeedMultAdd += MoveBonus.Value - 0.3f;
+
+				if (RegenIsRegen.Value && RegenTick.Value > 0.0f)
+                {
+					float regen = CalculateCharacterRegen(sender);
+					if (regen > 0.0f)
+					{
+						args.baseRegenAdd += regen * (1.0f / RegenTick.Value);
+					}
+                }
 			}
 		}
 		public void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
 		{
 			orig(self);
 			HealInterval = 1f;
+			RechargeInterval = 1f;
 		}
 		private void Run_FixedUpdate(On.RoR2.Run.orig_FixedUpdate orig, RoR2.Run self)
 		{
 			orig(self);
-			if (RegenTick.Value > 0f)
+			if (RegenTick.Value > 0.0f)
 			{
 				if (HealInterval <= 0f)
 				{
@@ -74,34 +91,42 @@ namespace WarBannerBuff
 				}
 				HealInterval -= Time.fixedDeltaTime;
 			}
+			else
+			{
+				HealInterval = 1f;
+			}
+			if (RechargeTick.Value > 0.0f)
+			{
+				if (RechargeInterval <= 0f)
+				{
+					RechargeInterval += RechargeTick.Value;
+				}
+				RechargeInterval -= Time.fixedDeltaTime;
+			}
+			else
+            {
+				RechargeInterval = 1f;
+			}
 		}
 		private void CharacterBody_FixedUpdate(On.RoR2.CharacterBody.orig_FixedUpdate orig, RoR2.CharacterBody self)
 		{
 			orig(self);
-			if (RegenTick.Value > 0f && HealInterval <= 0f)
-			{
+			HealthComponent healthComponent = self.healthComponent;
+			if (healthComponent)
+            {
 				if (self.HasBuff(RoR2Content.Buffs.Warbanner))
-				{
-					HealthComponent healthComponent = self.healthComponent;
-					if (healthComponent)
-					{
-						float healing = healthComponent.fullHealth * RegenMaxHealth.Value;
-						healing += RegenLevelHealth.Value * self.level;
-						if (healing < RegenMin.Value)
-						{
-							healing = RegenMin.Value;
-						}
+                {
+					if (RegenIsRegen.Value == false && HealInterval <= 0f)
+                    {
+						float healing = CalculateCharacterRegen(self);
 						if (healing > 0f)
 						{
 							healthComponent.Heal(healing, default, true);
 						}
-
-						healing = healthComponent.fullShield * RechargeMaxShield.Value;
-						healing += RechargeLevelShield.Value * self.level;
-						if (healing < RechargeMin.Value)
-						{
-							healing = RechargeMin.Value;
-						}
+					}
+					if (RechargeInterval <= 0f)
+					{
+						float healing = CalculateCharacterRecharge(self);
 						if (healing > 0f)
 						{
 							healthComponent.RechargeShield(healing);
@@ -109,6 +134,38 @@ namespace WarBannerBuff
 					}
 				}
 			}
+		}
+
+		float CalculateCharacterRegen(CharacterBody self)
+        {
+			float healing = 0.0f;
+			HealthComponent healthComponent = self.healthComponent;
+			if (healthComponent)
+			{
+				healing = healthComponent.fullHealth * RegenMaxHealth.Value;
+				healing += RegenLevelHealth.Value * self.level;
+				if (healing < RegenMin.Value)
+				{
+					healing = RegenMin.Value;
+				}
+			}
+			return healing;
+		}
+
+		float CalculateCharacterRecharge(CharacterBody self)
+		{
+			float healing = 0.0f;
+			HealthComponent healthComponent = self.healthComponent;
+			if (healthComponent)
+			{
+				healing = healthComponent.fullShield * RechargeMaxShield.Value;
+				healing += RechargeLevelShield.Value * self.level;
+				if (healing < RechargeMin.Value)
+				{
+					healing = RechargeMin.Value;
+				}
+			}
+			return healing;
 		}
 		private void Phase1_OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
 		{
@@ -182,19 +239,23 @@ namespace WarBannerBuff
 		}
 		public void ReadConfig()
 		{
-			RegenTick = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Interval"), 0.5f, new ConfigDescription("Delay between each regen/recharge effect. (0 or less disables this)", null, Array.Empty<object>()));
-			RegenMaxHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Max Health"), 0.005f, new ConfigDescription("Regen this % amount of the target's health based on their total combined health per interval. (0.01f = 1%)", null, Array.Empty<object>()));
+			RegenTick = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Interval"), 0.5f, new ConfigDescription("Delay in seconds between each regen tick. (0 or less disables the regen effect)", null, Array.Empty<object>()));
+			RegenMaxHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Max Health"), 0.005f, new ConfigDescription("Regen this % amount of the target's health based on their total combined health per interval. (0.01 = 1%)", null, Array.Empty<object>()));
 			RegenLevelHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Level Health"), 0.1f, new ConfigDescription("Regen this amount of health per the target's level per interval.", null, Array.Empty<object>()));
 			RegenMin = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Minimum Regen"), 1.0f, new ConfigDescription("The minimum amount of healing the target can gain per interval.", null, Array.Empty<object>()));
-			RechargeMaxShield = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Max Shield"), 0.0f, new ConfigDescription("Recharge this % amount of the target's shield based on their total combined health per interval. (0.01f = 1%)", null, Array.Empty<object>()));
+			RegenIsRegen = Config.Bind<bool>(new ConfigDefinition("WarBannerBuff", "Regen is Regen"), false, new ConfigDescription("The above healing configurations are given to the target's regen stat instead of healing.", null, Array.Empty<object>()));
+			RechargeTick = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Interval"), 0.5f, new ConfigDescription("Delay in seconds between each recharge tick. (0 or less disables the recharge effect)", null, Array.Empty<object>()));
+			RechargeMaxShield = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Max Shield"), 0.0f, new ConfigDescription("Recharge this % amount of the target's shield based on their total combined health per interval. (0.01 = 1%)", null, Array.Empty<object>()));
 			RechargeLevelShield = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Recharge Level Shield"), 0.0f, new ConfigDescription("Recharge this amount of shield per the target's level per interval.", null, Array.Empty<object>()));
 			RechargeMin = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Minimum Recharge"), 0.0f, new ConfigDescription("The minimum amount of recharge the target can gain per interval.", null, Array.Empty<object>()));
+			AttackBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Attack Speed Bonus"), 0.3f, new ConfigDescription("How much Attack Speed to grant to the target.", null, Array.Empty<object>()));
+			MoveBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Move Speed Bonus"), 0.3f, new ConfigDescription("How much Move Speed to grant to the target.", null, Array.Empty<object>()));
 			DamageBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Damage Bonus"), 4.0f, new ConfigDescription("How much Damage to grant to the target.", null, Array.Empty<object>()));
 			CritBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Crit Bonus"), 10.0f, new ConfigDescription("How much Crit to grant to the target.", null, Array.Empty<object>()));
 			ArmorBonus = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Armor Bonus"), 0.0f, new ConfigDescription("How much Armor to grant to the target.", null, Array.Empty<object>()));
 			BossBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Mithrix Phase Banners"), 1.0f, new ConfigDescription("Players equipped with war banners will place one down at the start of Mithrix's phases. (Except the item steal phase.) (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
-			PillarBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Moon Pillar Banners"), 0.25f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Moon Pillar event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
-			VoidBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Void Cell Banners"), 0.25f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
+			PillarBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Moon Pillar Banners"), 0.5f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Moon Pillar event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
+			VoidBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Void Cell Banners"), 0.3f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
 		}
 	}
 }
