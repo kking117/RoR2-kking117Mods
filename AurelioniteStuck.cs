@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace AurelioniteStuck
 {
-	[BepInPlugin("com.kking117.AurelioniteStuck", "AurelioniteStuck", "2.0.0")]
+	[BepInPlugin("com.kking117.AurelioniteStuck", "AurelioniteStuck", "2.1.0")]
 	[BepInDependency("com.bepis.r2api")]
 	public class MainPlugin : BaseUnityPlugin
 	{
@@ -22,6 +22,12 @@ namespace AurelioniteStuck
 		public static ConfigEntry<bool> Config_KillOnSteal;
 		public static ConfigEntry<bool> Config_SpawnOnSteal;
 		public static ConfigEntry<bool> Config_Debug;
+		public static ConfigEntry<float> Config_SeedStrengthMult;
+		public static ConfigEntry<float> Config_PlayerHealthMult;
+		public static ConfigEntry<float> Config_PlayerDamageMult;
+		public static ConfigEntry<float> Config_OtherHealthMult;
+		public static ConfigEntry<float> Config_OtherDamageMult;
+
 
 		private float[] NextTitanSpawn = new float[4]
 		{
@@ -180,15 +186,6 @@ namespace AurelioniteStuck
 						combatSquad = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/Encounters/ShadowCloneEncounter")).GetComponent<CombatSquad>();
 					}
 					int SpawnCount = 1;
-					//This is just here really.
-					//Like, swarms doesn't double aurelionite so this shouldn't be needed
-					/*if (RunArtifactManager.instance.IsArtifactEnabled(ArtifactCatalog.FindArtifactDef("Swarms")))
-                    {
-						if (Config_Debug.Value)
-						{
-							print("Doubled Aurelionite for Swarms");
-						}
-					}*/
 					for (int i = 0; i < SpawnCount; i++)
 					{
 						Vector3 offsetpos = GetRandomSpawnPos();
@@ -199,6 +196,7 @@ namespace AurelioniteStuck
 							summonerBodyObject = null,
 							ignoreTeamMemberLimit = true,
 							teamIndexOverride = team,
+							useAmbientLevel = true,
 						}.Perform();
 						AddTitanInventory(component, SeedCount);
 						combatSquad.AddMember(component);
@@ -229,23 +227,33 @@ namespace AurelioniteStuck
 			}
 			void AddTitanInventory(CharacterMaster titan, int seeds)
             {
-				float num = 1f;
-				float num2 = 1f;
-				num += Run.instance.difficultyCoefficient / 2f;
-				num2 += Run.instance.difficultyCoefficient / 2f;
-				num *= Mathf.Pow((float)seeds, 1f);
-				num2 *= Mathf.Pow((float)seeds, 0.5f);
-				if (titan.teamIndex != TeamIndex.Player)
+				float hpboost = 1f;
+				float dmgboost = 1f;
+				float itemcount = seeds * Config_SeedStrengthMult.Value;
+				hpboost *= Mathf.Pow((float)itemcount, 1.0f);
+				dmgboost *= Mathf.Pow((float)itemcount, 0.5f);
+				if (titan.teamIndex == TeamIndex.Player)
 				{
-					num = Mathf.Pow(num2, 0.5f);
-					num2 = Mathf.Pow(num2, 0.5f);
+					titan.GetBody().levelMaxHealth *= Config_PlayerHealthMult.Value;
+					titan.GetBody().baseMaxHealth *= Config_PlayerHealthMult.Value;
+					titan.GetBody().levelDamage *= Config_PlayerDamageMult.Value;
+					titan.GetBody().baseDamage *= Config_PlayerDamageMult.Value;
+					dmgboost *= Config_PlayerDamageMult.Value;
 				}
-				titan.inventory.GiveItem(RoR2Content.Items.BoostHp.itemIndex, Mathf.RoundToInt((num - 1f) * 10f));
-				titan.inventory.GiveItem(RoR2Content.Items.BoostDamage.itemIndex, Mathf.RoundToInt((num2 - 1f) * 10f));
+				else
+				{
+					titan.GetBody().levelMaxHealth *= Config_OtherHealthMult.Value;
+					titan.GetBody().baseMaxHealth *= Config_OtherHealthMult.Value;
+					titan.GetBody().levelDamage *= Config_OtherDamageMult.Value;
+					titan.GetBody().baseDamage *= Config_OtherDamageMult.Value;
+				}
+				titan.inventory.GiveItem(RoR2Content.Items.BoostHp.itemIndex, Mathf.RoundToInt((hpboost - 1f) * 10f));
+				titan.inventory.GiveItem(RoR2Content.Items.BoostDamage.itemIndex, Mathf.RoundToInt((dmgboost - 1f) * 10f));
 				if (Config_Debug.Value)
 				{
-					print("Aurelionite spawned with " + (10 + Mathf.RoundToInt((num - 1f) * 10f)) * 10.0f + "% health.");
-					print("Aurelionite spawned with " + (10 + Mathf.RoundToInt((num2 - 1f) * 10f)) * 10.0f + "% damage.");
+					print("AURELIONITE STATS:");
+					print((10 + Mathf.RoundToInt((hpboost - 1f) * 10f)) * 10.0f + "% Health");
+					print((10 + Mathf.RoundToInt((dmgboost - 1f) * 10f)) * 10.0f + "% Damage");
 				}
 			}
 			void RegisterTitanSquad(CombatSquad combatSquad, TeamIndex team)
@@ -295,6 +303,15 @@ namespace AurelioniteStuck
 			Config_SpawnOnPhase = Config.Bind<int>(new ConfigDefinition("AurelioniteStuck", "Spawn Phase"), 2, new ConfigDescription("Spawns Aurelionite on this phase during the Final Boss if players have the Halcyon Seed. (0-3) (0 = Don't spawn)", null, Array.Empty<object>()));
 			Config_SpawnOnSteal = Config.Bind<bool>(new ConfigDefinition("AurelioniteStuck", "Spawn On Last Phase"), true, new ConfigDescription("Spawns an Aurelionite for Mithrix on the item steal phase. (Gets automatically killed if Mithrix dies)", null, Array.Empty<object>()));
 			Config_KillOnSteal = Config.Bind<bool>(new ConfigDefinition("AurelioniteStuck", "Kill On Last Phase"), true, new ConfigDescription("Kill the player's Aurelionite on Mithrix's item steal phase.", null, Array.Empty<object>()));
+
+			Config_SeedStrengthMult = Config.Bind<float>(new ConfigDefinition("AurelioniteStuck", "Seed Strength Multiplier"), 1.0f, new ConfigDescription("Multiplies the Halcyon Seed's strength when calculating stats for this specific Aurelionite spawn. (Mainly for those that use GoldenCoastPlus)", null, Array.Empty<object>()));
+
+			Config_PlayerHealthMult = Config.Bind<float>(new ConfigDefinition("AurelioniteStuck", "Player Health Mult"), 1.0f, new ConfigDescription("Multiplies health for this specific Aurelionite spawn if it's on the player's team.", null, Array.Empty<object>()));
+			Config_PlayerDamageMult = Config.Bind<float>(new ConfigDefinition("AurelioniteStuck", "Player Damage Mult"), 1.0f, new ConfigDescription("Multiplies damage for this specific Aurelionite spawn if it's on the player's team.", null, Array.Empty<object>()));
+
+			Config_OtherHealthMult = Config.Bind<float>(new ConfigDefinition("AurelioniteStuck", "Other Health Mult"), 0.5f, new ConfigDescription("Multiplies health for this specific Aurelionite spawn if it's NOT on the player's team.", null, Array.Empty<object>()));
+			Config_OtherDamageMult = Config.Bind<float>(new ConfigDefinition("AurelioniteStuck", "Other Damage Mult"), 0.5f, new ConfigDescription("Multiplies damage for this specific Aurelionite spawn if it's NOT on the player's team. (Suggest adjusting if you change the strength multiplier.)", null, Array.Empty<object>()));
+
 			Config_Debug = Config.Bind<bool>(new ConfigDefinition("AurelioniteStuck", "Spam Console"), false, new ConfigDescription("Prints console messages for debug purposes.", null, Array.Empty<object>()));
 		}
 	}
