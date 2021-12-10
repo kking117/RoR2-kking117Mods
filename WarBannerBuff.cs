@@ -9,17 +9,22 @@ using UnityEngine.Networking;
 
 namespace WarBannerBuff
 {
-	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "3.1.0")]
+	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "4.0.0")]
 	[BepInDependency("com.bepis.r2api")]
 	[R2APISubmoduleDependency(new string[]
 	{
 		"RecalculateStatsAPI",
+		"BuffAPI",
 	})]
 
 	public class warbannerbuff : BaseUnityPlugin
     {
 		private float HealInterval = 1f;
 		private float RechargeInterval = 1f;
+		private CustomBuff WarBannerBuffBuff;
+		private BuffDef ModdedBuff = RoR2Content.Buffs.Warbanner;
+
+		public static ConfigEntry<bool> CreateNewBuff;
 
 		public static ConfigEntry<float> RegenTick;
 		public static ConfigEntry<float> RegenMaxHealth;
@@ -43,6 +48,11 @@ namespace WarBannerBuff
 		public void Awake()
 		{
 			ReadConfig();
+			if (CreateNewBuff.Value)
+			{
+				SetupNewBannerBuff();
+				On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
+			}
 			//hooks
 			On.RoR2.Run.Start += Run_Start;
 			On.RoR2.Run.FixedUpdate += Run_FixedUpdate;
@@ -54,16 +64,35 @@ namespace WarBannerBuff
 			On.EntityStates.Missions.Moon.MoonBatteryActive.OnEnter += MoonBatteryActive_OnEnter;
 			On.EntityStates.Missions.Arena.NullWard.Active.OnEnter += NullWardActive_OnEnter;
 		}
+		private void SetupNewBannerBuff()
+        {
+			BuffDef OldBuff = RoR2Content.Buffs.Warbanner;
+
+			WarBannerBuffBuff = new CustomBuff(OldBuff.name + "(Buffed)", OldBuff.iconSprite, new Color(200f / 255f, 115f / 255f, 70f / 255f), OldBuff.isDebuff, false);
+			BuffAPI.Add(WarBannerBuffBuff);
+
+			ModdedBuff = WarBannerBuffBuff.BuffDef;
+
+			Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard").GetComponent<RoR2.BuffWard>().buffDef = WarBannerBuffBuff.BuffDef;
+		}
 		private void CalcBannerStats(RoR2.CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
-			if (sender.HasBuff(RoR2Content.Buffs.Warbanner))
+			if (sender.HasBuff(ModdedBuff))
 			{
 				args.critAdd += CritBonus.Value;
 				args.armorAdd += ArmorBonus.Value;
 				args.baseDamageAdd += DamageBonus.Value;
-				args.attackSpeedMultAdd += AttackBonus.Value - 0.3f;
-				args.moveSpeedMultAdd += MoveBonus.Value - 0.3f;
-
+				if (CreateNewBuff.Value)
+				{
+					args.attackSpeedMultAdd += AttackBonus.Value;
+					args.moveSpeedMultAdd += MoveBonus.Value;
+				}
+				else
+                {
+					args.attackSpeedMultAdd += AttackBonus.Value - 0.3f;
+					args.moveSpeedMultAdd += MoveBonus.Value - 0.3f;
+				}
+					
 				if (RegenIsRegen.Value && RegenTick.Value > 0.0f)
                 {
 					float regen = CalculateCharacterRegen(sender);
@@ -114,7 +143,7 @@ namespace WarBannerBuff
 			HealthComponent healthComponent = self.healthComponent;
 			if (healthComponent)
             {
-				if (self.HasBuff(RoR2Content.Buffs.Warbanner))
+				if (self.HasBuff(ModdedBuff))
                 {
 					if (RegenIsRegen.Value == false && HealInterval <= 0f)
                     {
@@ -132,6 +161,41 @@ namespace WarBannerBuff
 							healthComponent.RechargeShield(healing);
 						}
 					}
+				}
+			}
+		}
+
+		private void CharacterBody_UpdateAllTemporaryVisualEffects(On.RoR2.CharacterBody.orig_UpdateAllTemporaryVisualEffects orig, RoR2.CharacterBody self)
+        {
+			orig(self);
+			if (self.HasBuff(WarBannerBuffBuff.BuffDef) && !self.HasBuff(RoR2Content.Buffs.Warbanner))
+            {
+				NewBuffFX fxcomponent = self.GetComponent<NewBuffFX>();
+				if (fxcomponent == null)
+				{
+					fxcomponent = self.gameObject.AddComponent<NewBuffFX>();
+				}
+				if (fxcomponent.effect == null)
+				{
+					GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/TemporaryVisualEffects/WarbannerBuffEffect"), self.corePosition, Quaternion.identity);
+					fxcomponent.effect = gameObject.GetComponent<TemporaryVisualEffect>();
+					fxcomponent.effect.parentTransform = self.coreTransform;
+					fxcomponent.effect.visualState = TemporaryVisualEffect.VisualState.Enter;
+					fxcomponent.effect.healthComponent = self.healthComponent;
+					fxcomponent.effect.radius = self.radius;
+					LocalCameraEffect component = gameObject.GetComponent<LocalCameraEffect>();
+					if (component)
+					{
+						component.targetCharacter = base.gameObject;
+					}
+				}
+			}
+            else
+            {
+				NewBuffFX fxcomponent = self.GetComponent<NewBuffFX>();
+				if (fxcomponent != null)
+				{
+					fxcomponent.effect.visualState = TemporaryVisualEffect.VisualState.Exit;
 				}
 			}
 		}
@@ -239,6 +303,7 @@ namespace WarBannerBuff
 		}
 		public void ReadConfig()
 		{
+			CreateNewBuff = Config.Bind<bool>(new ConfigDefinition("WarBannerBuff", "Create New Buff"), true, new ConfigDescription("Moves all changes to an entirely new buff. (Suggest enabling if you have mods such as Beetle Queen Plus or EliteVariety to keep their balance.)", null, Array.Empty<object>()));
 			RegenTick = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Interval"), 0.5f, new ConfigDescription("Delay in seconds between each regen tick. (0 or less disables the regen effect)", null, Array.Empty<object>()));
 			RegenMaxHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Max Health"), 0.005f, new ConfigDescription("Regen this % amount of the target's health based on their total combined health per interval. (0.01 = 1%)", null, Array.Empty<object>()));
 			RegenLevelHealth = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Regen Level Health"), 0.1f, new ConfigDescription("Regen this amount of health per the target's level per interval.", null, Array.Empty<object>()));
@@ -257,5 +322,9 @@ namespace WarBannerBuff
 			PillarBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Moon Pillar Banners"), 0.5f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Moon Pillar event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
 			VoidBanner = Config.Bind<float>(new ConfigDefinition("WarBannerBuff", "Void Cell Banners"), 0.3f, new ConfigDescription("Players equipped with war banners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)", null, Array.Empty<object>()));
 		}
+	}
+	public class NewBuffFX : MonoBehaviour
+	{
+		public TemporaryVisualEffect effect;
 	}
 }
