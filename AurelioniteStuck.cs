@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace AurelioniteStuck
 {
-	[BepInPlugin("com.kking117.AurelioniteStuck", "AurelioniteStuck", "2.1.0")]
+	[BepInPlugin("com.kking117.AurelioniteStuck", "AurelioniteStuck", "2.1.1")]
 	[BepInDependency("com.bepis.r2api")]
 	public class MainPlugin : BaseUnityPlugin
 	{
@@ -55,41 +55,47 @@ namespace AurelioniteStuck
 			On.RoR2.Run.Start += (orig, self) =>
 			{
 				orig(self);
-				for (int i = 0; i < NextTitanSpawn.Length; i++)
+				if (NetworkServer.active)
 				{
-					NextTitanSpawn[i] = -1f;
-					NextTitanKill[i] = -1f;
+					for (int i = 0; i < NextTitanSpawn.Length; i++)
+					{
+						NextTitanSpawn[i] = -1f;
+						NextTitanKill[i] = -1f;
+					}
 				}
 			};
 			On.RoR2.Run.FixedUpdate += (orig, self) =>
 			{
 				orig(self);
-				string scenename = SceneManager.GetActiveScene().name;
-				if (scenename == "moon" || scenename == "moon2")
+				if (NetworkServer.active)
 				{
-					for (int i = 0; i < NextTitanSpawn.Length; i++)
+					string scenename = SceneManager.GetActiveScene().name;
+					if (scenename == "moon" || scenename == "moon2")
 					{
-						if (NextTitanSpawn[i] >= 0f)
+						for (int i = 0; i < NextTitanSpawn.Length; i++)
 						{
-							if (NextTitanSpawn[i] <= Time.time)
+							if (NextTitanSpawn[i] >= 0f)
 							{
-								if (i == 2)
+								if (NextTitanSpawn[i] <= Time.time)
 								{
-									CreateTitanGoldCombatSquad((TeamIndex)i, BossSeedCount);
+									if (i == 2)
+									{
+										CreateTitanGoldCombatSquad((TeamIndex)i, BossSeedCount);
+									}
+									else
+									{
+										CreateTitanGoldCombatSquad((TeamIndex)i, GetTeamSeedCount((TeamIndex)i));
+									}
+									NextTitanSpawn[i] = -1f;
 								}
-								else
-								{
-									CreateTitanGoldCombatSquad((TeamIndex)i, GetTeamSeedCount((TeamIndex)i));
-								}
-								NextTitanSpawn[i] = -1f;
 							}
-						}
-						if (NextTitanKill[i] >= 0f)
-						{
-							if (NextTitanKill[i] <= Time.time)
+							if (NextTitanKill[i] >= 0f)
 							{
-								KillTitanSquad(TitanTeam[i]);
-								NextTitanKill[i] = -1f;
+								if (NextTitanKill[i] <= Time.time)
+								{
+									KillTitanSquad(TitanTeam[i]);
+									NextTitanKill[i] = -1f;
+								}
 							}
 						}
 					}
@@ -99,49 +105,63 @@ namespace AurelioniteStuck
 			On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (Config_SpawnOnPhase.Value == 1)
+				if (NetworkServer.active)
 				{
-					NextTitanSpawn[1] = Time.time + 5.0f;
+					if (Config_SpawnOnPhase.Value == 1)
+					{
+						NextTitanSpawn[1] = Time.time + 5.0f;
+					}
 				}
 			};
 			On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (Config_SpawnOnPhase.Value == 2)
+				if (NetworkServer.active)
 				{
-					NextTitanSpawn[1] = Time.time + 3.0f;
+					if (Config_SpawnOnPhase.Value == 2)
+					{
+						NextTitanSpawn[1] = Time.time + 3.0f;
+					}
 				}
 			};
 			On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if (Config_SpawnOnPhase.Value == 3)
+				if (NetworkServer.active)
 				{
-					NextTitanSpawn[1] = Time.time + 5.0f;
+					if (Config_SpawnOnPhase.Value == 3)
+					{
+						NextTitanSpawn[1] = Time.time + 5.0f;
+					}
 				}
 			};
 			On.EntityStates.Missions.BrotherEncounter.Phase4.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				if(Config_KillOnSteal.Value)
-                {
-					NextTitanKill[1] = Time.time + 7.5f;
-				}
-				if (Config_SpawnOnSteal.Value)
+				if (NetworkServer.active)
 				{
-					BossSeedCount = GetTeamSeedCount(TeamIndex.Player);
-					NextTitanSpawn[2] = Time.time + 12.0f;
+					if (Config_KillOnSteal.Value)
+					{
+						NextTitanKill[1] = Time.time + 7.5f;
+					}
+					if (Config_SpawnOnSteal.Value)
+					{
+						BossSeedCount = GetTeamSeedCount(TeamIndex.Player);
+						NextTitanSpawn[2] = Time.time + 12.0f;
+					}
 				}
 			};
 			On.EntityStates.Missions.BrotherEncounter.EncounterFinished.OnEnter += (orig, self) =>
 			{
 				orig(self);
-				for(int i = 0; i<NextTitanSpawn.Length; i++)
-                {
-					NextTitanSpawn[i] = -1f;
-					NextTitanKill[i] = Time.time + 2.5f;
+				if (NetworkServer.active)
+				{
+					for (int i = 0; i < NextTitanSpawn.Length; i++)
+					{
+						NextTitanSpawn[i] = -1f;
+						NextTitanKill[i] = Time.time + 2.5f;
+					}
 				}
-				
 			};
 			On.RoR2.GoldTitanManager.OnBossGroupStartServer += (orig, bossGroup) =>
 			{
@@ -158,11 +178,11 @@ namespace AurelioniteStuck
 						}
 					}
 				}
-				if(IsMithrix)
-                {
-                }
+				if (IsMithrix)
+				{
+				}
 				else
-                {
+				{
 					orig(bossGroup);
 				}
 			};
