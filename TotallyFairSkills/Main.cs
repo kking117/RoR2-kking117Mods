@@ -5,6 +5,7 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using UnityEngine;
+using UnityEngine.Networking;
 
 using TotallyFairSkills.Modules;
 using TotallyFairSkills.Components;
@@ -21,7 +22,8 @@ namespace TotallyFairSkills
 	{
 		"LanguageAPI",
 		"RecalculateStatsAPI",
-		"LoadoutAPI"
+		"LoadoutAPI",
+		"PrefabAPI"
 	})]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class Main : BaseUnityPlugin
@@ -29,7 +31,7 @@ namespace TotallyFairSkills
 		public const string MODUID = "com.kking117.TotallyFairSkills";
 		public const string MODNAME = "TotallyFairSkills";
 		public const string MODTOKEN = "KKING117_TOTALLYFAIRSKILLS_";
-		public const string MODVERSION = "1.1.0";
+		public const string MODVERSION = "1.1.1";
 
 		public static GameObject CommandoBody = Resources.Load<GameObject>("prefabs/characterbodies/CommandoBody");
 
@@ -102,8 +104,11 @@ namespace TotallyFairSkills
 			{
 				if (self.HasBuff(Buffs.ShowOff))
 				{
-					self.AddTimedBuff(Buffs.ShowOffActive, ShowOff_ActiveDuration.Value);
-					self.ClearTimedBuffs(Buffs.ShowOff);
+					if (NetworkServer.active)
+					{
+						self.AddTimedBuff(Buffs.ShowOffActive, ShowOff_ActiveDuration.Value);
+						self.ClearTimedBuffs(Buffs.ShowOff);
+					}
 				}
 			}
 		}
@@ -235,9 +240,11 @@ namespace TotallyFairSkills
 				{
 					if (component.damageInfo == damageReport.damageInfo)
                     {
-						self.ClearTimedBuffs(Buffs.ShowOff);
-						self.ClearTimedBuffs(Buffs.ShowOffActive);
-						component.Remove();
+						if (NetworkServer.active)
+						{
+							self.ClearTimedBuffs(Buffs.ShowOff);
+							self.ClearTimedBuffs(Buffs.ShowOffActive);
+						}
 					}
 				}
 			}
