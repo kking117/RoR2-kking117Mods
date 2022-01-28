@@ -7,6 +7,7 @@ using RoR2;
 using UnityEngine;
 
 using TotallyFairSkills.Modules;
+using TotallyFairSkills.Components;
 
 using System.Security;
 using System.Security.Permissions;
@@ -22,12 +23,13 @@ namespace TotallyFairSkills
 		"RecalculateStatsAPI",
 		"LoadoutAPI"
 	})]
-	[BepInPlugin("com.kking117.TotallyFairSkills", "TotallyFairSkills", "1.0.0")]
+	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class Main : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.TotallyFairSkills";
+		public const string MODNAME = "TotallyFairSkills";
 		public const string MODTOKEN = "KKING117_TOTALLYFAIRSKILLS_";
-		public const string MODVERSION = "1.0.0";
+		public const string MODVERSION = "1.1.0";
 
 		public static GameObject CommandoBody = Resources.Load<GameObject>("prefabs/characterbodies/CommandoBody");
 
@@ -47,6 +49,7 @@ namespace TotallyFairSkills
 		public static ConfigEntry<float> ShowOff_ExcessCritBonus;
 		public static ConfigEntry<float> ShowOff_Luck;
 		public static ConfigEntry<float> ShowOff_CritThresh;
+		public static ConfigEntry<float> ShowOff_CritBandLogic;
 
 		public void Awake()
 		{
@@ -57,18 +60,20 @@ namespace TotallyFairSkills
 				On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
 				On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
 				On.RoR2.Util.CheckRoll_float_float_CharacterMaster += Util_CheckRoll_float_float_CharacterMaster;
+				On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
 			}
 			On.RoR2.HealthComponent.TakeDamage += HealthComponent_TakeDamage;
-			print("register buff");
+			Logger.LogInfo("Registering Buffs");
 			Modules.Buffs.RegisterBuffs();
-			print("register skill");
+			Logger.LogInfo("Registering Skills");
 			Modules.Skills.RegisterSkills();
-			print("register states");
+			Logger.LogInfo("Registering States");
 			Modules.States.RegisterStates();
-			print("mod loadouts");
+			Logger.LogInfo("Registering Projectiles");
 			Modules.Projectiles.RegisterProjectiles();
+			Logger.LogInfo("Changing loadouts");
 			EditLoadouts();
-
+			Logger.LogInfo("Initializing ContentPack");
 			new Modules.ContentPacks().Initialize();
 
 			/*On.RoR2.Util.PlaySound_string_GameObject += delegate (On.RoR2.Util.orig_PlaySound_string_GameObject orig, string soundString, GameObject gameObject)
@@ -81,11 +86,11 @@ namespace TotallyFairSkills
 		}
 		private void EditLoadouts()
 		{
-			if (ShowTime_Enable.Value)
+			if (FMJMK2_Enable.Value)
 			{
 				Modules.Skills.AddSkillToSlot(CommandoBody, Modules.Skills.FMJMK2Skill, SkillSlot.Secondary);
 			}
-			if (FMJMK2_Enable.Value)
+			if (ShowTime_Enable.Value)
 			{
 				Modules.Skills.AddSkillToSlot(CommandoBody, Modules.Skills.ShowTimeSkill, SkillSlot.Utility);
 			}
@@ -127,59 +132,63 @@ namespace TotallyFairSkills
 		}
 		private void HealthComponent_TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, RoR2.DamageInfo damageInfo)
 		{
-			if (!damageInfo.rejected || damageInfo == null)
+			if (damageInfo != null)
 			{
-				float damage = damageInfo.damage;
-				if (damageInfo.attacker && damageInfo.attacker.GetComponent<CharacterBody>())
+				if (!damageInfo.rejected)
 				{
-					if (ShowTime_Enable.Value)
+					if (damageInfo.attacker)
 					{
-						if (damageInfo.dotIndex == DotController.DotIndex.None)
+						CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+						if (ShowTime_Enable.Value)
 						{
-							if (self.body.HasBuff(Buffs.ShowOff) || self.body.HasBuff(Buffs.ShowOffActive))
+							if (attackerBody)
 							{
-								float hpthresh = GetBaseHealthOrHighest(self);
-								if (hpthresh * ShowOff_CritThresh.Value <= damage)
+								if (damageInfo.dotIndex == DotController.DotIndex.None)
 								{
-									damageInfo.crit = true;
-									self.body.ClearTimedBuffs(Buffs.ShowOff);
-									self.body.ClearTimedBuffs(Buffs.ShowOffActive);
+									if (self.body.HasBuff(Buffs.ShowOff) || self.body.HasBuff(Buffs.ShowOffActive))
+									{
+										if (CanCancelShowOff(self, attackerBody, damageInfo.damage))
+										{
+											damageInfo.crit = true;
+											ReadyShowOffCancel(self.body.gameObject, damageInfo);
+										}
+									}
 								}
 							}
 						}
-					}
-					if (FMJMK2_Enable.Value)
-					{
-						if (damageInfo.inflictor)
+						if (FMJMK2_Enable.Value)
 						{
-							GameObject inflictor = damageInfo.inflictor.gameObject;
-							if (inflictor.name == Modules.Projectiles.FMJMK2Prefab.name + "(Clone)")
+							if (damageInfo.inflictor)
 							{
-								RoR2.Projectile.ProjectileDamage pd = inflictor.GetComponent<RoR2.Projectile.ProjectileDamage>();
-								if (pd)
+								GameObject inflictor = damageInfo.inflictor.gameObject;
+								if (inflictor.name == Modules.Projectiles.FMJMK2Prefab.name + "(Clone)")
 								{
-									if (!self.body.isChampion)
+									RoR2.Projectile.ProjectileDamage pd = inflictor.GetComponent<RoR2.Projectile.ProjectileDamage>();
+									if (pd)
 									{
-										float baseforce = pd.force * 0.5f;
-										float mass = 1f;
-										if (self.body.characterMotor)
+										if (!self.body.isChampion)
 										{
-											mass = self.body.characterMotor.mass;
-											if (!self.body.characterMotor.isGrounded)
+											float baseforce = pd.force * 0.5f;
+											float mass = 1f;
+											if (self.body.characterMotor)
 											{
-												baseforce *= 0.5f;
+												mass = self.body.characterMotor.mass;
+												if (!self.body.characterMotor.isGrounded)
+												{
+													baseforce *= 0.5f;
+												}
 											}
+											else if (self.body.rigidbody)
+											{
+												mass = self.body.rigidbody.mass;
+											}
+											mass *= 0.01f;
+											mass = (float)Math.Pow(mass, 0.9f);
+											Vector3 forcedir = damageInfo.force.normalized;
+											forcedir *= baseforce * mass;
+											forcedir.y *= 0.6f;
+											damageInfo.force += forcedir;
 										}
-										else if (self.body.rigidbody)
-										{
-											mass = self.body.rigidbody.mass;
-										}
-										mass *= 0.01f;
-										mass = (float)Math.Pow(mass, 0.9f);
-										Vector3 forcedir = damageInfo.force.normalized;
-										forcedir *= baseforce * mass;
-										forcedir.y *= 0.6f;
-										damageInfo.force += forcedir;
 									}
 								}
 							}
@@ -188,6 +197,50 @@ namespace TotallyFairSkills
 				}
 			}
 			orig(self, damageInfo);
+		}
+		private bool CanCancelShowOff(HealthComponent self, CharacterBody attacker, float damage)
+        {
+			if (GetBaseHealthOrHighest(self) * ShowOff_CritThresh.Value <= damage)
+			{
+				return true;
+			}
+			else if (ShowOff_CritBandLogic.Value >= 0f)
+			{
+				if (damage >= attacker.damage * ShowOff_CritBandLogic.Value)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		private void ReadyShowOffCancel(GameObject gameObject, DamageInfo damageInfo)
+        {
+			if (gameObject)
+            {
+				ShowOffCancel component = gameObject.GetComponent<ShowOffCancel>();
+				if (!component)
+				{
+					component = gameObject.AddComponent<ShowOffCancel>();
+				}
+				component.damageInfo = damageInfo;
+			}
+        }
+		private void CharacterBody_OnTakeDamageServer(On.RoR2.CharacterBody.orig_OnTakeDamageServer orig, CharacterBody self, DamageReport damageReport)
+		{
+			orig(self, damageReport);
+			if (!damageReport.damageInfo.rejected)
+            {
+				ShowOffCancel component = self.gameObject.GetComponent<ShowOffCancel>();
+				if (component)
+				{
+					if (component.damageInfo == damageReport.damageInfo)
+                    {
+						self.ClearTimedBuffs(Buffs.ShowOff);
+						self.ClearTimedBuffs(Buffs.ShowOffActive);
+						component.Remove();
+					}
+				}
+			}
 		}
 		private float GetBaseHealthOrHighest(HealthComponent self)
         {
@@ -229,13 +282,14 @@ namespace TotallyFairSkills
 			ShowOff_ExcessCritBonus = Config.Bind<float>(new ConfigDefinition("Show-Off Buff", "Excess Crit Bonus Damage"), 0.01f, new ConfigDescription("Extra damage from excess crit damage that Show-Off gives. (0.01 = +1% damage per 1% excess crit chance)", null, Array.Empty<object>()));
 			ShowOff_Luck = Config.Bind<float>(new ConfigDefinition("Show-Off Buff", "Luck"), 1f, new ConfigDescription("Luck bonus that Show-Off gives.", null, Array.Empty<object>()));
 			ShowOff_CritThresh = Config.Bind<float>(new ConfigDefinition("Show-Off Buff", "Crit Threshold"), 0.15f, new ConfigDescription("Percent of base health lost from a hit that will cause critical damage and cancel Show-Off.", null, Array.Empty<object>()));
+			ShowOff_CritBandLogic = Config.Bind<float>(new ConfigDefinition("Show-Off Buff", "Crit Damage Percent"), 4f, new ConfigDescription("If an attack deals this much base damage or more (similar to bands) it will cause critical damage and cancel Show-Off. (Set to -1f to disable this.)", null, Array.Empty<object>()));
 
 			ShowOff_ExcessCritCap.Value = Math.Max(0f, ShowOff_ExcessCritCap.Value);
 
 			FMJMK2_Enable = Config.Bind<bool>(new ConfigDefinition("FMJ MkII", "Enable"), true, new ConfigDescription("Enables the FMJ MkII.", null, Array.Empty<object>()));
-			FMJMK2_Damage = Config.Bind<float>(new ConfigDefinition("FMJ MkII", "Damage"), 4, new ConfigDescription("Damage coefficient of this skill.", null, Array.Empty<object>()));
+			FMJMK2_Damage = Config.Bind<float>(new ConfigDefinition("FMJ MkII", "Damage"), 4f, new ConfigDescription("Damage coefficient of this skill.", null, Array.Empty<object>()));
 			FMJMK2_Force = Config.Bind<float>(new ConfigDefinition("FMJ MkII", "Knockback"), 2750, new ConfigDescription("Knockback force of this skill.", null, Array.Empty<object>()));
-			FMJMK2_Cooldown = Config.Bind<float>(new ConfigDefinition("FMJ MkII", "Cooldown"), 3, new ConfigDescription("Cooldown time of this skill.", null, Array.Empty<object>()));
+			FMJMK2_Cooldown = Config.Bind<float>(new ConfigDefinition("FMJ MkII", "Cooldown"), 4, new ConfigDescription("Cooldown time of this skill.", null, Array.Empty<object>()));
 			FMJMK2_ActionArmy = Config.Bind<bool>(new ConfigDefinition("FMJ MkII", "Gun Twirl"), false, new ConfigDescription("Makes Commando twirl his guns after every use of this skill.", null, Array.Empty<object>()));
 		}
 	}

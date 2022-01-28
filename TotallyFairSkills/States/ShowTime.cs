@@ -216,7 +216,7 @@ namespace TotallyFairSkills.States
 
 		public static float jetInitVert = 40f;
 
-		public static float jetSlideHori = 0.06f;
+		public static float jetSlideHori = 0.05f;
 		public static float jetSlideVert = 0.03f;
 
 		public static float jetDuration = 0.4f;
