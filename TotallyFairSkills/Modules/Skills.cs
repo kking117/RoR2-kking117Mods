@@ -60,17 +60,6 @@ namespace TotallyFairSkills.Modules
 		}
 		private static void CreateShowTimeSkill()
         {
-			Sprite icon = Resources.Load<Sprite>("textures/achievementicons/texmercxskillsinysecondsicon");
-			SkillLocator skills = Resources.Load<GameObject>("prefabs/characterbodies/toolbotbody").GetComponent<SkillLocator>();
-			RoR2.Skills.SkillFamily primary_skills = skills.special.skillFamily;
-			if (primary_skills)
-			{
-				RoR2.Skills.SkillDef skill = primary_skills.variants[0].skillDef;
-				if (skill)
-				{
-					icon = skill.icon;
-				}
-			}
 			LanguageAPI.Add(Main.MODTOKEN + "KEYWORD_SHOWOFF", "<style=cKeywordName>Show-Off</style><style=cSub><style=cIsDamage>+" + Main.ShowOff_Crit.Value + "%</style> crit chance and <style=cIsHealing>+" + Main.ShowOff_Luck.Value + "</style> luck.\nExcess crit chance up to " + Main.ShowOff_ExcessCritCap.Value + "% increases <style=cIsDamage>damage</style>.\n<style=cIsHealth>Taking a heavy hit</style> will cause <style=cIsHealth>critical damage</style> and <style=cIsHealth>cancel this effect</style></style>.");
 
 			ShowTimeSkill = ScriptableObject.CreateInstance<SkillDef>();
@@ -84,7 +73,7 @@ namespace TotallyFairSkills.Modules
 			{
 				Main.MODTOKEN + "KEYWORD_SHOWOFF"
 			};
-			ShowTimeSkill.icon = icon;
+			ShowTimeSkill.icon = Resources.Load<SkillDef>("skilldefs/toolbotbody/toolbotbodyswap").icon;
 
 			ShowTimeSkill.activationState = new SerializableEntityStateType(typeof(TotallyFairSkills.States.ShowTime));
 			ShowTimeSkill.activationStateMachineName = "Weapon";

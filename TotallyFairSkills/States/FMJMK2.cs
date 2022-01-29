@@ -24,7 +24,10 @@ namespace TotallyFairSkills.States
 			{
 				EffectManager.SimpleMuzzleFlash(effectPrefab, gameObject, muzzleName, false);
 			}
-			ProjectileManager.instance.FireProjectile(projectilePrefab, aimRay.origin, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, force, Util.CheckRoll(critStat, characterBody.master), DamageColorIndex.Default, null, projSpeed);
+			if (isAuthority)
+			{
+				ProjectileManager.instance.FireProjectile(projectilePrefab, aimRay.origin, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, force, Util.CheckRoll(critStat, characterBody.master), DamageColorIndex.Default, null, projSpeed);
+			}
 			characterBody.AddSpreadBloom(spreadBloomValue);
 		}
 		public override void OnExit()
@@ -60,7 +63,6 @@ namespace TotallyFairSkills.States
             {
 				return InterruptPriority.PrioritySkill;
 			}
-			
 		}
 
 		public static GameObject projectilePrefab = Modules.Projectiles.FMJMK2Prefab;
@@ -71,7 +73,7 @@ namespace TotallyFairSkills.States
 		public static float projSpeed = 400f;
 		public static float force = Main.FMJMK2_Force.Value;
 		public static float recoilAmplitude = 3f;
-		public static float spreadBloomValue = 0.8f;
+		public static float spreadBloomValue = 0.5f;
 
 		public static float baseDuration = 0.6f;
 		public static float nextShot = 0.8f;
