@@ -11,7 +11,7 @@ using UnityEngine.Networking;
 
 namespace WarBannerBuff
 {
-	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "4.1.0")]
+	[BepInPlugin("com.kking117.WarBannerBuff", "WarBannerBuff", "4.1.1")]
 	[BepInDependency("com.bepis.r2api")]
 	[R2APISubmoduleDependency(new string[]
 	{
@@ -358,7 +358,7 @@ namespace WarBannerBuff
 								int itemCount = body.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
 								if (itemCount > 0)
 								{
-									GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), body.transform.position, Quaternion.identity);
+									GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), teamlist[i].transform.position, Quaternion.identity);
 									gameObject.GetComponent<TeamFilter>().teamIndex = team;
 									gameObject.GetComponent<BuffWard>().Networkradius = (8f + 8f * (float)itemCount) * sizemult;
 									NetworkServer.Spawn(gameObject);
