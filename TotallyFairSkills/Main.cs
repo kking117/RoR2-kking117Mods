@@ -31,7 +31,7 @@ namespace TotallyFairSkills
 		public const string MODUID = "com.kking117.TotallyFairSkills";
 		public const string MODNAME = "TotallyFairSkills";
 		public const string MODTOKEN = "KKING117_TOTALLYFAIRSKILLS_";
-		public const string MODVERSION = "1.1.2";
+		public const string MODVERSION = "1.1.3";
 
 		public static GameObject CommandoBody = Resources.Load<GameObject>("prefabs/characterbodies/CommandoBody");
 

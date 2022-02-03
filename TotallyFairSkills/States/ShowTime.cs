@@ -36,79 +36,78 @@ namespace TotallyFairSkills.States
 		public override void FixedUpdate()
 		{
 			base.FixedUpdate();
-			if (isAuthority)
+			bool IsGrounded = characterMotor.isGrounded;
+			if (fixedAge >= duration)
 			{
-				bool IsGrounded = characterMotor.isGrounded;
-				if (fixedAge >= duration && !HasBuffed)
+				if (isAuthority)
 				{
-					HasBuffed = true;
 					outer.SetNextStateToMain();
-					return;
 				}
-				else if (fixedAge >= duration * 0.8f && !HasReloaded)
+				return;
+			}
+			else if (fixedAge >= duration * 0.8f && !HasReloaded)
+			{
+				HasReloaded = true;
+				if (NetworkServer.active)
 				{
-					HasReloaded = true;
-					if (NetworkServer.active)
-					{
-						characterBody.AddTimedBuff(Modules.Buffs.ShowOff, buffDuration + (fixedAge - duration));
-					}
-					Util.PlaySound(reloadSoundString, gameObject);
-					ReloadSkills();
+					characterBody.AddTimedBuff(Modules.Buffs.ShowOff, buffDuration + (fixedAge - duration));
 				}
-				if (fixedAge <= duration * 0.6f)
+				Util.PlaySound(reloadSoundString, gameObject);
+				ReloadSkills();
+			}
+			if (fixedAge <= duration * 0.6f)
+			{
+				if (!HasBoosted)
 				{
-					if (!HasBoosted)
+					if (characterMotor.velocity.y != 0f || inputBank.moveVector.magnitude > 0.2f)
 					{
-						if (characterMotor.velocity.y != 0f || inputBank.moveVector.magnitude > 0.2f)
-						{
-							FireJets();
-						}
-					}
-					if (!IsGrounded)
-					{
-						float force = characterMotor.velocity.y;
-						force *= glideResistance;
-						force = glideForce * force;
-						if (force < minForce)
-						{
-							force = minForce;
-						}
-						else if (force > maxForce)
-						{
-							force = maxForce;
-						}
-						characterMotor.velocity += airGlide * force;
-						if (boostDuration == maxboostDuration)
-						{
-							float force2 = characterMotor.velocity.y + jetInitVert;
-							if (force2 > jetMaxUp)
-							{
-								force2 = Math.Max(jetMaxUp, characterMotor.velocity.y);
-							}
-							characterMotor.velocity = airGlide * force2;
-						}
+						FireJets();
 					}
 				}
-				if (boostDuration > 0f)
+				if (!IsGrounded)
 				{
-					float baseforce = boostDuration/maxboostDuration;
-					boostDuration -= Time.fixedDeltaTime;
-					if (IsGrounded)
+					float force = characterMotor.velocity.y;
+					force *= glideResistance;
+					force = glideForce * force;
+					if (force < minForce)
 					{
-						baseforce *= jetSlideHori;
+						force = minForce;
 					}
-					else
+					else if (force > maxForce)
 					{
-						baseforce *= jetSlideVert;
+						force = maxForce;
 					}
-					characterMotor.rootMotion += boostDirection * (baseforce * moveSpeedStat);
+					characterMotor.velocity += airGlide * force;
+					if (boostDuration == maxboostDuration)
+					{
+						float force2 = characterMotor.velocity.y + jetInitVert;
+						if (force2 > jetMaxUp)
+						{
+							force2 = Math.Max(jetMaxUp, characterMotor.velocity.y);
+						}
+						characterMotor.velocity = airGlide * force2;
+					}
 				}
-				Vector3 velocity = characterMotor.velocity;
-				velocity.y = 0f;
-				if (velocity.magnitude > 1f)
+			}
+			if (boostDuration > 0f)
+			{
+				float baseforce = boostDuration/maxboostDuration;
+				boostDuration -= Time.fixedDeltaTime;
+				if (IsGrounded)
 				{
-					characterBody.isSprinting = true;
+					baseforce *= jetSlideHori;
 				}
+				else
+				{
+					baseforce *= jetSlideVert;
+				}
+				characterMotor.rootMotion += boostDirection * (baseforce * moveSpeedStat);
+			}
+			Vector3 velocity = characterMotor.velocity;
+			velocity.y = 0f;
+			if (velocity.magnitude > 1f)
+			{
+				characterBody.isSprinting = true;
 			}
 		}
 		public override void OnExit()
@@ -192,7 +191,6 @@ namespace TotallyFairSkills.States
 		}
 
 		private bool HasReloaded;
-		private bool HasBuffed;
 		private float duration;
 		private float buffDuration = Main.ShowTime_ReadyDuration.Value;
 		private float boostDuration;
