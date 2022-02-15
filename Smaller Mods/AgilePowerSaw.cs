@@ -14,13 +14,14 @@ namespace AgilePowerSaw
 	{
 		public const string MODUID = "com.kking117.AgilePowerSaw";
 		public const string MODNAME = "AgilePowerSaw";
-		public const string MODVERSION = "1.0.0";
+		public const string MODVERSION = "1.1.0";
 
 		public static ConfigEntry<bool> PowerSaw;
-		public static ConfigEntry<bool> Grenade;
+		public static ConfigEntry<bool> BounceGrenade;
 		public static ConfigEntry<bool> Flamethrower;
-		public static ConfigEntry<bool> NanoSphere;
-		public static ConfigEntry<bool> IceSpear;
+		public static ConfigEntry<bool> NanoBomb;
+		public static ConfigEntry<bool> NanoSpear;
+		public static ConfigEntry<bool> ChargedGauntlet;
 
 		private bool AncientScepter = false;
 		public void Awake()
@@ -37,18 +38,38 @@ namespace AgilePowerSaw
 				SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/toolbotbody/toolbotbodyfirebuzzsaw");
 				if (skillDef)
 				{
+					skillDef.canceledFromSprinting = false;
 					skillDef.cancelSprintingOnActivation = false;
 				}
 			}
-			if (Grenade.Value)
+			if (BounceGrenade.Value)
 			{
 				SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/engibody/engibodyfiregrenade");
 				if (skillDef)
 				{
+					skillDef.canceledFromSprinting = false;
 					skillDef.cancelSprintingOnActivation = false;
 				}
 			}
-			if (NanoSphere.Value)
+			if (ChargedGauntlet.Value)
+            {
+				SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/loaderbody/chargefist");
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+				if (AncientScepter)
+				{
+					skillDef = GetSkillDefByNameToken("ANCIENTSCEPTER_LOADER_CHARGEFISTNAME");
+					if (skillDef)
+					{
+						skillDef.canceledFromSprinting = false;
+						skillDef.cancelSprintingOnActivation = false;
+					}
+				}
+			}
+			if (NanoBomb.Value)
             {
 				SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/magebody/magebodynovabomb");
 				if (skillDef)
@@ -57,7 +78,7 @@ namespace AgilePowerSaw
 					skillDef.cancelSprintingOnActivation = false;
 				}
 			}
-			if (IceSpear.Value)
+			if (NanoSpear.Value)
 			{
 				SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/magebody/magebodyicebomb");
 				if (skillDef)
@@ -76,7 +97,7 @@ namespace AgilePowerSaw
 				}
 				if (AncientScepter)
 				{
-					skillDef = GetSkillDefNameToken("ANCIENTSCEPTER_MAGE_FLAMETHROWERNAME");
+					skillDef = GetSkillDefByNameToken("ANCIENTSCEPTER_MAGE_FLAMETHROWERNAME");
 					if (skillDef)
 					{
 						skillDef.canceledFromSprinting = false;
@@ -85,7 +106,7 @@ namespace AgilePowerSaw
 				}
 			}
 		}
-		private SkillDef GetSkillDefNameToken(string token)
+		private SkillDef GetSkillDefByNameToken(string token)
         {
 			List<SkillDef> skillDefs = SkillCatalog.allSkillDefs.ToList();
 			for (int i = 0; i < skillDefs.Count; i++)
@@ -99,11 +120,12 @@ namespace AgilePowerSaw
         }
 		public void ReadConfig()
 		{
-			PowerSaw = Config.Bind<bool>(new ConfigDefinition("Mul-T", "Power-Saw"), true, new ConfigDescription("Makes Mul-T's Power-Saw skill agile.", null, Array.Empty<object>()));
-			Grenade = Config.Bind<bool>(new ConfigDefinition("Engineer", "Bouncing Grenade"), false, new ConfigDescription("Makes Engineer's Bouncing Grenade skill agile.", null, Array.Empty<object>()));
-			NanoSphere = Config.Bind<bool>(new ConfigDefinition("Artificer", "Charged Nano-Bomb"), false, new ConfigDescription("Makes Artificer's Charged Nano-Bomb skill agile.", null, Array.Empty<object>()));
-			IceSpear = Config.Bind<bool>(new ConfigDefinition("Artificer", "Cast Nano-Spear"), false, new ConfigDescription("Makes Artificer's Cast Nano-Spear skill agile.", null, Array.Empty<object>()));
-			Flamethrower = Config.Bind<bool>(new ConfigDefinition("Artificer", "Flamethrower"), false, new ConfigDescription("Makes Artificer's Flamethrower skill agile.", null, Array.Empty<object>()));
+			PowerSaw = Config.Bind<bool>(new ConfigDefinition("Mul-T", "Power-Saw"), true, new ConfigDescription("Should Mul-T's Power-Saw skill be agile?", null, Array.Empty<object>()));
+			BounceGrenade = Config.Bind<bool>(new ConfigDefinition("Engineer", "Bouncing Grenade"), false, new ConfigDescription("Should Engineer's Bouncing Grenade skill be agile?", null, Array.Empty<object>()));
+			ChargedGauntlet = Config.Bind<bool>(new ConfigDefinition("Loader", "Charged Gauntlet"), false, new ConfigDescription("Should Loader's Charged Gauntlet skill be agile?", null, Array.Empty<object>()));
+			NanoBomb = Config.Bind<bool>(new ConfigDefinition("Artificer", "Charged Nano-Bomb"), false, new ConfigDescription("Should Artificer's Charged Nano-Bomb skill be agile?", null, Array.Empty<object>()));
+			NanoSpear = Config.Bind<bool>(new ConfigDefinition("Artificer", "Cast Nano-Spear"), false, new ConfigDescription("Should Artificer's Cast Nano-Spear skill be agile?", null, Array.Empty<object>()));
+			Flamethrower = Config.Bind<bool>(new ConfigDefinition("Artificer", "Flamethrower"), false, new ConfigDescription("Should Artificer's Flamethrower skill be agile?", null, Array.Empty<object>()));
 		}
 	}
 }
