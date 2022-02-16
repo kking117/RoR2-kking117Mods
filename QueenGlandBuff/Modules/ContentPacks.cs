@@ -13,7 +13,7 @@ namespace QueenGlandBuff.Modules
 	internal class ContentPacks : IContentPackProvider
 	{
 		internal ContentPack contentPack = new ContentPack();
-		public string identifier => Main.MODUID;
+		public string identifier => MainPlugin.MODUID;
 		public void Initialize()
 		{
 			ContentManager.collectContentPackProviders += ContentManager_collectContentPackProviders;

@@ -3,6 +3,7 @@ using EntityStates;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
+using RoR2.Projectile;
 
 namespace QueenGlandBuff.States
 {
@@ -95,7 +96,7 @@ namespace QueenGlandBuff.States
 					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
 					{
 						float damage = projCount * projdamageCoefficient / 4f;
-						RoR2.Projectile.ProjectileManager.instance.FireProjectile(Main.Perfect_Slam_Proj, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 0f, crit, DamageColorIndex.Default, null, -1f);
+						ProjectileManager.instance.FireProjectile(MainPlugin.Perfect_Slam_Proj, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, null, -1f);
 					}
 					else
 					{
@@ -106,7 +107,7 @@ namespace QueenGlandBuff.States
 							Vector3 ShotAngleTemp = ShotAngle;
 							ShotAngleTemp = Quaternion.AngleAxis(baseangle + (360f / projCount * (i - projCount / 2f)), Vector3.up) * ShotAngle;
 							ShotAngleTemp.y = 7f;
-							RoR2.Projectile.ProjectileManager.instance.FireProjectile(projectile1Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdamageCoefficient, 0f, crit, DamageColorIndex.Default, null, projSpeed);
+							ProjectileManager.instance.FireProjectile(projectile1Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, projSpeed);
 						}
 					}
 				}

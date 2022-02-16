@@ -1,6 +1,7 @@
 ﻿using System;
 using RoR2;
 using UnityEngine;
+using UnityEngine.Networking;
 using RoR2.CharacterAI;
 
 namespace QueenGlandBuff.Utils
@@ -22,7 +23,7 @@ namespace QueenGlandBuff.Utils
 			Deployable deployable = target.GetComponent<Deployable>();
 			if (deployable)
 			{
-				if(self.deployablesList != null)
+				if (self.deployablesList != null)
 				{
 					for (int i = 0; i < self.deployablesList.Count; i++)
 					{
@@ -61,16 +62,16 @@ namespace QueenGlandBuff.Utils
 		}
 		public static void GiveRandomEliteAffix(CharacterMaster self)
 		{
-			if (Main.Gland_SpawnAffix.Value && Main.StageEliteEquipmentDefs.Count > 0)
+			if (MainPlugin.Gland_SpawnAffix.Value && MainPlugin.StageEliteEquipmentDefs.Count > 0)
 			{
-				int result = rng.Next(Main.StageEliteEquipmentDefs.Count);
-				if (Main.StageEliteEquipmentDefs[result])
+				int result = rng.Next(MainPlugin.StageEliteEquipmentDefs.Count);
+				if (MainPlugin.StageEliteEquipmentDefs[result])
 				{
-					self.inventory.SetEquipmentIndex(Main.StageEliteEquipmentDefs[result].equipmentIndex);
+					self.inventory.SetEquipmentIndex(MainPlugin.StageEliteEquipmentDefs[result].equipmentIndex);
 					return;
 				}
 			}
-			self.inventory.SetEquipmentIndex(Main.Gland_DefaultAffix_Var);
+			self.inventory.SetEquipmentIndex(MainPlugin.Gland_DefaultAffix_Var);
 		}
 		public static int TeleportToOwner(CharacterBody self)
 		{
@@ -130,7 +131,7 @@ namespace QueenGlandBuff.Utils
 			search.teamMaskFilter = TeamMask.allButNeutral;
 			search.teamMaskFilter.RemoveTeam(self.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = Main.Gland_Staunch_AggroRange.Value;
+			search.maxDistanceFilter = MainPlugin.Gland_Staunch_AggroRange.Value;
 			search.searchOrigin = self.inputBank.aimOrigin;
 			search.searchDirection = self.inputBank.aimDirection;
 			search.maxAngleFilter = 180f;
@@ -169,13 +170,17 @@ namespace QueenGlandBuff.Utils
 		}
 		public static void EmpowerBeetles(CharacterBody self)
 		{
+			if(!NetworkServer.active)
+            {
+				return;
+            }
 			BullseyeSearch search = new BullseyeSearch();
 			search = new BullseyeSearch();
 			search.viewer = self;
 			search.teamMaskFilter = TeamMask.none;
 			search.teamMaskFilter.AddTeam(self.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = Main.Gland_Staunch_AggroRange.Value;
+			search.maxDistanceFilter = MainPlugin.Gland_Staunch_AggroRange.Value;
 			search.searchOrigin = self.inputBank.aimOrigin;
 			search.searchDirection = self.inputBank.aimDirection;
 			search.maxAngleFilter = 180f;
@@ -192,7 +197,7 @@ namespace QueenGlandBuff.Utils
 						{
 							if (DoesBodyContainName(targetbody, "beetle"))
 							{
-								targetbody.AddTimedBuff(Modules.Buffs.BeetleFrenzy, 1f);
+								targetbody.AddTimedBuff(Modules.Buffs.BeetleFrenzy, 1.5f);
 							}
 						}
 					}
@@ -202,11 +207,11 @@ namespace QueenGlandBuff.Utils
 		private static bool RollAggroChance(CharacterBody target)
 		{
 			float result = UnityEngine.Random.Range(0f, 1f);
-			if (target.isBoss && Main.Gland_Staunch_AggroBossChance.Value > result)
+			if (target.isBoss && MainPlugin.Gland_Staunch_AggroBossChance.Value > result)
 			{
 				return true;
 			}
-			else if (Main.Gland_Staunch_AggroChance.Value > result)
+			else if (MainPlugin.Gland_Staunch_AggroChance.Value > result)
 			{
 				return true;
 			}

@@ -24,23 +24,29 @@ namespace QueenGlandBuff.Modules
         {
 			CreateSlamSkill();
 			CreateSunderSkill();
-			CreateRecallSkill();
-			CreateStaunchSkill();
+			if (MainPlugin.Gland_AddUtility.Value)
+			{
+				CreateRecallSkill();
+			}
+			if (MainPlugin.Gland_AddSpecial.Value)
+			{
+				CreateStaunchSkill();
+			}
 		}
 		internal static void CreateSlamSkill()
 		{
 			SlamSkill = ScriptableObject.CreateInstance<SkillDef>();
 
-			LanguageAPI.Add(Main.ModLangToken + "PRIMARY_SLAM_NAME", "Slam");
-			if (Main.Gland_PrimaryBuff.Value)
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME", "Slam");
+			if (MainPlugin.Gland_PrimaryBuff.Value)
 			{
 				SlamSkill.activationState = new SerializableEntityStateType(typeof(QueenGlandBuff.States.Slam));
-				LanguageAPI.Add(Main.ModLangToken + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>5x75%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>5x75%</style> damage.");
 			}
 			else
 			{
 				SlamSkill.activationState = new SerializableEntityStateType(typeof(EntityStates.BeetleGuardMonster.GroundSlam));
-				LanguageAPI.Add(Main.ModLangToken + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> damage.");
 			}
 			SlamSkill.activationStateMachineName = "Body";
 			SlamSkill.dontAllowPastMaxStocks = false;
@@ -66,8 +72,8 @@ namespace QueenGlandBuff.Modules
 			SlamSkill.mustKeyPress = false;
 
 			SlamSkill.icon = null;
-			SlamSkill.skillDescriptionToken = Main.ModLangToken + "PRIMARY_SLAM_DESC";
-			SlamSkill.skillNameToken = Main.ModLangToken + "PRIMARY_SLAM_NAME";
+			SlamSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC";
+			SlamSkill.skillNameToken = MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME";
 			SlamSkill.skillName = SlamSkill.skillNameToken;
 
 			RegisterSkill(SlamSkill);
@@ -76,16 +82,16 @@ namespace QueenGlandBuff.Modules
 		{
 			SunderSkill = ScriptableObject.CreateInstance<SkillDef>();
 
-			LanguageAPI.Add(Main.ModLangToken + "SECONDARY_SUNDER_NAME", "Sunder");
-			if (Main.Gland_SecondaryBuff.Value)
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME", "Sunder");
+			if (MainPlugin.Gland_SecondaryBuff.Value)
 			{
 				SunderSkill.activationState = new SerializableEntityStateType(typeof(QueenGlandBuff.States.Sunder));
-				LanguageAPI.Add(Main.ModLangToken + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>5x75%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>5x75%</style> damage.");
 			}
 			else
 			{
 				SunderSkill.activationState = new SerializableEntityStateType(typeof(EntityStates.BeetleGuardMonster.FireSunder));
-				LanguageAPI.Add(Main.ModLangToken + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style> damage.");
 			}
 			SunderSkill.activationStateMachineName = "Body";
 
@@ -107,8 +113,8 @@ namespace QueenGlandBuff.Modules
 			SunderSkill.mustKeyPress = false;
 
 			SunderSkill.icon = null;
-			SunderSkill.skillDescriptionToken = Main.ModLangToken + "SECONDARY_SUNDER_DESC";
-			SunderSkill.skillNameToken = Main.ModLangToken + "SECONDARY_SUNDER_NAME";
+			SunderSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC";
+			SunderSkill.skillNameToken = MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME";
 			SunderSkill.skillName = SunderSkill.skillNameToken;
 
 			RegisterSkill(SunderSkill);
@@ -117,8 +123,8 @@ namespace QueenGlandBuff.Modules
 		{
 			RecallSkill = ScriptableObject.CreateInstance<SkillDef>();
 
-			LanguageAPI.Add(Main.ModLangToken + "UTILITY_TELEPORT_NAME", "Recall");
-			LanguageAPI.Add(Main.ModLangToken + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side. Enter a <style=cIsDamage>frenzy</style> for <style=cIsUtility>10</style> seconds if you have no owner.");
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side. Enter a <style=cIsDamage>frenzy</style> for <style=cIsUtility>10</style> seconds if you have no owner.");
 
 			RecallSkill.activationState = new SerializableEntityStateType(typeof(QueenGlandBuff.States.Recall));
 			RecallSkill.activationStateMachineName = "Body";
@@ -129,7 +135,7 @@ namespace QueenGlandBuff.Modules
 			RecallSkill.stockToConsume = 1;
 			RecallSkill.fullRestockOnAssign = true;
 
-			RecallSkill.baseRechargeInterval = 10f;
+			RecallSkill.baseRechargeInterval = 12f;
 			RecallSkill.beginSkillCooldownOnSkillEnd = false;
 
 			RecallSkill.canceledFromSprinting = false;
@@ -141,8 +147,8 @@ namespace QueenGlandBuff.Modules
 			RecallSkill.mustKeyPress = false;
 
 			RecallSkill.icon = null;
-			RecallSkill.skillDescriptionToken = Main.ModLangToken + "UTILITY_TELEPORT_DESC";
-			RecallSkill.skillNameToken = Main.ModLangToken + "UTILITY_TELEPORT_NAME";
+			RecallSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC";
+			RecallSkill.skillNameToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME";
 			RecallSkill.skillName = RecallSkill.skillNameToken;
 
 			Modules.Skills.RegisterSkill(RecallSkill);
@@ -150,8 +156,8 @@ namespace QueenGlandBuff.Modules
 		internal static void CreateStaunchSkill()
 		{
 			StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
-			LanguageAPI.Add(Main.ModLangToken + "SPECIAL_TAUNT_NAME", "Staunch");
-			LanguageAPI.Add(Main.ModLangToken + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies for <style=cIsUtility>10</style> seconds. While active gain <style=cIsUtility>100</style> armor and send nearby <style=cIsHealing>friendly beetles</style> into a <style=cIsDamage>frenzy</style>.");
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies for <style=cIsUtility>10</style> seconds. While active gain <style=cIsUtility>100</style> armor and send nearby <style=cIsHealing>friendly beetles</style> into a <style=cIsDamage>frenzy</style>.");
 
 			StaunchSkill.activationState = new SerializableEntityStateType(typeof(QueenGlandBuff.States.Staunch));
 			StaunchSkill.activationStateMachineName = "Body";
@@ -162,7 +168,7 @@ namespace QueenGlandBuff.Modules
 			StaunchSkill.stockToConsume = 1;
 			StaunchSkill.fullRestockOnAssign = true;
 
-			StaunchSkill.baseRechargeInterval = 40f;
+			StaunchSkill.baseRechargeInterval = 30f;
 			StaunchSkill.beginSkillCooldownOnSkillEnd = false;
 
 			StaunchSkill.canceledFromSprinting = false;
@@ -174,8 +180,8 @@ namespace QueenGlandBuff.Modules
 			StaunchSkill.mustKeyPress = false;
 
 			StaunchSkill.icon = null;
-			StaunchSkill.skillDescriptionToken = Main.ModLangToken + "SPECIAL_TAUNT_DESC";
-			StaunchSkill.skillNameToken = Main.ModLangToken + "SPECIAL_TAUNT_NAME";
+			StaunchSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC";
+			StaunchSkill.skillNameToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME";
 			StaunchSkill.skillName = StaunchSkill.skillNameToken;
 
 			RegisterSkill(StaunchSkill);
@@ -280,36 +286,36 @@ namespace QueenGlandBuff.Modules
 		}
 		internal static AISkillDriver CopySkillDriver(AISkillDriver returnme, AISkillDriver copyme)
 		{
-			Main.PrintMe("activationRequiresAimConfirmation = " + copyme.activationRequiresAimConfirmation);
-			Main.PrintMe("activationRequiresAimTargetLoS = " + copyme.activationRequiresAimTargetLoS);
-			Main.PrintMe("activationRequiresTargetLoS = " + copyme.activationRequiresTargetLoS);
-			Main.PrintMe("aimType = " + copyme.aimType);
-			Main.PrintMe("buttonPressType = " + copyme.buttonPressType);
-			Main.PrintMe("driverUpdateTimerOverride = " + copyme.driverUpdateTimerOverride);
-			Main.PrintMe("ignoreNodeGraph = " + copyme.ignoreNodeGraph);
-			Main.PrintMe("maxDistance = " + copyme.maxDistance);
-			Main.PrintMe("maxTargetHealthFraction = " + copyme.maxTargetHealthFraction);
-			Main.PrintMe("maxUserHealthFractio = " + copyme.maxUserHealthFraction);
-			Main.PrintMe("minDistance = " + copyme.minDistance);
-			Main.PrintMe("minTargetHealthFraction = " + copyme.minTargetHealthFraction);
-			Main.PrintMe("minUserHealthFraction = " + copyme.minUserHealthFraction);
-			Main.PrintMe("moveInputScale = " + copyme.moveInputScale);
-			Main.PrintMe("movementType = " + copyme.movementType);
-			Main.PrintMe("moveTargetType = " + copyme.moveTargetType);
-			Main.PrintMe("nextHighPriorityOverride = " + copyme.nextHighPriorityOverride);
-			Main.PrintMe("noRepeat = " + copyme.noRepeat);
-			Main.PrintMe("requiredSkill = " + copyme.requiredSkill);
-			Main.PrintMe("requireEquipmentReady = " + copyme.requireEquipmentReady);
-			Main.PrintMe("requireSkillReady = " + copyme.requireSkillReady);
-			Main.PrintMe("resetCurrentEnemyOnNextDriverSelection = " + copyme.resetCurrentEnemyOnNextDriverSelection);
-			Main.PrintMe("selectionRequiresAimTarget = " + copyme.selectionRequiresAimTarget);
-			Main.PrintMe("selectionRequiresOnGround = " + copyme.selectionRequiresOnGround);
-			Main.PrintMe("selectionRequiresTargetLoS = " + copyme.selectionRequiresTargetLoS);
-			Main.PrintMe("shouldFireEquipment = " + copyme.shouldFireEquipment);
-			Main.PrintMe("shouldSprint = " + copyme.shouldSprint);
-			Main.PrintMe("skillSlot = " + copyme.skillSlot);
+			MainPlugin.print("activationRequiresAimConfirmation = " + copyme.activationRequiresAimConfirmation);
+			MainPlugin.print("activationRequiresAimTargetLoS = " + copyme.activationRequiresAimTargetLoS);
+			MainPlugin.print("activationRequiresTargetLoS = " + copyme.activationRequiresTargetLoS);
+			MainPlugin.print("aimType = " + copyme.aimType);
+			MainPlugin.print("buttonPressType = " + copyme.buttonPressType);
+			MainPlugin.print("driverUpdateTimerOverride = " + copyme.driverUpdateTimerOverride);
+			MainPlugin.print("ignoreNodeGraph = " + copyme.ignoreNodeGraph);
+			MainPlugin.print("maxDistance = " + copyme.maxDistance);
+			MainPlugin.print("maxTargetHealthFraction = " + copyme.maxTargetHealthFraction);
+			MainPlugin.print("maxUserHealthFractio = " + copyme.maxUserHealthFraction);
+			MainPlugin.print("minDistance = " + copyme.minDistance);
+			MainPlugin.print("minTargetHealthFraction = " + copyme.minTargetHealthFraction);
+			MainPlugin.print("minUserHealthFraction = " + copyme.minUserHealthFraction);
+			MainPlugin.print("moveInputScale = " + copyme.moveInputScale);
+			MainPlugin.print("movementType = " + copyme.movementType);
+			MainPlugin.print("moveTargetType = " + copyme.moveTargetType);
+			MainPlugin.print("nextHighPriorityOverride = " + copyme.nextHighPriorityOverride);
+			MainPlugin.print("noRepeat = " + copyme.noRepeat);
+			MainPlugin.print("requiredSkill = " + copyme.requiredSkill);
+			MainPlugin.print("requireEquipmentReady = " + copyme.requireEquipmentReady);
+			MainPlugin.print("requireSkillReady = " + copyme.requireSkillReady);
+			MainPlugin.print("resetCurrentEnemyOnNextDriverSelection = " + copyme.resetCurrentEnemyOnNextDriverSelection);
+			MainPlugin.print("selectionRequiresAimTarget = " + copyme.selectionRequiresAimTarget);
+			MainPlugin.print("selectionRequiresOnGround = " + copyme.selectionRequiresOnGround);
+			MainPlugin.print("selectionRequiresTargetLoS = " + copyme.selectionRequiresTargetLoS);
+			MainPlugin.print("shouldFireEquipment = " + copyme.shouldFireEquipment);
+			MainPlugin.print("shouldSprint = " + copyme.shouldSprint);
+			MainPlugin.print("skillSlot = " + copyme.skillSlot);
 
-			returnme.activationRequiresAimConfirmation = copyme.activationRequiresAimConfirmation;
+			/*returnme.activationRequiresAimConfirmation = copyme.activationRequiresAimConfirmation;
 			returnme.activationRequiresAimTargetLoS = copyme.activationRequiresAimTargetLoS;
 			returnme.activationRequiresTargetLoS = copyme.activationRequiresTargetLoS;
 			returnme.aimType = copyme.aimType;
@@ -337,7 +343,7 @@ namespace QueenGlandBuff.Modules
 			returnme.selectionRequiresTargetLoS = copyme.selectionRequiresTargetLoS;
 			returnme.shouldFireEquipment = copyme.shouldFireEquipment;
 			returnme.shouldSprint = copyme.shouldSprint;
-			returnme.skillSlot = copyme.skillSlot;
+			returnme.skillSlot = copyme.skillSlot;*/
 
 			return returnme;
 		}

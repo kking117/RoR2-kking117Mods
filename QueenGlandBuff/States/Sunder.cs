@@ -3,6 +3,7 @@ using System.Linq;
 using EntityStates;
 using RoR2;
 using UnityEngine;
+using RoR2.Projectile;
 
 namespace QueenGlandBuff.States
 {
@@ -64,12 +65,12 @@ namespace QueenGlandBuff.States
 					Ray aimRay = GetAimRay();
 					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
 					{
-						RoR2.Projectile.ProjectileManager.instance.FireProjectile(projectile3Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+						ProjectileManager.instance.FireProjectile(projectile3Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
 						ShootShards();
 					}
 					else
 					{
-						RoR2.Projectile.ProjectileManager.instance.FireProjectile(projectile1Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+						ProjectileManager.instance.FireProjectile(projectile1Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
 						ShootRocks();
 					}
 				}
@@ -96,6 +97,7 @@ namespace QueenGlandBuff.States
 
 			float damage = projCount * projdmgCoefficient / 12f / 10f;
 			float speed = (projSpeed + projSpeedRng) * 1.25f;
+			float force = projectile1Prefab.GetComponent<ProjectileDamage>().force;
 
 			GameObject finaltarget = null;
 			HurtBox hurtbox;
@@ -139,7 +141,7 @@ namespace QueenGlandBuff.States
 				{
 					ShotAngleTemp.y = -0.125f;
 				}
-				RoR2.Projectile.ProjectileManager.instance.FireProjectile(projectile4Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * damage, 0f, crit, DamageColorIndex.Default, finaltarget, speed);
+				ProjectileManager.instance.FireProjectile(projectile4Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, finaltarget, speed);
 			}
 		}
 		private void ShootRocks()
@@ -201,7 +203,7 @@ namespace QueenGlandBuff.States
 				{
 					ShotAngleTemp.y = -0.125f;
 				}
-				RoR2.Projectile.ProjectileManager.instance.FireProjectile(projectile2Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdmgCoefficient, 0f, crit, DamageColorIndex.Default, null, projSpeed + UnityEngine.Random.Range(0.0f, projSpeedRng));
+				ProjectileManager.instance.FireProjectile(projectile2Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdmgCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, projSpeed + UnityEngine.Random.Range(0.0f, projSpeedRng));
 			}
 		}
 
@@ -224,8 +226,8 @@ namespace QueenGlandBuff.States
 
 		public static GameObject projectile1Prefab = EntityStates.BeetleGuardMonster.FireSunder.projectilePrefab;
 		public static GameObject projectile2Prefab = Modules.Projectiles.slamrockPrefab;
-		public static GameObject projectile3Prefab = Main.Perfect_Sunder_MainProj;
-		public static GameObject projectile4Prefab = Main.Perfect_Sunder_SecProj;
+		public static GameObject projectile3Prefab = MainPlugin.Perfect_Sunder_MainProj;
+		public static GameObject projectile4Prefab = MainPlugin.Perfect_Sunder_SecProj;
 
 		private UnityEngine.Animator modelAnimator;
 

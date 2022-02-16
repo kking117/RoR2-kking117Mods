@@ -9,10 +9,22 @@ namespace QueenGlandBuff.Modules
     {
         internal static void RegisterStates()
         {
-            States.entityStates.Add(typeof(Slam));
-            States.entityStates.Add(typeof(Sunder));
-            States.entityStates.Add(typeof(Recall));
-            States.entityStates.Add(typeof(Staunch));
+            if (MainPlugin.Gland_PrimaryBuff.Value)
+            {
+                States.entityStates.Add(typeof(Slam));
+            }
+            if (MainPlugin.Gland_SecondaryBuff.Value)
+            {
+                States.entityStates.Add(typeof(Sunder));
+            }
+            if (MainPlugin.Gland_AddUtility.Value)
+            {
+                States.entityStates.Add(typeof(Recall));
+            }
+            if (MainPlugin.Gland_AddSpecial.Value)
+            {
+                States.entityStates.Add(typeof(Staunch));
+            }
         }
         internal static List<Type> entityStates = new List<Type>();
     }

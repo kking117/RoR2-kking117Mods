@@ -14,8 +14,11 @@ namespace QueenGlandBuff.Modules
         internal static List<BuffDef> buffDefs = new List<BuffDef>();
         internal static void RegisterBuffs()
         {
-            Staunching = AddNewBuff("Staunching", RoR2Content.Buffs.BeetleJuice.iconSprite, RoR2Content.Buffs.TeamWarCry.buffColor, false, true);
-            BeetleFrenzy = AddNewBuff("Beetle Frenzy", RoR2Content.Buffs.TeamWarCry.iconSprite, RoR2Content.Buffs.BeetleJuice.buffColor, false, true);
+            if (MainPlugin.Gland_AddSpecial.Value)
+            {
+                Staunching = AddNewBuff(MainPlugin.MODNAME + "Staunch", RoR2Content.Buffs.BeetleJuice.iconSprite, RoR2Content.Buffs.TeamWarCry.buffColor, false, true);
+                BeetleFrenzy = AddNewBuff(MainPlugin.MODNAME + "BeetleFrenzy", RoR2Content.Buffs.TeamWarCry.iconSprite, RoR2Content.Buffs.BeetleJuice.buffColor, false, true);
+            }
         }
         internal static BuffDef AddNewBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff)
         {
@@ -26,6 +29,7 @@ namespace QueenGlandBuff.Modules
             buffDef.isDebuff = isDebuff;
             buffDef.eliteDef = null;
             buffDef.iconSprite = buffIcon;
+            (buffDef as ScriptableObject).name = buffDef.name;
 
             buffDefs.Add(buffDef);
 
