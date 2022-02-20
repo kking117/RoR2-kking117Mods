@@ -55,15 +55,7 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-		}
-		private static void CharacterBody_OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, RoR2.CharacterBody self)
-		{
-			orig(self);
-			bool active = NetworkServer.active;
-			if(NetworkServer.active)
-            {
-				self.AddItemBehavior<TitanicKnurl_Behavior>(self.inventory.GetItemCount(RoR2Content.Items.Knurl));
-			}
+			RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
 		}
 		private static void IL_RecalculateStats(ILContext il)
 		{
@@ -73,37 +65,27 @@ namespace FlatItemBuff.ItemChanges
 				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
 				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
 			);
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
+			ilcursor.Index -= IL_LocationOffset;
+			ilcursor.RemoveRange(5);
+		}
+		private static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		{
+			if (sender.inventory)
 			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
-			});
-			ilcursor.Index += IL_LocationOffset;
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
-			{
-				if (MainPlugin.Knurl_BaseHP.Value <= 0f)
-                {
-					return 0f;
-                }
-				return MainPlugin.Knurl_BaseHP.Value + ((bs.level - 1f) * MainPlugin.Knurl_LevelHP.Value);
-			});
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
-			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
-			});
-			ilcursor.Index += IL_LocationOffset;
-			ilcursor.RemoveRange(3);
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
-			{
-				if (MainPlugin.Knurl_BaseRegen.Value <= 0f)
-                {
-					return 0f;
-                }
-				return MainPlugin.Knurl_BaseRegen.Value + ((bs.level - 1f) * MainPlugin.Knurl_LevelRegen.Value);
-			});
-			
+				int itemCount = sender.inventory.GetItemCount(RoR2Content.Items.Knurl);
+				if (itemCount > 0)
+				{
+					float levelBonus = sender.level - 1f;
+					if (MainPlugin.Knurl_BaseRegen.Value>0f)
+					{
+						args.baseRegenAdd += itemCount * (MainPlugin.Knurl_BaseRegen.Value + (levelBonus * MainPlugin.Knurl_LevelRegen.Value));
+					}
+					if (MainPlugin.Knurl_BaseHP.Value > 0f)
+					{
+						args.baseHealthAdd += itemCount * (MainPlugin.Knurl_BaseHP.Value + (levelBonus * MainPlugin.Knurl_LevelHP.Value));
+					}
+				}
+			}
 		}
 	}
 }

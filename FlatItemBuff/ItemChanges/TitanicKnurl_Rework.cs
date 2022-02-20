@@ -60,29 +60,8 @@ namespace FlatItemBuff.ItemChanges
 				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
 				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
 			);
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
-			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
-			});
-			ilcursor.Index += IL_LocationOffset;
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
-			{
-				return 0f;
-			});
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
-			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
-			});
-			ilcursor.Index += IL_LocationOffset;
-			ilcursor.RemoveRange(3);
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
-			{
-				return 0f;
-			});
-			
+			ilcursor.Index -= IL_LocationOffset;
+			ilcursor.RemoveRange(5);
 		}
 	}
 }
