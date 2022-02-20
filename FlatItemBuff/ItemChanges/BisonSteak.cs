@@ -49,10 +49,13 @@ namespace FlatItemBuff.ItemChanges
 			if (damageReport.attacker && damageReport.attackerBody)
             {
 				CharacterBody attacker = damageReport.attackerBody;
-				int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
-				if(itemCount > 0)
-                {
-					attacker.AddTimedBuff(RoR2Content.Buffs.MeatRegenBoost, 3f * itemCount);
+				if (attacker.inventory)
+				{
+					int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
+					if (itemCount > 0)
+					{
+						attacker.AddTimedBuff(RoR2Content.Buffs.MeatRegenBoost, 3f * itemCount);
+					}
 				}
             }
 		}

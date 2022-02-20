@@ -25,15 +25,7 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
         {
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string desc = "Activating an interactable summons a <style=cIsDamage>Squid Turret</style> that attacks nearby enemies ";
-			if (MainPlugin.Squid_AtkToDmg.Value)
-			{
-				desc += "for <style=cIsDamage>100% <style=cStack>(+100% per stack)</style> damage</style>";
-			}
-			else
-			{
-				desc += "at <style=cIsDamage>100% <style=cStack>(+100% per stack)</style> attack speed</style>";
-			}
+			string desc = "Activating an interactable summons a <style=cIsDamage>Squid Turret</style> that attacks nearby enemies at <style=cIsDamage>100% <style=cStack>(+100% per stack)</style> attack speed</style>";
 			if (MainPlugin.Squid_ClayHit.Value)
 			{
 				desc += " applying <style=cIsDamage>tar</style>.";
@@ -75,16 +67,9 @@ namespace FlatItemBuff.ItemChanges
 					{
 						int stacks = self.inventory.GetItemCount(RoR2Content.Items.BoostAttackSpeed);
 						int decay = (int)Math.Floor(30 + (stacks * MainPlugin.Squid_StackLife.Value * 0.1f));
-						if (MainPlugin.Squid_AtkToDmg.Value)
-						{
-							self.inventory.GiveItem(RoR2Content.Items.BoostDamage, stacks);
-							self.inventory.RemoveItem(RoR2Content.Items.BoostAttackSpeed, stacks);
-						}
 						self.inventory.RemoveItem(RoR2Content.Items.HealthDecay, self.inventory.GetItemCount(RoR2Content.Items.HealthDecay));
 						self.inventory.GiveItem(RoR2Content.Items.HealthDecay, decay);
 						body.baseArmor = MainPlugin.Squid_Armor.Value * stacks;
-						body.baseRegen = 0f; //why tf
-						body.levelRegen = 0f;
 						if (MainPlugin.Squid_InactiveDecay.Value > 0f)
 						{
 							DisableHealManager component = body.gameObject.AddComponent<DisableHealManager>();
