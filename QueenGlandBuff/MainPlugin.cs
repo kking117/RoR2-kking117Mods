@@ -7,7 +7,6 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using RoR2.Skills;
-using RoR2.CharacterAI;
 using UnityEngine;
 using UnityEngine.Networking;
 using Moonstorm;
@@ -22,7 +21,6 @@ namespace QueenGlandBuff
 {
 	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.TeamMoonstorm.MoonstormSharedUtils", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInDependency("com.Chen.ChensGradiusMod", BepInDependency.DependencyFlags.SoftDependency)]
 	[R2APISubmoduleDependency(new string[]
 	{
 		"LanguageAPI",
@@ -36,7 +34,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.1.0";
+		public const string MODVERSION = "1.1.1";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -236,6 +234,14 @@ namespace QueenGlandBuff
 		private void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
 			float levelbonus = sender.level - 1f;
+			if(sender.bodyIndex == BodyCatalog.FindBodyIndex("BeetleGuardAllyBody"))
+            {
+				float regenmult = 1f + (sender.inventory.GetItemCount(RoR2Content.Items.BoostHp) * 0.1f);
+				if (sender.outOfDanger)
+				{
+					args.baseRegenAdd += regenmult * Gland_BaseHealth.Value * (2f + (levelbonus * 0.4f));
+				}
+            }
 			if (sender.HasBuff(Modules.Buffs.Staunching))
 			{
 				args.armorAdd += 100f;
@@ -316,13 +322,13 @@ namespace QueenGlandBuff
 			Gland_Debug = Config.Bind<bool>(new ConfigDefinition("Misc", "Debug"), false, new ConfigDescription("Enables debug messages.", null, Array.Empty<object>()));
 
 			Gland_SpawnAffix = Config.Bind<bool>(new ConfigDefinition("Elite Buff", "Become Elite"), true, new ConfigDescription("Makes Beetle Guard Ally spawn with an Elite Affix.", null, Array.Empty<object>()));
-			Gland_DefaultAffix = Config.Bind<string>(new ConfigDefinition("Elite Buff", "Default Elite"), RoR2.RoR2Content.Equipment.AffixRed.name, new ConfigDescription("The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)", null, Array.Empty<object>()));
+			Gland_DefaultAffix = Config.Bind<string>(new ConfigDefinition("Elite Buff", "Default Elite"), RoR2Content.Equipment.AffixRed.name, new ConfigDescription("The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)", null, Array.Empty<object>()));
 
 			Gland_MaxSummons = Config.Bind<int>(new ConfigDefinition("Gland Stats", "Max Summons"), 3, new ConfigDescription("The Max amount of Beetle Guards each player can have.)", null, Array.Empty<object>()));
 			Gland_RespawnTime = Config.Bind<float>(new ConfigDefinition("Gland Stats", "Respawn Time"), 20, new ConfigDescription("How long it takes for Beetle Guards to respawn.)", null, Array.Empty<object>()));
-			Gland_BaseHealth = Config.Bind<int>(new ConfigDefinition("Gland Stats", "BaseHealth"), 0, new ConfigDescription("How many BoostHP items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
+			Gland_BaseHealth = Config.Bind<int>(new ConfigDefinition("Gland Stats", "BaseHealth"), 10, new ConfigDescription("How many BoostHP items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
 			Gland_BaseDamage = Config.Bind<int>(new ConfigDefinition("Gland Stats", "BaseDamage"), 20, new ConfigDescription("How many DamageBonus items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
-			Gland_StackHealth = Config.Bind<int>(new ConfigDefinition("Gland Stats", "StackHealth"), 5, new ConfigDescription("How many extra BoostHP to give when stacking above Max Summons.", null, Array.Empty<object>()));
+			Gland_StackHealth = Config.Bind<int>(new ConfigDefinition("Gland Stats", "StackHealth"), 10, new ConfigDescription("How many extra BoostHP to give when stacking above Max Summons.", null, Array.Empty<object>()));
 			Gland_StackDamage = Config.Bind<int>(new ConfigDefinition("Gland Stats", "StackDamage"), 15, new ConfigDescription("How many extra DamageBonus to give when stacking above Max Summons.", null, Array.Empty<object>()));
 
 			Gland_PrimaryBuff = Config.Bind<bool>(new ConfigDefinition("Skill Changes", "Slam Buff"), true, new ConfigDescription("Enables the modified slam attack.", null, Array.Empty<object>()));

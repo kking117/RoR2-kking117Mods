@@ -13,8 +13,6 @@ namespace QueenGlandBuff.ItemChanges
 {
     public class QueensGland
     {
-		private static GameObject BeetleGuardBody = Resources.Load<GameObject>("prefabs/characterbodies/BeetleGuardBody");
-		private static GameObject BeetleGuardMaster = Resources.Load<GameObject>("prefabs/charactermasters/BeetleGuardMaster");
 		private static GameObject BeetleGuardAllyBody = Resources.Load<GameObject>("prefabs/characterbodies/BeetleGuardAllyBody");
 		private static GameObject BeetleGuardAllyMaster = Resources.Load<GameObject>("prefabs/charactermasters/BeetleGuardAllyMaster");
 
@@ -466,7 +464,7 @@ namespace QueenGlandBuff.ItemChanges
 			{
 				Helpers.GiveRandomEliteAffix(beeble);
 				Deployable deployable = beeble.GetComponent<Deployable>();
-				if (deployable)
+				if(deployable)
 				{
 					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(beeble.TrueKill));
 					summoner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
