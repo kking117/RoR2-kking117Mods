@@ -62,8 +62,16 @@ namespace QueenGlandBuff.Utils
 		}
 		public static void GiveRandomEliteAffix(CharacterMaster self)
 		{
-			if (MainPlugin.Gland_SpawnAffix.Value && MainPlugin.StageEliteEquipmentDefs.Count > 0)
-			{
+			if(MainPlugin.Gland_SpawnAffix.Value == 0)
+            {
+				return;
+            }
+			if (MainPlugin.Gland_SpawnAffix.Value == 2 && !RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly))
+            {
+				return;
+            }
+			if (MainPlugin.StageEliteEquipmentDefs.Count > 0)
+            {
 				int result = rng.Next(MainPlugin.StageEliteEquipmentDefs.Count);
 				if (MainPlugin.StageEliteEquipmentDefs[result])
 				{

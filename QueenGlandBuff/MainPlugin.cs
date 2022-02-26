@@ -34,7 +34,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.1.1";
+		public const string MODVERSION = "1.2.0";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -46,14 +46,9 @@ namespace QueenGlandBuff
 
 		public static EquipmentIndex Gland_DefaultAffix_Var;
 
-		private int T1_EliteList = 1;
-		private int AH_EliteList = 2;
-		private int T2_EliteList = 3;
-		private int TM_EliteList = 4;
-
 		//Stuff
 		public static ConfigEntry<bool> Gland_Debug;
-		public static ConfigEntry<bool> Gland_SpawnAffix;
+		public static ConfigEntry<int> Gland_SpawnAffix;
 		public static ConfigEntry<string> Gland_DefaultAffix;
 		//Gland Stats
 		public static ConfigEntry<int> Gland_MaxSummons;
@@ -62,6 +57,7 @@ namespace QueenGlandBuff
 		public static ConfigEntry<int> Gland_StackDamage;
 		public static ConfigEntry<int> Gland_StackHealth;
 		public static ConfigEntry<float> Gland_RespawnTime;
+		public static ConfigEntry<float> Gland_Regen;
 		//Staunch Buff
 		public static ConfigEntry<float> Gland_Staunch_AggroRange;
 		public static ConfigEntry<float> Gland_Staunch_AggroChance;
@@ -233,73 +229,69 @@ namespace QueenGlandBuff
 		}
 		private void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
-			float levelbonus = sender.level - 1f;
-			if(sender.bodyIndex == BodyCatalog.FindBodyIndex("BeetleGuardAllyBody"))
-            {
-				float regenmult = 1f + (sender.inventory.GetItemCount(RoR2Content.Items.BoostHp) * 0.1f);
-				if (sender.outOfDanger)
+			if (sender)
+			{
+				float levelbonus = sender.level - 1f;
+				if (sender.bodyIndex == BodyCatalog.FindBodyIndex("BeetleGuardAllyBody"))
 				{
-					args.baseRegenAdd += regenmult * Gland_BaseHealth.Value * (2f + (levelbonus * 0.4f));
+					float regenmult = 1f + (sender.inventory.GetItemCount(RoR2Content.Items.BoostHp) * 0.1f);
+					if (sender.outOfDanger)
+					{
+						args.baseRegenAdd += regenmult * Gland_BaseHealth.Value * (Gland_Regen.Value + (levelbonus * Gland_Regen.Value * 0.2f));
+					}
 				}
-            }
-			if (sender.HasBuff(Modules.Buffs.Staunching))
-			{
-				args.armorAdd += 100f;
-			}
-			if (sender.HasBuff(Modules.Buffs.BeetleFrenzy))
-			{
-				args.baseAttackSpeedAdd += 0.5f;
-				args.moveSpeedMultAdd += 0.5f;
-				args.baseRegenAdd += 3f + (levelbonus * 0.6f);
-				args.baseDamageAdd += (sender.baseDamage + (levelbonus * sender.levelDamage)) * 0.25f;
+				if (sender.HasBuff(Modules.Buffs.Staunching))
+				{
+					args.armorAdd += 100f;
+				}
+				if (sender.HasBuff(Modules.Buffs.BeetleFrenzy))
+				{
+					args.baseAttackSpeedAdd += 0.5f;
+					args.moveSpeedMultAdd += 0.5f;
+					args.baseRegenAdd += 3f + (levelbonus * 0.6f);
+					args.baseDamageAdd += (sender.baseDamage + (levelbonus * sender.levelDamage)) * 0.25f;
+				}
 			}
 		}
 		private void UpdateEliteList()
 		{
+			if(!NetworkServer.active)
+            {
+				return;
+            }
 			Gland_DefaultAffix_Var = EquipmentCatalog.FindEquipmentIndex(Gland_DefaultAffix.Value);
 			StageEliteEquipmentDefs.Clear();
 			CombatDirector.EliteTierDef[] DirectorElite = EliteAPI.GetCombatDirectorEliteTiers();
 			bool IsMoon = Stage.instance.sceneDef.cachedName.Contains("moon");
 			bool IsHonor = RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly);
 			bool IsLoop = Run.instance.loopClearCount > 0;
-			if (IsHonor || !IsMoon)
-			{
-				int T1List = T1_EliteList;
-				if (IsHonor)
+
+			SpawnCard.EliteRules eliterules = SpawnCard.EliteRules.Default;
+			if(IsHonor)
+            {
+				eliterules = SpawnCard.EliteRules.ArtifactOnly;
+			}
+			if(IsMoon)
+            {
+				eliterules = SpawnCard.EliteRules.Lunar;
+			}
+			
+			for (int i = 0; i < DirectorElite.Length; i++)
+            {
+				if(DirectorElite[i].isAvailable.Invoke(eliterules))
                 {
-					T1List = AH_EliteList;
-				}
-				for (int i = 0; i < DirectorElite[T1List].eliteTypes.GetLength(0); i++)
-				{
-					if (DirectorElite[T1List].eliteTypes[i])
+					for (int z = 0; z < DirectorElite[i].eliteTypes.GetLength(0); z++)
 					{
-						StageEliteEquipmentDefs.Add(DirectorElite[T1List].eliteTypes[i].eliteEquipmentDef);
-					}
-				}
-				if (IsLoop)
-				{
-					for (int i = 0; i < DirectorElite[T2_EliteList].eliteTypes.GetLength(0); i++)
-					{
-						if (DirectorElite[T2_EliteList].eliteTypes[i])
+						if (DirectorElite[i].eliteTypes[z])
 						{
-							StageEliteEquipmentDefs.Add(DirectorElite[T2_EliteList].eliteTypes[i].eliteEquipmentDef);
+							StageEliteEquipmentDefs.Add(DirectorElite[i].eliteTypes[z].eliteEquipmentDef);
 						}
 					}
 				}
-				if (MoonstormSharedUtils)
-				{
-					AddMoonstormElites(true);
-				}
-			}
-			if (IsMoon)
+            }
+			if (MoonstormSharedUtils)
 			{
-				for (int i = 0; i < DirectorElite[TM_EliteList].eliteTypes.GetLength(0); i++)
-				{
-					if (DirectorElite[TM_EliteList].eliteTypes[i])
-					{
-						StageEliteEquipmentDefs.Add(DirectorElite[TM_EliteList].eliteTypes[i].eliteEquipmentDef);
-					}
-				}
+				AddMoonstormElites(IsLoop);
 			}
 		}
 		private void AddMoonstormElites(bool IsLoop)
@@ -321,7 +313,7 @@ namespace QueenGlandBuff
 		{
 			Gland_Debug = Config.Bind<bool>(new ConfigDefinition("Misc", "Debug"), false, new ConfigDescription("Enables debug messages.", null, Array.Empty<object>()));
 
-			Gland_SpawnAffix = Config.Bind<bool>(new ConfigDefinition("Elite Buff", "Become Elite"), true, new ConfigDescription("Makes Beetle Guard Ally spawn with an Elite Affix.", null, Array.Empty<object>()));
+			Gland_SpawnAffix = Config.Bind<int>(new ConfigDefinition("Elite Buff", "Become Elite"), 1, new ConfigDescription("Makes Beetle Guard Ally spawn with an Elite Affix. (0 = never, 1 = always, 2 = only during honor)", null, Array.Empty<object>()));
 			Gland_DefaultAffix = Config.Bind<string>(new ConfigDefinition("Elite Buff", "Default Elite"), RoR2Content.Equipment.AffixRed.name, new ConfigDescription("The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)", null, Array.Empty<object>()));
 
 			Gland_MaxSummons = Config.Bind<int>(new ConfigDefinition("Gland Stats", "Max Summons"), 3, new ConfigDescription("The Max amount of Beetle Guards each player can have.)", null, Array.Empty<object>()));
@@ -330,6 +322,7 @@ namespace QueenGlandBuff
 			Gland_BaseDamage = Config.Bind<int>(new ConfigDefinition("Gland Stats", "BaseDamage"), 20, new ConfigDescription("How many DamageBonus items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
 			Gland_StackHealth = Config.Bind<int>(new ConfigDefinition("Gland Stats", "StackHealth"), 10, new ConfigDescription("How many extra BoostHP to give when stacking above Max Summons.", null, Array.Empty<object>()));
 			Gland_StackDamage = Config.Bind<int>(new ConfigDefinition("Gland Stats", "StackDamage"), 15, new ConfigDescription("How many extra DamageBonus to give when stacking above Max Summons.", null, Array.Empty<object>()));
+			Gland_Regen = Config.Bind<float>(new ConfigDefinition("Gland Stats", "Regen"), 2, new ConfigDescription("Out of combat regen for Beetle Guards. (scales with max health)", null, Array.Empty<object>()));
 
 			Gland_PrimaryBuff = Config.Bind<bool>(new ConfigDefinition("Skill Changes", "Slam Buff"), true, new ConfigDescription("Enables the modified slam attack.", null, Array.Empty<object>()));
 			Gland_SecondaryBuff = Config.Bind<bool>(new ConfigDefinition("Skill Changes", "Sunder Buff"), true, new ConfigDescription("Enables the modified sunder attack.", null, Array.Empty<object>()));

@@ -34,7 +34,7 @@ namespace QueenGlandBuff.ItemChanges
 			}
 			string pickup = "Recruit ";
 			string desc = "<style=cIsUtility>Summon ";
-			if (MainPlugin.Gland_SpawnAffix.Value || MainPlugin.Gland_DefaultAffix_Var != EquipmentIndex.None)
+			if (MainPlugin.Gland_SpawnAffix.Value == 1)
 			{
 				pickup += "an Elite Beetle Guard.";
 				desc += "an Elite Beetle Guard</style>";
