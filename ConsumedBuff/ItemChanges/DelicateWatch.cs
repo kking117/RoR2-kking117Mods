@@ -15,12 +15,14 @@ namespace ConsumedBuff.ItemChanges
     {
         private static int SuperHitMult = 2;
         private static int SuperHitNo = 12;
+        private static int HitNo = 12;
         public static void Enable()
         {
-            if(MainPlugin.Watch_SuperHits.Value < MainPlugin.Watch_Hits.Value)
+            HitNo = Math.Max(1, MainPlugin.Watch_Hits.Value);
+            if(MainPlugin.Watch_SuperHits.Value < HitNo)
             {
                 SuperHitMult = 1;
-                SuperHitNo = MainPlugin.Watch_Hits.Value;
+                SuperHitNo = HitNo;
             }
             else
             {
@@ -132,7 +134,7 @@ namespace ConsumedBuff.ItemChanges
                 comp.hitmult = SuperHitMult;
                 return;
             }
-            if (comp.hits % MainPlugin.Watch_Hits.Value == 0)
+            if (comp.hits % HitNo == 0)
             {
                 comp.hitmult = 1;
                 return;
@@ -151,9 +153,9 @@ namespace ConsumedBuff.ItemChanges
                 }
                 if (hits % SuperHitNo == 0)
                 {
-                    return 2;
+                    return SuperHitMult;
                 }
-                if (hits % MainPlugin.Watch_Hits.Value == 0)
+                if (hits % HitNo == 0)
                 {
                     return 1;
                 }  
