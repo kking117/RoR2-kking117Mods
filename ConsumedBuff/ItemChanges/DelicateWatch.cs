@@ -16,6 +16,7 @@ namespace ConsumedBuff.ItemChanges
         private static int SuperHitMult = 2;
         private static int SuperHitNo = 12;
         private static int HitNo = 12;
+        private static float dmgMult = 1f;
         public static void Enable()
         {
             HitNo = Math.Max(1, MainPlugin.Watch_Hits.Value);
@@ -28,12 +29,14 @@ namespace ConsumedBuff.ItemChanges
             {
                 SuperHitNo = MainPlugin.Watch_SuperHits.Value;
             }
-            UpdateText();
-            On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
-            if (MainPlugin.Watch_Damage.Value)
+            if (MainPlugin.Watch_Damage.Value > 0.0f)
             {
+                dmgMult = MainPlugin.Watch_Damage.Value * 5f;
                 IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
             }
+            UpdateText();
+            On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
+            
         }
         public static void UpdateText()
         {
@@ -44,10 +47,10 @@ namespace ConsumedBuff.ItemChanges
 
             pickup = string.Format("Every {0} hits", MainPlugin.Watch_Hits.Value);
             desc = string.Format("Every <style=cIsDamage>{0}</style> <style=cIsUtility>hits</style>", MainPlugin.Watch_Hits.Value);
-            if (MainPlugin.Watch_Damage.Value)
+            if (dmgMult > 0f)
             {
                 pickup += string.Format(" deal bonus damage");
-                desc += string.Format(" deal <style=cIsDamage>20%</style> <style=cStack>(+20% per stack)</style> extra damage");
+                desc += string.Format(" deal <style=cIsDamage>{0}%</style> <style=cStack>(+{0}% per stack)</style> extra damage", dmgMult * 20f);
                 addAnd = true;
             }
 
@@ -81,6 +84,21 @@ namespace ConsumedBuff.ItemChanges
                 return itemCount;
             });
             ilcursor.Emit(OpCodes.Add);
+            ilcursor.GotoNext(
+                x => ILPatternMatchingExt.MatchLdloc(x, 27)
+            );
+            ilcursor.GotoNext(
+                x => ILPatternMatchingExt.MatchLdloc(x, 27)
+            );
+            ilcursor.Remove();
+            ilcursor.Emit(OpCodes.Ldarg_1);
+            ilcursor.EmitDelegate<Func<DamageInfo, float>>((damageInfo) =>
+            {
+                CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+                float itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonus) * 1.0f;
+                itemCount += (attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonusConsumed) * dmgMult) * PredictWatchBoostMult(attackerBody);
+                return itemCount;
+            });
         }
         private static void OnTakeDamagePost(On.RoR2.GlobalEventManager.orig_ServerDamageDealt orig, DamageReport dr)
         {
