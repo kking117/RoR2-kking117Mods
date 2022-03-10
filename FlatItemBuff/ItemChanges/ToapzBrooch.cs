@@ -1,4 +1,7 @@
-﻿using RoR2;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using RoR2;
 using R2API;
 using UnityEngine.Networking;
 using Mono.Cecil.Cil;
@@ -38,44 +41,32 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
-			GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-		}
-		private static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
-		{
-			if (!NetworkServer.active)
-			{
-				return;
-			}
-			CharacterBody attacker = damageReport.attackerBody;
-			if (attacker)
-			{
-				Inventory inventory = attacker.inventory;
-				if (inventory)
-				{
-					int itemCount = inventory.GetItemCount(RoR2.RoR2Content.Items.BarrierOnKill);
-					if (itemCount > 0)
-					{
-						itemCount--;
-						float barrier = attacker.healthComponent.fullCombinedHealth * (MainPlugin.Brooch_BaseCentBarrier.Value + (MainPlugin.Brooch_StackCentBarrier.Value * itemCount));
-						barrier += MainPlugin.Brooch_BaseFlatBarrier.Value + (MainPlugin.Brooch_StackFlatBarrier.Value * itemCount);
-						attacker.healthComponent.AddBarrier(barrier);
-					}
-				}
-			}
 		}
 		private static void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 15),
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", IL_ItemName),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<RoR2.Inventory>(x, "GetItemCount"),
-				x => ILPatternMatchingExt.MatchStloc(x, 40),
-				x => ILPatternMatchingExt.MatchLdloc(x, 40)
+				x => ILPatternMatchingExt.MatchLdcR4(x, 15),
+				x => ILPatternMatchingExt.MatchLdloc(x, 43),
+				x => ILPatternMatchingExt.MatchConvR4(x),
+				x => ILPatternMatchingExt.MatchMul(x)
 			);
-			ilcursor.Index += 4;
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldc_I4, 0);
+			ilcursor.RemoveRange(4);
+			ilcursor.Emit(OpCodes.Ldarg_1);
+			ilcursor.Emit(OpCodes.Ldloc, 43);
+			ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
+			{
+				itemCount--;
+				float basebarrier = MainPlugin.Brooch_BaseFlatBarrier.Value;
+				float stackbarrier = MainPlugin.Brooch_StackFlatBarrier.Value;
+				if (dr.attackerBody.healthComponent)
+				{
+					basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * MainPlugin.Brooch_BaseCentBarrier.Value;
+					stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * MainPlugin.Brooch_StackCentBarrier.Value;
+				}
+				stackbarrier *= itemCount;
+				return basebarrier + stackbarrier;
+			});
 		}
 	}
 }

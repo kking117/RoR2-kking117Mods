@@ -1,10 +1,10 @@
 ﻿using System;
 using RoR2;
 using R2API;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
+using UnityEngine.Networking;
 using RoR2.Projectile;
 
 namespace FlatItemBuff.ItemChanges
@@ -27,7 +27,7 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = string.Format("Watched over by a stone guardian.");
-			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% attack speed per stack)</style> the weakest enemy within <style=cIsUtility>50m</style> is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{2}%</style> <style=cStack>(+{3}% per stack)</style> damage.", MainPlugin.Knurl_BaseSpeed.Value, MainPlugin.Knurl_StackSpeed.Value * 100f, MainPlugin.Knurl_BaseDamage.Value * 100f, MainPlugin.Knurl_StackDamage.Value * 100f);
+			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> the weakest enemy within <style=cIsUtility>50m</style> is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{2}%</style> <style=cStack>(+{3}% per stack)</style> damage.", MainPlugin.Knurl_BaseSpeed.Value, MainPlugin.Knurl_StackSpeed.Value * 100f, MainPlugin.Knurl_BaseDamage.Value * 100f, MainPlugin.Knurl_StackDamage.Value * 100f);
 			LanguageAPI.Add("ITEM_KNURL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_KNURL_DESC", desc);
 		}
@@ -39,12 +39,12 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private static void CreateProjectiles()
         {
-			StoneFistProjectile = Resources.Load<GameObject>("prefabs/projectiles/titanprefistprojectile").InstantiateClone(MainPlugin.MODTOKEN + "StonePreFist", true);
+			StoneFistProjectile = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/titanprefistprojectile").InstantiateClone(MainPlugin.MODTOKEN + "StonePreFist", true);
 			ProjectileDamage projDmg = StoneFistProjectile.GetComponent<ProjectileDamage>();
 			projDmg.damageType = DamageType.Stun1s;
 			Modules.Projectiles.AddProjectile(StoneFistProjectile);
 		}
-		private static void CharacterBody_OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, RoR2.CharacterBody self)
+		private static void CharacterBody_OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
 		{
 			orig(self);
 			if(NetworkServer.active)

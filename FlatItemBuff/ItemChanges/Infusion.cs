@@ -164,35 +164,27 @@ namespace FlatItemBuff.ItemChanges
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 36),
-				x => ILPatternMatchingExt.MatchLdcI4(x, 100),
-				x => ILPatternMatchingExt.MatchMul(x),
-				x => ILPatternMatchingExt.MatchStloc(x, 50)
+				x => ILPatternMatchingExt.MatchLdloc(x, 16),
+				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Infusion"),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount")
 			);
-			ilcursor.Index += 1;
+			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdloc(x, 38)
+			);
 			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldc_I4, 0);
+			ilcursor.Emit(OpCodes.Ldc_I4_0);
 			//I believe using IL to change this wouldn't be very fun
 			//So instead I'll just make the code never run and apply my changes somewhere else
 		}
 		private static void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", IL_ItemName),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
-				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
-			);
 			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
 			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
+				(Instruction x) => ILPatternMatchingExt.MatchStloc(x, 52),
+				(Instruction x) => ILPatternMatchingExt.MatchLdarg(x, 0)
 			});
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
-			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location_Stack)
-			});
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldc_I4, 0);
+			ilcursor.RemoveRange(4);
 		}
 	}
 }

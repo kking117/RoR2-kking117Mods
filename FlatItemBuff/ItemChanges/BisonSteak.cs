@@ -11,7 +11,7 @@ namespace FlatItemBuff.ItemChanges
 	{
 		private static string IL_ItemName = "FlatHealth";
 		private static int IL_LocationOffset = 2;
-		private static int IL_Location = 35;
+		private static int IL_Location = 36;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Bison Steak");
@@ -54,7 +54,7 @@ namespace FlatItemBuff.ItemChanges
 					int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
 					if (itemCount > 0)
 					{
-						attacker.AddTimedBuff(RoR2Content.Buffs.MeatRegenBoost, 3f * itemCount);
+						attacker.AddTimedBuff(JunkContent.Buffs.MeatRegenBoost, 3f * itemCount);
 					}
 				}
             }
@@ -64,7 +64,7 @@ namespace FlatItemBuff.ItemChanges
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
 				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", IL_ItemName),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<RoR2.Inventory>(x, "GetItemCount"),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
 				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
 			);
 			ilcursor.GotoNext(0, new Func<Instruction, bool>[]

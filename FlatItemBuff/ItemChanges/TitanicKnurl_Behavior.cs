@@ -22,9 +22,12 @@ namespace FlatItemBuff.ItemChanges
 				return;
 			}
 			nextAttack -= Time.fixedDeltaTime;
-			if (body.outOfDangerStopwatch < 1f)
+			if (body.healthComponent)
             {
-				nextAttack -= Time.fixedDeltaTime * 0.2f;
+				if (body.healthComponent.isHealthLow)
+				{
+					nextAttack -= Time.fixedDeltaTime * 0.5f;
+				}
 			}
 			if (nextAttack <= 0f)
             {
