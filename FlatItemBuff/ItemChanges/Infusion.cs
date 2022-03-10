@@ -10,9 +10,6 @@ namespace FlatItemBuff.ItemChanges
 {
 	public class Infusion
 	{
-		private static string IL_ItemName = "Infusion";
-		private static int IL_Location_Stack = 40;
-		private static int IL_Location = 3;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Infusion");
@@ -179,12 +176,13 @@ namespace FlatItemBuff.ItemChanges
 		private static void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
-			{
-				(Instruction x) => ILPatternMatchingExt.MatchStloc(x, 52),
-				(Instruction x) => ILPatternMatchingExt.MatchLdarg(x, 0)
-			});
-			ilcursor.RemoveRange(4);
+			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Infusion"),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
+				x => ILPatternMatchingExt.MatchStloc(x, 3)
+			);
+			ilcursor.Index -= 2;
+			ilcursor.RemoveRange(5);
 		}
 	}
 }

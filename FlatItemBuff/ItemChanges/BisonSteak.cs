@@ -9,9 +9,6 @@ namespace FlatItemBuff.ItemChanges
 {
 	public class BisonSteak
 	{
-		private static string IL_ItemName = "FlatHealth";
-		private static int IL_LocationOffset = 2;
-		private static int IL_Location = 36;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Bison Steak");
@@ -63,15 +60,15 @@ namespace FlatItemBuff.ItemChanges
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", IL_ItemName),
+				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "FlatHealth"),
 				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
-				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
+				x => ILPatternMatchingExt.MatchStloc(x, 36)
 			);
 			ilcursor.GotoNext(0, new Func<Instruction, bool>[]
 			{
-				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, IL_Location)
+				(Instruction x) => ILPatternMatchingExt.MatchLdloc(x, 36)
 			});
-			ilcursor.Index += IL_LocationOffset;
+			ilcursor.Index += 2;
 			ilcursor.Remove();
 			ilcursor.Emit(OpCodes.Ldarg_0);
 			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
