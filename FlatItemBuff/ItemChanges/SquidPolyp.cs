@@ -103,7 +103,7 @@ namespace FlatItemBuff.ItemChanges
 		private static void ModifySquidSkill()
 		{
 			MainPlugin.ModLogger.LogInfo("Altering Squid Skill");
-			SkillDef skillDef = Resources.Load<SkillDef>("skilldefs/squidturretbody/squidturretbodyturret");
+			SkillDef skillDef = LegacyResourcesAPI.Load<SkillDef>("skilldefs/squidturretbody/squidturretbodyturret");
 			if (skillDef)
             {
 				skillDef.activationState = new SerializableEntityStateType(typeof(States.SquidFire));
