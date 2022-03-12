@@ -45,7 +45,11 @@ namespace TestTest.Utils
                     {
                         return false;
                     }
-                    if(!MainPlugin.InfestFilter_Self.Value && BodyCatalog.GetBodyName(body.bodyIndex) == "VoidInfestorBody")
+                    if (!MainPlugin.InfestFilter_Mechanical.Value && body.bodyFlags.HasFlag(CharacterBody.BodyFlags.Mechanical))
+                    {
+                        return false;
+                    }
+                    if (!MainPlugin.InfestFilter_Self.Value && BodyCatalog.GetBodyName(body.bodyIndex) == "VoidInfestorBody")
                     {
                         return false;
                     }

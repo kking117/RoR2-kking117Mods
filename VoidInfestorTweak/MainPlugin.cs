@@ -17,10 +17,11 @@ namespace TestTest
     {
         public const string MODUID = "com.kking117.VoidInfestorTweak";
         public const string MODNAME = "VoidInfestorTweak";
-        public const string MODVERSION = "1.0.0";
+        public const string MODVERSION = "1.1.0";
 
         public static ConfigEntry<bool> InfestFilter_Boss;
         public static ConfigEntry<bool> InfestFilter_Boss_OnPlayer;
+        public static ConfigEntry<bool> InfestFilter_Mechanical;
         public static ConfigEntry<bool> InfestFilter_Player;
         public static ConfigEntry<bool> InfestFilter_Void;
         public static ConfigEntry<bool> InfestFilter_Self;
@@ -50,7 +51,8 @@ namespace TestTest
         private void ReadConfig()
         {
             InfestFilter_Boss = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Boss"), true, new ConfigDescription("Should Void Infestors be able to infest bosses? (Red health bar)", null, Array.Empty<object>()));
-            InfestFilter_Player = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Player"), false, new ConfigDescription("Should Void Infestors be able to infest characters on the player team?", null, Array.Empty<object>()));
+            InfestFilter_Player = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Player"), true, new ConfigDescription("Should Void Infestors be able to infest characters on the player team?", null, Array.Empty<object>()));
+            InfestFilter_Mechanical = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Void Infestor"), false, new ConfigDescription("Should Void Infestors be able to infest Mechanical characters?", null, Array.Empty<object>()));
             InfestFilter_Void = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Void Creatures"), false, new ConfigDescription("Should Void Infestors be able to infest characters that are considered void? (Purple health bar)", null, Array.Empty<object>()));
             InfestFilter_Self = Config.Bind<bool>(new ConfigDefinition("Global Infest Filters", "Void Infestor"), false, new ConfigDescription("Should Void Infestors be able to infest Void Infestors? (I don't even want to know.)", null, Array.Empty<object>()));
         }
