@@ -6,6 +6,7 @@ using RoR2;
 using UnityEngine;
 using R2API;
 using UnityEngine.Networking;
+using UnityEngine.AddressableAssets;
 using WarBannerBuff.Components;
 
 namespace WarBannerBuff.ItemChanges
@@ -22,11 +23,11 @@ namespace WarBannerBuff.ItemChanges
         }
 		private static void CreateBuff()
         {
-			ModdedBuff = Modules.Buffs.AddNewBuff("WarBanner(Modded)", LegacyResourcesAPI.Load<Sprite>("Textures/BuffIcons/texBuffWarbannerIcon"), Color.yellow, false, false, false);
+			ModdedBuff = Modules.Buffs.AddNewBuff("WarBanner(Modded)", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/WardOnLevel/bdWarbanner.asset").WaitForCompletion().iconSprite, Color.yellow, false, false, false);
 			LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard").GetComponent<BuffWard>().buffDef = ModdedBuff;
 			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
 		}
-        private static void Hooks()
+		private static void Hooks()
         {
 			if (MainPlugin.RecoveryTick.Value > 0f)
 			{
@@ -257,10 +258,10 @@ namespace WarBannerBuff.ItemChanges
 			orig(self);
 			if (self.HasBuff(ModdedBuff) && !self.HasBuff(RoR2Content.Buffs.Warbanner))
 			{
-				BuffVFX fxcomponent = self.GetComponent<BuffVFX>();
+				WarBannerBuffVFX fxcomponent = self.GetComponent<WarBannerBuffVFX>();
 				if (fxcomponent == null)
 				{
-					fxcomponent = self.gameObject.AddComponent<BuffVFX>();
+					fxcomponent = self.gameObject.AddComponent<WarBannerBuffVFX>();
 				}
 				if (fxcomponent.effect == null)
 				{
@@ -279,7 +280,7 @@ namespace WarBannerBuff.ItemChanges
 			}
 			else
 			{
-				BuffVFX fxcomponent = self.GetComponent<BuffVFX>();
+				WarBannerBuffVFX fxcomponent = self.GetComponent<WarBannerBuffVFX>();
 				if (fxcomponent != null)
 				{
 					fxcomponent.effect.visualState = TemporaryVisualEffect.VisualState.Exit;

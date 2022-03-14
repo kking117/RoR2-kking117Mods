@@ -25,7 +25,7 @@ namespace WarBannerBuff
 		public const string MODUID = "com.kking117.WarBannerBuff";
 		public const string MODNAME = "WarBannerBuff";
 		public const string MODTOKEN = "KKING117_WARBANNERBUFF_";
-		public const string MODVERSION = "5.0.0";
+		public const string MODVERSION = "5.0.1";
 
 		public static ConfigEntry<float> RecoveryTick;
 
