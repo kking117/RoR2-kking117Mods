@@ -97,7 +97,7 @@ namespace QueenGlandBuff.Utils
 						SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
 						spawnCard.hullSize = self.hullClassification;
 						spawnCard.nodeGraphType = (self.isFlying ? RoR2.Navigation.MapNodeGroup.GraphType.Air : RoR2.Navigation.MapNodeGroup.GraphType.Ground);
-						spawnCard.prefab = Resources.Load<GameObject>("SpawnCards/HelperPrefab");
+						spawnCard.prefab = LegacyResourcesAPI.Load<GameObject>("SpawnCards/HelperPrefab");
 						GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
 						{
 							placementMode = DirectorPlacementRule.PlacementMode.Approximate,
@@ -205,7 +205,7 @@ namespace QueenGlandBuff.Utils
 						{
 							if (DoesBodyContainName(targetbody, "beetle"))
 							{
-								targetbody.AddTimedBuff(Modules.Buffs.BeetleFrenzy, 1.5f);
+								targetbody.AddTimedBuff(ItemChanges.QueensGland.BeetleFrenzy, 1.5f);
 							}
 						}
 					}

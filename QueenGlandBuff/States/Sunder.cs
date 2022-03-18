@@ -225,7 +225,7 @@ namespace QueenGlandBuff.States
 		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.hitEffectPrefab;
 
 		public static GameObject projectile1Prefab = EntityStates.BeetleGuardMonster.FireSunder.projectilePrefab;
-		public static GameObject projectile2Prefab = Modules.Projectiles.slamrockPrefab;
+		public static GameObject projectile2Prefab = ItemChanges.QueensGland.SlamRockProjectile;
 		public static GameObject projectile3Prefab = MainPlugin.Perfect_Sunder_MainProj;
 		public static GameObject projectile4Prefab = MainPlugin.Perfect_Sunder_SecProj;
 

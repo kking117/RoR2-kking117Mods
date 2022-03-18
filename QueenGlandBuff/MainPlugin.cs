@@ -6,11 +6,9 @@ using BepInEx.Configuration;
 using R2API;
 using R2API.Utils;
 using RoR2;
-using RoR2.Skills;
 using UnityEngine;
 using UnityEngine.Networking;
-using Moonstorm;
-using QueenGlandBuff.Utils;
+//using Moonstorm;
 
 using System.Security;
 using System.Security.Permissions;
@@ -20,13 +18,12 @@ using System.Security.Permissions;
 namespace QueenGlandBuff
 {
 	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-	[BepInDependency("com.TeamMoonstorm.MoonstormSharedUtils", BepInDependency.DependencyFlags.SoftDependency)]
+	//[BepInDependency("com.TeamMoonstorm.MoonstormSharedUtils", BepInDependency.DependencyFlags.SoftDependency)]
 	[R2APISubmoduleDependency(new string[]
 	{
 		"LanguageAPI",
 		"RecalculateStatsAPI",
-		"PrefabAPI",
-		"LoadoutAPI"
+		"PrefabAPI"
 	})]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	[NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
@@ -34,7 +31,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.2.0";
+		public const string MODVERSION = "1.3.0";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -72,54 +69,25 @@ namespace QueenGlandBuff
 		public static ConfigEntry<bool> Gland_AddUtility;
 		public static ConfigEntry<bool> Gland_AddSpecial;
 
-		public static GameObject Default_Proj = Resources.Load<GameObject>("prefabs/projectiles/hermitcrabbombprojectile");
-		public static GameObject Perfect_Sunder_MainProj = Resources.Load<GameObject>("prefabs/projectiles/brothersunderwave");
-		public static GameObject Perfect_Sunder_SecProj = Resources.Load<GameObject>("prefabs/projectiles/lunarshardprojectile");
-		public static GameObject Perfect_Slam_Proj = Resources.Load<GameObject>("prefabs/projectiles/brotherfirepillar");
+		public static GameObject Default_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/hermitcrabbombprojectile");
+		public static GameObject Perfect_Sunder_MainProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brothersunderwave");
+		public static GameObject Perfect_Sunder_SecProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/lunarshardprojectile");
+		public static GameObject Perfect_Slam_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brotherfirepillar");
 
-		public static SkillDef OldSlamSkill = Resources.Load<SkillDef>("skilldefs/beetleguardbody/beetleguardbodygroundslam");
-		public static SkillDef OldSunderSkill = Resources.Load<SkillDef>("skilldefs/beetleguardbody/beetleguardbodysunder");
-
-		private float timer;
+		public static float FixedTimer;
 		public void Awake()
 		{
 			ModLogger = this.Logger;
-			
+
+			Logger.LogInfo("Reading Config.");
 			ReadConfig();
-			GetModCompat();
+			//GetModCompat();
 
-			On.RoR2.Stage.BeginServer += Stage_BeginServer;
-			if (Gland_AddSpecial.Value)
+			if (Gland_SpawnAffix.Value != 0)
 			{
-				On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
-				On.RoR2.CharacterBody.OnBuffFirstStackGained += CharacterBody_OnBuffFirstStackGained;
-				RecalculateStatsAPI.GetStatCoefficients += CalculateStatsHook;
+				On.RoR2.Stage.BeginServer += Stage_BeginServer;
 			}
-			On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
-
-			if (Gland_Debug.Value)
-			{
-				Logger.LogInfo("Registering States.");
-			}
-			Modules.States.RegisterStates();
-			if (Gland_Debug.Value)
-			{
-				Logger.LogInfo("Registering Buffs.");
-			}
-			Modules.Buffs.RegisterBuffs();
-			if (Gland_Debug.Value)
-			{
-				Logger.LogInfo("Registering Projectiles.");
-			}
-			Modules.Projectiles.RegisterProjectiles();
-			if (Gland_Debug.Value)
-			{
-				Logger.LogInfo("Registering Skills.");
-			}
-			Modules.Skills.RegisterSkills();
-
 			ItemChanges.QueensGland.Begin();
-
 			if (Gland_Debug.Value)
 			{
 				Logger.LogInfo("Initializing ContentPack.");
@@ -128,7 +96,7 @@ namespace QueenGlandBuff
 		}
 		private void GetModCompat()
         {
-			MoonstormSharedUtils = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.MoonstormSharedUtils");
+			//MoonstormSharedUtils = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.MoonstormSharedUtils");
 		}
 		private void Stage_BeginServer(On.RoR2.Stage.orig_BeginServer orig, Stage self)
 		{
@@ -137,121 +105,11 @@ namespace QueenGlandBuff
 		}
 		private void FixedUpdate()
         {
-			if (timer < 0.0f)
+			if (FixedTimer < 0.0f)
 			{
-				timer += 1f;
+				FixedTimer += 1f;
 			}
-			timer -= Time.fixedDeltaTime;
-		}
-		private void CharacterBody_FixedUpdate(On.RoR2.CharacterBody.orig_FixedUpdate orig, RoR2.CharacterBody self)
-		{
-			orig(self);
-			if (timer < 0)
-			{
-				if (self.HasBuff(Modules.Buffs.Staunching))
-				{
-					Helpers.DrawAggro(self);
-					Helpers.EmpowerBeetles(self);
-				}
-			}
-		}
-		private void CharacterBody_OnBuffFirstStackGained(On.RoR2.CharacterBody.orig_OnBuffFirstStackGained orig, CharacterBody self, BuffDef buff)
-		{
-			orig(self, buff);
-			if (buff == Modules.Buffs.Staunching)
-			{
-				if (NetworkServer.active)
-				{
-					Helpers.DrawAggro(self);
-					Helpers.EmpowerBeetles(self);
-				}
-			}
-		}
-		private void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
-		{
-			if (NetworkServer.active)
-			{
-				if (self.master)
-				{
-					MinionOwnership ownership = self.master.minionOwnership;
-					if (ownership)
-					{
-						CharacterMaster owner = ownership.ownerMaster;
-						if (owner)
-						{
-							if (Helpers.DoesMasterHaveDeployable(owner, DeployableSlot.BeetleGuardAlly, self.master))
-							{
-								int stackbonus = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - Gland_MaxSummons.Value);
-								int dmgitem = Gland_BaseDamage.Value + (Gland_StackDamage.Value * stackbonus);
-								int hpitem = Gland_BaseHealth.Value + (Gland_StackHealth.Value * stackbonus);
-								self.inventory.GiveItem(RoR2Content.Items.BoostDamage, dmgitem - self.inventory.GetItemCount(RoR2Content.Items.BoostDamage));
-								self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem - self.inventory.GetItemCount(RoR2Content.Items.BoostHp));
-							}
-						}
-					}
-				}
-			}
-			orig(self);
-			if (self)
-			{
-				if (self.bodyIndex == BodyCatalog.FindBodyIndex("BeetleGuardAllyBody"))
-				{
-					if (self.skillLocator.primary)
-					{
-						if (self.skillLocator.primary.isCombatSkill)
-						{
-							self.skillLocator.primary.cooldownScale /= self.attackSpeed;
-						}
-					}
-					if (self.skillLocator.secondary)
-					{
-						if (self.skillLocator.secondary.isCombatSkill)
-						{
-							self.skillLocator.secondary.cooldownScale /= self.attackSpeed;
-						}
-					}
-					if (self.skillLocator.utility)
-					{
-						if (self.skillLocator.utility.isCombatSkill)
-						{
-							self.skillLocator.utility.cooldownScale /= self.attackSpeed;
-						}
-					}
-					if (self.skillLocator.special)
-					{
-						if (self.skillLocator.special.isCombatSkill)
-						{
-							self.skillLocator.special.cooldownScale /= self.attackSpeed;
-						}
-					}
-				}
-			}
-		}
-		private void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
-		{
-			if (sender)
-			{
-				float levelbonus = sender.level - 1f;
-				if (sender.bodyIndex == BodyCatalog.FindBodyIndex("BeetleGuardAllyBody"))
-				{
-					float regenmult = 1f + (sender.inventory.GetItemCount(RoR2Content.Items.BoostHp) * 0.1f);
-					if (sender.outOfDanger)
-					{
-						args.baseRegenAdd += regenmult * Gland_BaseHealth.Value * (Gland_Regen.Value + (levelbonus * Gland_Regen.Value * 0.2f));
-					}
-				}
-				if (sender.HasBuff(Modules.Buffs.Staunching))
-				{
-					args.armorAdd += 100f;
-				}
-				if (sender.HasBuff(Modules.Buffs.BeetleFrenzy))
-				{
-					args.baseAttackSpeedAdd += 0.5f;
-					args.moveSpeedMultAdd += 0.5f;
-					args.baseRegenAdd += 3f + (levelbonus * 0.6f);
-					args.baseDamageAdd += (sender.baseDamage + (levelbonus * sender.levelDamage)) * 0.25f;
-				}
-			}
+			FixedTimer -= Time.fixedDeltaTime;
 		}
 		private void UpdateEliteList()
 		{
@@ -260,6 +118,13 @@ namespace QueenGlandBuff
 				return;
             }
 			Gland_DefaultAffix_Var = EquipmentCatalog.FindEquipmentIndex(Gland_DefaultAffix.Value);
+			if(Gland_DefaultAffix_Var != EquipmentIndex.None)
+            {
+				if(Run.instance.IsEquipmentExpansionLocked(Gland_DefaultAffix_Var))
+                {
+					Gland_DefaultAffix_Var = EquipmentIndex.None;
+				}
+            }
 			StageEliteEquipmentDefs.Clear();
 			CombatDirector.EliteTierDef[] DirectorElite = EliteAPI.GetCombatDirectorEliteTiers();
 			bool IsMoon = Stage.instance.sceneDef.cachedName.Contains("moon");
@@ -289,12 +154,12 @@ namespace QueenGlandBuff
 					}
 				}
             }
-			if (MoonstormSharedUtils)
+			/*if (MoonstormSharedUtils)
 			{
 				AddMoonstormElites(IsLoop);
-			}
+			}*/
 		}
-		private void AddMoonstormElites(bool IsLoop)
+		/*private void AddMoonstormElites(bool IsLoop)
         {
 			for (int i = 0; i < EliteModuleBase.MoonstormElites.Count; i++)
 			{
@@ -308,13 +173,13 @@ namespace QueenGlandBuff
 					StageEliteEquipmentDefs.Add(EliteModuleBase.MoonstormElites[i].eliteEquipmentDef);
 				}
 			}
-		}
+		}*/
 		public void ReadConfig()
 		{
 			Gland_Debug = Config.Bind<bool>(new ConfigDefinition("Misc", "Debug"), false, new ConfigDescription("Enables debug messages.", null, Array.Empty<object>()));
 
 			Gland_SpawnAffix = Config.Bind<int>(new ConfigDefinition("Elite Buff", "Become Elite"), 1, new ConfigDescription("Makes Beetle Guard Ally spawn with an Elite Affix. (0 = never, 1 = always, 2 = only during honor)", null, Array.Empty<object>()));
-			Gland_DefaultAffix = Config.Bind<string>(new ConfigDefinition("Elite Buff", "Default Elite"), RoR2Content.Equipment.AffixRed.name, new ConfigDescription("The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)", null, Array.Empty<object>()));
+			Gland_DefaultAffix = Config.Bind<string>(new ConfigDefinition("Elite Buff", "Default Elite"), "EliteFireEquipment", new ConfigDescription("The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)", null, Array.Empty<object>()));
 
 			Gland_MaxSummons = Config.Bind<int>(new ConfigDefinition("Gland Stats", "Max Summons"), 3, new ConfigDescription("The Max amount of Beetle Guards each player can have.)", null, Array.Empty<object>()));
 			Gland_RespawnTime = Config.Bind<float>(new ConfigDefinition("Gland Stats", "Respawn Time"), 20, new ConfigDescription("How long it takes for Beetle Guards to respawn.)", null, Array.Empty<object>()));

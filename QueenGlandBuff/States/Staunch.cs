@@ -43,7 +43,7 @@ namespace QueenGlandBuff.States
 					hasCastBuff = true;
 					if (NetworkServer.active)
 					{
-						characterBody.AddTimedBuff(Modules.Buffs.Staunching, buffDuration);
+						characterBody.AddTimedBuff(ItemChanges.QueensGland.Staunching, buffDuration);
 					}
 				}
 			}

@@ -142,7 +142,7 @@ namespace QueenGlandBuff.States
 		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.chargeEffectPrefab;
 		public static GameObject slamEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.slamEffectPrefab;
 		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.hitEffectPrefab;
-		public static GameObject projectile1Prefab = Modules.Projectiles.slamrockPrefab;
+		public static GameObject projectile1Prefab = ItemChanges.QueensGland.SlamRockProjectile;
 
 		private Animator modelAnimator;
 		private Transform modelTransform;

@@ -1,36 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
-using R2API;
-using R2API.Utils;
+﻿using R2API;
 using RoR2;
 using RoR2.Skills;
 using RoR2.CharacterAI;
 using UnityEngine;
-using UnityEngine.Networking;
-using QueenGlandBuff.Utils;
+using UnityEngine.AddressableAssets;
+using EntityStates;
+using RoR2.Projectile;
 
 namespace QueenGlandBuff.ItemChanges
 {
     public class QueensGland
     {
-		private static GameObject BeetleGuardAllyBody = Resources.Load<GameObject>("prefabs/characterbodies/BeetleGuardAllyBody");
-		private static GameObject BeetleGuardAllyMaster = Resources.Load<GameObject>("prefabs/charactermasters/BeetleGuardAllyMaster");
+		public static GameObject BeetleGuardAllyBody = LegacyResourcesAPI.Load<GameObject>("prefabs/characterbodies/BeetleGuardAllyBody");
+		public static GameObject BeetleGuardAllyMaster = LegacyResourcesAPI.Load<GameObject>("prefabs/charactermasters/BeetleGuardAllyMaster");
 
-		private static BaseAI BeetleGuardAlly_BaseAI;
+		public static BaseAI BeetleGuardAlly_BaseAI;
+
+		public static BuffDef Staunching;
+		public static BuffDef BeetleFrenzy;
+
+		public static SkillDef SlamSkill;
+		public static SkillDef SunderSkill;
+		public static SkillDef RecallSkill;
+		public static SkillDef StaunchSkill;
+
+		public static GameObject SlamRockProjectile;
+
+		public static SkillDef OldSlamSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodyGroundSlam.asset").WaitForCompletion();
+		public static SkillDef OldSunderSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodySunder.asset").WaitForCompletion();
 
 		public static void Begin()
         {
+			CreateBuffs();
+			CreateProjectiles();
 			UpdateBody(BeetleGuardAllyBody);
+			CreateSkills();
 			UpdateLoadouts();
 			UpdateAI(BeetleGuardAllyMaster);
 			UpdateItemDescription();
-			Hooks();
+			QueensGlandHooks.Begin();
+		}
+		private static void CreateBuffs()
+        {
+			if (MainPlugin.Gland_Debug.Value)
+			{
+				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly buffs.");
+			}
+			BuffDef beetlebuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Beetle/bdBeetleJuice.asset").WaitForCompletion();
+			BuffDef warcrybuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/TeamWarCry/bdTeamWarCry.asset").WaitForCompletion();
+			if (MainPlugin.Gland_AddUtility.Value || MainPlugin.Gland_AddSpecial.Value)
+			{
+				BeetleFrenzy = Modules.Buffs.AddNewBuff("BeetleFrenzy", warcrybuff.iconSprite, beetlebuff.buffColor, false, true, false);
+			}
+			if (MainPlugin.Gland_AddSpecial.Value)
+			{
+				Staunching = Modules.Buffs.AddNewBuff("Staunch", beetlebuff.iconSprite, warcrybuff.buffColor, false, true, false);
+			}
+		}
+		private static void CreateProjectiles()
+        {
+			if (MainPlugin.Gland_Debug.Value)
+			{
+				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly projectiles.");
+			}
+			if (MainPlugin.Gland_PrimaryBuff.Value || MainPlugin.Gland_SecondaryBuff.Value)
+			{
+				SlamRockProjectile = PrefabAPI.InstantiateClone(MainPlugin.Default_Proj, MainPlugin.MODTOKEN + "RockProjectile", true);
+				SlamRockProjectile.GetComponent<ProjectileExplosion>().falloffModel = BlastAttack.FalloffModel.Linear;
+				SlamRockProjectile.GetComponent<ProjectileExplosion>().bonusBlastForce = Vector3.down * 4f;
+				SlamRockProjectile.GetComponent<ProjectileExplosion>().blastRadius *= 1.5f;
+				Modules.Projectiles.AddProjectile(SlamRockProjectile);
+			}
 		}
 		private static void UpdateItemDescription()
 		{
 			if (MainPlugin.Gland_Debug.Value)
 			{
-				MainPlugin.ModLogger.LogInfo("Changing descriptions.");
+				MainPlugin.ModLogger.LogInfo("Changing Queen's Gland descriptions.");
 			}
 			string pickup = "Recruit ";
 			string desc = "<style=cIsUtility>Summon ";
@@ -52,11 +98,11 @@ namespace QueenGlandBuff.ItemChanges
 			LanguageAPI.Add("ITEM_BEETLEGLAND_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_BEETLEGLAND_DESC", desc);
 		}
-		public static void UpdateBody(GameObject prefab)
+		private static void UpdateBody(GameObject prefab)
 		{
 			if (MainPlugin.Gland_Debug.Value)
 			{
-				MainPlugin.ModLogger.LogInfo("Changing " + prefab.name + " attributes.");
+				MainPlugin.ModLogger.LogInfo("Changing BeetleGuardAlly attributes.");
 			}
 			CharacterBody charBody = prefab.GetComponent<CharacterBody>();
 			charBody.baseAcceleration *= 1.5f;
@@ -66,26 +112,187 @@ namespace QueenGlandBuff.ItemChanges
 			CharacterDirection charDir = prefab.GetComponent<CharacterDirection>();
 			charDir.turnSpeed *= 2f;
 		}
-		public static void UpdateLoadouts()
+		private static void CreateSkills()
+        {
+			if (MainPlugin.Gland_Debug.Value)
+			{
+				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly skills.");
+			}
+			SlamSkill = ScriptableObject.CreateInstance<SkillDef>();
+
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME", "Slam");
+			if (MainPlugin.Gland_PrimaryBuff.Value)
+			{
+				SlamSkill.activationState = new SerializableEntityStateType(typeof(States.Slam));
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>5x75%</style> damage.");
+				Modules.States.RegisterState(typeof(States.Slam));
+			}
+			else
+			{
+				SlamSkill.activationState = new SerializableEntityStateType(typeof(EntityStates.BeetleGuardMonster.GroundSlam));
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> damage.");
+			}
+			SlamSkill.activationStateMachineName = "Body";
+			SlamSkill.dontAllowPastMaxStocks = false;
+
+			SlamSkill.resetCooldownTimerOnUse = false;
+			SlamSkill.keywordTokens = null;
+
+			SlamSkill.baseMaxStock = 1;
+			SlamSkill.rechargeStock = 1;
+			SlamSkill.requiredStock = 1;
+			SlamSkill.stockToConsume = 1;
+			SlamSkill.fullRestockOnAssign = true;
+
+			SlamSkill.baseRechargeInterval = 3;
+			SlamSkill.beginSkillCooldownOnSkillEnd = false;
+
+			SlamSkill.canceledFromSprinting = false;
+			SlamSkill.cancelSprintingOnActivation = true;
+			SlamSkill.forceSprintDuringState = false;
+
+			SlamSkill.interruptPriority = InterruptPriority.Skill;
+			SlamSkill.isCombatSkill = true;
+			SlamSkill.mustKeyPress = false;
+
+			SlamSkill.icon = null;
+			SlamSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC";
+			SlamSkill.skillNameToken = MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME";
+			SlamSkill.skillName = SlamSkill.skillNameToken;
+
+			Modules.Skills.RegisterSkill(SlamSkill);
+
+			SunderSkill = ScriptableObject.CreateInstance<SkillDef>();
+
+			LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME", "Sunder");
+			if (MainPlugin.Gland_SecondaryBuff.Value)
+			{
+				SunderSkill.activationState = new SerializableEntityStateType(typeof(States.Sunder));
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>5x75%</style> damage.");
+				Modules.States.RegisterState(typeof(States.Sunder));
+			}
+			else
+			{
+				SunderSkill.activationState = new SerializableEntityStateType(typeof(EntityStates.BeetleGuardMonster.FireSunder));
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style> damage.");
+			}
+			SunderSkill.activationStateMachineName = "Body";
+
+			SunderSkill.baseMaxStock = 2;
+			SunderSkill.rechargeStock = 1;
+			SunderSkill.requiredStock = 1;
+			SunderSkill.stockToConsume = 1;
+			SunderSkill.fullRestockOnAssign = true;
+
+			SunderSkill.baseRechargeInterval = 8;
+			SunderSkill.beginSkillCooldownOnSkillEnd = false;
+
+			SunderSkill.canceledFromSprinting = false;
+			SunderSkill.cancelSprintingOnActivation = true;
+			SunderSkill.forceSprintDuringState = false;
+
+			SunderSkill.interruptPriority = InterruptPriority.Skill;
+			SunderSkill.isCombatSkill = true;
+			SunderSkill.mustKeyPress = false;
+
+			SunderSkill.icon = null;
+			SunderSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC";
+			SunderSkill.skillNameToken = MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME";
+			SunderSkill.skillName = SunderSkill.skillNameToken;
+
+			Modules.Skills.RegisterSkill(SunderSkill);
+
+			if (MainPlugin.Gland_AddUtility.Value)
+			{
+				RecallSkill = ScriptableObject.CreateInstance<SkillDef>();
+
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side. Enter a <style=cIsDamage>frenzy</style> for <style=cIsUtility>10</style> seconds if you have no owner.");
+
+				RecallSkill.activationState = new SerializableEntityStateType(typeof(States.Recall));
+				RecallSkill.activationStateMachineName = "Body";
+				Modules.States.RegisterState(typeof(States.Recall));
+
+				RecallSkill.baseMaxStock = 1;
+				RecallSkill.rechargeStock = 1;
+				RecallSkill.requiredStock = 1;
+				RecallSkill.stockToConsume = 1;
+				RecallSkill.fullRestockOnAssign = true;
+
+				RecallSkill.baseRechargeInterval = 12f;
+				RecallSkill.beginSkillCooldownOnSkillEnd = false;
+
+				RecallSkill.canceledFromSprinting = false;
+				RecallSkill.cancelSprintingOnActivation = true;
+				RecallSkill.forceSprintDuringState = false;
+
+				RecallSkill.interruptPriority = InterruptPriority.Skill;
+				RecallSkill.isCombatSkill = false;
+				RecallSkill.mustKeyPress = false;
+
+				RecallSkill.icon = null;
+				RecallSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC";
+				RecallSkill.skillNameToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME";
+				RecallSkill.skillName = RecallSkill.skillNameToken;
+
+				Modules.Skills.RegisterSkill(RecallSkill);
+			}
+
+			if (MainPlugin.Gland_AddSpecial.Value)
+			{
+				StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies for <style=cIsUtility>10</style> seconds. While active gain <style=cIsUtility>100</style> armor and send nearby <style=cIsHealing>friendly beetles</style> into a <style=cIsDamage>frenzy</style>.");
+
+				StaunchSkill.activationState = new SerializableEntityStateType(typeof(States.Staunch));
+				StaunchSkill.activationStateMachineName = "Body";
+				Modules.States.RegisterState(typeof(States.Staunch));
+
+				StaunchSkill.baseMaxStock = 1;
+				StaunchSkill.rechargeStock = 1;
+				StaunchSkill.requiredStock = 1;
+				StaunchSkill.stockToConsume = 1;
+				StaunchSkill.fullRestockOnAssign = true;
+
+				StaunchSkill.baseRechargeInterval = 30f;
+				StaunchSkill.beginSkillCooldownOnSkillEnd = false;
+
+				StaunchSkill.canceledFromSprinting = false;
+				StaunchSkill.cancelSprintingOnActivation = true;
+				StaunchSkill.forceSprintDuringState = false;
+
+				StaunchSkill.interruptPriority = InterruptPriority.Skill;
+				StaunchSkill.isCombatSkill = false;
+				StaunchSkill.mustKeyPress = false;
+
+				StaunchSkill.icon = null;
+				StaunchSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC";
+				StaunchSkill.skillNameToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME";
+				StaunchSkill.skillName = StaunchSkill.skillNameToken;
+
+				Modules.Skills.RegisterSkill(StaunchSkill);
+			}
+		}
+		private static void UpdateLoadouts()
 		{
 			if (MainPlugin.Gland_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Adding new Skills to BeetleGuardAllyBody.");
 			}
 			Modules.Skills.WipeLoadout(BeetleGuardAllyBody);
-			Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, Modules.Skills.SlamSkill, SkillSlot.Primary);
-			Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, Modules.Skills.SunderSkill, SkillSlot.Secondary);
+			Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, SlamSkill, SkillSlot.Primary);
+			Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, SunderSkill, SkillSlot.Secondary);
 			if (MainPlugin.Gland_AddUtility.Value)
 			{
-				Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, Modules.Skills.RecallSkill, SkillSlot.Utility);
+				Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, RecallSkill, SkillSlot.Utility);
 			}
 			if (MainPlugin.Gland_AddSpecial.Value)
 			{
-				Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, Modules.Skills.StaunchSkill, SkillSlot.Special);
+				Modules.Skills.AddSkillToSlot(BeetleGuardAllyBody, StaunchSkill, SkillSlot.Special);
 			}
 		}
 
-		public static void UpdateAI(GameObject prefab)
+		private static void UpdateAI(GameObject prefab)
 		{
 			if (MainPlugin.Gland_Debug.Value)
 			{
@@ -391,176 +598,6 @@ namespace QueenGlandBuff.ItemChanges
 			aiskillDriver9.shouldFireEquipment = false;
 			aiskillDriver9.shouldSprint = false;
 			aiskillDriver9.skillSlot = SkillSlot.None;
-		}
-		public static void Hooks()
-		{
-			On.RoR2.CharacterBody.UpdateBeetleGuardAllies += CharacterBody_UpdateBeetleGuardAllies;
-			On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-			if (MainPlugin.Gland_AI_Target.Value)
-			{
-				On.RoR2.CharacterAI.BaseAI.FixedUpdate += BaseAI_FixedUpdate;
-			}
-		}
-		private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
-		{
-			var result = orig(self, slot);
-			if (slot != DeployableSlot.BeetleGuardAlly)
-			{
-				return result;
-			}
-			int mult = 1;
-			if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
-			{
-				mult = 2;
-			}
-			return Math.Min(MainPlugin.Gland_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * mult;
-		}
-		private static void CharacterBody_UpdateBeetleGuardAllies(On.RoR2.CharacterBody.orig_UpdateBeetleGuardAllies orig, CharacterBody self)
-		{
-			if (NetworkServer.active)
-			{
-				if (self.inventory && self.master)
-				{
-					int extraglands = Math.Max(0, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MainPlugin.Gland_MaxSummons.Value);
-					int deployableCount = self.master.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
-					int maxdeployable = self.master.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
-					if (deployableCount < maxdeployable)
-					{
-						self.guardResummonCooldown -= Time.fixedDeltaTime;
-						if (self.guardResummonCooldown <= 0f)
-						{
-							self.guardResummonCooldown = 2f;
-							DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest((SpawnCard)Resources.Load("SpawnCards/CharacterSpawnCards/cscBeetleGuardAlly"), new DirectorPlacementRule
-							{
-								placementMode = DirectorPlacementRule.PlacementMode.Approximate,
-								minDistance = 3f,
-								maxDistance = 40f,
-								spawnOnTarget = self.transform,
-							}, RoR2Application.rng);
-							directorSpawnRequest.summonerBodyObject = self.gameObject;
-							directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(directorSpawnRequest.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult spawnResult)
-							{
-								SetupSummonedBeetleGuard(spawnResult, self.master, extraglands);
-							}));
-							DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
-						}
-					}
-					else if (deployableCount > maxdeployable)
-					{
-						Helpers.RemoveDeployableBeetles(self.master, deployableCount - maxdeployable);
-					}
-				}
-			}
-		}
-		private static void SetupSummonedBeetleGuard(SpawnCard.SpawnResult spawnResult, CharacterMaster summoner, int itemcount)
-		{
-			GameObject spawnedInstance = spawnResult.spawnedInstance;
-			if (!spawnedInstance)
-			{
-				return;
-			}
-			CharacterMaster beeble = spawnedInstance.GetComponent<CharacterMaster>();
-			if (beeble)
-			{
-				Helpers.GiveRandomEliteAffix(beeble);
-				Deployable deployable = beeble.GetComponent<Deployable>();
-				if(deployable)
-				{
-					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(beeble.TrueKill));
-					summoner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
-					if (summoner.GetBody())
-					{
-						summoner.GetBody().guardResummonCooldown = MainPlugin.Gland_RespawnTime.Value;
-					}
-				}
-			}
-		}
-		private static void BaseAI_FixedUpdate(On.RoR2.CharacterAI.BaseAI.orig_FixedUpdate orig, BaseAI self)
-		{
-			float lastAttention = self.enemyAttention;
-			orig(self);
-			if (self.name != BeetleGuardAlly_BaseAI.name + "(Clone)")
-			{
-				return;
-			}
-			if(!self.body)
-            {
-				return;
-            }
-			if (!self.currentEnemy.gameObject)
-			{
-				return;
-			}
-			CharacterBody targetbody = self.currentEnemy.gameObject.GetComponent<CharacterBody>();
-			if (targetbody)
-			{
-				if (targetbody.isFlying && !targetbody.isBoss)
-				{
-					if (lastAttention < self.enemyAttention)
-					{
-						if (MainPlugin.Gland_Debug.Value)
-						{
-							MainPlugin.ModLogger.LogInfo("Attempt to redirect focus from flying target.");
-						}
-						HurtBox target = FindEnemy(self);
-						if (target)
-						{
-							self.currentEnemy.gameObject = target.healthComponent.gameObject;
-							self.currentEnemy.bestHurtBox = target;
-							self.enemyAttention = self.enemyAttentionDuration;
-							if(!target.healthComponent.body.isFlying)
-                            {
-								self.targetRefreshTimer = self.enemyAttentionDuration;
-                            }
-						}
-					}
-				}
-			}
-		}
-		private static HurtBox FindEnemy(BaseAI self)
-        {
-			BullseyeSearch search = new BullseyeSearch();
-			search.viewer = self.body;
-			search.teamMaskFilter = TeamMask.allButNeutral;
-			search.teamMaskFilter.RemoveTeam(self.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Gland_AI_LeashLength.Value;
-			search.searchOrigin = self.bodyInputBank.aimOrigin;
-			search.searchDirection = self.bodyInputBank.aimDirection;
-			search.maxAngleFilter = (self.fullVision ? 180f : 90f);
-			search.filterByLoS = true;
-			search.RefreshCandidates();
-			HurtBox result = null;
-			foreach (HurtBox target in search.GetResults())
-			{
-				if (target && target.healthComponent)
-				{
-					if (target.healthComponent.body.isFlying && !target.healthComponent.body.isBoss)
-					{
-						if (result == null)
-						{
-							result = target;
-						}
-					}
-					else
-					{
-						if (result)
-						{
-							if (Vector3.Distance(self.body.transform.position, target.healthComponent.body.transform.position) < 25f)
-							{
-								result = target;
-								break;
-							}
-						}
-						else
-						{
-							result = target;
-							break;
-						}
-					}
-				}
-			}
-			return result;
 		}
 	}
 }
