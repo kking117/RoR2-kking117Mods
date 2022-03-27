@@ -22,7 +22,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.5.2";
+		public const string MODVERSION = "1.6.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -66,6 +66,25 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> Knurl_StackDamage;
 		public static ConfigEntry<float> Knurl_BaseSpeed;
 		public static ConfigEntry<float> Knurl_StackSpeed;
+
+		public static ConfigEntry<bool> Nucleus_Change;
+		public static ConfigEntry<bool> Nucleus_Infinite;
+		public static ConfigEntry<int> Nucleus_BaseHealth;
+		public static ConfigEntry<int> Nucleus_BaseAttack;
+		public static ConfigEntry<int> Nucleus_StackHealth;
+		public static ConfigEntry<int> Nucleus_StackAttack;
+
+		public static ConfigEntry<bool> NucleusRework_Enable;
+		public static ConfigEntry<int> NucleusRework_BaseHealth;
+		public static ConfigEntry<int> NucleusRework_BaseAttack;
+		public static ConfigEntry<int> NucleusRework_StackHealth;
+		public static ConfigEntry<int> NucleusRework_StackAttack;
+		public static ConfigEntry<float> NucleusRework_ShieldBaseDuration;
+		public static ConfigEntry<float> NucleusRework_ShieldStackDuration;
+
+		public static ConfigEntry<bool> NucleusShared_TweakAI;
+		public static ConfigEntry<float> NucleusShared_BlastRadius;
+		public static ConfigEntry<float> NucleusShared_BlastDamage;
 		public void Awake()
         {
 			ModLogger = this.Logger;
@@ -93,6 +112,14 @@ namespace FlatItemBuff
 			else if(Knurl_Change.Value)
             {
 				ItemChanges.TitanicKnurl.EnableChanges();
+			}
+			if (NucleusRework_Enable.Value)
+			{
+				ItemChanges.DefenseNucleus_Rework.EnableChanges();
+			}
+			else if (Nucleus_Change.Value)
+			{
+				ItemChanges.DefenseNucleus.EnableChanges();
 			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
@@ -139,6 +166,25 @@ namespace FlatItemBuff
 			Knurl_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 3.5f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
 			Knurl_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Cooldown"), 6f, new ConfigDescription("Cooldown between each stone fist.", null, Array.Empty<object>()));
 			Knurl_StackSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Cooldown"), 0.15f, new ConfigDescription("Reduces the cooldown between each stone fist per stack. (Works as attack speed does.)", null, Array.Empty<object>()));
+
+			Nucleus_Change = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Enable Changes"), true, new ConfigDescription("Enables changes to Defense Nucleus.", null, Array.Empty<object>()));
+			Nucleus_Infinite = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Minion Can Proc"), true, new ConfigDescription("Allows constructs to proc their owner's defense nucleus when they kill.", null, Array.Empty<object>()));
+			Nucleus_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Health"), 0, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Health"), 5, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+
+			NucleusRework_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus Rework", "Enable Changes"), true, new ConfigDescription("Enables the rework to the Defense Nucleus. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			NucleusRework_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Health"), 10, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Health"), 10, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_ShieldBaseDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Base Duration"), 3.0f, new ConfigDescription("How long in seconds that the shield lasts for.", null, Array.Empty<object>()));
+			NucleusRework_ShieldStackDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Stack Duration"), 0.75f, new ConfigDescription("How many extra seconds the shield lasts for per stack.", null, Array.Empty<object>()));
+
+			NucleusShared_TweakAI = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Better AI"), true, new ConfigDescription("Gives 360 Degree vision and prevents retaliation against team members.", null, Array.Empty<object>()));
+			NucleusShared_BlastRadius = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Radius"), 12f, new ConfigDescription("Blast radius when they die.", null, Array.Empty<object>()));
+			NucleusShared_BlastDamage = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Damage"), 4.5f, new ConfigDescription("Blast damage when they die.", null, Array.Empty<object>()));
 		}
 	}
 }

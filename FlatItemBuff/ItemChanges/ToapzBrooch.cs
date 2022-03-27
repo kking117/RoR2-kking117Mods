@@ -11,7 +11,6 @@ namespace FlatItemBuff.ItemChanges
 {
 	public class TopazBrooch
 	{
-		private static string IL_ItemName = "BarrierOnKill";
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Topaz Brooch");
