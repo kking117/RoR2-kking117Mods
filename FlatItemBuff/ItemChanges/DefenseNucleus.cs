@@ -7,6 +7,7 @@ using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using RoR2.Projectile;
 using MonoMod.Cil;
+using Mono.Cecil.Cil;
 using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.ItemChanges
@@ -25,7 +26,7 @@ namespace FlatItemBuff.ItemChanges
         {
             MainPlugin.ModLogger.LogInfo("Updating item text");
             string pickup = string.Format("Summon an Alpha Construct on kill.");
-            string desc = string.Format("On kill, spawn an <style=cIsDamage>Alpha Construct</style> with <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style> and <style=cIsDamage>{2}% <style=cStack>(+{3}% per stack)</style> attack speed</style>. Limited to <style=cIsUtility>4</style>.", (10 + MainPlugin.Nucleus_BaseHealth.Value) * 10f, MainPlugin.Nucleus_StackHealth.Value * 10f, (10 + MainPlugin.Nucleus_BaseAttack.Value) * 10f, MainPlugin.Nucleus_StackAttack.Value * 10f);
+            string desc = string.Format("On kill spawn an <style=cIsDamage>Alpha Construct</style> with <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style> and <style=cIsDamage>{2}% <style=cStack>(+{3}% per stack)</style> attack speed</style>. Limited to <style=cIsUtility>4</style>.", (10 + MainPlugin.Nucleus_BaseHealth.Value) * 10f, MainPlugin.Nucleus_StackHealth.Value * 10f, (10 + MainPlugin.Nucleus_BaseAttack.Value) * 10f, MainPlugin.Nucleus_StackAttack.Value * 10f);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
         }
@@ -45,29 +46,51 @@ namespace FlatItemBuff.ItemChanges
             orig(self, damageReport);
             if(damageReport.attackerMaster)
             {
-                CharacterMaster owner = Helpers.GetOwnerAsDeployable(damageReport.attackerMaster, DeployableSlot.MinorConstructOnKill);
-                if (owner)
+                if (damageReport.victimBody)
                 {
-                    if(owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0 && damageReport.victimBody)
+                    CharacterMaster deployer = null;
+                    CharacterMaster owner = Helpers.GetOwnerAsDeployable(damageReport.attackerMaster, DeployableSlot.MinorConstructOnKill);
+                    if (owner)
                     {
-                        DeployConstructFromCorpse(owner, damageReport.victimBody);
+                        deployer = owner;
+                    }
+                    else if (damageReport.attackerMaster.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
+                    {
+                        MinionOwnership ownership = damageReport.attackerMaster.minionOwnership;
+                        deployer = damageReport.attackerMaster;
+                        if (ownership)
+                        {
+                            owner = Helpers.GetTrueOwner(ownership);
+                            if (owner)
+                            {
+                                deployer = owner;
+                            }
+                        }
+                    }
+                    if (deployer)
+                    {
+                        if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
+                        {
+                            DeployConstructFromCorpse(deployer, damageReport.victimBody);
+                        }
                     }
                 }
             }
         }
         private static void IL_OnCharacterDeath(ILContext il)
         {
-            //Here we're removing the elite requirement and allowing this to happen even at the deployable limit
             ILCursor ilcursor = new ILCursor(il);
             ilcursor.GotoNext(
                 x => ILPatternMatchingExt.MatchLdloc(x, 16),
                 x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
             );
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 2),
-                x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "get_isElite")
-            );
-            ilcursor.RemoveRange(7);
+            ilcursor.Index += 3;
+            ilcursor.Remove();
+            ilcursor.Emit(OpCodes.Ldloc, 16);
+            ilcursor.EmitDelegate<Func<Inventory, int>>((inventory) =>
+            {
+                return inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
+            });
         }
         private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
         {

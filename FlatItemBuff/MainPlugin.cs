@@ -15,6 +15,7 @@ namespace FlatItemBuff
 	{
 		"LanguageAPI",
 		"RecalculateStatsAPI",
+		"DotAPI",
 	})]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
@@ -22,7 +23,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.6.0";
+		public const string MODVERSION = "1.7.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -55,6 +56,18 @@ namespace FlatItemBuff
 		public static ConfigEntry<int> Infusion_Elite_Bonus;
 		public static ConfigEntry<int> Infusion_Boss_Bonus;
 
+		public static ConfigEntry<bool> LeechingSeed_Change;
+		public static ConfigEntry<float> LeechingSeed_ProcHeal;
+		public static ConfigEntry<float> LeechingSeed_NoProcHeal;
+
+		public static ConfigEntry<bool> LeechingSeedRework_Enable;
+		public static ConfigEntry<float> LeechingSeedRework_DoTFlatHeal;
+		public static ConfigEntry<float> LeechingSeedRework_DoTChance;
+		public static ConfigEntry<float> LeechingSeedRework_DoTLifeSteal;
+		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDamage;
+		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDuration;
+		public static ConfigEntry<float> LeechingSeedRework_DoTStackDuration;
+
 		public static ConfigEntry<bool> Knurl_Change;
 		public static ConfigEntry<float> Knurl_BaseHP;
 		public static ConfigEntry<float> Knurl_LevelHP;
@@ -86,7 +99,7 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> NucleusShared_BlastRadius;
 		public static ConfigEntry<float> NucleusShared_BlastDamage;
 		public void Awake()
-        {
+		{
 			ModLogger = this.Logger;
 			ReadConfig();
 			if (Steak_Change.Value)
@@ -106,11 +119,11 @@ namespace FlatItemBuff
 				ItemChanges.SquidPolyp.EnableChanges();
 			}
 			if (Knurl_Rework.Value)
-            {
+			{
 				ItemChanges.TitanicKnurl_Rework.EnableChanges();
 			}
-			else if(Knurl_Change.Value)
-            {
+			else if (Knurl_Change.Value)
+			{
 				ItemChanges.TitanicKnurl.EnableChanges();
 			}
 			if (NucleusRework_Enable.Value)
@@ -121,6 +134,14 @@ namespace FlatItemBuff
 			{
 				ItemChanges.DefenseNucleus.EnableChanges();
 			}
+			if (LeechingSeedRework_Enable.Value)
+			{
+				ItemChanges.LeechingSeed_Rework.EnableChanges();
+			}
+			else if (LeechingSeed_Change.Value)
+			{
+				ItemChanges.LeechingSeed.EnableChanges();
+			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -129,7 +150,7 @@ namespace FlatItemBuff
 			Steak_Change = Config.Bind<bool>(new ConfigDefinition("Bison Steak", "Enable Changes"), true, new ConfigDescription("Enables changes to Bison Steak.", null, Array.Empty<object>()));
 			Steak_BaseHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base HP"), 25.0f, new ConfigDescription("The amount of HP each stack increases.", null, Array.Empty<object>()));
 			Steak_LevelHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Level HP"), 2.5f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
-			Steak_OnKillDur = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Buff Duration"), 3f, new ConfigDescription("Gives the Fresh Steak regen effect for X seconds on kill. (0 or less disables this)", null, Array.Empty<object>()));
+			Steak_OnKillDur = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Buff Duration"), 3f, new ConfigDescription("Gives the Fresh Steak regen effect for X seconds on kill. (0 or less disables this.)", null, Array.Empty<object>()));
 
 			Brooch_Change = Config.Bind<bool>(new ConfigDefinition("Topaz Brooch", "Enable Changes"), true, new ConfigDescription("Enables changes to Topaz Brooch.", null, Array.Empty<object>()));
 			Brooch_BaseFlatBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Base Flat Barrier"), 14.0f, new ConfigDescription("The amount of flat Barrier a single stack gives.", null, Array.Empty<object>()));
@@ -158,7 +179,7 @@ namespace FlatItemBuff
 			Knurl_Change = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
 			Knurl_LevelHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Level HP"), 4f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
-			Knurl_BaseRegen = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base Regen"), 1.6f, new ConfigDescription("The amount of health regen each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			Knurl_BaseRegen = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base Regen"), 1.6f, new ConfigDescription("The amount of health regen each stack gives. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
 			Knurl_LevelRegen = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Level Regen"), 0.32f, new ConfigDescription("How much extra health regen to give per level.", null, Array.Empty<object>()));
 
 			Knurl_Rework = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Enable Rework"), false, new ConfigDescription("Enables the rework to Titanic Knurl. (Has priority over the normal changes.)", null, Array.Empty<object>()));
@@ -172,19 +193,31 @@ namespace FlatItemBuff
 			Nucleus_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Health"), 0, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Health"), 5, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
-			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 
-			NucleusRework_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus Rework", "Enable Changes"), true, new ConfigDescription("Enables the rework to the Defense Nucleus. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			NucleusRework_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework to the Defense Nucleus. (Has priority over the normal changes.)", null, Array.Empty<object>()));
 			NucleusRework_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Health"), 10, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
 			NucleusRework_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Health"), 10, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			NucleusRework_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
-			NucleusRework_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Attack Speed"), 5, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			NucleusRework_ShieldBaseDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Base Duration"), 3.0f, new ConfigDescription("How long in seconds that the shield lasts for.", null, Array.Empty<object>()));
 			NucleusRework_ShieldStackDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Stack Duration"), 0.75f, new ConfigDescription("How many extra seconds the shield lasts for per stack.", null, Array.Empty<object>()));
 
 			NucleusShared_TweakAI = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Better AI"), true, new ConfigDescription("Gives 360 Degree vision and prevents retaliation against team members.", null, Array.Empty<object>()));
-			NucleusShared_BlastRadius = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Radius"), 12f, new ConfigDescription("Blast radius when they die.", null, Array.Empty<object>()));
-			NucleusShared_BlastDamage = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Damage"), 4.5f, new ConfigDescription("Blast damage when they die.", null, Array.Empty<object>()));
+			NucleusShared_BlastRadius = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Radius"), 12f, new ConfigDescription("Blast radius when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			NucleusShared_BlastDamage = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Damage"), 4.5f, new ConfigDescription("Blast damage when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+
+			LeechingSeed_Change = Config.Bind<bool>(new ConfigDefinition("Leeching Seed", "Enable Changes"), true, new ConfigDescription("Enables changes for Leeching Seed.", null, Array.Empty<object>()));
+			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 1f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
+			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regarldess of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
+
+			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1.5f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTChance = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Chance"), 25f, new ConfigDescription("Proc chance of the Leeching debuff. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.04f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 2.5f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
 		}
 	}
 }

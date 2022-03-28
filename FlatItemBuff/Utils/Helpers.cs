@@ -45,7 +45,7 @@ namespace FlatItemBuff.Utils
 					{
 						for (int i = 0; i < owner.deployablesList.Count; i++)
 						{
-							if (owner.deployablesList[i].slot == slot)
+							if (slot == DeployableSlot.None || owner.deployablesList[i].slot == slot)
 							{
 								if (owner.deployablesList[i].deployable == deployable)
 								{
