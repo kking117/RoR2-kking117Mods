@@ -22,6 +22,8 @@ namespace FlatItemBuff.ItemChanges
         public static void EnableChanges()
         {
             MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
+            MainPlugin.NucleusRework_SummonCount.Value = Math.Max(0, MainPlugin.NucleusRework_SummonCount.Value);
+            MainPlugin.NucleusRework_SummonCount.Value = Math.Min(6, MainPlugin.NucleusRework_SummonCount.Value);
             UpdateText();
             UpdateItemDef();
             Hooks();
@@ -32,10 +34,22 @@ namespace FlatItemBuff.ItemChanges
             MainPlugin.ModLogger.LogInfo("Updating item text");
             string pickup = string.Format("Launch additional defensive measures on equipment activation.");
             string desc = string.Format("Activating your equipment deploys ");
-            desc += string.Format("<style=cIsUtility>4</style> <style=cIsDamage>Alpha Constructs</style> with <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style> and <style=cIsDamage>{2}% <style=cStack>(+{3}% per stack)</style> attack speed</style>.", (10 + MainPlugin.NucleusRework_BaseHealth.Value) * 10f, MainPlugin.NucleusRework_StackHealth.Value * 10f, (10 + MainPlugin.NucleusRework_BaseAttack.Value) * 10f, MainPlugin.NucleusRework_StackAttack.Value * 10f);
-            if (MainPlugin.NucleusRework_ShieldBaseDuration.Value > 0f || MainPlugin.NucleusRework_ShieldStackDuration.Value > 0f)
+            bool addto = false;
+            if (MainPlugin.NucleusRework_SummonCount.Value > 0)
             {
-                desc += string.Format(" Also forms a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", MainPlugin.NucleusRework_ShieldBaseDuration.Value, MainPlugin.NucleusRework_ShieldStackDuration.Value);
+                desc += string.Format("<style=cIsUtility>{0}</style> <style=cIsDamage>Alpha Constructs</style> with <style=cIsHealing>{1}% <style=cStack>(+{2}% per stack)</style> health</style> and <style=cIsDamage>{3}% <style=cStack>(+{4}% per stack)</style> attack speed</style>.", MainPlugin.NucleusRework_SummonCount.Value, (10 + MainPlugin.NucleusRework_BaseHealth.Value) * 10f, MainPlugin.NucleusRework_StackHealth.Value * 10f, (10 + MainPlugin.NucleusRework_BaseAttack.Value) * 10f, MainPlugin.NucleusRework_StackAttack.Value * 10f);
+                addto = true;
+            }
+            if (MainPlugin.NucleusRework_ShieldBaseDuration.Value > 0f)
+            {
+                if(addto)
+                {
+                    desc += string.Format(" Also forms a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", MainPlugin.NucleusRework_ShieldBaseDuration.Value, MainPlugin.NucleusRework_ShieldStackDuration.Value);
+                }
+                else
+                {
+                    desc += string.Format("a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", MainPlugin.NucleusRework_ShieldBaseDuration.Value, MainPlugin.NucleusRework_ShieldStackDuration.Value);
+                }
             }
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
@@ -55,11 +69,13 @@ namespace FlatItemBuff.ItemChanges
         {
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-            On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
+            if (MainPlugin.NucleusRework_SummonCount.Value > 0)
+            {
+                On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
+            }
             On.RoR2.EquipmentSlot.OnEquipmentExecuted += Equipment_OnExecuted;
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
-
         private static void IL_OnCharacterDeath(ILContext il)
         {
             ILCursor ilcursor = new ILCursor(il);
@@ -90,19 +106,25 @@ namespace FlatItemBuff.ItemChanges
                     int itemCount = master.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
                     if (itemCount > 0)
                     {
-                        DefenseNucleusSummonCooldown comp = self.characterBody.GetComponent<DefenseNucleusSummonCooldown>();
-                        if (!comp)
+                        if (MainPlugin.NucleusRework_SummonCount.Value > 0)
                         {
-                            int summonCount = master.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
-                            DeployConstructs(master, summonCount);
-                            comp = self.characterBody.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
+                            DefenseNucleusSummonCooldown comp = self.characterBody.GetComponent<DefenseNucleusSummonCooldown>();
+                            if (!comp)
+                            {
+                                int summonCount = master.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
+                                DeployConstructs(master, summonCount);
+                                comp = self.characterBody.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
+                            }
                         }
-                        DefenseNucleusShield comp2 = self.characterBody.GetComponent<DefenseNucleusShield>();
-                        if (!comp2)
+                        if (MainPlugin.NucleusRework_ShieldBaseDuration.Value > 0f)
                         {
-                            comp2 = self.characterBody.gameObject.AddComponent<DefenseNucleusShield>();
+                            DefenseNucleusShield comp = self.characterBody.GetComponent<DefenseNucleusShield>();
+                            if (!comp)
+                            {
+                                comp = self.characterBody.gameObject.AddComponent<DefenseNucleusShield>();
+                            }
+                            comp.duration = MainPlugin.NucleusRework_ShieldBaseDuration.Value + (MainPlugin.NucleusRework_ShieldStackDuration.Value * (itemCount - 1));
                         }
-                        comp2.duration = MainPlugin.NucleusRework_ShieldBaseDuration.Value + (MainPlugin.NucleusRework_ShieldStackDuration.Value * (itemCount - 1));
                     }
                 }
             }
@@ -114,7 +136,7 @@ namespace FlatItemBuff.ItemChanges
             {
                 return result;
             }
-            return 4;
+            return MainPlugin.NucleusRework_SummonCount.Value;
         }
         private static void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
         {

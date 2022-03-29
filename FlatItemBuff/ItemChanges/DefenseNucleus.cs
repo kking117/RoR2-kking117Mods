@@ -35,10 +35,7 @@ namespace FlatItemBuff.ItemChanges
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
-            if (MainPlugin.Nucleus_Infinite.Value)
-            {
-                On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEvent_CharacterDeath;
-            }
+            On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEvent_CharacterDeath;
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
         private static void GlobalEvent_CharacterDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
@@ -49,7 +46,11 @@ namespace FlatItemBuff.ItemChanges
                 if (damageReport.victimBody)
                 {
                     CharacterMaster deployer = null;
-                    CharacterMaster owner = Helpers.GetOwnerAsDeployable(damageReport.attackerMaster, DeployableSlot.MinorConstructOnKill);
+                    CharacterMaster owner = null;
+                    if (MainPlugin.Nucleus_Infinite.Value)
+                    {
+                        owner = Helpers.GetOwnerAsDeployable(damageReport.attackerMaster, DeployableSlot.MinorConstructOnKill);
+                    }
                     if (owner)
                     {
                         deployer = owner;
