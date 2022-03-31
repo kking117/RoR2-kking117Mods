@@ -19,8 +19,8 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			LanguageAPI.Add("ITEM_INFUSION_PICKUP", string.Format("Killing an enemy permanently increases your stats, up to {0} levels worth of stats.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
-			LanguageAPI.Add("ITEM_INFUSION_DESC", string.Format("Killing an enemy increases your <style=cIsHealing>stats permanently</style>, up to <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style> levels worth.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
+			LanguageAPI.Add("ITEM_INFUSION_PICKUP", string.Format("Kill enemies to collect samples, gaining enough will increase your level, up to {0} times.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
+			LanguageAPI.Add("ITEM_INFUSION_DESC", string.Format("Killing enough enemies increases your <style=cIsHealing>level</style>, for up to <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
 		}
 		private static void Hooks()
 		{
@@ -30,40 +30,36 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Changing proc behaviour");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-			RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+			On.RoR2.Inventory.AddInfusionBonus += OnAddInfusionBonus;
 			if (MainPlugin.Infusion_InheritOwner.Value)
 			{
 				On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
 			}
 		}
-		private static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
-		{
-			if (sender.inventory)
-			{
-				int itemCount = sender.inventory.GetItemCount(RoR2Content.Items.Infusion);
+		private static void OnAddInfusionBonus(On.RoR2.Inventory.orig_AddInfusionBonus orig, Inventory self, uint value)
+        {
+			uint OldValue = self.infusionBonus;
+			orig(self, value);
+			if((self.infusionBonus % MainPlugin.Infusion_Level.Value) - value < 0)
+            {
+				int itemCount = self.GetItemCount(RoR2Content.Items.Infusion);
 				if (itemCount > 0)
 				{
-					float infusioncap = (MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value) * itemCount;
-					float infusionlevels = (float)sender.inventory.infusionBonus / (float)MainPlugin.Infusion_Level.Value;
-					if (infusionlevels > infusioncap)
+					if (OldValue < MainPlugin.Infusion_Stacks.Value * itemCount)
 					{
-						infusionlevels = infusioncap;
-					}
-					if (infusionlevels > 0.000f)
-					{
-						args.baseHealthAdd += sender.levelMaxHealth * infusionlevels;
-						args.baseDamageAdd += sender.levelDamage * infusionlevels;
-						args.baseRegenAdd += sender.levelRegen * infusionlevels;
-						args.baseMoveSpeedAdd += sender.levelMoveSpeed * infusionlevels;
-						args.baseShieldAdd += sender.levelMaxShield * infusionlevels;
-						args.baseAttackSpeedAdd += sender.levelAttackSpeed * infusionlevels;
-						args.armorAdd += sender.levelArmor * infusionlevels;
-						args.critAdd += sender.levelCrit * infusionlevels;
-						args.jumpPowerMultAdd += sender.levelJumpPower * infusionlevels;
+						CharacterMaster owner = self.GetComponent<CharacterMaster>();
+						if (owner)
+						{
+							CharacterBody body = owner.GetBody();
+							if (body)
+							{
+								GlobalEventManager.OnCharacterLevelUp(body);
+							}
+						}
 					}
 				}
-			}
-		}
+            }
+        }
 		private static void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
 		{
 			orig(self, body);
@@ -79,17 +75,13 @@ namespace FlatItemBuff.ItemChanges
 				{
 					if (truemaster.inventory)
 					{
-						self.inventory.AddInfusionBonus(truemaster.inventory.infusionBonus - self.inventory.infusionBonus);
+						self.inventory.infusionBonus += truemaster.inventory.infusionBonus - self.inventory.infusionBonus;
 					}
 				}
 			}
 		}
 		private static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
 		{
-			if (!NetworkServer.active)
-			{
-				return;
-			}
 			if (!NetworkServer.active)
 			{
 				return;
@@ -183,6 +175,39 @@ namespace FlatItemBuff.ItemChanges
 			);
 			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
+			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdarg(x, 0),
+				x => ILPatternMatchingExt.MatchLdarg(x, 0),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "get_level"),
+				x => ILPatternMatchingExt.MatchLdloc(x, 2),
+				x => ILPatternMatchingExt.MatchConvR4(x),
+				x => ILPatternMatchingExt.MatchAdd(x),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "set_level")
+			);
+			ilcursor.Index += 5;
+			ilcursor.Emit(OpCodes.Ldarg_0);
+			ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+			{
+				if (self.inventory)
+				{
+					int itemCount = self.inventory.GetItemCount(RoR2Content.Items.Infusion);
+					if (itemCount > 0)
+					{
+						float infusioncap = (MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value) * itemCount;
+						float infusionlevels = (float)self.inventory.infusionBonus / (float)MainPlugin.Infusion_Level.Value;
+						if (infusionlevels > infusioncap)
+						{
+							infusionlevels = infusioncap;
+						}
+						if (infusionlevels > 0.0f)
+						{
+							return infusionlevels;
+						}
+					}
+				}
+				return 0f;
+			});
+			ilcursor.Emit(OpCodes.Add);
 		}
 	}
 }
