@@ -27,7 +27,7 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = string.Format("Watched over by a stone guardian.");
-			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> the weakest enemy within <style=cIsUtility>50m</style> is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{2}%</style> <style=cStack>(+{3}% per stack)</style> damage.", MainPlugin.Knurl_BaseSpeed.Value, MainPlugin.Knurl_StackSpeed.Value * 100f, MainPlugin.Knurl_BaseDamage.Value * 100f, MainPlugin.Knurl_StackDamage.Value * 100f);
+			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> the weakest enemy within <style=cIsUtility>50m</style> is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{2}%</style> <style=cStack>(+{3}% per stack)</style> damage.", MainPlugin.KnurlRework_BaseSpeed.Value, MainPlugin.KnurlRework_StackSpeed.Value * 100f, MainPlugin.KnurlRework_BaseDamage.Value * 100f, MainPlugin.KnurlRework_StackDamage.Value * 100f);
 			LanguageAPI.Add("ITEM_KNURL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_KNURL_DESC", desc);
 		}

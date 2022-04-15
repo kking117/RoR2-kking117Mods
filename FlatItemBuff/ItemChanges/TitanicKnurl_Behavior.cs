@@ -35,8 +35,8 @@ namespace FlatItemBuff.ItemChanges
 				if(victim && victim.healthComponent && victim.healthComponent.body)
                 {
 					FireFist(victim.healthComponent.body.gameObject);
-					float firerate = 1f + (MainPlugin.Knurl_StackSpeed.Value * (stack -1));
-					nextAttack += Math.Max(0.5f, MainPlugin.Knurl_BaseSpeed.Value / firerate);
+					float firerate = 1f + (MainPlugin.KnurlRework_StackSpeed.Value * (stack -1));
+					nextAttack += Math.Max(0.5f, MainPlugin.KnurlRework_BaseSpeed.Value / firerate);
 				}
 				else
                 {
@@ -46,7 +46,7 @@ namespace FlatItemBuff.ItemChanges
         }
         private void FireFist(GameObject target)
         {
-			float dmgcof = MainPlugin.Knurl_BaseDamage.Value + (MainPlugin.Knurl_StackDamage.Value * (stack - 1));
+			float dmgcof = MainPlugin.KnurlRework_BaseDamage.Value + (MainPlugin.KnurlRework_StackDamage.Value * (stack - 1));
 			float damage = body.damage * dmgcof;
 			RaycastHit raycastHit;
 			Physics.Raycast(target.transform.position, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]

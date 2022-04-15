@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using RoR2;
+﻿using RoR2;
 using R2API;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using RoR2.Projectile;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
 using FlatItemBuff.Utils;
+using FlatItemBuff.Components;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -36,7 +33,6 @@ namespace FlatItemBuff.ItemChanges
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
             On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEvent_CharacterDeath;
-            IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
         private static void GlobalEvent_CharacterDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
         {
@@ -72,26 +68,17 @@ namespace FlatItemBuff.ItemChanges
                     {
                         if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
                         {
-                            DeployConstructFromCorpse(deployer, damageReport.victimBody);
+                            DefenseNucleusSummonCooldown comp = deployer.GetComponent<DefenseNucleusSummonCooldown>();
+                            if (!comp)
+                            {
+                                comp = deployer.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
+                                comp.duration = 0.25f;
+                                DeployConstructFromCorpse(deployer, damageReport.victimBody);
+                            }
                         }
                     }
                 }
             }
-        }
-        private static void IL_OnCharacterDeath(ILContext il)
-        {
-            ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 16),
-                x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
-            );
-            ilcursor.Index += 3;
-            ilcursor.Remove();
-            ilcursor.Emit(OpCodes.Ldloc, 16);
-            ilcursor.EmitDelegate<Func<Inventory, int>>((inventory) =>
-            {
-                return inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
-            });
         }
         private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
         {

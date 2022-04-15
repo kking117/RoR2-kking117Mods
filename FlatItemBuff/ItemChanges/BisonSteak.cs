@@ -4,6 +4,7 @@ using R2API;
 using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -18,12 +19,30 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickup = string.Format("Gain <style=cIsHealing>{0}</style> max health.", MainPlugin.Steak_BaseHP.Value);
-			string desc = string.Format("Increases <style=cIsHealing>maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", MainPlugin.Steak_BaseHP.Value);
-			if (MainPlugin.Steak_OnKillDur.Value > 0f)
+			string pickup = "";
+			string desc = "";
+			bool DoASpace = false;
+			if (MainPlugin.Steak_BaseHP.Value > 0f)
+            {
+				pickup += string.Format("Gain <style=cIsHealing>{0}</style> max health.", MainPlugin.Steak_BaseHP.Value);
+				desc += string.Format("Increases <style=cIsHealing>maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", MainPlugin.Steak_BaseHP.Value);
+				DoASpace = true;
+			}
+			if (MainPlugin.Steak_BaseBuffDur.Value > 0f)
 			{
-				pickup += " <style=cIsHealing>Regenerate health</style> after killing an enemy.";
-				desc += string.Format(" Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+2 hp/s</style> for <style=cIsUtility>{1}s</style> <style=cStack>(+{1}s per stack)</style> after killing an enemy.", MainPlugin.Steak_BaseHP.Value, MainPlugin.Steak_OnKillDur.Value);
+				if(DoASpace)
+                {
+					DoASpace = false;
+					pickup += " ";
+					desc += " ";
+				}
+				pickup += "<style=cIsHealing>Regenerate health</style> after killing an enemy.";
+				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+2 hp/s</style> for <style=cIsUtility>{0}s</style>", MainPlugin.Steak_BaseBuffDur.Value);
+				if (MainPlugin.Steak_StackBuffDur.Value > 0)
+                {
+					desc += string.Format(" <style=cStack>(+{0}s per stack)</style>", MainPlugin.Steak_StackBuffDur.Value);
+				}
+				desc += " after killing an enemy.";
 			}
 			LanguageAPI.Add("ITEM_FLATHEALTH_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_FLATHEALTH_DESC", desc);
@@ -32,7 +51,7 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			if (MainPlugin.Steak_OnKillDur.Value > 0f)
+			if (MainPlugin.Steak_BaseBuffDur.Value > 0f)
             {
 				GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
 			}
@@ -51,7 +70,12 @@ namespace FlatItemBuff.ItemChanges
 					int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
 					if (itemCount > 0)
 					{
-						attacker.AddTimedBuff(JunkContent.Buffs.MeatRegenBoost, 3f * itemCount);
+						float duration = MainPlugin.Steak_BaseBuffDur.Value;
+						duration += (itemCount-1) * MainPlugin.Steak_StackBuffDur.Value;
+						if (duration > 0f)
+						{
+							attacker.AddTimedBuff(JunkContent.Buffs.MeatRegenBoost, duration);
+						}
 					}
 				}
             }
@@ -73,7 +97,11 @@ namespace FlatItemBuff.ItemChanges
 			ilcursor.Emit(OpCodes.Ldarg_0);
 			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
 			{
-				return MainPlugin.Steak_BaseHP.Value + ((bs.level - 1f) * MainPlugin.Steak_LevelHP.Value);
+				if(MainPlugin.Steak_BaseHP.Value > 0f)
+                {
+					return MainPlugin.Steak_BaseHP.Value + ((bs.level - 1f) * MainPlugin.Steak_LevelHP.Value);
+				}
+				return 0f;
 			});
 		}
 	}

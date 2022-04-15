@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using RoR2;
 using R2API;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using RoR2.Projectile;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
 using FlatItemBuff.Components;
 using FlatItemBuff.Utils;
 
@@ -67,30 +64,16 @@ namespace FlatItemBuff.ItemChanges
         }
         private static void Hooks()
         {
-            MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+            
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
             if (MainPlugin.NucleusRework_SummonCount.Value > 0)
             {
                 On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
             }
             On.RoR2.EquipmentSlot.OnEquipmentExecuted += Equipment_OnExecuted;
-            IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
+            
         }
-        private static void IL_OnCharacterDeath(ILContext il)
-        {
-            ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 16),
-                x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
-            );
-            ilcursor.Index += 3;
-            ilcursor.Remove();
-            ilcursor.Emit(OpCodes.Ldloc, 16);
-            ilcursor.EmitDelegate<Func<Inventory, int>>((inventory) =>
-            {
-                return inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
-            });
-        }
+        
         private static void Equipment_OnExecuted(On.RoR2.EquipmentSlot.orig_OnEquipmentExecuted orig, EquipmentSlot self)
         {
             orig(self);
