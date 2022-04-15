@@ -54,6 +54,10 @@ namespace WarBannerBuff.ItemChanges
 			{
 				On.EntityStates.DeepVoidPortalBattery.BaseDeepVoidPortalBatteryState.OnEnter += DeepVoidPortal_OnEnter;
 			}
+			if(MainPlugin.FocusBanner.Value > 0f)
+            {
+				On.RoR2.InfiniteTowerRun.OnSafeWardActivated += InfiniteTowerRun_OnSafeWardActivated;
+			}
 		}
 		private static void UpdateText()
 		{
@@ -119,7 +123,14 @@ namespace WarBannerBuff.ItemChanges
 				args.critAdd += MainPlugin.CritBonus.Value;
 				args.armorAdd += MainPlugin.ArmorBonus.Value;
 				args.baseDamageAdd += MainPlugin.DamageBonus.Value * (1 + (levelBonus * 0.2f));
-				args.baseAttackSpeedAdd += MainPlugin.AttackBonus.Value;
+				if(MainPlugin.UseBaseAttackSpeed.Value)
+                {
+					args.baseAttackSpeedAdd += MainPlugin.AttackBonus.Value;
+				}
+				else
+                {
+					args.attackSpeedMultAdd += MainPlugin.AttackBonus.Value;
+				}
 				args.moveSpeedMultAdd += MainPlugin.MoveBonus.Value;
 				args.baseRegenAdd += MainPlugin.RegenBonus.Value * (1 + (levelBonus * 0.2f));
 			}
@@ -224,28 +235,36 @@ namespace WarBannerBuff.ItemChanges
 			orig(self);
 			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.DeepVoidBanner.Value);
 		}
+		private static void InfiniteTowerRun_OnSafeWardActivated(On.RoR2.InfiniteTowerRun.orig_OnSafeWardActivated orig, InfiniteTowerRun self, InfiniteTowerSafeWardController safeWard)
+		{
+			orig(self, safeWard);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.FocusBanner.Value);
+		}
 		private static void SpawnTeamWarBanners(TeamIndex team, float sizemult)
 		{
 			if (NetworkServer.active)
 			{
-				ReadOnlyCollection<TeamComponent> teamlist = TeamComponent.GetTeamMembers(team);
-				for (int i = 0; i < teamlist.Count; i++)
+				if (sizemult > 0f)
 				{
-					CharacterBody body = teamlist[i].body;
-					if (body)
+					ReadOnlyCollection<TeamComponent> teamlist = TeamComponent.GetTeamMembers(team);
+					for (int i = 0; i < teamlist.Count; i++)
 					{
-						HealthComponent healthComponent = body.healthComponent;
-						if (healthComponent && healthComponent.alive)
+						CharacterBody body = teamlist[i].body;
+						if (body)
 						{
-							if (body.inventory)
+							HealthComponent healthComponent = body.healthComponent;
+							if (healthComponent && healthComponent.alive)
 							{
-								int itemCount = body.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
-								if (itemCount > 0)
+								if (body.inventory)
 								{
-									GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), teamlist[i].transform.position, Quaternion.identity);
-									gameObject.GetComponent<TeamFilter>().teamIndex = team;
-									gameObject.GetComponent<BuffWard>().Networkradius = (8f + 8f * (float)itemCount) * sizemult;
-									NetworkServer.Spawn(gameObject);
+									int itemCount = body.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
+									if (itemCount > 0)
+									{
+										GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), teamlist[i].transform.position, Quaternion.identity);
+										gameObject.GetComponent<TeamFilter>().teamIndex = team;
+										gameObject.GetComponent<BuffWard>().Networkradius = (8f + 8f * (float)itemCount) * sizemult;
+										NetworkServer.Spawn(gameObject);
+									}
 								}
 							}
 						}
