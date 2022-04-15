@@ -47,8 +47,8 @@ namespace HalcyonSeedBuff.Changes
 			if (MainPlugin.Config_Halcyon_ItemMult.Value != 1)
 			{
 				IL.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += new ILContext.Manipulator(IL_CalcTitanPowerAndBestTeam);
-				IL.RoR2.GoldTitanManager.TryStartChannelingTitansServer += new ILContext.Manipulator(IL_TrySpawnTitan);
 			}
+			IL.RoR2.GoldTitanManager.TryStartChannelingTitansServer += new ILContext.Manipulator(IL_TrySpawnTitan);
 			if (MainPlugin.Config_Halcyon_ChannelOnFocus.Value)
 			{
 				//Simulacrum spawning
@@ -210,7 +210,6 @@ namespace HalcyonSeedBuff.Changes
 						{
 							SummonTimer = 9f;
 							SpawnLocation = VoidRaidGauntlet.initialDonut.crabPosition.position;
-							VoidRaidCrabIndex = MasterCatalog.MasterIndex.none;
 						}
 					}
 				}
@@ -350,7 +349,8 @@ namespace HalcyonSeedBuff.Changes
 					return team;
 				});
 			}
-			ilcursor.GotoNext(
+			//This is unnecessary, but we'll keep it in case it changes.
+			/*ilcursor.GotoNext(
 				   x => ILPatternMatchingExt.MatchLdloc(x, 1),
 				   x => ILPatternMatchingExt.MatchConvR4(x),
 				   x => ILPatternMatchingExt.MatchLdcR4(x, 1f)
@@ -359,7 +359,7 @@ namespace HalcyonSeedBuff.Changes
 			{
 				ilcursor.Index += 2;
 				ilcursor.Next.Operand = 1f;
-			}
+			}*/
 			ilcursor.Index = 0;
 			ilcursor.GotoNext(
 				x => ILPatternMatchingExt.MatchLdloc(x, 1),

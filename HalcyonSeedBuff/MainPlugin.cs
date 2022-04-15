@@ -21,7 +21,7 @@ namespace HalcyonSeedBuff
 		public const string MODUID = "com.kking117.HalcyonSeedBuff";
 		public const string MODNAME = "HalcyonSeedBuff";
 		public const string MODTOKEN = "KKING117_HALCYONSEEDBUFF_";
-		public const string MODVERSION = "1.0.0";
+		public const string MODVERSION = "1.0.2";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
