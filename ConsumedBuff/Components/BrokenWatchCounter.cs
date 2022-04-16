@@ -9,7 +9,7 @@ namespace ConsumedBuff.Components
     public class BrokenWatchCounter : MonoBehaviour
 	{
         public int hits = 0;
-        public float LastHitFrame = -1f;
+        public int procs = 0;
         public int hitmult = 0;
     }
 }
