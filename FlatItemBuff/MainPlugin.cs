@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.7.3";
+		public const string MODVERSION = "1.8.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -69,6 +69,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDamage;
 		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDuration;
 		public static ConfigEntry<float> LeechingSeedRework_DoTStackDuration;
+
+		public static ConfigEntry<bool> StealthKit_Change;
+		public static ConfigEntry<bool> StealthKit_CancelCombat;
+		public static ConfigEntry<bool> StealthKit_CancelDanger;
 
 		public static ConfigEntry<bool> Knurl_Change;
 		public static ConfigEntry<float> Knurl_BaseHP;
@@ -147,6 +151,10 @@ namespace FlatItemBuff
 			else if (LeechingSeed_Change.Value)
 			{
 				ItemChanges.LeechingSeed.EnableChanges();
+			}
+			if (StealthKit_Change.Value)
+			{
+				ItemChanges.Stealthkit.EnableChanges();
 			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
@@ -236,6 +244,10 @@ namespace FlatItemBuff
 			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 2.5f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
+
+			StealthKit_Change = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
+			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' during the stealth buff.", null, Array.Empty<object>()));
+			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' during the stealth buff.", null, Array.Empty<object>()));
 		}
 	}
 }
