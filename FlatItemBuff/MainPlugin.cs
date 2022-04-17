@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.8.0";
+		public const string MODVERSION = "1.9.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -39,12 +39,6 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> Brooch_StackFlatBarrier;
 		public static ConfigEntry<float> Brooch_BaseCentBarrier;
 		public static ConfigEntry<float> Brooch_StackCentBarrier;
-
-		public static ConfigEntry<bool> Squid_Change;
-		public static ConfigEntry<bool> Squid_ClayHit;
-		public static ConfigEntry<float> Squid_InactiveDecay;
-		public static ConfigEntry<int> Squid_StackLife;
-		public static ConfigEntry<float> Squid_Armor;
 
 		public static ConfigEntry<bool> Infusion_Change;
 		public static ConfigEntry<int> Infusion_Stacks;
@@ -73,6 +67,22 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> StealthKit_Change;
 		public static ConfigEntry<bool> StealthKit_CancelCombat;
 		public static ConfigEntry<bool> StealthKit_CancelDanger;
+
+		public static ConfigEntry<bool> Squid_Change;
+		public static ConfigEntry<bool> Squid_ClayHit;
+		public static ConfigEntry<float> Squid_InactiveDecay;
+		public static ConfigEntry<int> Squid_StackLife;
+		public static ConfigEntry<float> Squid_Armor;
+
+		public static ConfigEntry<bool> WarHorn_Change;
+		public static ConfigEntry<float> WarHorn_BaseDuration;
+		public static ConfigEntry<float> WarHorn_StackDuration;
+		public static ConfigEntry<float> WarHorn_BaseSpeed;
+		public static ConfigEntry<float> WarHorn_StackSpeed;
+
+		public static ConfigEntry<bool> Aegis_Change;
+		public static ConfigEntry<bool> Aegis_Regen;
+		public static ConfigEntry<float> Aegis_Armor;
 
 		public static ConfigEntry<bool> Knurl_Change;
 		public static ConfigEntry<float> Knurl_BaseHP;
@@ -156,6 +166,14 @@ namespace FlatItemBuff
 			{
 				ItemChanges.Stealthkit.EnableChanges();
 			}
+			if(WarHorn_Change.Value)
+            {
+				ItemChanges.WarHorn.EnableChanges();
+            }
+			if(Aegis_Change.Value)
+            {
+				ItemChanges.Aegis.EnableChanges();
+			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -181,12 +199,6 @@ namespace FlatItemBuff
 			Brooch_BaseCentBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Base Percent Barrier"), 0.005f, new ConfigDescription("The amount of percent Barrier a single stack gives.", null, Array.Empty<object>()));
 			Brooch_StackCentBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Stack Percent Barrier"), 0.005f, new ConfigDescription("The amount of percent Barrier each stack after the first gives.", null, Array.Empty<object>()));
 
-			Squid_Change = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Enable Changes"), true, new ConfigDescription("Enables changes to Squid Polyp.", null, Array.Empty<object>()));
-			Squid_ClayHit = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Apply Tar"), true, new ConfigDescription("Makes Squid Polyps apply the Tar debuff with their attack.", null, Array.Empty<object>()));
-			Squid_InactiveDecay = Config.Bind<float>(new ConfigDefinition("Squid Polyp", "Inactive Removal"), 20f, new ConfigDescription("Makes Squid Polyps unable to heal if they've been inactive for X seconds.", null, Array.Empty<object>()));
-			Squid_StackLife = Config.Bind<int>(new ConfigDefinition("Squid Polyp", "Lifetime Per Stack"), 3, new ConfigDescription("Increases the lifespan of the Squid Polyp by this much in seconds per stack.", null, Array.Empty<object>()));
-			Squid_Armor = Config.Bind<float>(new ConfigDefinition("Squid Polyp", "Armor"), 10f, new ConfigDescription("Increases Squid Polyp armor by this much per stack.", null, Array.Empty<object>()));
-
 			Infusion_Change = Config.Bind<bool>(new ConfigDefinition("Infusion", "Enable Changes"), true, new ConfigDescription("Enables changes to Infusion.", null, Array.Empty<object>()));
 			Infusion_Stacks = Config.Bind<int>(new ConfigDefinition("Infusion", "Max Stacks"), 100, new ConfigDescription("How many stacks an infusion has (100 is the vanilla value).", null, Array.Empty<object>()));
 			Infusion_Level = Config.Bind<int>(new ConfigDefinition("Infusion", "Level Per Stacks"), 100, new ConfigDescription("How many stacks are needed to gain a level up.", null, Array.Empty<object>()));
@@ -198,6 +210,38 @@ namespace FlatItemBuff
 			Infusion_Champ_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Champion Stack"), 5, new ConfigDescription("How many samples champion enemies give.", null, Array.Empty<object>()));
 			Infusion_Elite_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Elite Bonus"), 2, new ConfigDescription("Sample multiplier for elites.", null, Array.Empty<object>()));
 			Infusion_Boss_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Boss Bonus"), 2, new ConfigDescription("Sample multiplier for bosses.", null, Array.Empty<object>()));
+
+			LeechingSeed_Change = Config.Bind<bool>(new ConfigDefinition("Leeching Seed", "Enable Changes"), true, new ConfigDescription("Enables changes for Leeching Seed.", null, Array.Empty<object>()));
+			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 1f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
+			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regarldess of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
+
+			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1.5f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTChance = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Chance"), 25f, new ConfigDescription("Proc chance of the Leeching debuff. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.04f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 2.5f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
+
+			StealthKit_Change = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
+			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' during the stealth buff.", null, Array.Empty<object>()));
+			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' during the stealth buff.", null, Array.Empty<object>()));
+
+			Squid_Change = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Enable Changes"), true, new ConfigDescription("Enables changes to Squid Polyp.", null, Array.Empty<object>()));
+			Squid_ClayHit = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Apply Tar"), true, new ConfigDescription("Makes Squid Polyps apply the Tar debuff with their attack.", null, Array.Empty<object>()));
+			Squid_InactiveDecay = Config.Bind<float>(new ConfigDefinition("Squid Polyp", "Inactive Removal"), 20f, new ConfigDescription("Makes Squid Polyps unable to heal if they've been inactive for X seconds.", null, Array.Empty<object>()));
+			Squid_StackLife = Config.Bind<int>(new ConfigDefinition("Squid Polyp", "Lifetime Per Stack"), 3, new ConfigDescription("Increases the lifespan of the Squid Polyp by this much in seconds per stack.", null, Array.Empty<object>()));
+			Squid_Armor = Config.Bind<float>(new ConfigDefinition("Squid Polyp", "Armor"), 10f, new ConfigDescription("Increases Squid Polyp armor by this much per stack.", null, Array.Empty<object>()));
+
+			WarHorn_Change = Config.Bind<bool>(new ConfigDefinition("War Horn", "Enable Changes"), true, new ConfigDescription("Enables changes to War Horn.", null, Array.Empty<object>()));
+			WarHorn_BaseDuration = Config.Bind<float>(new ConfigDefinition("War Horn", "Base Duration"), 6f, new ConfigDescription("How long the War Horn's buff lasts at 1 stack.", null, Array.Empty<object>()));
+			WarHorn_StackDuration = Config.Bind<float>(new ConfigDefinition("War Horn", "Stack Duration"), 2f, new ConfigDescription("How much longer the buff lasts from additional stacks.", null, Array.Empty<object>()));
+			WarHorn_BaseSpeed = Config.Bind<float>(new ConfigDefinition("War Horn", "Base Attack Speed"), 0.6f, new ConfigDescription("How much attack speed the buff gives at 1 stack.", null, Array.Empty<object>()));
+			WarHorn_StackSpeed = Config.Bind<float>(new ConfigDefinition("War Horn", "Stack Attack Speed"), 0.15f, new ConfigDescription("How much extra attack speed the buff gives from additional stacks.", null, Array.Empty<object>()));
+
+			Aegis_Change = Config.Bind<bool>(new ConfigDefinition("Aegis", "Enable Changes"), true, new ConfigDescription("Enables changes to Aegis.", null, Array.Empty<object>()));
+			Aegis_Regen = Config.Bind<bool>(new ConfigDefinition("Aegis", "Count Regen"), true, new ConfigDescription("Allows Aegis to convert excess regen into barrier.", null, Array.Empty<object>()));
+			Aegis_Armor = Config.Bind<float>(new ConfigDefinition("Aegis", "Armor"), 20f, new ConfigDescription("How much Armor each Aegis gives.", null, Array.Empty<object>()));
 
 			Knurl_Change = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
@@ -232,22 +276,6 @@ namespace FlatItemBuff
 			NucleusShared_ExtraDisplays = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Enable Modded Displays"), true, new ConfigDescription("Adds a few item displays to the Alpha Construct. (For Spare Drone Parts)", null, Array.Empty<object>()));
 			NucleusShared_BlastRadius = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Radius"), 12f, new ConfigDescription("Blast radius when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
 			NucleusShared_BlastDamage = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Damage"), 4.5f, new ConfigDescription("Blast damage when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-
-			LeechingSeed_Change = Config.Bind<bool>(new ConfigDefinition("Leeching Seed", "Enable Changes"), true, new ConfigDescription("Enables changes for Leeching Seed.", null, Array.Empty<object>()));
-			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 1f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
-			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regarldess of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
-
-			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1.5f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTChance = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Chance"), 25f, new ConfigDescription("Proc chance of the Leeching debuff. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.04f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 2.5f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
-
-			StealthKit_Change = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
-			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' during the stealth buff.", null, Array.Empty<object>()));
-			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' during the stealth buff.", null, Array.Empty<object>()));
 		}
 	}
 }

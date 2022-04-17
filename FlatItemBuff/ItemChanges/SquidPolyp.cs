@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 using EntityStates;
 using FlatItemBuff.Components;
 using FlatItemBuff.Utils;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -15,10 +17,6 @@ namespace FlatItemBuff.ItemChanges
         public static void EnableChanges()
         {
 			MainPlugin.ModLogger.LogInfo("Changing Squid Polyp");
-			if (MainPlugin.Squid_ClayHit.Value)
-            {
-				ModifySquidSkill();
-			}
 			UpdateText();
 			Hooks();
         }
@@ -46,19 +44,129 @@ namespace FlatItemBuff.ItemChanges
 		}
         private static void Hooks()
         {
-            On.RoR2.CharacterMaster.OnBodyStart += OnBodyStart;
+			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			IL.RoR2.GlobalEventManager.OnInteractionBegin += new ILContext.Manipulator(IL_InteractBegin);
+			On.RoR2.GlobalEventManager.OnInteractionBegin += OnInteraction;
+			if (MainPlugin.Squid_ClayHit.Value)
+            {
+				On.RoR2.Orbs.SquidOrb.Begin += SquidOrb_Begin;
+			}
+		}
+		private static void OnInteraction(On.RoR2.GlobalEventManager.orig_OnInteractionBegin orig, GlobalEventManager self, Interactor interactor, IInteractable interactable, GameObject interactableObject)
+		{
+			orig(self, interactor, interactable, interactableObject);
+			if(CanProcFromInteraction(interactable, interactableObject))
+            {
+				CharacterBody interactorBody = interactor.GetComponent<CharacterBody>();
+				if (interactorBody)
+				{
+					Inventory inventory = interactorBody.inventory;
+					if (inventory)
+					{
+						int itemCount = inventory.GetItemCount(RoR2Content.Items.Squid);
+						if (itemCount > 0)
+						{
+							TrySpawnSquidPog(interactorBody, itemCount, interactableObject.transform.position);
+						}
+					}
+				}
+			}
+		}
+
+		private static void TrySpawnSquidPog(CharacterBody summoner, int itemCount, Vector3 position)
+        {
+			if (itemCount > 0)
+			{
+				int stacks = Math.Max(0, itemCount - 1);
+				SpawnCard spawnCard = LegacyResourcesAPI.Load<CharacterSpawnCard>("SpawnCards/CharacterSpawnCards/cscSquidTurret");
+				DirectorPlacementRule placementRule = new DirectorPlacementRule
+				{
+					placementMode = DirectorPlacementRule.PlacementMode.Approximate,
+					minDistance = 5f,
+					maxDistance = 25f,
+					position = position
+				};
+				DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(spawnCard, placementRule, RoR2Application.rng);
+				directorSpawnRequest.teamIndexOverride = new TeamIndex?(TeamIndex.Player);
+				directorSpawnRequest.summonerBodyObject = summoner.gameObject;
+				DirectorSpawnRequest directorSpawnRequest2 = directorSpawnRequest;
+				directorSpawnRequest2.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(directorSpawnRequest2.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult result)
+				{
+					if (!result.success)
+					{
+						return;
+					}
+
+					CharacterMaster master = result.spawnedInstance.GetComponent<CharacterMaster>();
+					master.inventory.GiveItem(RoR2Content.Items.HealthDecay, 30 + (stacks * MainPlugin.Squid_StackLife.Value));
+					master.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, 10 * stacks);
+					CharacterBody body = master.GetBody();
+					if (body)
+					{
+						body.baseArmor += MainPlugin.Squid_Armor.Value * stacks;
+						if (MainPlugin.Squid_InactiveDecay.Value > 0f)
+						{
+							DisableHealManager component = body.gameObject.AddComponent<DisableHealManager>();
+						}
+					}
+				}));
+				DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+			}
+		}
+		private static bool CanProcFromInteraction(IInteractable interactable, GameObject interactableObject)
+        {
+			//DnSpy makes the interaction section almost unreadable for me
+			//So I just used TheMysticSword-MysticsRisky2Utils for reference.
+			MonoBehaviour monoBehaviour = (MonoBehaviour)interactable;
+			if (!monoBehaviour.GetComponent<GenericPickupController>() && !monoBehaviour.GetComponent<VehicleSeat>() && !monoBehaviour.GetComponent<NetworkUIPromptController>())
+			{
+				InteractionProcFilter procfilter = interactableObject.GetComponent<InteractionProcFilter>();
+				if (procfilter)
+				{
+					return procfilter.shouldAllowOnInteractionBeginProc;
+				}
+				return true;
+			}
+			return false;
+		}
+		private static void SquidOrb_Begin(On.RoR2.Orbs.SquidOrb.orig_Begin orig, RoR2.Orbs.SquidOrb self)
+        {
+			orig(self);
+			self.damageType |= DamageType.ClayGoo;
         }
-		public static void OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
+		private static void IL_InteractBegin(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdloc(x, 4),
+				x => ILPatternMatchingExt.MatchLdloc(x, 3),
+				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Squid")
+			);
+			if(ilcursor.Index > 0)
+            {
+				ilcursor.Index += 4;
+				//Giga brain
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+		}
+		//Keeping this here just in case my new solutions causes incompatabilities or performance issues
+		/*if (MainPlugin.Squid_ClayHit.Value)
+            {
+				ModifySquidSkill();
+			}*/
+		//On.RoR2.CharacterMaster.OnBodyStart += OnBodyStart;
+		/*public static void OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
 		{
 			orig(self, body);
 			//So as you can see this is a fairly unreliable and generally a bad way to do this
 			//But the IL for the interaction code is a complete mess and I can't even get the stack count from there
 			if (!NetworkServer.active)
-            {
+			{
 				return;
-            }
+			}
 			if (IsSquidPolyp(body))
-            {
+			{
 				MinionOwnership minionowner = self.minionOwnership;
 				if (minionowner)
 				{
@@ -74,7 +182,7 @@ namespace FlatItemBuff.ItemChanges
 						{
 							DisableHealManager component = body.gameObject.AddComponent<DisableHealManager>();
 							if (component)
-                            {
+							{
 								component.MaxLifeTime = MainPlugin.Squid_InactiveDecay.Value;
 							}
 						}
@@ -82,6 +190,7 @@ namespace FlatItemBuff.ItemChanges
 				}
 			}
 		}
+
 		private static bool IsSquidPolyp(CharacterBody self)
         {
 			if (self.bodyIndex != BodyCatalog.FindBodyIndex("SquidTurretBody"))
@@ -100,6 +209,7 @@ namespace FlatItemBuff.ItemChanges
 			}
 			return false;
         }
+
 		private static void ModifySquidSkill()
 		{
 			MainPlugin.ModLogger.LogInfo("Altering Squid Skill");
@@ -109,6 +219,6 @@ namespace FlatItemBuff.ItemChanges
 				skillDef.activationState = new SerializableEntityStateType(typeof(States.SquidFire));
 			}
 			Modules.States.RegisterState(typeof(States.SquidFire));
-		}
+		}*/
 	}
 }

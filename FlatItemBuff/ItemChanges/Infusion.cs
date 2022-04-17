@@ -19,7 +19,7 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			LanguageAPI.Add("ITEM_INFUSION_PICKUP", string.Format("Kill enemies to collect samples, gaining enough will increase your level, up to {0} times.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
+			LanguageAPI.Add("ITEM_INFUSION_PICKUP", string.Format("Kill enemies to collect samples, gaining enough will increase your level."));
 			LanguageAPI.Add("ITEM_INFUSION_DESC", string.Format("Killing enough enemies increases your <style=cIsHealing>level</style>, for up to <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", Math.Floor((double)(MainPlugin.Infusion_Stacks.Value / MainPlugin.Infusion_Level.Value))));
 		}
 		private static void Hooks()

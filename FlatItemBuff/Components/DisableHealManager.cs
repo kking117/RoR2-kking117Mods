@@ -13,7 +13,12 @@ namespace FlatItemBuff.Components
 		private void Awake()
 		{
 			body = GetComponent<CharacterBody>();
-			timer = 0f;
+			if(body)
+            {
+				body.outOfCombat = false;
+				body.outOfDanger = false;
+			}
+			timer = MainPlugin.Squid_InactiveDecay.Value;
 		}
 		private void FixedUpdate()
 		{
