@@ -1,10 +1,7 @@
 ﻿using System;
 using RoR2;
 using R2API;
-using UnityEngine.Networking;
-using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.ItemChanges
 {

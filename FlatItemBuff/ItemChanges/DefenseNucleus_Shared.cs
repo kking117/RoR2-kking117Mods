@@ -37,12 +37,16 @@ namespace FlatItemBuff.ItemChanges
                 x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
             );
             ilcursor.Index += 3;
+            ilcursor.Emit(OpCodes.Ldc_I4_0);
+            ilcursor.Emit(OpCodes.Mul);
+
+            /*ilcursor.Index += 3;
             ilcursor.Remove();
             ilcursor.Emit(OpCodes.Ldloc, 16);
             ilcursor.EmitDelegate<Func<Inventory, int>>((inventory) =>
             {
                 return inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
-            });
+            });*/
         }
         public static void ExtraChanges()
         {

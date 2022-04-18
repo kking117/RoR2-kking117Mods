@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.9.0";
+		public const string MODVERSION = "1.10.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -39,6 +39,12 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> Brooch_StackFlatBarrier;
 		public static ConfigEntry<float> Brooch_BaseCentBarrier;
 		public static ConfigEntry<float> Brooch_StackCentBarrier;
+
+		public static ConfigEntry<bool> Harpoon_Change;
+		public static ConfigEntry<float> Harpoon_BaseDuration;
+		public static ConfigEntry<float> Harpoon_StackDuration;
+		public static ConfigEntry<float> Harpoon_MoveSpeed;
+		public static ConfigEntry<float> Harpoon_CooldownRate;
 
 		public static ConfigEntry<bool> Infusion_Change;
 		public static ConfigEntry<int> Infusion_Stacks;
@@ -174,6 +180,10 @@ namespace FlatItemBuff
             {
 				ItemChanges.Aegis.EnableChanges();
 			}
+			if(Harpoon_Change.Value)
+            {
+				ItemChanges.HuntersHarpoon.EnableChanges();
+			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -198,6 +208,12 @@ namespace FlatItemBuff
 			Brooch_StackFlatBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Stack Flat Barrier"), 14.0f, new ConfigDescription("The amount of flat Barrier each stack after the first gives.", null, Array.Empty<object>()));
 			Brooch_BaseCentBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Base Percent Barrier"), 0.005f, new ConfigDescription("The amount of percent Barrier a single stack gives.", null, Array.Empty<object>()));
 			Brooch_StackCentBarrier = Config.Bind<float>(new ConfigDefinition("Topaz Brooch", "Stack Percent Barrier"), 0.005f, new ConfigDescription("The amount of percent Barrier each stack after the first gives.", null, Array.Empty<object>()));
+
+			Harpoon_Change = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Enable Changes"), true, new ConfigDescription("Enables changes to Hunters Harpoon.", null, Array.Empty<object>()));
+			Harpoon_BaseDuration = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Base Duration"), 1.5f, new ConfigDescription("Buff duration at a single stack.", null, Array.Empty<object>()));
+			Harpoon_StackDuration = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Stack Duration"), 0.75f, new ConfigDescription("Extra buff duration from additional stacks.", null, Array.Empty<object>()));
+			Harpoon_MoveSpeed = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Move Speed Bonus"), 0.25f, new ConfigDescription("How much movement speed each stack of the buff gives. (Set to 0 to disable)", null, Array.Empty<object>()));
+			Harpoon_CooldownRate = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Cooldown Rate Bonus"), 0.25f, new ConfigDescription("How much primary and secondary cooldown rate each stack of the buff gives. (Set to 0 to disable)", null, Array.Empty<object>()));
 
 			Infusion_Change = Config.Bind<bool>(new ConfigDefinition("Infusion", "Enable Changes"), true, new ConfigDescription("Enables changes to Infusion.", null, Array.Empty<object>()));
 			Infusion_Stacks = Config.Bind<int>(new ConfigDefinition("Infusion", "Max Stacks"), 100, new ConfigDescription("How many stacks an infusion has (100 is the vanilla value).", null, Array.Empty<object>()));

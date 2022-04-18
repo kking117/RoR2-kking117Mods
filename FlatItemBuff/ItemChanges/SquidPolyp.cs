@@ -2,11 +2,10 @@
 using RoR2;
 using RoR2.Skills;
 using R2API;
-using UnityEngine;
-using UnityEngine.Networking;
 using EntityStates;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
 using FlatItemBuff.Components;
-using FlatItemBuff.Utils;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
@@ -18,6 +17,10 @@ namespace FlatItemBuff.ItemChanges
         {
 			MainPlugin.ModLogger.LogInfo("Changing Squid Polyp");
 			UpdateText();
+			if (MainPlugin.Squid_ClayHit.Value)
+			{
+				ModifySquidSkill();
+			}
 			Hooks();
         }
 		private static void UpdateText()
@@ -47,10 +50,6 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnInteractionBegin += new ILContext.Manipulator(IL_InteractBegin);
 			On.RoR2.GlobalEventManager.OnInteractionBegin += OnInteraction;
-			if (MainPlugin.Squid_ClayHit.Value)
-            {
-				On.RoR2.Orbs.SquidOrb.Begin += SquidOrb_Begin;
-			}
 		}
 		private static void OnInteraction(On.RoR2.GlobalEventManager.orig_OnInteractionBegin orig, GlobalEventManager self, Interactor interactor, IInteractable interactable, GameObject interactableObject)
 		{
@@ -72,7 +71,6 @@ namespace FlatItemBuff.ItemChanges
 				}
 			}
 		}
-
 		private static void TrySpawnSquidPog(CharacterBody summoner, int itemCount, Vector3 position)
         {
 			if (itemCount > 0)
@@ -96,18 +94,17 @@ namespace FlatItemBuff.ItemChanges
 					{
 						return;
 					}
-
 					CharacterMaster master = result.spawnedInstance.GetComponent<CharacterMaster>();
+					if (MainPlugin.Squid_InactiveDecay.Value > 0f)
+					{
+						master.gameObject.AddComponent<DisableHealManager>();
+					}
 					master.inventory.GiveItem(RoR2Content.Items.HealthDecay, 30 + (stacks * MainPlugin.Squid_StackLife.Value));
 					master.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, 10 * stacks);
 					CharacterBody body = master.GetBody();
 					if (body)
 					{
 						body.baseArmor += MainPlugin.Squid_Armor.Value * stacks;
-						if (MainPlugin.Squid_InactiveDecay.Value > 0f)
-						{
-							DisableHealManager component = body.gameObject.AddComponent<DisableHealManager>();
-						}
 					}
 				}));
 				DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
@@ -129,11 +126,34 @@ namespace FlatItemBuff.ItemChanges
 			}
 			return false;
 		}
-		private static void SquidOrb_Begin(On.RoR2.Orbs.SquidOrb.orig_Begin orig, RoR2.Orbs.SquidOrb self)
-        {
-			orig(self);
-			self.damageType |= DamageType.ClayGoo;
-        }
+		private static bool IsSquidPolyp(CharacterBody self)
+		{
+			if (self.bodyIndex != BodyCatalog.FindBodyIndex("SquidTurretBody"))
+			{
+				return false;
+			}
+			if (self.inventory)
+			{
+				if (self.inventory.GetItemCount(RoR2Content.Items.Ghost) == 0)
+				{
+					if (self.inventory.GetItemCount(RoR2Content.Items.HealthDecay) == 30)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		private static void ModifySquidSkill()
+		{
+			MainPlugin.ModLogger.LogInfo("Altering Squid Skill");
+			SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Squid/SquidTurretBodyTurret.asset").WaitForCompletion();
+			if (skillDef)
+			{
+				skillDef.activationState = new SerializableEntityStateType(typeof(States.SquidFire));
+			}
+			Modules.States.RegisterState(typeof(States.SquidFire));
+		}
 		private static void IL_InteractBegin(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
@@ -150,75 +170,5 @@ namespace FlatItemBuff.ItemChanges
 				ilcursor.Emit(OpCodes.Mul);
 			}
 		}
-		//Keeping this here just in case my new solutions causes incompatabilities or performance issues
-		/*if (MainPlugin.Squid_ClayHit.Value)
-            {
-				ModifySquidSkill();
-			}*/
-		//On.RoR2.CharacterMaster.OnBodyStart += OnBodyStart;
-		/*public static void OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
-		{
-			orig(self, body);
-			//So as you can see this is a fairly unreliable and generally a bad way to do this
-			//But the IL for the interaction code is a complete mess and I can't even get the stack count from there
-			if (!NetworkServer.active)
-			{
-				return;
-			}
-			if (IsSquidPolyp(body))
-			{
-				MinionOwnership minionowner = self.minionOwnership;
-				if (minionowner)
-				{
-					CharacterMaster owner = Helpers.GetOwner(minionowner);
-					if (owner && owner != self)
-					{
-						int stacks = self.inventory.GetItemCount(RoR2Content.Items.BoostAttackSpeed);
-						int decay = (int)Math.Floor(30 + (stacks * MainPlugin.Squid_StackLife.Value * 0.1f));
-						self.inventory.RemoveItem(RoR2Content.Items.HealthDecay, self.inventory.GetItemCount(RoR2Content.Items.HealthDecay));
-						self.inventory.GiveItem(RoR2Content.Items.HealthDecay, decay);
-						body.baseArmor = MainPlugin.Squid_Armor.Value * stacks;
-						if (MainPlugin.Squid_InactiveDecay.Value > 0f)
-						{
-							DisableHealManager component = body.gameObject.AddComponent<DisableHealManager>();
-							if (component)
-							{
-								component.MaxLifeTime = MainPlugin.Squid_InactiveDecay.Value;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		private static bool IsSquidPolyp(CharacterBody self)
-        {
-			if (self.bodyIndex != BodyCatalog.FindBodyIndex("SquidTurretBody"))
-			{
-				return false;
-			}
-			if (self.inventory)
-            {
-				if (self.inventory.GetItemCount(RoR2Content.Items.Ghost) == 0)
-                {
-					if (self.inventory.GetItemCount(RoR2Content.Items.HealthDecay) == 30)
-                    {
-						return true;
-                    }
-				}
-			}
-			return false;
-        }
-
-		private static void ModifySquidSkill()
-		{
-			MainPlugin.ModLogger.LogInfo("Altering Squid Skill");
-			SkillDef skillDef = LegacyResourcesAPI.Load<SkillDef>("skilldefs/squidturretbody/squidturretbodyturret");
-			if (skillDef)
-            {
-				skillDef.activationState = new SerializableEntityStateType(typeof(States.SquidFire));
-			}
-			Modules.States.RegisterState(typeof(States.SquidFire));
-		}*/
 	}
 }
