@@ -24,6 +24,18 @@ namespace HalcyonSeedBuff.Changes
 		{
 			Hooks();
 		}
+		public static void PostLoadHooks()
+        {
+			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			if (!MainPlugin.GoldenCoastPlus)
+			{
+				if (MainPlugin.Config_Halcyon_ItemMult.Value != 1)
+				{
+					IL.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += new ILContext.Manipulator(IL_CalcTitanPowerAndBestTeam);
+				}
+			}
+			IL.RoR2.GoldTitanManager.TryStartChannelingTitansServer += new ILContext.Manipulator(IL_TrySpawnTitan);
+		}
 		private static void EditTags()
 		{
 			ItemDef TitanGoldDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/Base/TitanGoldDuringTP/TitanGoldDuringTP.asset").WaitForCompletion();
@@ -43,12 +55,6 @@ namespace HalcyonSeedBuff.Changes
 		}
 		private static void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			if (MainPlugin.Config_Halcyon_ItemMult.Value != 1)
-			{
-				IL.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += new ILContext.Manipulator(IL_CalcTitanPowerAndBestTeam);
-			}
-			IL.RoR2.GoldTitanManager.TryStartChannelingTitansServer += new ILContext.Manipulator(IL_TrySpawnTitan);
 			if (MainPlugin.Config_Halcyon_ChannelOnFocus.Value)
 			{
 				//Simulacrum spawning
@@ -349,27 +355,30 @@ namespace HalcyonSeedBuff.Changes
 					return team;
 				});
 			}
-			//This is unnecessary, but we'll keep it in case it changes.
-			/*ilcursor.GotoNext(
-				   x => ILPatternMatchingExt.MatchLdloc(x, 1),
-				   x => ILPatternMatchingExt.MatchConvR4(x),
-				   x => ILPatternMatchingExt.MatchLdcR4(x, 1f)
+			if (!MainPlugin.GoldenCoastPlus)
+			{
+				//This is unnecessary, but we'll keep it in case it changes.
+				/*ilcursor.GotoNext(
+					   x => ILPatternMatchingExt.MatchLdloc(x, 1),
+					   x => ILPatternMatchingExt.MatchConvR4(x),
+					   x => ILPatternMatchingExt.MatchLdcR4(x, 1f)
+					);
+				if (ilcursor.Index > 0)
+				{
+					ilcursor.Index += 2;
+					ilcursor.Next.Operand = 1f;
+				}*/
+				ilcursor.Index = 0;
+				ilcursor.GotoNext(
+					x => ILPatternMatchingExt.MatchLdloc(x, 1),
+					x => ILPatternMatchingExt.MatchConvR4(x),
+					x => ILPatternMatchingExt.MatchLdcR4(x, 0.5f)
 				);
-			if (ilcursor.Index > 0)
-			{
-				ilcursor.Index += 2;
-				ilcursor.Next.Operand = 1f;
-			}*/
-			ilcursor.Index = 0;
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 1),
-				x => ILPatternMatchingExt.MatchConvR4(x),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 0.5f)
-			);
-			if (ilcursor.Index > 0)
-			{
-				ilcursor.Index += 2;
-				ilcursor.Next.Operand = 1f;
+				if (ilcursor.Index > 0)
+				{
+					ilcursor.Index += 2;
+					ilcursor.Next.Operand = 1f;
+				}
 			}
 		}
 	}
