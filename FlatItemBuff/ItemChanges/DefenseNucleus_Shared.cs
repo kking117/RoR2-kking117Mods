@@ -33,7 +33,7 @@ namespace FlatItemBuff.ItemChanges
         {
             ILCursor ilcursor = new ILCursor(il);
             ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 16),
+                x => ILPatternMatchingExt.MatchLdloc(x, 17),
                 x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
             );
             ilcursor.Index += 3;

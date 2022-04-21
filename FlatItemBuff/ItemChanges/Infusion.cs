@@ -153,12 +153,12 @@ namespace FlatItemBuff.ItemChanges
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 16),
+				x => ILPatternMatchingExt.MatchLdloc(x, 17),
 				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Infusion"),
 				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount")
 			);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 38)
+				x => ILPatternMatchingExt.MatchLdloc(x, 43)
 			);
 			ilcursor.Remove();
 			ilcursor.Emit(OpCodes.Ldc_I4_0);

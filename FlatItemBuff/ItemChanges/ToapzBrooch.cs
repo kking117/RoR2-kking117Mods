@@ -46,13 +46,13 @@ namespace FlatItemBuff.ItemChanges
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
 				x => ILPatternMatchingExt.MatchLdcR4(x, 15),
-				x => ILPatternMatchingExt.MatchLdloc(x, 43),
+				x => ILPatternMatchingExt.MatchLdloc(x, 49),
 				x => ILPatternMatchingExt.MatchConvR4(x),
 				x => ILPatternMatchingExt.MatchMul(x)
 			);
 			ilcursor.RemoveRange(4);
 			ilcursor.Emit(OpCodes.Ldarg_1);
-			ilcursor.Emit(OpCodes.Ldloc, 43);
+			ilcursor.Emit(OpCodes.Ldloc, 49);
 			ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
 			{
 				itemCount--;

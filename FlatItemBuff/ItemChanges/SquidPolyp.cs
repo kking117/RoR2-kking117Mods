@@ -158,8 +158,8 @@ namespace FlatItemBuff.ItemChanges
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdloc(x, 5),
 				x => ILPatternMatchingExt.MatchLdloc(x, 4),
-				x => ILPatternMatchingExt.MatchLdloc(x, 3),
 				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Squid")
 			);
 			if(ilcursor.Index > 0)
