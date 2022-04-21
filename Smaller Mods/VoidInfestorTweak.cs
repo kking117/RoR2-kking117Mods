@@ -11,7 +11,7 @@ namespace VoidInfestorTweak
     {
         public const string MODUID = "com.kking117.VoidInfestorTweak";
         public const string MODNAME = "VoidInfestorTweak";
-        public const string MODVERSION = "1.2.0";
+        public const string MODVERSION = "1.2.1";
 		public void Awake()
         {
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_CharacterDeath);
@@ -20,8 +20,8 @@ namespace VoidInfestorTweak
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchStloc(x, 31),
-				x => ILPatternMatchingExt.MatchLdloc(x, 31)
+				x => ILPatternMatchingExt.MatchStloc(x, 36),
+				x => ILPatternMatchingExt.MatchLdloc(x, 36)
 			);
 			ilcursor.GotoNext(
 				x => ILPatternMatchingExt.MatchLdcI4(x, 4)
