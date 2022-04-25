@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
 using RoR2;
 using RoR2.Items;
 using R2API;
-using R2API.Utils;
-using UnityEngine;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 
@@ -31,7 +26,7 @@ namespace ConsumedBuff.ItemChanges
                 IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
             }
         }
-        public static void UpdateText()
+        private static void UpdateText()
         {
             string pickup = string.Format("");
             string desc = string.Format("");
@@ -162,7 +157,7 @@ namespace ConsumedBuff.ItemChanges
         {
             foreach (ContagiousItemManager.TransformationInfo transformationInfo in ContagiousItemManager.transformationInfos)
             {
-                ContagiousItemManager.TryForceReplacement(inventory, transformationInfo.transformedItem);
+                ContagiousItemManager.TryForceReplacement(inventory, transformationInfo.originalItem);
             }
         }
     }

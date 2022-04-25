@@ -1,8 +1,6 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Configuration;
-using RoR2;
-using R2API;
 using R2API.Utils;
 
 using System.Security;
@@ -23,7 +21,7 @@ namespace ConsumedBuff
     {
         public const string MODUID = "com.kking117.ConsumedBuff";
         public const string MODNAME = "ConsumedBuff";
-        public const string MODVERSION = "1.2.0";
+        public const string MODVERSION = "1.2.1";
         public const string MODTOKEN = "KKING117_CONSUMEDBUFF_";
 
         public static ConfigEntry<bool> VoidDio_Enable;
@@ -46,8 +44,7 @@ namespace ConsumedBuff
         public static ConfigEntry<int> Watch_ProcsToDouble;
         public static ConfigEntry<float> Watch_SlowBase;
         public static ConfigEntry<float> Watch_SlowStack;
-
-        public void Awake()
+        private void Awake()
         {
             ReadConfig();
             if (Elixir_Enable.Value)

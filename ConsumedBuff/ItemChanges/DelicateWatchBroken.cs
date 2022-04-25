@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using RoR2;
 using R2API;
-using R2API.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
 using MonoMod.Cil;
@@ -32,12 +29,12 @@ namespace ConsumedBuff.ItemChanges
                 dmgMult = MainPlugin.Watch_Damage.Value * 5f;
                 IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
             }
-            UpdateText();
             On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
             if (MainPlugin.Watch_Indicator.Value)
             {
                 CreateBuff();
             }
+            UpdateText();
         }
         private static void CreateBuff()
         {
@@ -73,7 +70,7 @@ namespace ConsumedBuff.ItemChanges
             }
             return result;
         }
-        public static void UpdateText()
+        private static void UpdateText()
         {
             string pickup = string.Format("");
             string desc = string.Format("");
@@ -102,8 +99,8 @@ namespace ConsumedBuff.ItemChanges
             pickup += string.Format(".");
             desc += string.Format(".");
 
-            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_PICKUP", pickup);
-            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_DESC", desc);
+            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_PICKUP", pickup, "en");
+            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_DESC", desc, "en");
         }
         private static void IL_TakeDamage(ILContext il)
         {

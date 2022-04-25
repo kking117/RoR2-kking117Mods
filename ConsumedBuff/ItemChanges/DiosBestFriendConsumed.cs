@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RoR2;
+﻿using RoR2;
 using R2API;
-using R2API.Utils;
-using UnityEngine;
 
 namespace ConsumedBuff.ItemChanges
 {
@@ -18,7 +13,7 @@ namespace ConsumedBuff.ItemChanges
                 On.RoR2.HealthComponent.OnInventoryChanged += OnInventoryChanged;
             }
         }
-        public static void UpdateText()
+        private static void UpdateText()
         {
             string pickup = string.Format("");
             string desc = string.Format("");

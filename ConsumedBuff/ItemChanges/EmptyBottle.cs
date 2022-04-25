@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RoR2;
+﻿using RoR2;
 using R2API;
-using R2API.Utils;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace ConsumedBuff.ItemChanges
@@ -22,8 +17,9 @@ namespace ConsumedBuff.ItemChanges
             {
                 On.RoR2.CharacterMasterNotificationQueue.PushItemTransformNotification += OnItemAdded;
             }
+            UpdateText();
         }
-        public static void UpdateText()
+        private static void UpdateText()
         {
             string pickup = string.Format("");
             string desc = string.Format("");
@@ -37,8 +33,8 @@ namespace ConsumedBuff.ItemChanges
                 pickup = string.Format("An empty container from an Elixir you consumed. Does nothing.");
                 desc = string.Format("A spent item with no remaining power.");
             }
-            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_PICKUP", pickup);
-            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_DESC", desc);
+            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_PICKUP", pickup, "en");
+            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_DESC", desc, "en");
         }
         private static void OnItemAdded(On.RoR2.CharacterMasterNotificationQueue.orig_PushItemTransformNotification orig, CharacterMaster self, ItemIndex oldItem, ItemIndex newItem, CharacterMasterNotificationQueue.TransformationType transformationType)
         {
