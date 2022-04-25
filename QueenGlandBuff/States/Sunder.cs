@@ -16,7 +16,6 @@ namespace QueenGlandBuff.States
 			modelTransform = GetModelTransform();
 			duration = baseDuration / attackSpeedStat;
 			Util.PlayAttackSpeedSound(initialAttackSoundString, gameObject, attackSpeedStat * (soundtime / duration));
-			//PlayCrossfade("Body", "FireSunder", "FireSunder.playbackRate", duration, 0.2f);
 			PlayAnimation("Body", "FireSunder", "FireSunder.playbackRate", duration);
 			if (characterBody)
 			{
@@ -225,9 +224,9 @@ namespace QueenGlandBuff.States
 		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.hitEffectPrefab;
 
 		public static GameObject projectile1Prefab = EntityStates.BeetleGuardMonster.FireSunder.projectilePrefab;
-		public static GameObject projectile2Prefab = ItemChanges.QueensGland.SlamRockProjectile;
-		public static GameObject projectile3Prefab = MainPlugin.Perfect_Sunder_MainProj;
-		public static GameObject projectile4Prefab = MainPlugin.Perfect_Sunder_SecProj;
+		public static GameObject projectile2Prefab = Changes.BeetleGuardAlly.SlamRockProjectile;
+		public static GameObject projectile3Prefab = Changes.BeetleGuardAlly.Perfect_Sunder_MainProj;
+		public static GameObject projectile4Prefab = Changes.BeetleGuardAlly.Perfect_Sunder_SecProj;
 
 		private UnityEngine.Animator modelAnimator;
 

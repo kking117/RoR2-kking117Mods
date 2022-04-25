@@ -96,7 +96,7 @@ namespace QueenGlandBuff.States
 					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
 					{
 						float damage = projCount * projdamageCoefficient / 4f;
-						ProjectileManager.instance.FireProjectile(MainPlugin.Perfect_Slam_Proj, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, null, -1f);
+						ProjectileManager.instance.FireProjectile(Changes.BeetleGuardAlly.Perfect_Slam_Proj, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, null, -1f);
 					}
 					else
 					{
@@ -142,7 +142,7 @@ namespace QueenGlandBuff.States
 		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.chargeEffectPrefab;
 		public static GameObject slamEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.slamEffectPrefab;
 		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.hitEffectPrefab;
-		public static GameObject projectile1Prefab = ItemChanges.QueensGland.SlamRockProjectile;
+		public static GameObject projectile1Prefab = Changes.BeetleGuardAlly.SlamRockProjectile;
 
 		private Animator modelAnimator;
 		private Transform modelTransform;

@@ -8,7 +8,6 @@ using R2API.Utils;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
-//using Moonstorm;
 
 using System.Security;
 using System.Security.Permissions;
@@ -18,7 +17,6 @@ using System.Security.Permissions;
 namespace QueenGlandBuff
 {
 	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-	//[BepInDependency("com.TeamMoonstorm.MoonstormSharedUtils", BepInDependency.DependencyFlags.SoftDependency)]
 	[R2APISubmoduleDependency(new string[]
 	{
 		"LanguageAPI",
@@ -31,11 +29,9 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.3.0";
+		public const string MODVERSION = "1.3.1";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
-
-		public static bool MoonstormSharedUtils;
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -69,34 +65,21 @@ namespace QueenGlandBuff
 		public static ConfigEntry<bool> Gland_AddUtility;
 		public static ConfigEntry<bool> Gland_AddSpecial;
 
-		public static GameObject Default_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/hermitcrabbombprojectile");
-		public static GameObject Perfect_Sunder_MainProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brothersunderwave");
-		public static GameObject Perfect_Sunder_SecProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/lunarshardprojectile");
-		public static GameObject Perfect_Slam_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brotherfirepillar");
-
-		public static float FixedTimer;
-		public void Awake()
+		internal static float FixedTimer;
+		private void Awake()
 		{
 			ModLogger = this.Logger;
-
-			Logger.LogInfo("Reading Config.");
 			ReadConfig();
-			//GetModCompat();
-
 			if (Gland_SpawnAffix.Value != 0)
 			{
 				On.RoR2.Stage.BeginServer += Stage_BeginServer;
 			}
-			ItemChanges.QueensGland.Begin();
+			Changes.QueensGland.Begin();
 			if (Gland_Debug.Value)
 			{
 				Logger.LogInfo("Initializing ContentPack.");
 			}
 			new Modules.ContentPacks().Initialize();
-		}
-		private void GetModCompat()
-        {
-			//MoonstormSharedUtils = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.MoonstormSharedUtils");
 		}
 		private void Stage_BeginServer(On.RoR2.Stage.orig_BeginServer orig, Stage self)
 		{
@@ -154,26 +137,7 @@ namespace QueenGlandBuff
 					}
 				}
             }
-			/*if (MoonstormSharedUtils)
-			{
-				AddMoonstormElites(IsLoop);
-			}*/
 		}
-		/*private void AddMoonstormElites(bool IsLoop)
-        {
-			for (int i = 0; i < EliteModuleBase.MoonstormElites.Count; i++)
-			{
-				EliteTiers tier = EliteModuleBase.MoonstormElites[i].eliteTier;
-				if (IsLoop && tier == EliteTiers.PostLoop)
-				{
-					StageEliteEquipmentDefs.Add(EliteModuleBase.MoonstormElites[i].eliteEquipmentDef);
-				}
-				else if (tier == EliteTiers.Basic)
-				{
-					StageEliteEquipmentDefs.Add(EliteModuleBase.MoonstormElites[i].eliteEquipmentDef);
-				}
-			}
-		}*/
 		public void ReadConfig()
 		{
 			Gland_Debug = Config.Bind<bool>(new ConfigDefinition("Misc", "Debug"), false, new ConfigDescription("Enables debug messages.", null, Array.Empty<object>()));

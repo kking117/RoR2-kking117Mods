@@ -17,49 +17,6 @@ namespace QueenGlandBuff.Utils
             }
             return false;
 	    }
-
-        public static bool DoesMasterHaveDeployable(CharacterMaster self, DeployableSlot deployslot, CharacterMaster target)
-        {
-			Deployable deployable = target.GetComponent<Deployable>();
-			if (deployable)
-			{
-				if (self.deployablesList != null)
-				{
-					for (int i = 0; i < self.deployablesList.Count; i++)
-					{
-						if (self.deployablesList[i].slot == deployslot)
-						{
-							if (self.deployablesList[i].deployable == deployable)
-							{
-								return true;
-							}
-						}
-					}
-				}
-			}
-            return false;
-        }
-		public static void RemoveDeployableBeetles(CharacterMaster self, int deletecount)
-		{
-			if (self)
-			{
-				MinionOwnership ownership = self.minionOwnership;
-				if (ownership)
-				{
-					for (int i = 0; i < self.deployablesList.Count && deletecount > 0; i++)
-					{
-						if (self.deployablesList[i].slot == DeployableSlot.BeetleGuardAlly)
-						{
-							Deployable deployable = self.deployablesList[i].deployable;
-							self.deployablesList.RemoveAt(i);
-							deployable.ownerMaster = null;
-							deployable.onUndeploy.Invoke();
-							deletecount--;
-						}
-					}
-				}
-			}
-		}
 		public static void GiveRandomEliteAffix(CharacterMaster self)
 		{
 			if(MainPlugin.Gland_SpawnAffix.Value == 0)
@@ -89,44 +46,48 @@ namespace QueenGlandBuff.Utils
 			if (self.master && self.master.minionOwnership && self.master.minionOwnership.ownerMaster)
 			{
 				CharacterMaster owner = (self.master.minionOwnership.ownerMaster);
-				if (owner.GetBody())
+				if (owner && owner.GetBody())
 				{
-					if (owner.GetBody().healthComponent.alive && self.inventory.GetItemCount(RoR2Content.Items.MinionLeash) > 0)
+					CharacterBody ownerBody = owner.GetBody();
+					if (owner.teamIndex == self.teamComponent.teamIndex)
 					{
-						Vector3 ownerposition = owner.GetBody().corePosition;
-						SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
-						spawnCard.hullSize = self.hullClassification;
-						spawnCard.nodeGraphType = (self.isFlying ? RoR2.Navigation.MapNodeGroup.GraphType.Air : RoR2.Navigation.MapNodeGroup.GraphType.Ground);
-						spawnCard.prefab = LegacyResourcesAPI.Load<GameObject>("SpawnCards/HelperPrefab");
-						GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
+						if (ownerBody.healthComponent.alive)
 						{
-							placementMode = DirectorPlacementRule.PlacementMode.Approximate,
-							minDistance = 15f,
-							maxDistance = 40f,
-							position = ownerposition
-						}, RoR2Application.rng));
-						if (gameObject)
-						{
-							Vector3 position = gameObject.transform.position;
-							TeleportHelper.TeleportBody(self, position);
-							GameObject teleportEffectPrefab = Run.instance.GetTeleportEffectPrefab(self.gameObject);
-							if (teleportEffectPrefab)
+							Vector3 ownerposition = ownerBody.corePosition;
+							SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
+							spawnCard.hullSize = self.hullClassification;
+							spawnCard.nodeGraphType = (self.isFlying ? RoR2.Navigation.MapNodeGroup.GraphType.Air : RoR2.Navigation.MapNodeGroup.GraphType.Ground);
+							spawnCard.prefab = LegacyResourcesAPI.Load<GameObject>("SpawnCards/HelperPrefab");
+							GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
 							{
-								EffectManager.SimpleEffect(teleportEffectPrefab, position, Quaternion.identity, true);
+								placementMode = DirectorPlacementRule.PlacementMode.Approximate,
+								minDistance = 15f,
+								maxDistance = 40f,
+								position = ownerposition
+							}, RoR2Application.rng));
+							if (gameObject)
+							{
+								Vector3 position = gameObject.transform.position;
+								TeleportHelper.TeleportBody(self, position);
+								GameObject teleportEffectPrefab = Run.instance.GetTeleportEffectPrefab(self.gameObject);
+								if (teleportEffectPrefab)
+								{
+									EffectManager.SimpleEffect(teleportEffectPrefab, position, Quaternion.identity, true);
+								}
+								UnityEngine.Object.Destroy(spawnCard);
+								UnityEngine.Object.Destroy(gameObject);
+								return 2;
 							}
-							UnityEngine.Object.Destroy(spawnCard);
-							UnityEngine.Object.Destroy(gameObject);
-							return 2;
+							else
+							{
+								UnityEngine.Object.Destroy(spawnCard);
+								return 1;
+							}
 						}
 						else
 						{
-							UnityEngine.Object.Destroy(spawnCard);
-							return 1;
+							return 0;
 						}
-					}
-					else
-					{
-						return 0;
 					}
 				}
 			}
@@ -205,7 +166,7 @@ namespace QueenGlandBuff.Utils
 						{
 							if (DoesBodyContainName(targetbody, "beetle"))
 							{
-								targetbody.AddTimedBuff(ItemChanges.QueensGland.BeetleFrenzy, 1.5f);
+								targetbody.AddTimedBuff(Changes.BeetleGuardAlly.BeetleFrenzy, 1.5f);
 							}
 						}
 					}
@@ -215,15 +176,11 @@ namespace QueenGlandBuff.Utils
 		private static bool RollAggroChance(CharacterBody target)
 		{
 			float result = UnityEngine.Random.Range(0f, 1f);
-			if (target.isBoss && MainPlugin.Gland_Staunch_AggroBossChance.Value > result)
+			if (target.isBoss)
 			{
-				return true;
+				return MainPlugin.Gland_Staunch_AggroBossChance.Value > result;
 			}
-			else if (MainPlugin.Gland_Staunch_AggroChance.Value > result)
-			{
-				return true;
-			}
-			return false;
+			return MainPlugin.Gland_Staunch_AggroChance.Value > result;
 		}
 	}
 }

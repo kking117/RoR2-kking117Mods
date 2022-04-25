@@ -15,7 +15,6 @@ namespace QueenGlandBuff.States
 			modelAnimator = GetModelAnimator();
 			if (modelAnimator)
 			{
-				//PlayCrossfade("Body", "DefenseUp", "DefenseUp.playbackRate", duration, 0.2f);
 				PlayAnimation("Body", "DefenseUp", "DefenseUp.playbackRate", duration);
 			}
 			if (NetworkServer.active)
@@ -43,7 +42,7 @@ namespace QueenGlandBuff.States
 					hasCastBuff = true;
 					if (NetworkServer.active)
 					{
-						characterBody.AddTimedBuff(ItemChanges.QueensGland.Staunching, buffDuration);
+						characterBody.AddTimedBuff(Changes.BeetleGuardAlly.Staunching, buffDuration);
 					}
 				}
 			}

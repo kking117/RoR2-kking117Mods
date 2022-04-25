@@ -41,7 +41,7 @@ namespace QueenGlandBuff.States
 						int teleresult = Utils.Helpers.TeleportToOwner(characterBody);
 						if (teleresult == 0)
 						{
-							characterBody.AddTimedBuff(ItemChanges.QueensGland.BeetleFrenzy, buffDuration);
+							characterBody.AddTimedBuff(Changes.BeetleGuardAlly.BeetleFrenzy, buffDuration);
 						}
 						else if (teleresult == 1)
 						{
