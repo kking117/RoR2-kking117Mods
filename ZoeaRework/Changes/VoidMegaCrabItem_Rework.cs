@@ -1,0 +1,216 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using RoR2;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.AddressableAssets;
+
+namespace ZoeaRework.Changes
+{
+    public class VoidMegaCrabItem_Rework
+    {
+        public static void Begin()
+        {
+            VoidMegaCrabItem_Shared.Begin();
+            UpdateText();
+            Hooks();
+            VoidMegaCrabAlly.Begin();
+        }
+        private static void UpdateText()
+        {
+            string stat_text = String.Format("<style=cIsDamage>{0}% ", (MainPlugin.Config_Rework_DamageBase.Value + 10) * 10);
+            if(MainPlugin.Config_Rework_DamageStack.Value != 0)
+            {
+                stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_DamageStack.Value * 10);
+            }
+            stat_text += "damage</style>";
+            if (MainPlugin.Config_Rework_HealthBase.Value != 0 || MainPlugin.Config_Rework_HealthStack.Value != 0)
+            {
+                if(stat_text.Length > 0)
+                {
+                    stat_text += " and ";
+                }
+                stat_text += String.Format("<style=cIsHealing>{0}% ", (MainPlugin.Config_Rework_HealthBase.Value + 10) * 10);
+                if (MainPlugin.Config_Rework_HealthStack.Value != 0)
+                {
+                    stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_HealthStack.Value * 10);
+                }
+                stat_text += "health</style>";
+            }
+
+            string pickup_text = "";
+            string desc_text = "";
+            pickup_text += "Recruit a <style=cIsVoid>Void Devastator</style>";
+            desc_text += String.Format("<style=cIsUtility>Summon</style> a <style=cIsVoid>Void Devastator</style> with {0}", stat_text);
+            if(MainPlugin.Config_Rework_Inherit.Value)
+            {
+                pickup_text += " that inherits your items";
+                desc_text += " that <style=cIsUtility>inherits your items</style>";
+            }
+            pickup_text += ".";
+            desc_text += ".";
+            if (MainPlugin.Config_Shared_OnlyGlands.Value)
+            {
+                pickup_text += " <style=cIsVoid>Corrupts all </style><style=cIsTierBoss>Queen's Glands</style>.";
+                desc_text += " <style=cIsVoid>Corrupts all </style><style=cIsTierBoss>Queen's Glands</style>.";
+            }
+            else
+            {
+                pickup_text += " <style=cIsVoid>Corrupts most </style><style=cIsTierBoss>yellow items</style>.";
+                desc_text += " <style=cIsVoid>Corrupts most </style><style=cIsTierBoss>yellow items</style>.";
+            }
+            R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP", pickup_text);
+            R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_DESC", desc_text);
+        }
+        private static void Hooks()
+        {
+            //Prevent the old behaviour from running, run our own.
+            CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChange;
+            //Deployable slot changes
+            On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
+        }
+        private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
+        {
+            var result = orig(self, slot);
+            if (slot != DeployableSlot.VoidMegaCrabItem)
+            {
+                return result;
+            }
+
+            int amount = 0;
+            if (self.inventory)
+            {
+                if(self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) > 0)
+                {
+                    amount = 1;
+                }
+            }
+            if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
+            {
+                amount *= 2;
+            }
+            return amount;
+        }
+        private static void OnInventoryChange(CharacterBody self)
+        {
+            if (NetworkServer.active)
+            {
+                int itemCount = self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem);
+                self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
+                self.AddItemBehavior<ZoeaBehavior_Rework>(itemCount);
+                CullSummons(self.master);
+            }
+        }
+        internal static void CullSummons(CharacterMaster owner)
+        {
+            if (!NetworkServer.active)
+            {
+                return;
+            }
+            if (owner.deployablesList != null)
+            {
+                int maxSummons = owner.GetDeployableSameSlotLimit(DeployableSlot.VoidMegaCrabItem);
+                int curSummons = 0;
+                for (int i = 0; i < owner.deployablesList.Count; i++)
+                {
+                    if (owner.deployablesList[i].slot == DeployableSlot.VoidMegaCrabItem)
+                    {
+                        Deployable deploy = owner.deployablesList[i].deployable;
+                        if (deploy)
+                        {
+                            CharacterMaster master = deploy.GetComponent<CharacterMaster>();
+                            if (master)
+                            {
+                                if (master.teamIndex == owner.teamIndex)
+                                {
+                                    curSummons += 1;
+                                    if (curSummons > maxSummons)
+                                    {
+                                        master.TrueKill();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        internal static void UpdateAllSummonInventory(CharacterMaster owner)
+        {
+            if (!NetworkServer.active)
+            {
+                return;
+            }
+            if (owner.deployablesList != null)
+            {
+                int maxSummons = owner.GetDeployableSameSlotLimit(DeployableSlot.VoidMegaCrabItem);
+                int curSummons = 0;
+                for (int i = 0; i < owner.deployablesList.Count; i++)
+                {
+                    if (owner.deployablesList[i].slot == DeployableSlot.VoidMegaCrabItem)
+                    {
+                        Deployable deploy = owner.deployablesList[i].deployable;
+                        if (deploy)
+                        {
+                            CharacterMaster master = deploy.GetComponent<CharacterMaster>();
+                            if (master)
+                            {
+                                if (master.teamIndex == owner.teamIndex)
+                                {
+                                    curSummons += 1;
+                                    if (curSummons > maxSummons)
+                                    {
+                                        master.TrueKill();
+                                    }
+                                    else
+                                    {
+                                        UpdateInventory(owner, master);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        internal static void UpdateInventory(CharacterMaster owner, CharacterMaster summon)
+        {
+            if (!NetworkServer.active)
+            {
+                return;
+            }
+            Inventory owneritems = owner.inventory;
+            if (owneritems)
+            {
+                Inventory inv = summon.inventory;
+                int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
+                if (MainPlugin.Config_Rework_Inherit.Value)
+                {
+                    inv.CopyItemsFrom(CloneThis(owneritems));
+                }
+                inv.ResetItem(RoR2Content.Items.BoostDamage);
+                inv.ResetItem(RoR2Content.Items.BoostHp);
+                inv.ResetItem(RoR2Content.Items.MinionLeash);
+                int dmg = MainPlugin.Config_Rework_DamageBase.Value + (MainPlugin.Config_Rework_DamageStack.Value * itemCount);
+                int hp = MainPlugin.Config_Rework_HealthBase.Value + (MainPlugin.Config_Rework_HealthStack.Value * itemCount);
+                inv.GiveItem(RoR2Content.Items.BoostDamage, dmg);
+                inv.GiveItem(RoR2Content.Items.BoostHp, hp);
+                inv.GiveItem(RoR2Content.Items.MinionLeash, 1);
+            }
+        }
+
+        private static Inventory CloneThis(Inventory inventory)
+        {
+            //I can't be assed getting filters working.
+            Inventory inv = new Inventory();
+            inv.CopyItemsFrom(inventory, Inventory.defaultItemCopyFilterDelegate);
+            inv.ResetItem(RoR2Content.Items.LunarPrimaryReplacement);
+            inv.ResetItem(RoR2Content.Items.LunarSecondaryReplacement);
+            inv.ResetItem(RoR2Content.Items.LunarUtilityReplacement);
+            inv.ResetItem(RoR2Content.Items.LunarSpecialReplacement);
+            return inv;
+        }
+    }
+}

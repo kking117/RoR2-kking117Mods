@@ -12,13 +12,12 @@ using EntityStates;
 
 namespace ZoeaRework.Changes
 {
-    public class VoidMegaCrabAlly
+    public class VoidJailerAlly
     {
         public static GameObject AllyBodyObject;
         public static GameObject AllyMasterObject;
         public static SkillDef UtilitySkill;
         public static CharacterSpawnCard AllySpawnCard;
-        internal static GameObject PortalEffectPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabSpawnEffect.prefab").WaitForCompletion();
         public static void Begin()
         {
             CreateUtilitySkill();
@@ -32,7 +31,7 @@ namespace ZoeaRework.Changes
             CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
             if (master.bodyPrefab)
             {
-                if(master.bodyPrefab.name != "VoidMegaCrabBody")
+                if(master.bodyPrefab.name != "VoidJailerBody")
                 {
                     BodyExists = true;
                     MainPlugin.ModLogger.LogInfo("Master already has a replacement body, skipping creation step.");
@@ -49,36 +48,25 @@ namespace ZoeaRework.Changes
                 CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
                 if (body)
                 {
-                    body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed.Value;
+                    body.baseMoveSpeed = MainPlugin.Config_VoidJailer_BaseSpeed.Value;
                     body.baseMaxHealth *= 0.5f;
                     body.levelMaxHealth *= 0.5f;
                 }
             }
         }
-        internal static void PostLoad()
-        {
-            if (MainPlugin.Config_VoidMegaCrab_EnableDisplays.Value)
-            {
-                CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
-                if (master.bodyPrefab)
-                {
-                    VoidMegaCrabAllyDisplays.Create(master.bodyPrefab);
-                }
-            }
-        }
         private static void CreateNewBody()
         {
-            GameObject bodyprefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabBody.prefab").WaitForCompletion();
-            AllyBodyObject = bodyprefab.InstantiateClone("VoidMegaCrabAllyBody", true);
+            GameObject bodyprefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidJailer/VoidJailerBody.prefab").WaitForCompletion();
+            AllyBodyObject = bodyprefab.InstantiateClone("VoidJailerAllyBody", true);
             AllyBodyObject.GetComponent<DeathRewards>().logUnlockableDef = null;
             Modules.Prefabs.bodyPrefabs.Add(AllyBodyObject);
             AllyMasterObject.GetComponent<CharacterMaster>().bodyPrefab = AllyBodyObject;
         }
         private static void FindMasterCreateSpawnCard()
         {
-            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabAllyMaster.prefab").WaitForCompletion();
-            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidMegaCrab/cscVoidMegaCrab.asset").WaitForCompletion());
-            AllySpawnCard.name = "cscZoeaReworkVoidMegaCrabAlly";
+            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidJailer/VoidJailerAllyMaster.prefab").WaitForCompletion();
+            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidJailer/cscVoidJailer.asset").WaitForCompletion());
+            AllySpawnCard.name = "cscZoeaReworkVoidJailerAlly";
             AllySpawnCard.prefab = AllyMasterObject;
         }
         private static void UpdateAI()
@@ -96,22 +84,22 @@ namespace ZoeaRework.Changes
 
             //Combat Drivers
             AISkillDriver aiskillDriver1 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver1.customName = "FireBackMissiles";
+            aiskillDriver1.customName = "Capture";
             aiskillDriver1.activationRequiresAimConfirmation = false;
             aiskillDriver1.activationRequiresAimTargetLoS = false;
-            aiskillDriver1.activationRequiresTargetLoS = false;
+            aiskillDriver1.activationRequiresTargetLoS = true;
             aiskillDriver1.aimType = AISkillDriver.AimType.AtMoveTarget;
             aiskillDriver1.buttonPressType = AISkillDriver.ButtonPressType.Hold;
             aiskillDriver1.driverUpdateTimerOverride = -1f;
             aiskillDriver1.ignoreNodeGraph = false;
-            aiskillDriver1.maxDistance = 300f;
+            aiskillDriver1.maxDistance = 80f;
             aiskillDriver1.minDistance = 0f;
             aiskillDriver1.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver1.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver1.minTargetHealthFraction = float.NegativeInfinity;
             aiskillDriver1.minUserHealthFraction = float.NegativeInfinity;
             aiskillDriver1.moveInputScale = 1f;
-            aiskillDriver1.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+            aiskillDriver1.movementType = AISkillDriver.MovementType.StrafeMovetarget;
             aiskillDriver1.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
             //aiskillDriver1.nextHighPriorityOverride =;
             aiskillDriver1.noRepeat = false;
@@ -119,30 +107,30 @@ namespace ZoeaRework.Changes
             aiskillDriver1.requireEquipmentReady = false;
             aiskillDriver1.requireSkillReady = true;
             aiskillDriver1.resetCurrentEnemyOnNextDriverSelection = false;
-            aiskillDriver1.selectionRequiresAimTarget = true;
+            aiskillDriver1.selectionRequiresAimTarget = false;
             aiskillDriver1.selectionRequiresOnGround = false;
-            aiskillDriver1.selectionRequiresTargetLoS = false;
+            aiskillDriver1.selectionRequiresTargetLoS = true;
             aiskillDriver1.shouldFireEquipment = false;
             aiskillDriver1.shouldSprint = false;
-            aiskillDriver1.skillSlot = SkillSlot.Special;
+            aiskillDriver1.skillSlot = SkillSlot.Secondary;
 
             AISkillDriver aiskillDriver2 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver2.customName = "FireSecondaryStrafe";
-            aiskillDriver2.activationRequiresAimConfirmation = false;
+            aiskillDriver2.customName = "PrimaryCharge";
+            aiskillDriver2.activationRequiresAimConfirmation = true;
             aiskillDriver2.activationRequiresAimTargetLoS = false;
             aiskillDriver2.activationRequiresTargetLoS = false;
             aiskillDriver2.aimType = AISkillDriver.AimType.AtMoveTarget;
             aiskillDriver2.buttonPressType = AISkillDriver.ButtonPressType.Hold;
-            aiskillDriver2.driverUpdateTimerOverride = 0.5f;
+            aiskillDriver2.driverUpdateTimerOverride = 1f;
             aiskillDriver2.ignoreNodeGraph = false;
-            aiskillDriver2.maxDistance = 50f;
-            aiskillDriver2.minDistance = 0f;
+            aiskillDriver2.maxDistance = 80f;
+            aiskillDriver2.minDistance = 45f;
             aiskillDriver2.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver2.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver2.minTargetHealthFraction = float.NegativeInfinity;
             aiskillDriver2.minUserHealthFraction = float.NegativeInfinity;
             aiskillDriver2.moveInputScale = 1f;
-            aiskillDriver2.movementType = AISkillDriver.MovementType.StrafeMovetarget;
+            aiskillDriver2.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
             aiskillDriver2.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
             //aiskillDriver2.nextHighPriorityOverride =;
             aiskillDriver2.noRepeat = false;
@@ -152,22 +140,22 @@ namespace ZoeaRework.Changes
             aiskillDriver2.resetCurrentEnemyOnNextDriverSelection = false;
             aiskillDriver2.selectionRequiresAimTarget = false;
             aiskillDriver2.selectionRequiresOnGround = false;
-            aiskillDriver2.selectionRequiresTargetLoS = false;
+            aiskillDriver2.selectionRequiresTargetLoS = true;
             aiskillDriver2.shouldFireEquipment = false;
             aiskillDriver2.shouldSprint = false;
-            aiskillDriver2.skillSlot = SkillSlot.Secondary;
+            aiskillDriver2.skillSlot = SkillSlot.Primary;
 
             AISkillDriver aiskillDriver3 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver3.customName = "FirePrimaryStrafe";
-            aiskillDriver3.activationRequiresAimConfirmation = false;
+            aiskillDriver3.customName = "PrimaryStrafe";
+            aiskillDriver3.activationRequiresAimConfirmation = true;
             aiskillDriver3.activationRequiresAimTargetLoS = false;
-            aiskillDriver3.activationRequiresTargetLoS = true;
+            aiskillDriver3.activationRequiresTargetLoS = false;
             aiskillDriver3.aimType = AISkillDriver.AimType.AtMoveTarget;
             aiskillDriver3.buttonPressType = AISkillDriver.ButtonPressType.Hold;
             aiskillDriver3.driverUpdateTimerOverride = 1f;
             aiskillDriver3.ignoreNodeGraph = false;
-            aiskillDriver3.maxDistance = 50f;
-            aiskillDriver3.minDistance = 0f;
+            aiskillDriver3.maxDistance = 45f;
+            aiskillDriver3.minDistance = 1f;
             aiskillDriver3.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver3.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver3.minTargetHealthFraction = float.NegativeInfinity;
@@ -220,97 +208,35 @@ namespace ZoeaRework.Changes
             aiskillDriver4.resetCurrentEnemyOnNextDriverSelection = false;
 
             AISkillDriver aiskillDriver5 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver5.customName = "FireSecondaryChase";
+            aiskillDriver5.customName = "PathFromAfar";
             aiskillDriver5.activationRequiresAimConfirmation = false;
             aiskillDriver5.activationRequiresAimTargetLoS = false;
             aiskillDriver5.activationRequiresTargetLoS = false;
             aiskillDriver5.aimType = AISkillDriver.AimType.AtMoveTarget;
             aiskillDriver5.buttonPressType = AISkillDriver.ButtonPressType.Hold;
-            aiskillDriver5.driverUpdateTimerOverride = 0.5f;
+            aiskillDriver5.driverUpdateTimerOverride = -1f;
             aiskillDriver5.ignoreNodeGraph = false;
-            aiskillDriver5.maxDistance = 100f;
-            aiskillDriver5.minDistance = 50f;
+            aiskillDriver5.maxDistance = float.PositiveInfinity;
+            aiskillDriver5.minDistance = 0f;
             aiskillDriver5.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver5.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver5.minTargetHealthFraction = float.NegativeInfinity;
             aiskillDriver5.minUserHealthFraction = float.NegativeInfinity;
             aiskillDriver5.moveInputScale = 1f;
-            aiskillDriver5.movementType = AISkillDriver.MovementType.StrafeMovetarget;
+            aiskillDriver5.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
             aiskillDriver5.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
             //aiskillDriver5.nextHighPriorityOverride =;
             aiskillDriver5.noRepeat = false;
             //aiskillDriver5.requiredSkill =;
             aiskillDriver5.requireEquipmentReady = false;
-            aiskillDriver5.requireSkillReady = true;
+            aiskillDriver5.requireSkillReady = false;
             aiskillDriver5.resetCurrentEnemyOnNextDriverSelection = false;
             aiskillDriver5.selectionRequiresAimTarget = false;
             aiskillDriver5.selectionRequiresOnGround = false;
             aiskillDriver5.selectionRequiresTargetLoS = true;
             aiskillDriver5.shouldFireEquipment = false;
             aiskillDriver5.shouldSprint = false;
-            aiskillDriver5.skillSlot = SkillSlot.Secondary;
-
-            AISkillDriver aiskillDriver6 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver6.customName = "FirePrimaryChase";
-            aiskillDriver6.activationRequiresAimConfirmation = false;
-            aiskillDriver6.activationRequiresAimTargetLoS = false;
-            aiskillDriver6.activationRequiresTargetLoS = true;
-            aiskillDriver6.aimType = AISkillDriver.AimType.AtMoveTarget;
-            aiskillDriver6.buttonPressType = AISkillDriver.ButtonPressType.Hold;
-            aiskillDriver6.driverUpdateTimerOverride = 1f;
-            aiskillDriver6.ignoreNodeGraph = false;
-            aiskillDriver6.maxDistance = 100f;
-            aiskillDriver6.minDistance = 50f;
-            aiskillDriver6.maxTargetHealthFraction = float.PositiveInfinity;
-            aiskillDriver6.maxUserHealthFraction = float.PositiveInfinity;
-            aiskillDriver6.minTargetHealthFraction = float.NegativeInfinity;
-            aiskillDriver6.minUserHealthFraction = float.NegativeInfinity;
-            aiskillDriver6.moveInputScale = 1f;
-            aiskillDriver6.movementType = AISkillDriver.MovementType.StrafeMovetarget;
-            aiskillDriver6.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
-            //aiskillDriver6.nextHighPriorityOverride =;
-            aiskillDriver6.noRepeat = false;
-            //aiskillDriver6.requiredSkill =;
-            aiskillDriver6.requireEquipmentReady = false;
-            aiskillDriver6.requireSkillReady = true;
-            aiskillDriver6.resetCurrentEnemyOnNextDriverSelection = false;
-            aiskillDriver6.selectionRequiresAimTarget = false;
-            aiskillDriver6.selectionRequiresOnGround = false;
-            aiskillDriver6.selectionRequiresTargetLoS = true;
-            aiskillDriver6.shouldFireEquipment = false;
-            aiskillDriver6.shouldSprint = false;
-            aiskillDriver6.skillSlot = SkillSlot.Primary;
-
-            AISkillDriver aiskillDriver7 = AllyMasterObject.AddComponent<AISkillDriver>();
-            aiskillDriver7.customName = "Chase";
-            aiskillDriver7.activationRequiresAimConfirmation = false;
-            aiskillDriver7.activationRequiresAimTargetLoS = false;
-            aiskillDriver7.activationRequiresTargetLoS = false;
-            aiskillDriver7.aimType = AISkillDriver.AimType.AtMoveTarget;
-            aiskillDriver7.buttonPressType = AISkillDriver.ButtonPressType.Hold;
-            aiskillDriver7.driverUpdateTimerOverride = -1f;
-            aiskillDriver7.ignoreNodeGraph = false;
-            aiskillDriver7.maxDistance = float.PositiveInfinity;
-            aiskillDriver7.minDistance = 0f;
-            aiskillDriver7.maxTargetHealthFraction = float.PositiveInfinity;
-            aiskillDriver7.maxUserHealthFraction = float.PositiveInfinity;
-            aiskillDriver7.minTargetHealthFraction = float.NegativeInfinity;
-            aiskillDriver7.minUserHealthFraction = float.NegativeInfinity;
-            aiskillDriver7.moveInputScale = 1f;
-            aiskillDriver7.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
-            aiskillDriver7.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
-            //aiskillDriver7.nextHighPriorityOverride =;
-            aiskillDriver7.noRepeat = false;
-            //aiskillDriver7.requiredSkill =;
-            aiskillDriver7.requireEquipmentReady = false;
-            aiskillDriver7.requireSkillReady = false;
-            aiskillDriver7.resetCurrentEnemyOnNextDriverSelection = false;
-            aiskillDriver7.selectionRequiresAimTarget = false;
-            aiskillDriver7.selectionRequiresOnGround = false;
-            aiskillDriver7.selectionRequiresTargetLoS = false;
-            aiskillDriver7.shouldFireEquipment = false;
-            aiskillDriver7.shouldSprint = false;
-            aiskillDriver7.skillSlot = SkillSlot.None;
+            aiskillDriver5.skillSlot = SkillSlot.None;
 
             //Follow Leader Drivers
 
@@ -324,7 +250,7 @@ namespace ZoeaRework.Changes
             aiskillDriver8.driverUpdateTimerOverride = -1f;
             aiskillDriver8.ignoreNodeGraph = false;
             aiskillDriver8.maxDistance = float.PositiveInfinity;
-            aiskillDriver8.minDistance = 25f;
+            aiskillDriver8.minDistance = 20f;
             aiskillDriver8.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver8.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver8.minTargetHealthFraction = float.NegativeInfinity;
@@ -342,7 +268,7 @@ namespace ZoeaRework.Changes
             aiskillDriver8.selectionRequiresOnGround = false;
             aiskillDriver8.selectionRequiresTargetLoS = false;
             aiskillDriver8.shouldFireEquipment = false;
-            aiskillDriver8.shouldSprint = false;
+            aiskillDriver8.shouldSprint = true;
             aiskillDriver8.skillSlot = SkillSlot.None;
 
             AISkillDriver aiskillDriver9 = AllyMasterObject.AddComponent<AISkillDriver>();
@@ -380,18 +306,8 @@ namespace ZoeaRework.Changes
         {
             UtilitySkill = ScriptableObject.CreateInstance<SkillDef>();
 
-            if(MainPlugin.Config_Rework_Enable.Value)
-            {
-                UtilitySkill.activationState = new SerializableEntityStateType(typeof(States.VoidMegaCrab.Recall_Rework));
-                Modules.States.RegisterState(typeof(States.VoidMegaCrab.Recall_Rework));
-            }
-            else
-            {
-                UtilitySkill.activationState = new SerializableEntityStateType(typeof(States.VoidMegaCrab.Recall));
-                Modules.States.RegisterState(typeof(States.VoidMegaCrab.Recall));
-            }
-
-            
+            UtilitySkill.activationState = new SerializableEntityStateType(typeof(States.VoidJailer.Recall));
+            Modules.States.RegisterState(typeof(States.VoidJailer.Recall));
 
             UtilitySkill.activationStateMachineName = "Body";
             UtilitySkill.dontAllowPastMaxStocks = false;
@@ -405,7 +321,7 @@ namespace ZoeaRework.Changes
             UtilitySkill.stockToConsume = 1;
             UtilitySkill.fullRestockOnAssign = true;
 
-            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidMegaCrab_RecallCooldown.Value;
+            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidJailer_RecallCooldown.Value;
             UtilitySkill.beginSkillCooldownOnSkillEnd = false;
 
             UtilitySkill.canceledFromSprinting = false;
