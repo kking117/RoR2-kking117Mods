@@ -14,8 +14,8 @@ namespace ZoeaRework.Changes
         public static void Begin()
         {
             VoidMegaCrabItem_Shared.Begin();
-            UpdateText();
             Hooks();
+            UpdateText();
             VoidMegaCrabAlly.Begin();
         }
         private static void UpdateText()
@@ -51,25 +51,73 @@ namespace ZoeaRework.Changes
             }
             pickup_text += ".";
             desc_text += ".";
-            if (MainPlugin.Config_Shared_OnlyGlands.Value)
+            if(MainPlugin.Config_Rework_CorruptText.Value.Length > 0)
             {
-                pickup_text += " <style=cIsVoid>Corrupts all </style><style=cIsTierBoss>Queen's Glands</style>.";
-                desc_text += " <style=cIsVoid>Corrupts all </style><style=cIsTierBoss>Queen's Glands</style>.";
-            }
-            else
-            {
-                pickup_text += " <style=cIsVoid>Corrupts most </style><style=cIsTierBoss>yellow items</style>.";
-                desc_text += " <style=cIsVoid>Corrupts most </style><style=cIsTierBoss>yellow items</style>.";
+                pickup_text += " " + MainPlugin.Config_Rework_CorruptText.Value;
+                desc_text += " " + MainPlugin.Config_Rework_CorruptText.Value;
             }
             R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP", pickup_text);
             R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_DESC", desc_text);
         }
         private static void Hooks()
         {
+            On.RoR2.ItemCatalog.SetItemRelationships += SetItemRelationships;
             //Prevent the old behaviour from running, run our own.
             CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChange;
             //Deployable slot changes
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
+        }
+        private static void SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] providers)
+        {
+            List<ItemDef> CorruptList = new List<ItemDef>();
+            string[] items = MainPlugin.Config_Rework_CorruptList.Value.Split(' ');
+            for(int i=0; i<items.Length; i++)
+            {
+                ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
+                if(itemIndex > ItemIndex.None)
+                {
+                    ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+                    if(itemDef)
+                    {
+                        CorruptList.Add(itemDef);
+                    }
+                }
+            }
+
+            List<ItemRelationshipProvider> newprovider = new List<ItemRelationshipProvider>();
+            foreach (ItemRelationshipProvider itemrelation in providers)
+            {
+                if (itemrelation.relationshipType == DLC1Content.ItemRelationshipTypes.ContagiousItem)
+                {
+                    List<ItemDef.Pair> newitempair = new List<ItemDef.Pair>();
+                    foreach (ItemDef.Pair itempair in itemrelation.relationships)
+                    {
+                        if (itempair.itemDef2 != DLC1Content.Items.VoidMegaCrabItem)
+                        {
+                            newitempair.Add(itempair);
+                        }
+                    }
+                    itemrelation.relationships = newitempair.ToArray();
+                }
+                newprovider.Add(itemrelation);
+            }
+
+            if(CorruptList.Count > 0)
+            {
+                ItemRelationshipProvider newItemRelationship = ScriptableObject.CreateInstance<ItemRelationshipProvider>();
+                newItemRelationship.relationshipType = DLC1Content.ItemRelationshipTypes.ContagiousItem;
+                newItemRelationship.relationships = new ItemDef.Pair[CorruptList.Count];
+                for (int i = 0; i< CorruptList.Count; i++)
+                {
+                    newItemRelationship.relationships[i] = new ItemDef.Pair
+                    {
+                        itemDef1 = CorruptList[i],
+                        itemDef2 = DLC1Content.Items.VoidMegaCrabItem
+                    };
+                }
+                newprovider.Add(newItemRelationship);
+            }
+            orig(newprovider.ToArray());
         }
         private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
         {

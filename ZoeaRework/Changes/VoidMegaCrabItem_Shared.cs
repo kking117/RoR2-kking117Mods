@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using RoR2;
+using R2API;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -11,15 +12,12 @@ namespace ZoeaRework.Changes
         public static void Begin()
         {
             EditTags();
-            Hooks();
+            SetupTokens();
         }
-        private static void Hooks()
+        private static void SetupTokens()
         {
-            if (MainPlugin.Config_Shared_OnlyGlands.Value)
-            {
-                //Replace the Zoea's relationship with only Queen's Gland
-                On.RoR2.ItemCatalog.SetItemRelationships += SetItemRelationships;
-            }
+            LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
+            LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "Return to your owner.");
         }
         private static void EditTags()
         {
@@ -34,35 +32,6 @@ namespace ZoeaRework.Changes
                 itemDef.pickupToken = MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP";
                 itemDef.descriptionToken = MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_DESC";
             }
-        }
-        private static void SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] providers)
-        {
-            List<ItemRelationshipProvider> newprovider = new List<ItemRelationshipProvider>();
-            foreach (ItemRelationshipProvider itemrelation in providers)
-            {
-                if (itemrelation.relationshipType == DLC1Content.ItemRelationshipTypes.ContagiousItem)
-                {
-                    List<ItemDef.Pair> newitempair = new List<ItemDef.Pair>();
-                    foreach (ItemDef.Pair itempair in itemrelation.relationships)
-                    {
-                        if (itempair.itemDef2 != DLC1Content.Items.VoidMegaCrabItem)
-                        {
-                            newitempair.Add(itempair);
-                        }
-                    }
-                    itemrelation.relationships = newitempair.ToArray();
-                }
-                newprovider.Add(itemrelation);
-            }
-
-            ItemRelationshipProvider newItemRelationship = ScriptableObject.CreateInstance<ItemRelationshipProvider>();
-            newItemRelationship.relationshipType = DLC1Content.ItemRelationshipTypes.ContagiousItem;
-            newItemRelationship.relationships = new[] {new ItemDef.Pair {
-                    itemDef1 = RoR2Content.Items.BeetleGland,
-                    itemDef2 = DLC1Content.Items.VoidMegaCrabItem
-                }};
-            newprovider.Add(newItemRelationship);
-            orig(newprovider.ToArray());
         }
     }
 }

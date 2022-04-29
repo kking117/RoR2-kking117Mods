@@ -27,15 +27,15 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.0";
+		public const string MODVERSION = "1.1.1";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
-		public static ConfigEntry<bool> Config_Shared_OnlyGlands;
-
 		public static ConfigEntry<bool> Config_Rework_Enable;
+		public static ConfigEntry<string> Config_Rework_CorruptList;
+		public static ConfigEntry<string> Config_Rework_CorruptText;
 		public static ConfigEntry<int> Config_Rework_DamageStack;
 		public static ConfigEntry<int> Config_Rework_DamageBase;
 		public static ConfigEntry<int> Config_Rework_HealthStack;
@@ -43,6 +43,8 @@ namespace ZoeaRework
 		public static ConfigEntry<float> Config_Rework_SpawnTime;
 		public static ConfigEntry<bool> Config_Rework_Inherit;
 
+		public static ConfigEntry<string> Config_Buff_CorruptList;
+		public static ConfigEntry<string> Config_Buff_CorruptText;
 		public static ConfigEntry<int> Config_Buff_DamageStack;
 		public static ConfigEntry<int> Config_Buff_DamageBase;
 		public static ConfigEntry<int> Config_Buff_HealthStack;
@@ -63,9 +65,6 @@ namespace ZoeaRework
 			ModLogger = this.Logger;
 			ReadConfig();
 
-			LanguageAPI.Add(MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
-			LanguageAPI.Add(MODTOKEN + "UTILITY_TELEPORT_DESC", "Return to your owner.");
-
 			if (MainPlugin.Config_Rework_Enable.Value)
 			{
 				Changes.VoidMegaCrabItem_Rework.Begin();
@@ -81,24 +80,24 @@ namespace ZoeaRework
 		}
 		public void PostLoad()
 		{
-			if (!MainPlugin.Config_Rework_Enable.Value)
-			{
-				Changes.VoidMegaCrabAlly.PostLoad();
-			}
+			Changes.VoidMegaCrabAlly.PostLoad();
 		}
 
 		public void ReadConfig()
 		{
-			Config_Shared_OnlyGlands = Config.Bind<bool>(new ConfigDefinition("Zoea Shared", "Corrupt Queens Glands Only"), true, new ConfigDescription("Should this item only corrupt Queens Glands?", null, Array.Empty<object>()));
-
 			Config_Rework_Enable = Config.Bind<bool>(new ConfigDefinition("Zoea Rework", "Enable"), true, new ConfigDescription("Enables this rework instead of buffing the item.", null, Array.Empty<object>()));
+			Config_Rework_CorruptList = Config.Bind<string>(new ConfigDefinition("Zoea Rework", "Corrupt List"), "BeetleGland NovaOnLowHealth Knurl SiphonOnLowHealth BleedOnHitAndExplode SprintWisp RoboBallBuddy FireballsOnHit LightningStrikeOnHit ParentEgg TitanGoldDuringTP MinorConstructOnKill", new ConfigDescription("List of items that will be corrupted by this item.", null, Array.Empty<object>()));
+			Config_Rework_CorruptText = Config.Bind<string>(new ConfigDefinition("Zoea Rework", "Corrupt Text"), "<style=cIsVoid>Corrupts all </style><style=cIsTierBoss>boss items</style>.", new ConfigDescription("Controls the \"Corrupts all Xs\" text", null, Array.Empty<object>()));
+
 			Config_Rework_Inherit = Config.Bind<bool>(new ConfigDefinition("Zoea Rework", "Inherit Items"), true, new ConfigDescription("Should the Void Devastator from this item inherit the user's items?", null, Array.Empty<object>()));
 			Config_Rework_SpawnTime = Config.Bind<float>(new ConfigDefinition("Zoea Rework", "Respawn Time"), 30f, new ConfigDescription("Cooldown time between summons in seconds.", null, Array.Empty<object>()));
 			Config_Rework_DamageBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Damage Bonus"), 0, new ConfigDescription("How many extra BoostDamage items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
-			Config_Rework_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Damage Bonus"), 4, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
+			Config_Rework_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Damage Bonus"), 3, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_HealthBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_HealthStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 
+			Config_Buff_CorruptList = Config.Bind<string>(new ConfigDefinition("Zoea Buff", "Corrupt List"), "BeetleGland", new ConfigDescription("List of items that will be corrupted by this item.", null, Array.Empty<object>()));
+			Config_Buff_CorruptText = Config.Bind<string>(new ConfigDefinition("Zoea Buff", "Corrupt Text"), "<style=cIsVoid>Corrupts all </style><style=cIsTierBoss>Queen's Glands</style>.", new ConfigDescription("Controls the \"Corrupts all Xs\" text", null, Array.Empty<object>()));
 			Config_Buff_SpawnTime = Config.Bind<float>(new ConfigDefinition("Zoea Buff", "Respawn Time"), 30f, new ConfigDescription("Cooldown time between summons in seconds.", null, Array.Empty<object>()));
 			Config_Buff_DamageBase = Config.Bind<int>(new ConfigDefinition("Zoea Buff", "Base Damage Bonus"), 0, new ConfigDescription("How many extra BoostDamage items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Buff_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Buff", "Stack Damage Bonus"), 5, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
@@ -112,8 +111,8 @@ namespace ZoeaRework
 			Config_VoidJailer_BaseSpeed = Config.Bind<float>(new ConfigDefinition("VoidJailerAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Jailer. (7 = Vanilla)", null, Array.Empty<object>()));
 			Config_VoidJailer_RecallCooldown = Config.Bind<float>(new ConfigDefinition("VoidJailerAlly", "Recall Cooldown"), 25f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 
-			Config_Nullifier_BaseSpeed = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Base Movement Speed"), 6f, new ConfigDescription("Base movement speed of the Void Jailer. (6 = Vanilla)", null, Array.Empty<object>()));
-			Config_Nullifier_RecallCooldown = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Recall Cooldown"), 25f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
+			Config_Nullifier_BaseSpeed = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Jailer. (6 = Vanilla)", null, Array.Empty<object>()));
+			Config_Nullifier_RecallCooldown = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Recall Cooldown"), 15f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 		}
 	}
 }

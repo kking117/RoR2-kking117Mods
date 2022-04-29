@@ -100,6 +100,7 @@ namespace ZoeaRework.States.VoidMegaCrab
 							if (gameObject)
 							{
 								TeleLoc = gameObject.transform.position;
+								UnityEngine.Object.Destroy(gameObject);
 							}
 							UnityEngine.Object.Destroy(spawnCard);
 						}
