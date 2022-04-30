@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using R2API.Utils;
 using RoR2;
+using UnityEngine;
 
 using System.Security;
 using System.Security.Permissions;
@@ -24,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.10.1";
+		public const string MODVERSION = "1.10.2";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -51,6 +52,7 @@ namespace FlatItemBuff
 		public static ConfigEntry<int> Infusion_Level;
 		public static ConfigEntry<bool> Infusion_OwnerGains;
 		public static ConfigEntry<bool> Infusion_InheritOwner;
+		public static ConfigEntry<bool> Infusion_Tracker;
 
 		public static ConfigEntry<int> Infusion_Fake_Bonus;
 		public static ConfigEntry<int> Infusion_Kill_Bonus;
@@ -123,7 +125,13 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> NucleusShared_BlastDamage;
 		public static ConfigEntry<bool> NucleusShared_Mechanical;
 		public static ConfigEntry<bool> NucleusShared_ExtraDisplays;
-		public void Awake()
+
+		public static ConfigEntry<bool> RainCoat_Change;
+		public static ConfigEntry<int> RainCoat_BaseBlock;
+		public static ConfigEntry<int> RainCoat_StackBlock;
+		public static ConfigEntry<float> RainCoat_Cooldown;
+		public static ConfigEntry<bool> RainCoat_ImproveCooldown;
+		private void Awake()
 		{
 			ModLogger = this.Logger;
 			ReadConfig();
@@ -180,6 +188,10 @@ namespace FlatItemBuff
             {
 				ItemChanges.Aegis.EnableChanges();
 			}
+			if(RainCoat_Change.Value)
+            {
+				ItemChanges.RainCoat.EnableChanges();
+			}
 			if(Harpoon_Change.Value)
             {
 				ItemChanges.HuntersHarpoon.EnableChanges();
@@ -187,14 +199,24 @@ namespace FlatItemBuff
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
-
-		public void PostLoad()
+		private void PostLoad()
         {
 			if (NucleusRework_Enable.Value || Nucleus_Change.Value)
 			{
 				ItemChanges.DefenseNucleus_Shared.ExtraChanges();
 			}
         }
+		//Shamelessly taken from FW_Artifacts
+		internal static Sprite LoadAsSprite(byte[] resourceBytes, int size)
+		{
+			if (resourceBytes == null)
+			{
+				throw new ArgumentNullException("resourceBytes");
+			}
+			Texture2D texture2D = new Texture2D(size, size, TextureFormat.RGBA32, false);
+			texture2D.LoadImage(resourceBytes, false);
+			return Sprite.Create(texture2D, new Rect(0f, 0f, (float)size, (float)size), new Vector2(0f, 0f));
+		}
 		public void ReadConfig()
 		{
 			Steak_Change = Config.Bind<bool>(new ConfigDefinition("Bison Steak", "Enable Changes"), true, new ConfigDescription("Enables changes to Bison Steak.", null, Array.Empty<object>()));
@@ -220,6 +242,7 @@ namespace FlatItemBuff
 			Infusion_Level = Config.Bind<int>(new ConfigDefinition("Infusion", "Level Per Stacks"), 100, new ConfigDescription("How many stacks are needed to gain a level up.", null, Array.Empty<object>()));
 			Infusion_OwnerGains = Config.Bind<bool>(new ConfigDefinition("Infusion", "Give To Owner"), true, new ConfigDescription("Should minions with infusions send their uncollected samples to their owner instead?", null, Array.Empty<object>()));
 			Infusion_InheritOwner = Config.Bind<bool>(new ConfigDefinition("Infusion", "Inherit From Owner"), true, new ConfigDescription("Should minions with infusions inherit their owner's collected samples.", null, Array.Empty<object>()));
+			Infusion_Tracker = Config.Bind<bool>(new ConfigDefinition("Infusion", "Tracker"), true, new ConfigDescription("Enables a cosmetic buff icon to help keep track of your infusion stacks.", null, Array.Empty<object>()));
 
 			Infusion_Fake_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Fake Stack"), 1, new ConfigDescription("How many samples certain non-ai and non-player enemies give.", null, Array.Empty<object>()));
 			Infusion_Kill_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Kill Stack"), 1, new ConfigDescription("How many samples normal enemies give.", null, Array.Empty<object>()));
@@ -258,6 +281,12 @@ namespace FlatItemBuff
 			Aegis_Change = Config.Bind<bool>(new ConfigDefinition("Aegis", "Enable Changes"), true, new ConfigDescription("Enables changes to Aegis.", null, Array.Empty<object>()));
 			Aegis_Regen = Config.Bind<bool>(new ConfigDefinition("Aegis", "Count Regen"), true, new ConfigDescription("Allows Aegis to convert excess regen into barrier.", null, Array.Empty<object>()));
 			Aegis_Armor = Config.Bind<float>(new ConfigDefinition("Aegis", "Armor"), 20f, new ConfigDescription("How much Armor each Aegis gives.", null, Array.Empty<object>()));
+
+			RainCoat_Change = Config.Bind<bool>(new ConfigDefinition("Bens Raincoat", "Enable Changes"), true, new ConfigDescription("Enables changes to Ben's Raincoat.", null, Array.Empty<object>()));
+			RainCoat_ImproveCooldown = Config.Bind<bool>(new ConfigDefinition("Bens Raincoat", "Improve Cooldown"), true, new ConfigDescription("Starts the cooldown when losing a stack of block instead of when losing all stacks.", null, Array.Empty<object>()));
+			RainCoat_BaseBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Base Block"), 2, new ConfigDescription("How many debuff blocks to give at 1 stack.", null, Array.Empty<object>()));
+			RainCoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 1, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
+			RainCoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
 
 			Knurl_Change = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));

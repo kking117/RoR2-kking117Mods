@@ -5,16 +5,26 @@ using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using FlatItemBuff.Utils;
+using UnityEngine;
 
 namespace FlatItemBuff.ItemChanges
 {
 	public class Infusion
 	{
+		static BuffDef infusionTrackerBuff;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Infusion");
 			UpdateText();
 			Hooks();
+			if(MainPlugin.Infusion_Tracker.Value)
+            {
+				CreateBuff();
+            }
+		}
+		private static void CreateBuff()
+        {
+			infusionTrackerBuff = Modules.Buffs.AddNewBuff("InfusionTracker", MainPlugin.LoadAsSprite(Properties.Resources.texInfusionTracker, 128), new Color(0.588f, 0.003f, 0.192f, 1f), true, false, true);
 		}
 		private static void UpdateText()
 		{
@@ -40,26 +50,62 @@ namespace FlatItemBuff.ItemChanges
         {
 			uint OldValue = self.infusionBonus;
 			orig(self, value);
-			if((self.infusionBonus % MainPlugin.Infusion_Level.Value) - value < 0)
-            {
-				int itemCount = self.GetItemCount(RoR2Content.Items.Infusion);
-				if (itemCount > 0)
+
+			int itemCount = self.GetItemCount(RoR2Content.Items.Infusion);
+			if (itemCount > 0)
+			{
+				CharacterMaster owner = self.GetComponent<CharacterMaster>();
+				if (owner)
 				{
-					if (OldValue < MainPlugin.Infusion_Stacks.Value * itemCount)
+					CharacterBody body = owner.GetBody();
+					if (body)
 					{
-						CharacterMaster owner = self.GetComponent<CharacterMaster>();
-						if (owner)
+						if ((self.infusionBonus % MainPlugin.Infusion_Level.Value) - value < 0)
 						{
-							CharacterBody body = owner.GetBody();
-							if (body)
+							if (OldValue < MainPlugin.Infusion_Stacks.Value * itemCount)
 							{
 								GlobalEventManager.OnCharacterLevelUp(body);
 							}
 						}
+						UpdateTracker(body);
 					}
 				}
-            }
+			}
         }
+		private static void UpdateTracker(CharacterBody body)
+		{
+			Inventory inv = body.inventory;
+			if (inv)
+			{
+				int itemCount = inv.GetItemCount(RoR2Content.Items.Infusion);
+				if (infusionTrackerBuff != null)
+				{
+					int infusioncap = MainPlugin.Infusion_Stacks.Value * itemCount;
+					int percent = 0;
+					if (inv.infusionBonus < infusioncap)
+					{
+						percent = (100 * (int)inv.infusionBonus) / infusioncap;
+						percent = Math.Min(percent, 100);
+						percent = Math.Max(percent, 0);
+					}
+
+					int buffCount = body.GetBuffCount(infusionTrackerBuff.buffIndex);
+					while (buffCount != percent)
+					{
+						if (buffCount > percent)
+						{
+							body.RemoveBuff(infusionTrackerBuff.buffIndex);
+							buffCount--;
+						}
+						else if (buffCount < percent)
+						{
+							body.AddBuff(infusionTrackerBuff.buffIndex);
+							buffCount++;
+						}
+					}
+				}
+			}
+		}
 		private static void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
 		{
 			orig(self, body);
@@ -79,6 +125,7 @@ namespace FlatItemBuff.ItemChanges
 					}
 				}
 			}
+			UpdateTracker(body);
 		}
 		private static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
 		{
