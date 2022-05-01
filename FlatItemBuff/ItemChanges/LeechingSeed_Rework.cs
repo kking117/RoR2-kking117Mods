@@ -55,8 +55,13 @@ namespace FlatItemBuff.ItemChanges
 					pickup += " ";
 					desc += " ";
                 }
-				pickup += string.Format("Chance to leech enemies on hit.");
-				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style> <style=cStack>(+{2}% per stack)</style> base damage.", MainPlugin.LeechingSeedRework_DoTChance.Value, MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTBaseDuration.Value * 100f, MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTStackDuration.Value * 100f);
+				pickup += "Chance to leech enemies on hit.";
+				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style>", MainPlugin.LeechingSeedRework_DoTChance.Value, MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTBaseDuration.Value * 100f);
+				if (MainPlugin.LeechingSeedRework_DoTStackDuration.Value != 0f)
+                {
+					desc += string.Format(" <style=cStack>(+{0}% per stack)</style>", MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTStackDuration.Value * 100f);
+				}
+				desc += " base damage.";
 			}
 			LanguageAPI.Add("ITEM_SEED_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);

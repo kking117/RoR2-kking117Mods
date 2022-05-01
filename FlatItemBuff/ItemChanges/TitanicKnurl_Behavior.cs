@@ -46,8 +46,7 @@ namespace FlatItemBuff.ItemChanges
         }
         private void FireFist(GameObject target)
         {
-			float dmgcof = MainPlugin.KnurlRework_BaseDamage.Value + (MainPlugin.KnurlRework_StackDamage.Value * (stack - 1));
-			float damage = body.damage * dmgcof;
+			float damage = GetFistDamage();
 			RaycastHit raycastHit;
 			Physics.Raycast(target.transform.position, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
 			{
@@ -78,7 +77,7 @@ namespace FlatItemBuff.ItemChanges
 				"World"
 				}));
 				float distance = Vector3.Distance(raycastHit.point, target.healthComponent.body.footPosition);
-				if (distance <= 8f)
+				if (distance <= 7f)
 				{
 					return true;
 				}
@@ -87,6 +86,7 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private HurtBox GetFistTarget()
 		{
+			float damage = GetFistDamage();
 			BullseyeSearch search = new BullseyeSearch();
 			search.viewer = body;
 			search.teamMaskFilter = TeamMask.allButNeutral;
@@ -99,24 +99,47 @@ namespace FlatItemBuff.ItemChanges
 			search.maxAngleFilter = 180f;
 			search.filterByLoS = false;
 			search.RefreshCandidates();
-			HurtBox result = null;
-			float Health = float.PositiveInfinity;
+			HurtBox resultA = null;
+			HurtBox resultB = null;
+			float highesthealth = -1f;
+			float lowesthealth = -1f;
 			foreach (HurtBox target in search.GetResults())
 			{
 				if (IsGrounded(target) || CanPunchAirborne(target))
 				{
-					if (target.healthComponent.alive)
+					HealthComponent hpcomp = target.healthComponent;
+					if (hpcomp.alive)
 					{
-						if (target.healthComponent.combinedHealth < Health)
+						if (hpcomp.combinedHealth * 0.8f <= damage)
 						{
-							result = target;
-							Health = target.healthComponent.combinedHealth;
+							if(hpcomp.combinedHealth > highesthealth)
+                            {
+								highesthealth = hpcomp.combinedHealth;
+								resultA = target;
+							}
+						}
+						else
+						{
+							if (lowesthealth == -1f || hpcomp.combinedHealth < lowesthealth)
+							{
+								resultB = target;
+								lowesthealth = hpcomp.combinedHealth;
+							}
 						}
 					}
 				}
 			}
-			return result;
+			if(resultA == null)
+            {
+				return resultB;
+            }
+			return resultA;
 		}
+		private float GetFistDamage()
+        {
+			float dmgcof = MainPlugin.KnurlRework_BaseDamage.Value + (MainPlugin.KnurlRework_StackDamage.Value * (stack - 1));
+			return dmgcof * body.damage;
+        }
 		private bool IsGrounded(HurtBox target)
         {
 			if (target.healthComponent && target.healthComponent.body)

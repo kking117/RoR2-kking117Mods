@@ -24,7 +24,7 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private static void CreateBuff()
         {
-			infusionTrackerBuff = Modules.Buffs.AddNewBuff("InfusionTracker", MainPlugin.LoadAsSprite(Properties.Resources.texInfusionTracker, 128), new Color(0.588f, 0.003f, 0.192f, 1f), true, false, true);
+			infusionTrackerBuff = Modules.Buffs.AddNewBuff("InfusionTracker", MainPlugin.LoadAsSprite(Properties.Resources.texInfusionTracker, 64), new Color(0.588f, 0.003f, 0.192f, 1f), true, false, true);
 		}
 		private static void UpdateText()
 		{

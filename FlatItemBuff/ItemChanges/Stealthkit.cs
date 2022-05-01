@@ -21,11 +21,11 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "Become stealthed at low health.";
 			string desc = "";
-			desc += "Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style>, gaining <style=cIsUtility>40% movement speed</style> and <style=cIsUtility>invisibility</style>.";
+			desc += "Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style>, gaining <style=cIsUtility>40% movement speed</style>";
 			if (MainPlugin.StealthKit_CancelCombat.Value || MainPlugin.StealthKit_CancelDanger.Value)
 			{
+				desc += ", <style=cIsUtility>invisibility</style> and forces you out of";
 				bool DoAnAnd = false;
-				desc += " Being <style=cIsUtility>stealthed</style> forces you out of";
 				if(MainPlugin.StealthKit_CancelCombat.Value)
                 {
 					desc += " <style=cIsDamage>combat</style>";
@@ -40,6 +40,10 @@ namespace FlatItemBuff.ItemChanges
 					desc += " <style=cIsHealing>danger</style>";
 				}
 				desc += ".";
+			}
+			else
+            {
+				desc += "and <style=cIsUtility>invisibility</style>.";
 			}
 			desc += " Lasts <style=cIsUtility>5s</style> and recharges every <style=cIsUtility>30 seconds</style> <style=cStack>(-50% per stack)</style>.";
 			LanguageAPI.Add("ITEM_PHASING_PICKUP", pickup);
@@ -62,7 +66,7 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private static void CreateBuff()
         {
-			StealthBuff = Modules.Buffs.AddNewBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, Color.blue, false, false, false);
+			StealthBuff = Modules.Buffs.AddNewBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, new Color(0.266f, 0.368f, 0.713f, 1f), false, false, false);
 		}
 		private static void Stealthkit_Override()
         {
@@ -73,16 +77,13 @@ namespace FlatItemBuff.ItemChanges
 					return;
                 }
 				self.rechargeStopwatch += Time.fixedDeltaTime;
-				if(self.body.healthComponent.isHealthLow) //&& !self.body.hasCloakBuff)
+				if(self.body.healthComponent.isHealthLow)
                 {
-					//Mathf.Pow(self.rechargeReductionMultiplierPerStack, self.stack - 1);
 					float cooldown = self.baseRechargeSeconds / (1 + ((self.stack-1) * 0.5f));
 
-					if (self.rechargeStopwatch >= self.buffDuration + cooldown) //self.baseRechargeSeconds * cooldown)
+					if (self.rechargeStopwatch >= self.buffDuration + cooldown)
                     {
 						self.body.AddTimedBuff(StealthBuff.buffIndex, self.buffDuration);
-						//self.body.AddTimedBuff(RoR2Content.Buffs.CloakSpeed, self.buffDuration);
-						//self.body.AddTimedBuff(StealthBuff.buffIndex, self.buffDuration);
 						EffectManager.SpawnEffect(self.effectPrefab, new EffectData
 						{
 							origin = self.transform.position,
@@ -99,10 +100,7 @@ namespace FlatItemBuff.ItemChanges
 			if (self.HasBuff(StealthBuff.buffIndex))
 			{
 				self.outOfDanger = true;
-				if (self.outOfDangerStopwatch < 7f)
-				{
-					self.outOfDangerStopwatch = 7f;
-				}
+				self.outOfDangerStopwatch = Math.Max(7f, self.outOfDangerStopwatch);
 			}
 		}
 		private static void CharacterBody_OnSkillActivated(On.RoR2.CharacterBody.orig_OnSkillActivated orig, CharacterBody self, GenericSkill skill)
@@ -111,12 +109,9 @@ namespace FlatItemBuff.ItemChanges
 			if (self.HasBuff(StealthBuff.buffIndex))
             {
 				self.outOfCombat = true;
-				if (self.outOfCombatStopwatch < 5f)
-				{
-					self.outOfCombatStopwatch = 5f;
-				}
+				self.outOfCombatStopwatch = Math.Max(5f, self.outOfCombatStopwatch);
 			}
-        }
+		}
 		private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
         {
 			if(self.HasBuff(StealthBuff.buffIndex))
@@ -124,18 +119,12 @@ namespace FlatItemBuff.ItemChanges
 				if (MainPlugin.StealthKit_CancelCombat.Value)
 				{
 					self.outOfCombat = true;
-					if (self.outOfCombatStopwatch < 5f)
-					{
-						self.outOfCombatStopwatch = 5f;
-					}
+					self.outOfCombatStopwatch = Math.Max(5f, self.outOfCombatStopwatch);
 				}
 				if (MainPlugin.StealthKit_CancelDanger.Value)
 				{
 					self.outOfDanger = true;
-					if (self.outOfDangerStopwatch < 7f)
-					{
-						self.outOfDangerStopwatch = 7f;
-					}
+					self.outOfDangerStopwatch = Math.Max(7f, self.outOfDangerStopwatch);
 				}
 			}
 			orig(self);

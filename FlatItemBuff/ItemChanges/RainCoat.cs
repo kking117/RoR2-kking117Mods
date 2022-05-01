@@ -10,7 +10,7 @@ namespace FlatItemBuff.ItemChanges
 	{
 		public static void EnableChanges()
 		{
-			MainPlugin.ModLogger.LogInfo("Changing RainCoat");
+			MainPlugin.ModLogger.LogInfo("Changing Ben's Raincoat");
 			UpdateText();
 			Hooks();
 		}
