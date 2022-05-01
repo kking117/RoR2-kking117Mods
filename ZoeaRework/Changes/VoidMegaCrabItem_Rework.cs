@@ -11,6 +11,10 @@ namespace ZoeaRework.Changes
 {
     public class VoidMegaCrabItem_Rework
     {
+        private static bool FilterTier = false;
+        private static bool FilterItem = false;
+        private static List<ItemTier> TierBlackList;
+        private static List<ItemDef> ItemBlackList;
         public static void Begin()
         {
             VoidMegaCrabItem_Shared.Begin();
@@ -44,7 +48,7 @@ namespace ZoeaRework.Changes
             string desc_text = "";
             pickup_text += "Recruit a <style=cIsVoid>Void Devastator</style>";
             desc_text += String.Format("<style=cIsUtility>Summon</style> a <style=cIsVoid>Void Devastator</style> with {0}", stat_text);
-            if(MainPlugin.Config_Rework_Inherit.Value)
+            if(MainPlugin.Config_ReworkInherit_Enable.Value)
             {
                 pickup_text += " that inherits your items";
                 desc_text += " that <style=cIsUtility>inherits your items</style>";
@@ -61,11 +65,46 @@ namespace ZoeaRework.Changes
         }
         private static void Hooks()
         {
+            On.RoR2.ItemCatalog.Init += ItemCatalog_Init;
             On.RoR2.ItemCatalog.SetItemRelationships += SetItemRelationships;
             //Prevent the old behaviour from running, run our own.
             CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChange;
             //Deployable slot changes
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
+        }
+        private static void ItemCatalog_Init(On.RoR2.ItemCatalog.orig_Init orig)
+        {
+            orig();
+            ItemBlackList = new List<ItemDef>();
+            string[] items = MainPlugin.Config_ReworkInherit_ItemBlackList.Value.Split(' ');
+            for (int i = 0; i < items.Length; i++)
+            {
+                ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
+                if (itemIndex > ItemIndex.None)
+                {
+                    ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+                    if (itemDef)
+                    {
+                        ItemBlackList.Add(itemDef);
+                        FilterItem = true;
+                    }
+                }
+            }
+            /*for(int i = 0; i< ItemTierCatalog.itemTierDefs.Length; i++)
+            {
+                MainPlugin.print(ItemTierCatalog.itemTierDefs[i].name);
+            }*/
+            TierBlackList = new List<ItemTier>();
+            string[] tiers = MainPlugin.Config_ReworkInherit_TierBlackList.Value.Split(' ');
+            for (int i = 0; i < tiers.Length; i++)
+            {
+                ItemTierDef itemTier = ItemTierCatalog.FindTierDef(tiers[i]);
+                if (itemTier != null)
+                {
+                    TierBlackList.Add(itemTier.tier);
+                    FilterTier = true;
+                }
+            }
         }
         private static void SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] providers)
         {
@@ -234,7 +273,7 @@ namespace ZoeaRework.Changes
             {
                 Inventory inv = summon.inventory;
                 int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
-                if (MainPlugin.Config_Rework_Inherit.Value)
+                if (MainPlugin.Config_ReworkInherit_Enable.Value)
                 {
                     inv.CopyItemsFrom(CloneThis(owneritems));
                 }
@@ -254,11 +293,35 @@ namespace ZoeaRework.Changes
             //I can't be assed getting filters working.
             Inventory inv = new Inventory();
             inv.CopyItemsFrom(inventory, Inventory.defaultItemCopyFilterDelegate);
-            inv.ResetItem(RoR2Content.Items.LunarPrimaryReplacement);
-            inv.ResetItem(RoR2Content.Items.LunarSecondaryReplacement);
-            inv.ResetItem(RoR2Content.Items.LunarUtilityReplacement);
-            inv.ResetItem(RoR2Content.Items.LunarSpecialReplacement);
+            for(int i = 0; i<inv.itemStacks.Length;i++)
+            {
+                if(inv.itemStacks[i] != 0)
+                {
+                    ItemDef itemDef = ItemCatalog.GetItemDef((ItemIndex)i);
+                    if(IsBlackListed(itemDef))
+                    {
+                        inv.ResetItem(itemDef);
+                    }
+
+                }
+            }
             return inv;
+        }
+
+        private static bool IsBlackListed(ItemDef item)
+        {
+            if(item != null)
+            {
+                if (FilterTier)
+                {
+                    return TierBlackList.Contains(item.tier);
+                }
+                if (FilterItem)
+                {
+                    return ItemBlackList.Contains(item);
+                }
+            }
+            return true;
         }
     }
 }
