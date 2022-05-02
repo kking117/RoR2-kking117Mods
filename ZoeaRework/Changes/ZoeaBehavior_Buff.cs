@@ -40,7 +40,7 @@ namespace ZoeaRework.Changes
                     spawnTimer += Time.fixedDeltaTime;
                     if (spawnTimer > spawntimerGoal)
                     {
-                        spawnTimer = spawntimerGoal - 5f;
+                        spawnTimer -= 5f;
                         DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(spawnCardList[cardIndex], placementRule, RoR2Application.rng);
                         directorSpawnRequest.summonerBodyObject = base.gameObject;
                         directorSpawnRequest.onSpawnedServer = new Action<SpawnCard.SpawnResult>(OnSummonSpawned);
@@ -73,7 +73,7 @@ namespace ZoeaRework.Changes
                     owner.AddDeployable(deployable, DeployableSlot.VoidMegaCrabItem);
                     VoidMegaCrabItem_Buff.UpdateInventory(owner, spawnMaster);
                     VoidMegaCrabItem_Buff.CullSummons(owner);
-                    spawnTimer = 0f;
+                    spawnTimer -= spawntimerGoal;
                 }
             }
         }

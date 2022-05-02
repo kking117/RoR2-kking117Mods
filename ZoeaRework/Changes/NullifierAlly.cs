@@ -248,7 +248,7 @@ namespace ZoeaRework.Changes
             aiskillDriver7.driverUpdateTimerOverride = 3f;
             aiskillDriver7.ignoreNodeGraph = false;
             aiskillDriver7.maxDistance = float.PositiveInfinity;
-            aiskillDriver7.minDistance = 150f;
+            aiskillDriver7.minDistance = MainPlugin.Config_AIShared_MinRecallDist.Value;
             aiskillDriver7.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver7.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver7.minTargetHealthFraction = float.NegativeInfinity;

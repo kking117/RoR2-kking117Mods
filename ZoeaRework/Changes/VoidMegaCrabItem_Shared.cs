@@ -4,6 +4,7 @@ using RoR2;
 using R2API;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using RoR2.CharacterAI;
 
 namespace ZoeaRework.Changes
 {
@@ -11,7 +12,7 @@ namespace ZoeaRework.Changes
     {
         public static void Begin()
         {
-            EditTags();
+            EditItemDef();
             SetupTokens();
         }
         private static void SetupTokens()
@@ -19,7 +20,7 @@ namespace ZoeaRework.Changes
             LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
             LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "Return to your owner.");
         }
-        private static void EditTags()
+        private static void EditItemDef()
         {
             ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/VoidMegaCrabItem.asset").WaitForCompletion();
             if(itemDef)
@@ -32,6 +33,37 @@ namespace ZoeaRework.Changes
                 itemDef.pickupToken = MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP";
                 itemDef.descriptionToken = MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_DESC";
             }
+        }
+        internal static void UpdateAILeash(CharacterMaster master)
+        {
+            if(master)
+            {
+                foreach (AISkillDriver driver in master.GetComponentsInChildren<AISkillDriver>())
+                {
+                    if(driver.customName == "ReturnToOwnerLeash")
+                    {
+                        driver.minDistance = GetLeashDistance();
+                        break;
+                    }
+                }
+            }
+        }
+        internal static float GetLeashDistance()
+        {
+            Run run = Run.instance;
+            float distance = MainPlugin.Config_AIShared_MinRecallDist.Value;
+            if (run)
+            {
+                float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AIShared_RecallDistDiff.Value;
+                if (diff > 0f)
+                {
+                    distance += diff;
+                }
+                distance = Mathf.Min(MainPlugin.Config_AIShared_MaxRecallDist.Value, distance);
+                distance = Mathf.Max(MainPlugin.Config_AIShared_MinRecallDist.Value, distance);
+            }
+            //MainPlugin.ModLogger.LogInfo("Recall distance: " + distance + "m.");
+            return distance;
         }
     }
 }

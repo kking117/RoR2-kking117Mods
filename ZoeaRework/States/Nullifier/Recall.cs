@@ -12,7 +12,7 @@ namespace ZoeaRework.States.Nullifier
 			base.OnEnter();
 			duration = baseDuration;
 			GetTelportLocation();
-			if(TeleLoc != null && ownerMaster != null)
+			if(CanTeleport)
             {
 				EffectManager.SimpleMuzzleFlash(effectPrefab, gameObject, spawnMuzzleName, false);
 				Teleport();
@@ -73,9 +73,10 @@ namespace ZoeaRework.States.Nullifier
 				CharacterMaster owner = (characterBody.master.minionOwnership.ownerMaster);
 				if (characterBody.teamComponent.teamIndex == owner.teamIndex)
 				{
-					if (owner.GetBody())
+					CharacterBody ownerBody = owner.GetBody();
+					if (ownerBody)
 					{
-						if (owner.GetBody().healthComponent.alive)
+						if (ownerBody.healthComponent.alive)
 						{
 							ownerMaster = owner;
 							Vector3 ownerposition = owner.GetBody().corePosition;
@@ -93,6 +94,7 @@ namespace ZoeaRework.States.Nullifier
 							if (gameObject)
 							{
 								TeleLoc = gameObject.transform.position;
+								CanTeleport = true;
 								UnityEngine.Object.Destroy(gameObject);
 							}
 							UnityEngine.Object.Destroy(spawnCard);
@@ -103,12 +105,13 @@ namespace ZoeaRework.States.Nullifier
 		}
 
 
-		public static float baseDuration = 4.05f;
+		public static float baseDuration = 2.05f;
 
 		private float duration;
 		private bool TeleportAnim = false;
 		private Vector3 TeleLoc;
 		private CharacterMaster ownerMaster;
+		private bool CanTeleport = false;
 
 		private string soundString = EntityStates.NullifierMonster.SpawnState.spawnSoundString;
 		private string animationLayerName = "Body";

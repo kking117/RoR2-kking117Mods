@@ -12,7 +12,7 @@ namespace ZoeaRework.States.VoidMegaCrab
 			base.OnEnter();
 			duration = baseDuration;
 			GetTelportLocation();
-			if(TeleLoc != null && ownerMaster != null)
+			if(CanTeleport)
             {
 				EffectManager.SimpleMuzzleFlash(effectPrefab, gameObject, spawnMuzzleName, false);
 				Teleport();
@@ -71,6 +71,7 @@ namespace ZoeaRework.States.VoidMegaCrab
 			{
 				EffectManager.SimpleEffect(teleportEffectPrefab, TeleLoc, Quaternion.identity, true);
 			}
+			Changes.VoidMegaCrabItem_Shared.UpdateAILeash(characterBody.master);
 			PlayAnimation(animationLayerName, animationStateName, animationPlaybackRateParam, duration - fixedAge);
 		}
 		private void GetTelportLocation()
@@ -80,9 +81,10 @@ namespace ZoeaRework.States.VoidMegaCrab
 				CharacterMaster owner = (characterBody.master.minionOwnership.ownerMaster);
 				if (characterBody.teamComponent.teamIndex == owner.teamIndex)
 				{
-					if (owner.GetBody())
+					CharacterBody ownerBody = owner.GetBody();
+					if (ownerBody)
 					{
-						if (owner.GetBody().healthComponent.alive)
+						if (ownerBody.healthComponent.alive)
 						{
 							ownerMaster = owner;
 							Vector3 ownerposition = owner.GetBody().corePosition;
@@ -100,6 +102,7 @@ namespace ZoeaRework.States.VoidMegaCrab
 							if (gameObject)
 							{
 								TeleLoc = gameObject.transform.position;
+								CanTeleport = true;
 								UnityEngine.Object.Destroy(gameObject);
 							}
 							UnityEngine.Object.Destroy(spawnCard);
@@ -115,6 +118,7 @@ namespace ZoeaRework.States.VoidMegaCrab
 		private bool TeleportAnim = false;
 		private Vector3 TeleLoc;
 		private CharacterMaster ownerMaster;
+		private bool CanTeleport = false;
 
 		private string soundString = "Play_voidDevastator_spawn_open";
 		private string animationLayerName = "Body";

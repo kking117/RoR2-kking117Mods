@@ -27,7 +27,7 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.2";
+		public const string MODVERSION = "1.1.3";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
@@ -63,6 +63,10 @@ namespace ZoeaRework
 
 		public static ConfigEntry<float> Config_Nullifier_BaseSpeed;
 		public static ConfigEntry<float> Config_Nullifier_RecallCooldown;
+
+		public static ConfigEntry<float> Config_AIShared_MinRecallDist;
+		public static ConfigEntry<float> Config_AIShared_MaxRecallDist;
+		public static ConfigEntry<float> Config_AIShared_RecallDistDiff;
 		public void Awake()
 		{
 			ModLogger = this.Logger;
@@ -116,8 +120,12 @@ namespace ZoeaRework
 			Config_VoidJailer_BaseSpeed = Config.Bind<float>(new ConfigDefinition("VoidJailerAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Jailer. (7 = Vanilla)", null, Array.Empty<object>()));
 			Config_VoidJailer_RecallCooldown = Config.Bind<float>(new ConfigDefinition("VoidJailerAlly", "Recall Cooldown"), 25f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 
-			Config_Nullifier_BaseSpeed = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Jailer. (6 = Vanilla)", null, Array.Empty<object>()));
+			Config_Nullifier_BaseSpeed = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Reaver. (6 = Vanilla)", null, Array.Empty<object>()));
 			Config_Nullifier_RecallCooldown = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Recall Cooldown"), 15f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
+
+			Config_AIShared_MinRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Base Recall Distance"), 125f, new ConfigDescription("Minimum distance in metres before the AI will recall itself.", null, Array.Empty<object>()));
+			Config_AIShared_MaxRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Max Recall Distance"), 300f, new ConfigDescription("Max distance cap for recalling.", null, Array.Empty<object>()));
+			Config_AIShared_RecallDistDiff = Config.Bind<float>(new ConfigDefinition("AI Shared", "Recall Distance Scaler"), 3f, new ConfigDescription("Scales the minimum recall distance with the current run difficulty by this much.", null, Array.Empty<object>()));
 		}
 	}
 }
