@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.10.3";
+		public const string MODVERSION = "1.11.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -91,6 +91,17 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> Aegis_Change;
 		public static ConfigEntry<bool> Aegis_Regen;
 		public static ConfigEntry<float> Aegis_Armor;
+
+		public static ConfigEntry<bool> BenthicRework_Enable;
+		public static ConfigEntry<int> BenthicRework_BaseCount;
+		public static ConfigEntry<int> BenthicRework_StackCount;
+		public static ConfigEntry<string> BenthicRework_BanList;
+		public static ConfigEntry<float> BenthicRework_VoidManBonus;
+		public static ConfigEntry<bool> BenthicRework_BuffDamage;
+		public static ConfigEntry<bool> BenthicRework_BuffHealth;
+		public static ConfigEntry<bool> BenthicRework_BuffSpeed;
+		public static ConfigEntry<int> BenthicRework_SortMethod;
+		public static ConfigEntry<string> BenthicRework_TierFavour;
 
 		public static ConfigEntry<bool> Knurl_Change;
 		public static ConfigEntry<float> Knurl_BaseHP;
@@ -196,6 +207,10 @@ namespace FlatItemBuff
             {
 				ItemChanges.HuntersHarpoon.EnableChanges();
 			}
+			if (BenthicRework_Enable.Value)
+			{
+				ItemChanges.BenthicBloom_Rework.EnableChanges();
+			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -287,6 +302,17 @@ namespace FlatItemBuff
 			RainCoat_BaseBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Base Block"), 2, new ConfigDescription("How many debuff blocks to give at 1 stack.", null, Array.Empty<object>()));
 			RainCoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 1, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
 			RainCoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
+
+			BenthicRework_Enable = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework to Benthic Bloom. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			BenthicRework_BaseCount = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Base Corrupt Count"), 1, new ConfigDescription("How many items to corrupt at a single stack.", null, Array.Empty<object>()));
+			BenthicRework_StackCount = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Stack Corrupt Count"), 1, new ConfigDescription("How many items to corrupt for each additional stack.", null, Array.Empty<object>()));
+			BenthicRework_BanList = Config.Bind<string>(new ConfigDefinition("Benthic Bloom Rework", "Corrupt Blacklist"), "", new ConfigDescription("Prevents corrupting into these specific items. (Example = Clover, CloverVoid, ExtraLife, MoreMissile)", null, Array.Empty<object>()));
+			BenthicRework_VoidManBonus = Config.Bind<float>(new ConfigDefinition("Benthic Bloom Rework", "Corruption Bonus"), 0.01f, new ConfigDescription("How much to increases stats by for each Void item.", null, Array.Empty<object>()));
+			BenthicRework_BuffDamage = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Damage Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Damage.", null, Array.Empty<object>()));
+			BenthicRework_BuffHealth = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Health Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Health.", null, Array.Empty<object>()));
+			BenthicRework_BuffSpeed = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Speed Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Movement Speed.", null, Array.Empty<object>()));
+			BenthicRework_SortMethod = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Selection Method"), 2, new ConfigDescription("The method to use when selecting which item to corrupt. (0 = random, 1 = most common tier first, 2 = tier weighted)", null, Array.Empty<object>()));
+			BenthicRework_TierFavour = Config.Bind<string>(new ConfigDefinition("Benthic Bloom Rework", "Tier Weights"), "12, 6, 1, 1", new ConfigDescription("Higher number means that tier is more likely to be selected for each corruption. (Tier1, Tier2, Tier3, BossTier)", null, Array.Empty<object>()));
 
 			Knurl_Change = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
