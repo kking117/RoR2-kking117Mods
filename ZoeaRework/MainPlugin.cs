@@ -1,8 +1,6 @@
 ﻿using System;
 using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Configuration;
-using R2API;
 using R2API.Utils;
 using RoR2;
 
@@ -27,7 +25,7 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.3";
+		public const string MODVERSION = "1.1.4";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
@@ -67,7 +65,8 @@ namespace ZoeaRework
 		public static ConfigEntry<float> Config_AIShared_MinRecallDist;
 		public static ConfigEntry<float> Config_AIShared_MaxRecallDist;
 		public static ConfigEntry<float> Config_AIShared_RecallDistDiff;
-		public void Awake()
+		internal static SceneDef BazaarSceneDef;
+		private void Awake()
 		{
 			ModLogger = this.Logger;
 			ReadConfig();
@@ -85,11 +84,12 @@ namespace ZoeaRework
 			Logger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
-		public void PostLoad()
+		private void PostLoad()
 		{
 			Changes.VoidMegaCrabAlly.PostLoad();
+			BazaarSceneDef = SceneCatalog.FindSceneDef("bazaar");
 		}
-		public void ReadConfig()
+		private void ReadConfig()
 		{
 			Config_Rework_Enable = Config.Bind<bool>(new ConfigDefinition("Zoea Rework", "Enable"), true, new ConfigDescription("Enables this rework instead of buffing the item.", null, Array.Empty<object>()));
 			Config_Rework_CorruptList = Config.Bind<string>(new ConfigDefinition("Zoea Rework", "Corrupt List"), "BeetleGland NovaOnLowHealth Knurl SiphonOnLowHealth BleedOnHitAndExplode SprintWisp RoboBallBuddy FireballsOnHit LightningStrikeOnHit ParentEgg TitanGoldDuringTP MinorConstructOnKill LaserEye GoldenKnurl BigSword", new ConfigDescription("List of items that will be corrupted by this item.", null, Array.Empty<object>()));
@@ -125,7 +125,7 @@ namespace ZoeaRework
 
 			Config_AIShared_MinRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Base Recall Distance"), 125f, new ConfigDescription("Minimum distance in metres before the AI will recall itself.", null, Array.Empty<object>()));
 			Config_AIShared_MaxRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Max Recall Distance"), 300f, new ConfigDescription("Max distance cap for recalling.", null, Array.Empty<object>()));
-			Config_AIShared_RecallDistDiff = Config.Bind<float>(new ConfigDefinition("AI Shared", "Recall Distance Scaler"), 3f, new ConfigDescription("Scales the minimum recall distance with the current run difficulty by this much.", null, Array.Empty<object>()));
+			Config_AIShared_RecallDistDiff = Config.Bind<float>(new ConfigDefinition("AI Shared", "Recall Distance Scaler"), 4f, new ConfigDescription("Scales the minimum recall distance with the current run difficulty by this much.", null, Array.Empty<object>()));
 		}
 	}
 }

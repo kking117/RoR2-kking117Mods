@@ -139,6 +139,10 @@ namespace ZoeaRework.Changes
             if (NetworkServer.active)
             {
                 int itemCount = self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem);
+                if (Stage.instance.sceneDef == MainPlugin.BazaarSceneDef)
+                {
+                    itemCount = 0;
+                }
                 self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
                 self.AddItemBehavior<ZoeaBehavior_Buff>(itemCount);
                 UpdateAllSummonInventory(self.master);

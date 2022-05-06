@@ -64,6 +64,7 @@ namespace ZoeaRework.States.Nullifier
 			{
 				EffectManager.SimpleEffect(teleportEffectPrefab, TeleLoc, Quaternion.identity, true);
 			}
+			Changes.VoidMegaCrabItem_Shared.UpdateAILeash(characterBody.master);
 			PlayAnimation(animationLayerName, animationStateName, animationPlaybackRateParam, duration - fixedAge);
 		}
 		private void GetTelportLocation()
@@ -78,7 +79,6 @@ namespace ZoeaRework.States.Nullifier
 					{
 						if (ownerBody.healthComponent.alive)
 						{
-							ownerMaster = owner;
 							Vector3 ownerposition = owner.GetBody().corePosition;
 							SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
 							spawnCard.hullSize = characterBody.hullClassification;
@@ -110,7 +110,6 @@ namespace ZoeaRework.States.Nullifier
 		private float duration;
 		private bool TeleportAnim = false;
 		private Vector3 TeleLoc;
-		private CharacterMaster ownerMaster;
 		private bool CanTeleport = false;
 
 		private string soundString = EntityStates.NullifierMonster.SpawnState.spawnSoundString;

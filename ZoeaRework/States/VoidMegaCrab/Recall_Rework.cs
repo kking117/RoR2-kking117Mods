@@ -86,7 +86,6 @@ namespace ZoeaRework.States.VoidMegaCrab
 					{
 						if (ownerBody.healthComponent.alive)
 						{
-							ownerMaster = owner;
 							Vector3 ownerposition = owner.GetBody().corePosition;
 							SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
 							spawnCard.hullSize = characterBody.hullClassification;
@@ -117,7 +116,6 @@ namespace ZoeaRework.States.VoidMegaCrab
 		private float duration;
 		private bool TeleportAnim = false;
 		private Vector3 TeleLoc;
-		private CharacterMaster ownerMaster;
 		private bool CanTeleport = false;
 
 		private string soundString = "Play_voidDevastator_spawn_open";

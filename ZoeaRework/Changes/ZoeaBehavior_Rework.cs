@@ -61,6 +61,7 @@ namespace ZoeaRework.Changes
                 CharacterMaster owner = body.master;
                 if(owner)
                 {
+                    VoidMegaCrabItem_Shared.UpdateAILeash(spawnMaster);
                     spawnMaster.minionOwnership.SetOwner(owner);
                     owner.AddDeployable(deployable, DeployableSlot.VoidMegaCrabItem);
                     VoidMegaCrabItem_Rework.UpdateInventory(owner, spawnMaster);
