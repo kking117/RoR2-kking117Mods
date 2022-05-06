@@ -15,7 +15,6 @@ namespace QueenGlandBuff.States
 			modelAnimator = GetModelAnimator();
 			if (modelAnimator)
 			{
-				//PlayCrossfade("Body", "DefenseUp", "DefenseUp.playbackRate", duration, 0.2f);
 				PlayAnimation("Body", "DefenseUp", "DefenseUp.playbackRate", duration);
 			}
 			if (NetworkServer.active)
@@ -50,6 +49,7 @@ namespace QueenGlandBuff.States
 						else
 						{
 							PlayCrossfade("Body", "Spawn1", "Spawn1.playbackRate", duration - fixedAge, 0.2f);
+							Changes.QueensGland.UpdateAILeash(characterBody.master);
 						}
 					}
 				}

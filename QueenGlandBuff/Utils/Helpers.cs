@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -9,21 +10,13 @@ namespace QueenGlandBuff.Utils
     internal class Helpers
     {
 		private static readonly System.Random rng = new System.Random();
-		public static bool DoesBodyContainName(CharacterBody body, string name)
-	    {
-            if (body.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                return true;
-            }
-            return false;
-	    }
-		public static void GiveRandomEliteAffix(CharacterMaster self)
+		internal static void GiveRandomEliteAffix(CharacterMaster self)
 		{
-			if(MainPlugin.Gland_SpawnAffix.Value == 0)
+			if(MainPlugin.Config_SpawnAffix.Value == 0)
             {
 				return;
             }
-			if (MainPlugin.Gland_SpawnAffix.Value == 2 && !RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly))
+			if (MainPlugin.Config_SpawnAffix.Value == 2 && !RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly))
             {
 				return;
             }
@@ -38,7 +31,7 @@ namespace QueenGlandBuff.Utils
 			}
 			self.inventory.SetEquipmentIndex(MainPlugin.Gland_DefaultAffix_Var);
 		}
-		public static int TeleportToOwner(CharacterBody self)
+		internal static int TeleportToOwner(CharacterBody self)
 		{
 			//0 = no owner/owner is dead
 			//1 = simply couldn't find a spot to teleport to
@@ -92,95 +85,6 @@ namespace QueenGlandBuff.Utils
 				}
 			}
 			return 0;
-		}
-		public static void DrawAggro(CharacterBody self)
-        {
-			BullseyeSearch search = new BullseyeSearch();
-			search.viewer = self;
-			search.teamMaskFilter = TeamMask.allButNeutral;
-			search.teamMaskFilter.RemoveTeam(self.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Gland_Staunch_AggroRange.Value;
-			search.searchOrigin = self.inputBank.aimOrigin;
-			search.searchDirection = self.inputBank.aimDirection;
-			search.maxAngleFilter = 180f;
-			search.filterByLoS = true;
-			search.RefreshCandidates();
-			foreach (HurtBox target in search.GetResults())
-			{
-				if (target && target.healthComponent)
-				{
-					if (target.healthComponent.body)
-					{
-						CharacterBody targetbody = target.healthComponent.body;
-						if (targetbody.master)
-						{
-							CharacterMaster targetmaster = target.healthComponent.body.master;
-							BaseAI targetai = targetmaster.GetComponent<BaseAI>();
-							if (targetai)
-							{
-								if (!targetai.isHealer)
-								{
-									if (!targetai.currentEnemy.gameObject || targetai.enemyAttention <= 0f)
-									{
-										if (RollAggroChance(targetbody))
-										{
-											targetai.currentEnemy.gameObject = self.gameObject;
-											targetai.currentEnemy.bestHurtBox = self.mainHurtBox;
-											targetai.enemyAttention = targetai.enemyAttentionDuration;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		public static void EmpowerBeetles(CharacterBody self)
-		{
-			if(!NetworkServer.active)
-            {
-				return;
-            }
-			BullseyeSearch search = new BullseyeSearch();
-			search = new BullseyeSearch();
-			search.viewer = self;
-			search.teamMaskFilter = TeamMask.none;
-			search.teamMaskFilter.AddTeam(self.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Gland_Staunch_AggroRange.Value;
-			search.searchOrigin = self.inputBank.aimOrigin;
-			search.searchDirection = self.inputBank.aimDirection;
-			search.maxAngleFilter = 180f;
-			search.filterByLoS = false;
-			search.RefreshCandidates();
-			foreach (HurtBox target in search.GetResults())
-			{
-				if (target && target.healthComponent)
-				{
-					if (target.healthComponent.body)
-					{
-						CharacterBody targetbody = target.healthComponent.body;
-						if (targetbody != self)
-						{
-							if (DoesBodyContainName(targetbody, "beetle"))
-							{
-								targetbody.AddTimedBuff(Changes.BeetleGuardAlly.BeetleFrenzy, 1.5f);
-							}
-						}
-					}
-				}
-			}
-		}
-		private static bool RollAggroChance(CharacterBody target)
-		{
-			float result = UnityEngine.Random.Range(0f, 1f);
-			if (target.isBoss)
-			{
-				return MainPlugin.Gland_Staunch_AggroBossChance.Value > result;
-			}
-			return MainPlugin.Gland_Staunch_AggroChance.Value > result;
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace QueenGlandBuff.Modules
 		internal static List<SkillDef> skillDefs = new List<SkillDef>();
 		internal static void RegisterSkill(SkillDef skill)
         {
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Adding Skill: " + skill.skillNameToken);
 			}

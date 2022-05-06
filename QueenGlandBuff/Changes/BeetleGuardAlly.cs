@@ -44,28 +44,28 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void CreateBuffs()
         {
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly buffs.");
 			}
 			BuffDef beetlebuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Beetle/bdBeetleJuice.asset").WaitForCompletion();
 			BuffDef warcrybuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/TeamWarCry/bdTeamWarCry.asset").WaitForCompletion();
-			if (MainPlugin.Gland_AddUtility.Value || MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddUtility.Value || MainPlugin.Config_AddSpecial.Value)
 			{
 				BeetleFrenzy = Modules.Buffs.AddNewBuff("BeetleFrenzy", warcrybuff.iconSprite, beetlebuff.buffColor, false, false, false);
 			}
-			if (MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddSpecial.Value)
 			{
 				Staunching = Modules.Buffs.AddNewBuff("Staunch", beetlebuff.iconSprite, warcrybuff.buffColor, false, false, false);
 			}
 		}
 		private static void CreateProjectiles()
         {
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly projectiles.");
 			}
-			if (MainPlugin.Gland_PrimaryBuff.Value || MainPlugin.Gland_SecondaryBuff.Value)
+			if (MainPlugin.Config_PrimaryBuff.Value || MainPlugin.Config_SecondaryBuff.Value)
 			{
 				SlamRockProjectile = PrefabAPI.InstantiateClone(Default_Proj, MainPlugin.MODTOKEN + "RockProjectile", true);
 				SlamRockProjectile.GetComponent<ProjectileExplosion>().falloffModel = BlastAttack.FalloffModel.Linear;
@@ -76,7 +76,7 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void UpdateBody()
 		{
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Changing BeetleGuardAlly attributes.");
 			}
@@ -90,14 +90,14 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void CreateSkills()
         {
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly skills.");
 			}
 			SlamSkill = ScriptableObject.CreateInstance<SkillDef>();
 
 			LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME", "Slam");
-			if (MainPlugin.Gland_PrimaryBuff.Value)
+			if (MainPlugin.Config_PrimaryBuff.Value)
 			{
 				SlamSkill.activationState = new SerializableEntityStateType(typeof(States.Slam));
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>5x75%</style> damage.");
@@ -141,7 +141,7 @@ namespace QueenGlandBuff.Changes
 			SunderSkill = ScriptableObject.CreateInstance<SkillDef>();
 
 			LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME", "Sunder");
-			if (MainPlugin.Gland_SecondaryBuff.Value)
+			if (MainPlugin.Config_SecondaryBuff.Value)
 			{
 				SunderSkill.activationState = new SerializableEntityStateType(typeof(States.Sunder));
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>5x75%</style> damage.");
@@ -178,7 +178,7 @@ namespace QueenGlandBuff.Changes
 
 			Modules.Skills.RegisterSkill(SunderSkill);
 
-			if (MainPlugin.Gland_AddUtility.Value)
+			if (MainPlugin.Config_AddUtility.Value)
 			{
 				RecallSkill = ScriptableObject.CreateInstance<SkillDef>();
 
@@ -214,7 +214,7 @@ namespace QueenGlandBuff.Changes
 				Modules.Skills.RegisterSkill(RecallSkill);
 			}
 
-			if (MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddSpecial.Value)
 			{
 				StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
@@ -251,18 +251,18 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void UpdateLoadouts()
 		{
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Adding new Skills to BeetleGuardAllyBody.");
 			}
 			Modules.Skills.WipeLoadout(BodyObject);
 			Modules.Skills.AddSkillToSlot(BodyObject, SlamSkill, SkillSlot.Primary);
 			Modules.Skills.AddSkillToSlot(BodyObject, SunderSkill, SkillSlot.Secondary);
-			if (MainPlugin.Gland_AddUtility.Value)
+			if (MainPlugin.Config_AddUtility.Value)
 			{
 				Modules.Skills.AddSkillToSlot(BodyObject, RecallSkill, SkillSlot.Utility);
 			}
-			if (MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddSpecial.Value)
 			{
 				Modules.Skills.AddSkillToSlot(BodyObject, StaunchSkill, SkillSlot.Special);
 			}
@@ -270,7 +270,7 @@ namespace QueenGlandBuff.Changes
 
 		private static void UpdateAI()
 		{
-			if (MainPlugin.Gland_Debug.Value)
+			if (MainPlugin.Config_Debug.Value)
 			{
 				MainPlugin.ModLogger.LogInfo("Changing BaseAI and SkillDrivers.");
 			}
@@ -284,7 +284,7 @@ namespace QueenGlandBuff.Changes
 				UnityEngine.Object.DestroyImmediate(obj);
 			}
 
-			if (MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddSpecial.Value)
 			{
 				AISkillDriver aiskillDriver1 = MasterObject.AddComponent<AISkillDriver>();
 				aiskillDriver1.customName = "BuffAlly";
@@ -391,7 +391,7 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver4.driverUpdateTimerOverride = 3f;
 			aiskillDriver4.ignoreNodeGraph = false;
 			aiskillDriver4.maxDistance = float.PositiveInfinity;
-			aiskillDriver4.minDistance = MainPlugin.Gland_AI_LeashLength.Value;
+			aiskillDriver4.minDistance = MainPlugin.Config_AI_MinRecallDist.Value;
 			aiskillDriver4.maxTargetHealthFraction = float.PositiveInfinity;
 			aiskillDriver4.maxUserHealthFraction = float.PositiveInfinity;
 			aiskillDriver4.minTargetHealthFraction = float.NegativeInfinity;
@@ -409,7 +409,7 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver4.shouldFireEquipment = false;
 			aiskillDriver4.shouldSprint = true;
 			aiskillDriver4.requireSkillReady = false;
-			if (MainPlugin.Gland_AddUtility.Value)
+			if (MainPlugin.Config_AddUtility.Value)
             {
 				aiskillDriver4.skillSlot = SkillSlot.Utility;
 				aiskillDriver4.resetCurrentEnemyOnNextDriverSelection = true;

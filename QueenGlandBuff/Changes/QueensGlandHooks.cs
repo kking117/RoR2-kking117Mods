@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using R2API;
 using RoR2;
 using RoR2.CharacterAI;
@@ -10,21 +11,55 @@ namespace QueenGlandBuff.Changes
 {
     public class QueensGlandHooks
     {
-		public static void Begin()
+		static SceneDef BazaarSceneDef;
+		internal static List<BodyIndex> BeetleFrenzyWhiteList;
+		internal static void Begin()
 		{
 			On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-			if (MainPlugin.Gland_AI_Target.Value)
+			
+			if (MainPlugin.Config_AI_Target.Value)
 			{
 				On.RoR2.CharacterAI.BaseAI.FixedUpdate += BaseAI_FixedUpdate;
 			}
-			if (MainPlugin.Gland_AddSpecial.Value)
+			if (MainPlugin.Config_AddSpecial.Value)
 			{
+				On.RoR2.BodyCatalog.Init += BodyCatalog_Init;
 				On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
 				On.RoR2.CharacterBody.OnBuffFirstStackGained += CharacterBody_OnBuffFirstStackGained;
 			}
 			RecalculateStatsAPI.GetStatCoefficients += CalculateStatsHook;
 			CharacterBody.onBodyInventoryChangedGlobal += CharacterBody_OnInventoryChanged;
+			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
 			BeetleGland_Override();
+		}
+		private static bool DoesBodyContainName(GameObject bodyPrefab, string name)
+		{
+			MainPlugin.ModLogger.LogInfo(bodyPrefab.name);
+			if (bodyPrefab.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				return true;
+			}
+			return false;
+		}
+		private static void PostLoad()
+		{
+			BazaarSceneDef = SceneCatalog.FindSceneDef("bazaar");
+		}
+		private static void BodyCatalog_Init(On.RoR2.BodyCatalog.orig_Init orig)
+		{
+			orig();
+			BeetleFrenzyWhiteList = new List<BodyIndex>();
+			for (int i = 0; i < BodyCatalog.bodyCount; i++)
+			{
+				GameObject bodyPrefab = BodyCatalog.GetBodyPrefab((BodyIndex)i);
+				if (bodyPrefab)
+				{
+					if (DoesBodyContainName(bodyPrefab, "beetle"))
+					{
+						BeetleFrenzyWhiteList.Add((BodyIndex)i);
+					}
+				}
+			}
 		}
 		private static void CharacterBody_FixedUpdate(On.RoR2.CharacterBody.orig_FixedUpdate orig, RoR2.CharacterBody self)
 		{
@@ -33,8 +68,7 @@ namespace QueenGlandBuff.Changes
 			{
 				if (self.HasBuff(BeetleGuardAlly.Staunching))
 				{
-					Helpers.DrawAggro(self);
-					Helpers.EmpowerBeetles(self);
+					QueensGland.TickStaunchBuff(self);
 				}
 			}
 		}
@@ -43,11 +77,7 @@ namespace QueenGlandBuff.Changes
 			orig(self, buff);
 			if (buff == BeetleGuardAlly.Staunching)
 			{
-				if (NetworkServer.active)
-				{
-					Helpers.DrawAggro(self);
-					Helpers.EmpowerBeetles(self);
-				}
+				QueensGland.TickStaunchBuff(self);
 			}
 		}
 		private static void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
@@ -60,7 +90,7 @@ namespace QueenGlandBuff.Changes
 					if (sender.outOfDanger)
 					{
 						float regenmult = 1f + (sender.inventory.GetItemCount(RoR2Content.Items.BoostHp) * 0.1f);
-						float regen = MainPlugin.Gland_Regen.Value + (levelbonus * MainPlugin.Gland_Regen.Value * 0.2f);
+						float regen = MainPlugin.Config_Regen.Value + (levelbonus * MainPlugin.Config_Regen.Value * 0.2f);
 						args.baseRegenAdd += regenmult * regen;
 					}
 				}
@@ -95,7 +125,7 @@ namespace QueenGlandBuff.Changes
 			{
 				mult = 2;
 			}
-			return Math.Min(MainPlugin.Gland_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * mult;
+			return Math.Min(MainPlugin.Config_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * mult;
 		}
 		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
         {
@@ -113,9 +143,9 @@ namespace QueenGlandBuff.Changes
                 {
 					int deployableCount = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
 					int itemCount = owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland);
-					int stackBonus = Math.Max(0, itemCount - MainPlugin.Gland_MaxSummons.Value);
-					int dmgitem = MainPlugin.Gland_BaseDamage.Value + (MainPlugin.Gland_StackDamage.Value * stackBonus);
-					int hpitem = MainPlugin.Gland_BaseHealth.Value + (MainPlugin.Gland_StackHealth.Value * stackBonus);
+					int stackBonus = Math.Max(0, itemCount - MainPlugin.Config_MaxSummons.Value);
+					int dmgitem = MainPlugin.Config_BaseDamage.Value + (MainPlugin.Config_StackDamage.Value * stackBonus);
+					int hpitem = MainPlugin.Config_BaseHealth.Value + (MainPlugin.Config_StackHealth.Value * stackBonus);
 					int summonCount = 0;
 					for (int i = 0; i < owner.deployablesList.Count; i++)
 					{
@@ -154,12 +184,16 @@ namespace QueenGlandBuff.Changes
 		{
 			On.RoR2.Items.BeetleGlandBodyBehavior.FixedUpdate += (orig, self) =>
 			{
+				if (Stage.instance.sceneDef == BazaarSceneDef)
+				{
+					return;
+				}
 				if (self.body && self.body.inventory)
 				{
 					CharacterMaster owner = self.body.master;
 					if (owner)
 					{
-						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MainPlugin.Gland_MaxSummons.Value);
+						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MainPlugin.Config_MaxSummons.Value);
 						int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
 						int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
 						if (deployableCount < maxdeployable)
@@ -180,7 +214,7 @@ namespace QueenGlandBuff.Changes
 								{
 									if (SetupSummonedBeetleGuard(spawnResult, owner, extraglands))
 									{
-										self.guardResummonCooldown = MainPlugin.Gland_RespawnTime.Value;
+										self.guardResummonCooldown = MainPlugin.Config_RespawnTime.Value;
 									}
 								}));
 								DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
@@ -202,6 +236,7 @@ namespace QueenGlandBuff.Changes
 			{
 				Helpers.GiveRandomEliteAffix(beeble);
 				Deployable deployable = beeble.GetComponent<Deployable>();
+				QueensGland.UpdateAILeash(beeble);
 				if (deployable)
 				{
 					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(beeble.TrueKill));
@@ -238,7 +273,7 @@ namespace QueenGlandBuff.Changes
 				{
 					if (lastAttention < self.enemyAttention)
 					{
-						if (MainPlugin.Gland_Debug.Value)
+						if (MainPlugin.Config_Debug.Value)
 						{
 							MainPlugin.ModLogger.LogInfo("Attempt to redirect focus from flying target.");
 						}
@@ -264,7 +299,7 @@ namespace QueenGlandBuff.Changes
 			search.teamMaskFilter = TeamMask.allButNeutral;
 			search.teamMaskFilter.RemoveTeam(self.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Gland_AI_LeashLength.Value;
+			search.maxDistanceFilter = QueensGland.GetLeashDistance() * 0.5f;
 			search.searchOrigin = self.bodyInputBank.aimOrigin;
 			search.searchDirection = self.bodyInputBank.aimDirection;
 			search.maxAngleFilter = (self.fullVision ? 180f : 90f);
