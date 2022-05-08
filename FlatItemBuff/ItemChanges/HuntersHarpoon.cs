@@ -29,8 +29,6 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "Killing an enemy gives you a burst of";
 			string desc = "Killing an enemy increases";
-			string pickup_skill = " primary and secondary cooldown rate";
-			string desc_skill = " <style=cIsUtility>primary</style> and <style=cIsUtility>secondary cooldown rate</style>";
 			bool AND = false;
 			if (MainPlugin.Harpoon_MoveSpeed.Value > 0f)
             {
@@ -38,19 +36,21 @@ namespace FlatItemBuff.ItemChanges
 				desc += string.Format(" <style=cIsUtility>movement speed</style> by <style=cIsUtility>{0}%</style>", MainPlugin.Harpoon_MoveSpeed.Value * 500);
 				AND = true;
 			}
-			if (MainPlugin.Steak_BaseBuffDur.Value > 0f)
+			if (MainPlugin.Harpoon_BaseDuration.Value > 0f)
 			{
-				if(AND)
+				string pickup_skill = " primary and secondary skill cooldown rate";
+				string desc_skill = " <style=cIsUtility>primary</style> and <style=cIsUtility>secondary skill cooldown rate</style>";
+				if (AND)
                 {
-					//AND = false;
-					pickup += " and";
-					desc += " and";
+					pickup += " and also";
+					desc += " and also";
 				}
 				pickup += pickup_skill;
-				desc += string.Format("{0} by <style=cIsUtility>+{1}%</style>", desc_skill, MainPlugin.Harpoon_CooldownRate.Value * 500);
+				desc += string.Format("{0} by <style=cIsUtility>{1}%</style>", desc_skill, MainPlugin.Harpoon_CooldownRate.Value * 500);
 			}
 			pickup += ".";
-			desc += string.Format(". Fades over <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds.", MainPlugin.Harpoon_BaseDuration.Value, MainPlugin.Harpoon_StackDuration.Value);
+			desc += ".";
+			desc += string.Format(" Fades over <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds.", MainPlugin.Harpoon_BaseDuration.Value, MainPlugin.Harpoon_StackDuration.Value);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_DESC", desc);
 		}

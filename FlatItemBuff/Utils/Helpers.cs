@@ -9,6 +9,12 @@ namespace FlatItemBuff.Utils
 {
     internal class Helpers
     {
+		public static float HyperbolicResult(int itemCount, float baseBonus, float stackBonus, int hardCap)
+		{
+			float bonus = baseBonus + (stackBonus * (itemCount - 1));
+			float result = hardCap - hardCap / (1 + bonus);
+			return result;
+		}
 		public static CharacterMaster GetOwner(MinionOwnership minionowner)
 		{
 			CharacterMaster returnmaster = minionowner.ownerMaster;

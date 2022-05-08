@@ -103,7 +103,7 @@ namespace FlatItemBuff.ItemChanges
 					int voidCount = sender.inventory.GetTotalItemCountOfTier(ItemTier.VoidTier1) + sender.inventory.GetTotalItemCountOfTier(ItemTier.VoidTier2) + sender.inventory.GetTotalItemCountOfTier(ItemTier.VoidTier3) + sender.inventory.GetTotalItemCountOfTier(ItemTier.VoidBoss);
 					if (voidCount > 0)
 					{
-						float statbonus = HyperbolicResult(voidCount, 1);
+						float statbonus = Utils.Helpers.HyperbolicResult(voidCount, MainPlugin.BenthicRework_VoidManBonus.Value, MainPlugin.BenthicRework_VoidManBonus.Value, 1);
 						if (MainPlugin.BenthicRework_BuffSpeed.Value)
 						{
 							args.moveSpeedMultAdd += statbonus;
@@ -119,11 +119,6 @@ namespace FlatItemBuff.ItemChanges
 					}
 				}
 			}
-		}
-		private static float HyperbolicResult(int itemCount, int hardCap)
-		{
-			float result = hardCap - hardCap / (1 + MainPlugin.BenthicRework_VoidManBonus.Value * itemCount);
-			return result;
 		}
 		private static void ItemCatalog_Init(On.RoR2.ItemCatalog.orig_Init orig)
 		{
