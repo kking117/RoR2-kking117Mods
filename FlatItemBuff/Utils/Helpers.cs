@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using RoR2;
 using UnityEngine;
@@ -69,76 +70,63 @@ namespace FlatItemBuff.Utils
 			}
 			return null;
 		}
-		public static void KillDeployableInRange(CharacterMaster owner, DeployableSlot slot, int killAmount, Vector3 origin, float searchDistance, bool isPriority)
-		{
-			if (owner)
+		public static void KillCloseDeployables(CharacterMaster exception, TeamIndex team, DeployableSlot slot, Vector3 origin, float killRange)
+        {
+			List<Deployable> targetList = new List<Deployable>(GetDeployableListFromTeam(team, slot));
+			for (int i = 0; i < targetList.Count; i++)
 			{
-				if (owner.GetDeployableCount(slot) > 0)
+				CharacterMaster master = targetList[i].GetComponent<CharacterMaster>();
+				if (master && master != exception)
 				{
-					List<CharacterMaster> HitList = new List<CharacterMaster>();
-					BullseyeSearch search = new BullseyeSearch();
-					search.viewer = null;
-					search.teamMaskFilter = TeamMask.all;
-					search.sortMode = BullseyeSearch.SortMode.Distance;
-					search.maxDistanceFilter = searchDistance;
-					search.searchOrigin = origin;
-					search.searchDirection = origin;
-					search.maxAngleFilter = 180f;
-					search.filterByLoS = false;
-					search.RefreshCandidates();
-					foreach (HurtBox target in search.GetResults())
+					CharacterBody body = master.GetBody();
+					if (body)
 					{
-						if (target && target.healthComponent)
+						HealthComponent healthComponent = body.healthComponent;
+						if (healthComponent && healthComponent.alive)
 						{
-							if (target.healthComponent.body)
+							if (Vector3.Distance(body.transform.position, origin) <= killRange)
 							{
-								CharacterBody targetbody = target.healthComponent.body;
-								if (targetbody.master)
+								CharacterMaster owner = targetList[i].ownerMaster;
+								if (owner)
 								{
-									CharacterMaster targetmaster = target.healthComponent.body.master;
-									Deployable deployable = targetmaster.GetComponent<Deployable>();
-									if (deployable)
-									{
-										if (deployable.ownerMaster == owner)
-										{
-											HitList.Add(targetmaster);
-										}
-									}
+									owner.RemoveDeployable(targetList[i]);
 								}
+								master.TrueKill();
 							}
 						}
-					}
-
-					for (int i = 0; i < HitList.Count && killAmount > 0; i++)
-					{
-						CharacterMaster target = HitList[i];
-						Deployable deployable = target.GetComponent<Deployable>();
-						if (deployable)
-						{
-							if (owner.deployablesList != null)
-							{
-								for (int z = 0; z < owner.deployablesList.Count; z++)
-								{
-									if (owner.deployablesList[z].deployable == deployable)
-									{
-										if (owner.deployablesList[z].slot == slot)
-										{
-											owner.RemoveDeployable(deployable);
-											target.TrueKill();
-											killAmount--;
-											break;
-										}
-									}
-								}
-							}
-						}
-					}
-					if(isPriority && killAmount > 0)
-                    {
-						KillDeployables(owner, slot, killAmount);
 					}
 				}
 			}
+		}
+		private static List<Deployable> GetDeployableListFromTeam(TeamIndex team, DeployableSlot slot)
+        {
+			List<Deployable> deployableList = new List<Deployable>();
+			ReadOnlyCollection<TeamComponent> teamList = TeamComponent.GetTeamMembers(team);
+			for (int i = 0; i < teamList.Count; i++)
+			{
+				CharacterBody body = teamList[i].body;
+				if (body)
+				{
+					CharacterMaster master = body.master;
+					if (master)
+					{
+						if (master.deployablesList != null)
+						{
+							for (int z = 0; z < master.deployablesList.Count; z++)
+							{
+								if (master.deployablesList[z].deployable)
+								{
+									if (master.deployablesList[z].slot == slot)
+									{
+										deployableList.Add(master.deployablesList[z].deployable);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return deployableList;
 		}
 		public static void KillDeployables(CharacterMaster owner, DeployableSlot slot, int killAmount)
 		{

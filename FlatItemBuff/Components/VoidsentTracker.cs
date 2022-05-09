@@ -7,7 +7,7 @@ namespace FlatItemBuff.Components
 {
 	public class VoidsentTracker: MonoBehaviour
 	{
-		public List<CharacterMaster> HitList = new List<CharacterMaster>();
+		private List<CharacterMaster> HitList = new List<CharacterMaster>();
 		public bool RegisterAttacker(CharacterMaster attacker)
         {
 			CleanList();

@@ -8,6 +8,7 @@ using RoR2.Projectile;
 using FlatItemBuff.Utils;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using FlatItemBuff.Components;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -26,6 +27,7 @@ namespace FlatItemBuff.ItemChanges
                 On.RoR2.CharacterMaster.OnBodyDeath += CharacterMaster_OnBodyDeath;
             }
             On.RoR2.Projectile.ProjectileSpawnMaster.SpawnMaster += Projectile_SpawnMaster;
+            On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
@@ -39,14 +41,6 @@ namespace FlatItemBuff.ItemChanges
             ilcursor.Index += 3;
             ilcursor.Emit(OpCodes.Ldc_I4_0);
             ilcursor.Emit(OpCodes.Mul);
-
-            /*ilcursor.Index += 3;
-            ilcursor.Remove();
-            ilcursor.Emit(OpCodes.Ldloc, 16);
-            ilcursor.EmitDelegate<Func<Inventory, int>>((inventory) =>
-            {
-                return inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
-            });*/
         }
         public static void ExtraChanges()
         {
@@ -158,24 +152,45 @@ namespace FlatItemBuff.ItemChanges
                 if (projController && projController.owner)
                 {
                     CharacterBody ownerbody = projController.owner.GetComponent<CharacterBody>();
-                    if (ownerbody && ownerbody.master)
+                    if (ownerbody)
                     {
-                        int killCount = ownerbody.master.GetDeployableCount(DeployableSlot.MinorConstructOnKill) + 1 - ownerbody.master.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
-                        if (killCount > 0)
+                        CharacterMaster ownerMaster = ownerbody.master;
+                        if(ownerMaster)
                         {
-                            if(MainPlugin.NucleusRework_Enable.Value)
+                            int killCount = (ownerMaster.GetDeployableCount(DeployableSlot.MinorConstructOnKill) + 1) - ownerMaster.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
+                            if (killCount > 0)
                             {
                                 Helpers.KillDeployables(ownerbody.master, DeployableSlot.MinorConstructOnKill, killCount);
-                            }
-                            else
-                            {
-                                Helpers.KillDeployableInRange(ownerbody.master, DeployableSlot.MinorConstructOnKill, killCount, self.transform.position, 6f, true);
                             }
                         }
                     }
                 }
             }
             orig(self);
+        }
+        private static void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
+        {
+            orig(self);
+            if (NetworkServer.active)
+            {
+                if (self)
+                {
+                    CharacterMaster owner = Helpers.GetOwnerAsDeployable(self, DeployableSlot.MinorConstructOnKill);
+                    if (owner)
+                    {
+                        if(MainPlugin.NucleusRework_Enable.Value)
+                        {
+                            DefenseNucleus_Rework.SetupConstructInventory(self, owner);
+                        }
+                        else
+                        {
+                            DefenseNucleus.SetupConstructInventory(self, owner);
+                        }
+                        SummonDeclutter component = self.gameObject.AddComponent<SummonDeclutter>();
+                        component.slot = DeployableSlot.MinorConstructOnKill;
+                    }
+                }
+            }
         }
         private static void CharacterMaster_OnBodyDeath(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
         {

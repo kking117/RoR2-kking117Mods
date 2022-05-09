@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using UnityEngine;
+using FlatItemBuff.Components;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -19,7 +18,7 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickup = "First hit on every enemy causes and explosion. <style=cIsVoid>Corrupts all Will-o'-the-wisps</style>..";
+			string pickup = "The first hit on every enemy causes an explosion. <style=cIsVoid>Corrupts all Will-o'-the-wisps</style>.";
 			string desc = String.Format("Upon hitting an enemy for the first time, <style=cIsDamage>detonate</style> them in a <style=cIsDamage>{0}m</style> <style=cStack>(+{1}m per stack)</style> radius burst for <style=cIsDamage>260%</style> <style=cStack>(+156% per stack)</style> base damage. <style=cIsVoid>Corrupts all Will-o'-the-wisps</style>.", MainPlugin.VoidsentFlame_BaseRadius.Value, MainPlugin.VoidsentFlame_StackRadius.Value);
 			LanguageAPI.Add("ITEM_EXPLODEONDEATHVOID_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_EXPLODEONDEATHVOID_DESC", desc);
@@ -63,10 +62,10 @@ namespace FlatItemBuff.ItemChanges
 					{
 						if (self.body != attackerBody)
 						{
-							Components.VoidsentTracker tracker = self.GetComponent<Components.VoidsentTracker>();
+							VoidsentTracker tracker = self.GetComponent<VoidsentTracker>();
 							if (!tracker)
 							{
-								tracker = self.gameObject.AddComponent<Components.VoidsentTracker>();
+								tracker = self.gameObject.AddComponent<VoidsentTracker>();
 							}
 							if (tracker.RegisterAttacker(attacker))
 							{

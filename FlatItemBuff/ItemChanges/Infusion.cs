@@ -45,6 +45,11 @@ namespace FlatItemBuff.ItemChanges
 			{
 				On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
 			}
+			CharacterBody.onBodyInventoryChangedGlobal += CharacterBody_OnInventoryChanged;
+		}
+		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
+		{
+			UpdateTracker(self);
 		}
 		private static void OnAddInfusionBonus(On.RoR2.Inventory.orig_AddInfusionBonus orig, Inventory self, uint value)
         {
@@ -67,7 +72,6 @@ namespace FlatItemBuff.ItemChanges
 								GlobalEventManager.OnCharacterLevelUp(body);
 							}
 						}
-						UpdateTracker(body);
 					}
 				}
 			}
@@ -125,7 +129,6 @@ namespace FlatItemBuff.ItemChanges
 					}
 				}
 			}
-			UpdateTracker(body);
 		}
 		private static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
 		{

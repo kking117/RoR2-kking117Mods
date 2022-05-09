@@ -8,7 +8,6 @@ using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using RoR2.Projectile;
 using FlatItemBuff.Components;
-using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -64,16 +63,9 @@ namespace FlatItemBuff.ItemChanges
         }
         private static void Hooks()
         {
-            
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-            if (MainPlugin.NucleusRework_SummonCount.Value > 0)
-            {
-                On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
-            }
             On.RoR2.EquipmentSlot.OnEquipmentExecuted += Equipment_OnExecuted;
-            
         }
-        
         private static void Equipment_OnExecuted(On.RoR2.EquipmentSlot.orig_OnEquipmentExecuted orig, EquipmentSlot self)
         {
             orig(self);
@@ -121,29 +113,18 @@ namespace FlatItemBuff.ItemChanges
             }
             return MainPlugin.NucleusRework_SummonCount.Value;
         }
-        private static void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
+        internal static void SetupConstructInventory(CharacterMaster self, CharacterMaster owner)
         {
-            orig(self);
-            if (NetworkServer.active)
+            int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
+            int hpitem = MainPlugin.NucleusRework_BaseHealth.Value + (MainPlugin.NucleusRework_StackHealth.Value * stackbonus);
+            int atkitem = MainPlugin.NucleusRework_BaseAttack.Value + (MainPlugin.NucleusRework_StackAttack.Value * stackbonus);
+            if (atkitem > 50)
             {
-                if (self)
-                {
-                    CharacterMaster nukeowner = Helpers.GetOwnerAsDeployable(self, DeployableSlot.MinorConstructOnKill);
-                    if (nukeowner)
-                    {
-                        int stackbonus = nukeowner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
-                        int hpitem = MainPlugin.NucleusRework_BaseHealth.Value + (MainPlugin.NucleusRework_StackHealth.Value * stackbonus);
-                        int atkitem = MainPlugin.NucleusRework_BaseAttack.Value + (MainPlugin.NucleusRework_StackAttack.Value * stackbonus);
-                        if (atkitem > 50)
-                        {
-                            self.inventory.GiveItem(RoR2Content.Items.BoostDamage, atkitem-50);
-                            atkitem = 50;
-                        }
-                        self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
-                        self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-                    }
-                }
+                self.inventory.GiveItem(RoR2Content.Items.BoostDamage, atkitem - 50);
+                atkitem = 50;
             }
+            self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
+            self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
         }
         private static void DeployConstructs(CharacterMaster owner, int summonCount)
         {

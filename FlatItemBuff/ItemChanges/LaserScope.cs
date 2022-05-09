@@ -20,8 +20,8 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string desc = "";
-			desc += String.Format("Gain <style=cIsDamage>{0}% critical chance</style>.", MainPlugin.LaserScope_Crit.Value * 100f);
-			desc += " <style=cIsDamage>Critical Strikes</style> deal an additional <style=cIsDamage>100% damage</style><style=cStack>(+100% per stack)</style>.";
+			desc += String.Format("Gain <style=cIsDamage>{0}% critical chance</style>.", MainPlugin.LaserScope_Crit.Value);
+			desc += " <style=cIsDamage>Critical Strikes</style> deal an additional <style=cIsDamage>100% damage</style><style=cStack> (+100% per stack)</style>.";
 			LanguageAPI.Add("ITEM_CRITDAMAGE_DESC", desc);
 		}
 		private static void Hooks()

@@ -31,7 +31,6 @@ namespace FlatItemBuff.ItemChanges
         {
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-            On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
             On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEvent_CharacterDeath;
         }
         private static void GlobalEvent_CharacterDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
@@ -64,7 +63,7 @@ namespace FlatItemBuff.ItemChanges
                             }
                         }
                     }
-                    if (deployer)
+                    if (deployer && deployer.GetBody())
                     {
                         if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
                         {
@@ -89,30 +88,18 @@ namespace FlatItemBuff.ItemChanges
             }
             return 4;
         }
-        private static void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
+        internal static void SetupConstructInventory(CharacterMaster self, CharacterMaster owner)
         {
-            orig(self);
-            if (!NetworkServer.active)
+            int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
+            int hpitem = MainPlugin.Nucleus_BaseHealth.Value + (MainPlugin.Nucleus_StackHealth.Value * stackbonus);
+            int atkitem = MainPlugin.Nucleus_BaseAttack.Value + (MainPlugin.Nucleus_StackAttack.Value * stackbonus);
+            if (atkitem > 50)
             {
-                return;
+                self.inventory.GiveItem(RoR2Content.Items.BoostDamage, atkitem - 50);
+                atkitem = 50;
             }
-            if (self)
-            {
-                CharacterMaster owner = Helpers.GetOwnerAsDeployable(self, DeployableSlot.MinorConstructOnKill);
-                if (owner)
-                {
-                    int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
-                    int hpitem = MainPlugin.Nucleus_BaseHealth.Value + (MainPlugin.Nucleus_StackHealth.Value * stackbonus);
-                    int atkitem = MainPlugin.Nucleus_BaseAttack.Value + (MainPlugin.Nucleus_StackAttack.Value * stackbonus);
-                    if (atkitem > 50)
-                    {
-                        self.inventory.GiveItem(RoR2Content.Items.BoostDamage, atkitem - 50);
-                        atkitem = 50;
-                    }
-                    self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
-                    self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-                }
-            }
+            self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
+            self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
         }
         private static void DeployConstructFromCorpse(CharacterMaster owner, CharacterBody victim)
         {
