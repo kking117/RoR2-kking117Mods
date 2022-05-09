@@ -34,7 +34,6 @@ namespace QueenGlandBuff.Changes
 		}
 		private static bool DoesBodyContainName(GameObject bodyPrefab, string name)
 		{
-			MainPlugin.ModLogger.LogInfo(bodyPrefab.name);
 			if (bodyPrefab.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
 			{
 				return true;
@@ -120,12 +119,7 @@ namespace QueenGlandBuff.Changes
 			{
 				return result;
 			}
-			int mult = 1;
-			if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
-			{
-				mult = 2;
-			}
-			return Math.Min(MainPlugin.Config_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * mult;
+			return Math.Min(MainPlugin.Config_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland));
 		}
 		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
         {
@@ -210,6 +204,8 @@ namespace QueenGlandBuff.Changes
 									spawnOnTarget = self.transform,
 								}, RoR2Application.rng);
 								directorSpawnRequest.summonerBodyObject = self.gameObject;
+								directorSpawnRequest.teamIndexOverride = TeamIndex.Player;
+								directorSpawnRequest.ignoreTeamMemberLimit = true;
 								directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(directorSpawnRequest.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult spawnResult)
 								{
 									if (SetupSummonedBeetleGuard(spawnResult, owner, extraglands))
@@ -224,28 +220,35 @@ namespace QueenGlandBuff.Changes
 				}
 			};
 		}
-		private static bool SetupSummonedBeetleGuard(SpawnCard.SpawnResult spawnResult, CharacterMaster summoner, int itemcount)
+		private static bool SetupSummonedBeetleGuard(SpawnCard.SpawnResult spawnResult, CharacterMaster owner, int itemcount)
 		{
 			GameObject spawnedInstance = spawnResult.spawnedInstance;
 			if (!spawnedInstance)
 			{
 				return false;
 			}
-			CharacterMaster beeble = spawnedInstance.GetComponent<CharacterMaster>();
-			if (beeble)
+			CharacterMaster spawnMaster = spawnedInstance.GetComponent<CharacterMaster>();
+			if (spawnMaster)
 			{
-				Helpers.GiveRandomEliteAffix(beeble);
-				Deployable deployable = beeble.GetComponent<Deployable>();
-				QueensGland.UpdateAILeash(beeble);
-				if (deployable)
+				Deployable deployable = spawnMaster.GetComponent<Deployable>();
+				if (!deployable)
 				{
-					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(beeble.TrueKill));
-					summoner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
-					UpdateBeetleGuardStacks(summoner);
-					if (summoner.GetBody())
+					deployable = spawnMaster.gameObject.AddComponent<Deployable>();
+				}
+				if(owner)
+                {
+					CharacterBody spawnBody = spawnMaster.GetBody();
+					if (spawnBody)
 					{
-						return true;
+						spawnMaster.teamIndex = owner.teamIndex;
+						spawnBody.teamComponent.teamIndex = owner.teamIndex;
 					}
+					Helpers.GiveRandomEliteAffix(spawnMaster);
+					QueensGland.UpdateAILeash(spawnMaster);
+					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(spawnMaster.TrueKill));
+					owner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
+					UpdateBeetleGuardStacks(owner);
+					return true;
 				}
 			}
 			return false;
