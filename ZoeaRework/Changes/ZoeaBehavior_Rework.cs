@@ -36,8 +36,9 @@ namespace ZoeaRework.Changes
                         spawnTimer -= 5f;
                         DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest(spawnCard, placementRule, RoR2Application.rng);
                         directorSpawnRequest.summonerBodyObject = base.gameObject;
+                        directorSpawnRequest.teamIndexOverride = TeamIndex.Player;
+                        directorSpawnRequest.ignoreTeamMemberLimit = true;
                         directorSpawnRequest.onSpawnedServer = new Action<SpawnCard.SpawnResult>(OnSummonSpawned);
-                        directorSpawnRequest.summonerBodyObject = base.gameObject;
                         DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
                     }
                 }
@@ -61,6 +62,12 @@ namespace ZoeaRework.Changes
                 CharacterMaster owner = body.master;
                 if(owner)
                 {
+                    CharacterBody spawnBody = spawnMaster.GetBody();
+                    if(spawnBody)
+                    {
+                        spawnMaster.teamIndex = owner.teamIndex;
+                        spawnBody.teamComponent.teamIndex = owner.teamIndex;
+                    }
                     VoidMegaCrabItem_Shared.UpdateAILeash(spawnMaster);
                     spawnMaster.minionOwnership.SetOwner(owner);
                     owner.AddDeployable(deployable, DeployableSlot.VoidMegaCrabItem);

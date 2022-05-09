@@ -25,7 +25,7 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.4";
+		public const string MODVERSION = "1.1.5";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
@@ -97,7 +97,7 @@ namespace ZoeaRework
 
 			Config_Rework_SpawnTime = Config.Bind<float>(new ConfigDefinition("Zoea Rework", "Respawn Time"), 30f, new ConfigDescription("Cooldown time between summons in seconds.", null, Array.Empty<object>()));
 			Config_Rework_DamageBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Damage Bonus"), 0, new ConfigDescription("How many extra BoostDamage items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
-			Config_Rework_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Damage Bonus"), 3, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
+			Config_Rework_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Damage Bonus"), 2, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_HealthBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_HealthStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 

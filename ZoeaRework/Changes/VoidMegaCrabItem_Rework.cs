@@ -90,10 +90,6 @@ namespace ZoeaRework.Changes
                     }
                 }
             }
-            /*for(int i = 0; i< ItemTierCatalog.itemTierDefs.Length; i++)
-            {
-                MainPlugin.print(ItemTierCatalog.itemTierDefs[i].name);
-            }*/
             TierBlackList = new List<ItemTier>();
             string[] tiers = MainPlugin.Config_ReworkInherit_TierBlackList.Value.Split(' ');
             for (int i = 0; i < tiers.Length; i++)
@@ -173,10 +169,6 @@ namespace ZoeaRework.Changes
                 {
                     amount = 1;
                 }
-            }
-            if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
-            {
-                amount *= 2;
             }
             return amount;
         }

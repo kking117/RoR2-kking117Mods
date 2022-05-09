@@ -128,10 +128,6 @@ namespace ZoeaRework.Changes
                     amount = 3;
                 }
             }
-            if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
-            {
-                amount *= 2;
-            }
             return amount;
         }
         private static void OnInventoryChange(CharacterBody self)
