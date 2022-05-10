@@ -14,7 +14,7 @@ namespace AgilePowerSaw
 	{
 		public const string MODUID = "com.kking117.AgilePowerSaw";
 		public const string MODNAME = "AgilePowerSaw";
-		public const string MODVERSION = "1.2.0";
+		public const string MODVERSION = "1.2.1";
 
 		public static ConfigEntry<bool> PowerSaw;
 		public static ConfigEntry<bool> BounceGrenade;
@@ -23,6 +23,7 @@ namespace AgilePowerSaw
 		public static ConfigEntry<bool> NanoSpear;
 		public static ConfigEntry<bool> LaserGlaive;
 		public static ConfigEntry<bool> ChargedGauntlet;
+		public static ConfigEntry<bool> Flood;
 
 		private bool AncientScepter = false;
 		public void Awake()
@@ -115,6 +116,15 @@ namespace AgilePowerSaw
 					}
 				}
 			}
+			if(Flood.Value)
+            {
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidSurvivor/ChargeMegaBlaster.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+			}
 		}
 		private SkillDef GetSkillDefByNameToken(string token)
         {
@@ -137,6 +147,7 @@ namespace AgilePowerSaw
 			NanoBomb = Config.Bind<bool>(new ConfigDefinition("Artificer", "Charged Nano-Bomb"), false, new ConfigDescription("Should Artificer's Charged Nano-Bomb skill be agile?", null, Array.Empty<object>()));
 			NanoSpear = Config.Bind<bool>(new ConfigDefinition("Artificer", "Cast Nano-Spear"), false, new ConfigDescription("Should Artificer's Cast Nano-Spear skill be agile?", null, Array.Empty<object>()));
 			Flamethrower = Config.Bind<bool>(new ConfigDefinition("Artificer", "Flamethrower"), false, new ConfigDescription("Should Artificer's Flamethrower skill be agile?", null, Array.Empty<object>()));
+			Flood = Config.Bind<bool>(new ConfigDefinition("Void Fiend", "Flood"), false, new ConfigDescription("Should Void Fiend's Flood skill be agile?", null, Array.Empty<object>()));
 		}
 	}
 }
