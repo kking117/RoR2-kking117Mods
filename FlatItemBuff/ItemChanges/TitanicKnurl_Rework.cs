@@ -35,7 +35,7 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			On.RoR2.CharacterBody.OnInventoryChanged += CharacterBody_OnInventoryChanged;
+			CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
 		}
 		private static void CreateProjectiles()
         {
@@ -44,9 +44,8 @@ namespace FlatItemBuff.ItemChanges
 			projDmg.damageType = DamageType.Stun1s;
 			Modules.Projectiles.AddProjectile(StoneFistProjectile);
 		}
-		private static void CharacterBody_OnInventoryChanged(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, CharacterBody self)
+		private static void OnInventoryChanged(CharacterBody self)
 		{
-			orig(self);
 			if(NetworkServer.active)
             {
 				self.AddItemBehavior<TitanicKnurl_Behavior>(self.inventory.GetItemCount(RoR2Content.Items.Knurl));

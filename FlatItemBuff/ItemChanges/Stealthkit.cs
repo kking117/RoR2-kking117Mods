@@ -100,7 +100,7 @@ namespace FlatItemBuff.ItemChanges
 			if (self.HasBuff(StealthBuff.buffIndex))
 			{
 				self.outOfDanger = true;
-				self.outOfDangerStopwatch = Math.Max(7f, self.outOfDangerStopwatch);
+				self.outOfDangerStopwatch = float.PositiveInfinity;
 			}
 		}
 		private static void CharacterBody_OnSkillActivated(On.RoR2.CharacterBody.orig_OnSkillActivated orig, CharacterBody self, GenericSkill skill)
@@ -109,7 +109,7 @@ namespace FlatItemBuff.ItemChanges
 			if (self.HasBuff(StealthBuff.buffIndex))
             {
 				self.outOfCombat = true;
-				self.outOfCombatStopwatch = Math.Max(5f, self.outOfCombatStopwatch);
+				self.outOfCombatStopwatch = float.PositiveInfinity;
 			}
 		}
 		private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
@@ -119,12 +119,12 @@ namespace FlatItemBuff.ItemChanges
 				if (MainPlugin.StealthKit_CancelCombat.Value)
 				{
 					self.outOfCombat = true;
-					self.outOfCombatStopwatch = Math.Max(5f, self.outOfCombatStopwatch);
+					self.outOfCombatStopwatch = float.PositiveInfinity;
 				}
 				if (MainPlugin.StealthKit_CancelDanger.Value)
 				{
 					self.outOfDanger = true;
-					self.outOfDangerStopwatch = Math.Max(7f, self.outOfDangerStopwatch);
+					self.outOfDangerStopwatch = float.PositiveInfinity;
 				}
 			}
 			orig(self);

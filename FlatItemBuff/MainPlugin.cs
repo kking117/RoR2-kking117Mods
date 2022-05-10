@@ -25,9 +25,12 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.12.2";
+		public const string MODVERSION = "1.12.3";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
+
+		public static ConfigEntry<float> General_OutOfCombatTime;
+		public static ConfigEntry<float> General_OutOfDangerTime;
 
 		public static ConfigEntry<bool> Steak_Enable;
 		public static ConfigEntry<float> Steak_BaseHP;
@@ -77,6 +80,11 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeptonDaisy_StackHeal;
 		public static ConfigEntry<float> LeptonDaisy_HealTime;
 
+		public static ConfigEntry<bool> RedWhip_Enable;
+		public static ConfigEntry<int> RedWhip_StartSecond;
+		public static ConfigEntry<float> RedWhip_BaseSpeed;
+		public static ConfigEntry<float> RedWhip_StackSpeed;
+
 		public static ConfigEntry<bool> StealthKit_Enable;
 		public static ConfigEntry<bool> StealthKit_CancelCombat;
 		public static ConfigEntry<bool> StealthKit_CancelDanger;
@@ -105,17 +113,6 @@ namespace FlatItemBuff
 		public static ConfigEntry<int> BensRaincoat_StackBlock;
 		public static ConfigEntry<float> BensRaincoat_Cooldown;
 		public static ConfigEntry<bool> BensRaincoat_FixCooldown;
-
-		public static ConfigEntry<bool> BenthicRework_Enable;
-		public static ConfigEntry<int> BenthicRework_BaseCount;
-		public static ConfigEntry<int> BenthicRework_StackCount;
-		public static ConfigEntry<string> BenthicRework_BanList;
-		public static ConfigEntry<float> BenthicRework_VoidManBonus;
-		public static ConfigEntry<bool> BenthicRework_BuffDamage;
-		public static ConfigEntry<bool> BenthicRework_BuffHealth;
-		public static ConfigEntry<bool> BenthicRework_BuffSpeed;
-		public static ConfigEntry<int> BenthicRework_SortMethod;
-		public static ConfigEntry<string> BenthicRework_TierFavour;
 
 		public static ConfigEntry<bool> VoidsentFlame_Enable;
 		public static ConfigEntry<float> VoidsentFlame_BaseRadius;
@@ -185,6 +182,10 @@ namespace FlatItemBuff
 			{
 				ItemChanges.LeptonDaisy.EnableChanges();
 			}
+			if(RedWhip_Enable.Value)
+            {
+				ItemChanges.RedWhip.EnableChanges();
+            }
 			if (Harpoon_Enable.Value)
 			{
 				ItemChanges.HuntersHarpoon.EnableChanges();
@@ -236,10 +237,6 @@ namespace FlatItemBuff
 			{
 				ItemChanges.VoidsentFlame.EnableChanges();
 			}
-			if (BenthicRework_Enable.Value)
-			{
-				ItemChanges.BenthicBloom_Rework.EnableChanges();
-			}
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -263,6 +260,9 @@ namespace FlatItemBuff
 		}
 		public void ReadConfig()
 		{
+			General_OutOfCombatTime = Config.Bind<float>(new ConfigDefinition("!General!", "Out of Combat Time"), 5f, new ConfigDescription("How long it takes to be considered Out of Combat. (5 = Vanilla) (Is used for internal reference, does not affect the game.)", null, Array.Empty<object>()));
+			General_OutOfDangerTime = Config.Bind<float>(new ConfigDefinition("!General!", "Out of Danger Time"), 7f, new ConfigDescription("How long it takes to be considered Out of Danger. (7 = Vanilla) (Is used for internal reference, does not affect the game.)", null, Array.Empty<object>()));
+
 			Steak_Enable = Config.Bind<bool>(new ConfigDefinition("Bison Steak", "Enable Changes"), true, new ConfigDescription("Enables changes to Bison Steak.", null, Array.Empty<object>()));
 			Steak_BaseHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base HP"), 25.0f, new ConfigDescription("The amount of HP each stack increases. (Set to 0 or less to disable health.)", null, Array.Empty<object>()));
 			Steak_LevelHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Level HP"), 2.5f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
@@ -311,6 +311,11 @@ namespace FlatItemBuff
 			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.08f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
+			RedWhip_Enable = Config.Bind<bool>(new ConfigDefinition("Red Whip", "Enable Changes"), true, new ConfigDescription("Enables changes for Red Whip.", null, Array.Empty<object>()));
+			RedWhip_StartSecond = Config.Bind<int>(new ConfigDefinition("Red Whip", "Build Up Second"), 1, new ConfigDescription("How many seconds without using a combat skill are needed to start building up speed. (Set to -1 or less to disable entirely)", null, Array.Empty<object>()));
+			RedWhip_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Red Whip", "Base Speed"), 0.3f, new ConfigDescription("How much movement speed to give at a single stack.", null, Array.Empty<object>()));
+			RedWhip_StackSpeed = Config.Bind<float>(new ConfigDefinition("Red Whip", "Stack Speed"), 0.3f, new ConfigDescription("How much extra movement speed to give for each additional stack.", null, Array.Empty<object>()));
+
 			StealthKit_Enable = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
 			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' during the stealth buff.", null, Array.Empty<object>()));
 			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' during the stealth buff.", null, Array.Empty<object>()));
@@ -339,17 +344,6 @@ namespace FlatItemBuff
 			BensRaincoat_BaseBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Base Block"), 2, new ConfigDescription("How many debuff blocks to give at a single stack.", null, Array.Empty<object>()));
 			BensRaincoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 1, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
-
-			BenthicRework_Enable = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework to Benthic Bloom. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			BenthicRework_BaseCount = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Base Corrupt Count"), 1, new ConfigDescription("How many items to corrupt at a single stack.", null, Array.Empty<object>()));
-			BenthicRework_StackCount = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Stack Corrupt Count"), 1, new ConfigDescription("How many items to corrupt for each additional stack.", null, Array.Empty<object>()));
-			BenthicRework_BanList = Config.Bind<string>(new ConfigDefinition("Benthic Bloom Rework", "Corrupt Blacklist"), "", new ConfigDescription("Prevents corrupting into these specific items. (Example = Clover, CloverVoid, ExtraLife, MoreMissile)", null, Array.Empty<object>()));
-			BenthicRework_VoidManBonus = Config.Bind<float>(new ConfigDefinition("Benthic Bloom Rework", "Corruption Bonus"), 0.01f, new ConfigDescription("How much to increases stats by for each Void item.", null, Array.Empty<object>()));
-			BenthicRework_BuffDamage = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Damage Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Damage.", null, Array.Empty<object>()));
-			BenthicRework_BuffHealth = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Health Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Health.", null, Array.Empty<object>()));
-			BenthicRework_BuffSpeed = Config.Bind<bool>(new ConfigDefinition("Benthic Bloom Rework", "Speed Bonus"), true, new ConfigDescription("Allows the corruption bonus to increase Movement Speed.", null, Array.Empty<object>()));
-			BenthicRework_SortMethod = Config.Bind<int>(new ConfigDefinition("Benthic Bloom Rework", "Selection Method"), 2, new ConfigDescription("The method to use when selecting which item to corrupt. (0 = random, 1 = most common tier first, 2 = tier weighted)", null, Array.Empty<object>()));
-			BenthicRework_TierFavour = Config.Bind<string>(new ConfigDefinition("Benthic Bloom Rework", "Tier Weights"), "12, 6, 1, 1", new ConfigDescription("Higher number means that tier is more likely to be selected for each corruption. (Tier1, Tier2, Tier3, BossTier)", null, Array.Empty<object>()));
 
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));
 			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack.", null, Array.Empty<object>()));
