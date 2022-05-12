@@ -29,7 +29,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.3.4";
+		public const string MODVERSION = "1.3.5";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -74,7 +74,7 @@ namespace QueenGlandBuff
 			ReadConfig();
 			if (Config_SpawnAffix.Value != 0)
 			{
-				On.RoR2.Stage.BeginServer += Stage_BeginServer;
+				Stage.onServerStageBegin += ServerStageBegin;
 			}
 			Changes.QueensGland.Begin();
 			if (Config_Debug.Value)
@@ -83,9 +83,8 @@ namespace QueenGlandBuff
 			}
 			new Modules.ContentPacks().Initialize();
 		}
-		private void Stage_BeginServer(On.RoR2.Stage.orig_BeginServer orig, Stage self)
-		{
-			orig(self);
+		private void ServerStageBegin(Stage self)
+        {
 			UpdateEliteList();
 		}
 		private void FixedUpdate()
