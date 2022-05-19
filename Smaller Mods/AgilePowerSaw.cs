@@ -14,7 +14,7 @@ namespace AgilePowerSaw
 	{
 		public const string MODUID = "com.kking117.AgilePowerSaw";
 		public const string MODNAME = "AgilePowerSaw";
-		public const string MODVERSION = "1.2.1";
+		public const string MODVERSION = "1.2.2";
 
 		public static ConfigEntry<bool> PowerSaw;
 		public static ConfigEntry<bool> BounceGrenade;
@@ -22,8 +22,13 @@ namespace AgilePowerSaw
 		public static ConfigEntry<bool> NanoBomb;
 		public static ConfigEntry<bool> NanoSpear;
 		public static ConfigEntry<bool> LaserGlaive;
+		public static ConfigEntry<bool> GrappleFist;
 		public static ConfigEntry<bool> ChargedGauntlet;
+		public static ConfigEntry<bool> SpikedFist;
+		public static ConfigEntry<bool> ThrowPylon;
+		public static ConfigEntry<bool> Thunderslam;
 		public static ConfigEntry<bool> Flood;
+		public static ConfigEntry<bool> VulcanShotgun;
 
 		private bool AncientScepter = false;
 		public void Awake()
@@ -53,6 +58,24 @@ namespace AgilePowerSaw
 					skillDef.cancelSprintingOnActivation = false;
 				}
 			}
+			if (GrappleFist.Value)
+			{
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Loader/FireHook.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+			}
+			if (SpikedFist.Value)
+			{
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Loader/FireYankHook.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+			}
 			if (ChargedGauntlet.Value)
             {
 				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Loader/ChargeFist.asset").WaitForCompletion();
@@ -69,6 +92,24 @@ namespace AgilePowerSaw
 						skillDef.canceledFromSprinting = false;
 						skillDef.cancelSprintingOnActivation = false;
 					}
+				}
+			}
+			if (ThrowPylon.Value)
+			{
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Loader/ThrowPylon.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+			}
+			if (Thunderslam.Value)
+			{
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Loader/GroundSlam.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
 				}
 			}
 			if (NanoBomb.Value)
@@ -116,6 +157,15 @@ namespace AgilePowerSaw
 					}
 				}
 			}
+			if (VulcanShotgun.Value)
+			{
+				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Captain/CaptainShotgun.asset").WaitForCompletion();
+				if (skillDef)
+				{
+					skillDef.canceledFromSprinting = false;
+					skillDef.cancelSprintingOnActivation = false;
+				}
+			}
 			if(Flood.Value)
             {
 				SkillDef skillDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidSurvivor/ChargeMegaBlaster.asset").WaitForCompletion();
@@ -143,10 +193,15 @@ namespace AgilePowerSaw
 			LaserGlaive = Config.Bind<bool>(new ConfigDefinition("Huntress", "Laser Glaive"), false, new ConfigDescription("Should Huntress's Laser Glaive skill be agile?", null, Array.Empty<object>()));
 			PowerSaw = Config.Bind<bool>(new ConfigDefinition("Mul-T", "Power-Saw"), true, new ConfigDescription("Should Mul-T's Power-Saw skill be agile?", null, Array.Empty<object>()));
 			BounceGrenade = Config.Bind<bool>(new ConfigDefinition("Engineer", "Bouncing Grenade"), false, new ConfigDescription("Should Engineer's Bouncing Grenade skill be agile?", null, Array.Empty<object>()));
+			GrappleFist = Config.Bind<bool>(new ConfigDefinition("Loader", "Grapple Fist"), false, new ConfigDescription("Should Loader's Grapple Fist skill be agile?", null, Array.Empty<object>()));
+			SpikedFist = Config.Bind<bool>(new ConfigDefinition("Loader", "Spiked Fist"), false, new ConfigDescription("Should Loader's Spiked Fist skill be agile?", null, Array.Empty<object>()));
 			ChargedGauntlet = Config.Bind<bool>(new ConfigDefinition("Loader", "Charged Gauntlet"), false, new ConfigDescription("Should Loader's Charged Gauntlet skill be agile?", null, Array.Empty<object>()));
+			ThrowPylon = Config.Bind<bool>(new ConfigDefinition("Loader", "M551 Pylon"), false, new ConfigDescription("Should Loader's M551 Pylon skill be agile?", null, Array.Empty<object>()));
+			Thunderslam = Config.Bind<bool>(new ConfigDefinition("Loader", "Thunderslam"), false, new ConfigDescription("Should Loader's Thunderslam skill be agile?", null, Array.Empty<object>()));
 			NanoBomb = Config.Bind<bool>(new ConfigDefinition("Artificer", "Charged Nano-Bomb"), false, new ConfigDescription("Should Artificer's Charged Nano-Bomb skill be agile?", null, Array.Empty<object>()));
 			NanoSpear = Config.Bind<bool>(new ConfigDefinition("Artificer", "Cast Nano-Spear"), false, new ConfigDescription("Should Artificer's Cast Nano-Spear skill be agile?", null, Array.Empty<object>()));
 			Flamethrower = Config.Bind<bool>(new ConfigDefinition("Artificer", "Flamethrower"), false, new ConfigDescription("Should Artificer's Flamethrower skill be agile?", null, Array.Empty<object>()));
+			VulcanShotgun = Config.Bind<bool>(new ConfigDefinition("Captain", "Vulcan Shotgun"), false, new ConfigDescription("Should Captain's Vulcan Shotgun skill be agile?", null, Array.Empty<object>()));
 			Flood = Config.Bind<bool>(new ConfigDefinition("Void Fiend", "Flood"), false, new ConfigDescription("Should Void Fiend's Flood skill be agile?", null, Array.Empty<object>()));
 		}
 	}
