@@ -40,7 +40,6 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Changing proc behaviour");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-			On.RoR2.Inventory.AddInfusionBonus += OnAddInfusionBonus;
 			if (MainPlugin.Infusion_InheritOwner.Value)
 			{
 				On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
@@ -51,31 +50,6 @@ namespace FlatItemBuff.ItemChanges
 		{
 			UpdateTracker(self);
 		}
-		private static void OnAddInfusionBonus(On.RoR2.Inventory.orig_AddInfusionBonus orig, Inventory self, uint value)
-        {
-			uint OldValue = self.infusionBonus;
-			orig(self, value);
-
-			int itemCount = self.GetItemCount(RoR2Content.Items.Infusion);
-			if (itemCount > 0)
-			{
-				CharacterMaster owner = self.GetComponent<CharacterMaster>();
-				if (owner)
-				{
-					CharacterBody body = owner.GetBody();
-					if (body)
-					{
-						if ((self.infusionBonus % MainPlugin.Infusion_Level.Value) - value < 0)
-						{
-							if (OldValue < MainPlugin.Infusion_Stacks.Value * itemCount)
-							{
-								GlobalEventManager.OnCharacterLevelUp(body);
-							}
-						}
-					}
-				}
-			}
-        }
 		private static void UpdateTracker(CharacterBody body)
 		{
 			Inventory inv = body.inventory;

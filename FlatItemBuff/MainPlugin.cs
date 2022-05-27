@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.12.3";
+		public const string MODVERSION = "1.12.4";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -133,15 +133,20 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> Nucleus_Enable;
 		public static ConfigEntry<bool> Nucleus_Infinite;
 		public static ConfigEntry<int> Nucleus_BaseHealth;
-		public static ConfigEntry<int> Nucleus_BaseAttack;
 		public static ConfigEntry<int> Nucleus_StackHealth;
+		public static ConfigEntry<int> Nucleus_BaseAttack;
 		public static ConfigEntry<int> Nucleus_StackAttack;
+		public static ConfigEntry<int> Nucleus_BaseDamage;
+		public static ConfigEntry<int> Nucleus_StackDamage;
+		public static ConfigEntry<float> Nucleus_Cooldown;
 
 		public static ConfigEntry<bool> NucleusRework_Enable;
 		public static ConfigEntry<int> NucleusRework_SummonCount;
 		public static ConfigEntry<int> NucleusRework_BaseHealth;
-		public static ConfigEntry<int> NucleusRework_BaseAttack;
 		public static ConfigEntry<int> NucleusRework_StackHealth;
+		public static ConfigEntry<int> NucleusRework_BaseDamage;
+		public static ConfigEntry<int> NucleusRework_StackDamage;
+		public static ConfigEntry<int> NucleusRework_BaseAttack;
 		public static ConfigEntry<int> NucleusRework_StackAttack;
 		public static ConfigEntry<float> NucleusRework_ShieldBaseDuration;
 		public static ConfigEntry<float> NucleusRework_ShieldStackDuration;
@@ -307,8 +312,8 @@ namespace FlatItemBuff
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 0f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
 
 			LeptonDaisy_Enable = Config.Bind<bool>(new ConfigDefinition("Lepton Daisy", "Enable Changes"), true, new ConfigDescription("Enables changes for Lepton Daisy.", null, Array.Empty<object>()));
-			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.08f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
-			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.08f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
+			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.1f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
+			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.1f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
 			RedWhip_Enable = Config.Bind<bool>(new ConfigDefinition("Red Whip", "Enable Changes"), true, new ConfigDescription("Enables changes for Red Whip.", null, Array.Empty<object>()));
@@ -363,17 +368,22 @@ namespace FlatItemBuff
 
 			Nucleus_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Enable Changes"), true, new ConfigDescription("Enables changes to Defense Nucleus.", null, Array.Empty<object>()));
 			Nucleus_Infinite = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Minion Can Proc"), true, new ConfigDescription("Allows constructs to proc their owner's defense nucleus when they kill.", null, Array.Empty<object>()));
-			Nucleus_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Health"), 0, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
-			Nucleus_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Health"), 5, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
-			Nucleus_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
-			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Health"), 10, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Health"), 10, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Attack Speed"), 6, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 0, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_BaseDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Damage"), 6, new ConfigDescription("How much extra damage the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_StackDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Damage"), 8, new ConfigDescription("How much extra damage the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			Nucleus_Cooldown = Config.Bind<float>(new ConfigDefinition("Defense Nucleus", "Cooldown"), 1.5f, new ConfigDescription("Cooldown before this item can be procced again. (Cannot go below 0.25 because I said so.)", null, Array.Empty<object>()));
 
 			NucleusRework_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework to the Defense Nucleus. (Has priority over the normal changes.)", null, Array.Empty<object>()));
 			NucleusRework_SummonCount = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Summon Count"), 3, new ConfigDescription("How many constructs to summon on activation. (Cannot go above 6 because I said so.)", null, Array.Empty<object>()));
 			NucleusRework_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Health"), 10, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
 			NucleusRework_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Health"), 10, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
-			NucleusRework_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
-			NucleusRework_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Attack Speed"), 10, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Attack Speed"), 6, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Attack Speed"), 0, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_BaseDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Base Damage"), 6, new ConfigDescription("How much extra damage the constructs get. (1 = +10%)", null, Array.Empty<object>()));
+			NucleusRework_StackDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Stack Damage"), 8, new ConfigDescription("How much extra damage the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			NucleusRework_ShieldBaseDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Base Duration"), 3.5f, new ConfigDescription("How long in seconds that the shield lasts for.", null, Array.Empty<object>()));
 			NucleusRework_ShieldStackDuration = Config.Bind<float>(new ConfigDefinition("Defense Nucleus Rework", "Shield Stack Duration"), 1f, new ConfigDescription("How many extra seconds the shield lasts for per stack.", null, Array.Empty<object>()));
 

@@ -47,44 +47,40 @@ namespace FlatItemBuff.ItemChanges
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
 			}
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 22)
+				x => ILPatternMatchingExt.MatchLdloc(x, 20)
 			);
 			if (ilcursor.Index > 0)
 			{
 				ilcursor.Remove();
-				ilcursor.Emit(OpCodes.Ldloc, 22);
+				ilcursor.Emit(OpCodes.Ldloc, 20);
 				ilcursor.Emit(OpCodes.Ldarg_0);
-				ilcursor.Emit(OpCodes.Ldloc_0);
-				ilcursor.EmitDelegate<Func<int, HealthComponent, CharacterMaster, int>>((itemCount, self, attacker) =>
+				ilcursor.Emit(OpCodes.Ldloc_1);
+				ilcursor.EmitDelegate<Func<int, HealthComponent, CharacterBody, int>>((itemCount, self, attackerBody) =>
 				{
-					CharacterBody attackerBody = attacker.GetBody();
-					if (attackerBody)
+					if (self.body != attackerBody)
 					{
-						if (self.body != attackerBody)
+						VoidsentTracker tracker = self.GetComponent<VoidsentTracker>();
+						if (!tracker)
 						{
-							VoidsentTracker tracker = self.GetComponent<VoidsentTracker>();
-							if (!tracker)
+							tracker = self.gameObject.AddComponent<VoidsentTracker>();
+						}
+						if (tracker.RegisterAttacker(attackerBody.master))
+						{
+							if (itemCount > 0)
 							{
-								tracker = self.gameObject.AddComponent<VoidsentTracker>();
-							}
-							if (tracker.RegisterAttacker(attacker))
-							{
-								if (itemCount > 0)
+								MinionOwnership ownership = attackerBody.master.minionOwnership;
+								if (ownership)
 								{
-									MinionOwnership ownership = attacker.minionOwnership;
-									if (ownership)
+									CharacterMaster owner = Utils.Helpers.GetOwner(ownership);
+									if (owner && owner != attackerBody.master)
 									{
-										CharacterMaster owner = Utils.Helpers.GetOwner(ownership);
-										if (owner && owner != attacker)
-										{
-											if(!tracker.RegisterAttacker(owner))
-                                            {
-												return 0;
-                                            }
-										}
+										if(!tracker.RegisterAttacker(owner))
+                                        {
+											return 0;
+                                        }
 									}
-									return 1;
 								}
+								return 1;
 							}
 						}
 					}

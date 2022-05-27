@@ -1,4 +1,6 @@
-﻿using RoR2;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using RoR2;
 using R2API;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,19 +13,95 @@ namespace FlatItemBuff.ItemChanges
 {
     class DefenseNucleus
     {
-        public static GameObject SummonProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKillProjectile.prefab").WaitForCompletion();
+        private static float Cooldown = 1.5f;
+        private static int BaseHealth = 10;
+        private static int StackHealth = 10;
+        private static int BaseAttack = 6;
+        private static int StackAttack = 0;
+        private static int BaseDamage = 6;
+        private static int StackDamage = 8;
+        private static bool CanInfinite = true;
         public static void EnableChanges()
         {
+            SetupConfigValues();
             MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
             UpdateText();
             Hooks();
             DefenseNucleus_Shared.EnableChanges();
         }
+        private static void SetupConfigValues()
+        {
+            if (MainPlugin.Nucleus_Cooldown.Value < 0.25f)
+            {
+                MainPlugin.Nucleus_Cooldown.Value = 0.25f;
+            }
+            Cooldown = MainPlugin.Nucleus_Cooldown.Value;
+
+            BaseHealth = MainPlugin.Nucleus_BaseHealth.Value;
+            StackHealth = MainPlugin.Nucleus_StackHealth.Value;
+
+            BaseAttack = MainPlugin.Nucleus_BaseAttack.Value;
+            StackAttack = MainPlugin.Nucleus_StackAttack.Value;
+
+            BaseDamage = MainPlugin.Nucleus_BaseDamage.Value;
+            StackDamage = MainPlugin.Nucleus_StackDamage.Value;
+
+            CanInfinite = MainPlugin.Nucleus_Infinite.Value;
+        }
         private static void UpdateText()
         {
             MainPlugin.ModLogger.LogInfo("Updating item text");
+            string stats = "";
+            List<string> statList = new List<string>();
+            if (BaseHealth > 0 || StackHealth > 0)
+            {
+                stats = string.Format("<style=cIsHealing>{0}%", (10 + BaseHealth) * 10f);
+                if (StackHealth > 0)
+                {
+                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackHealth * 10f);
+                }
+                stats += " health</style>";
+                statList.Add(stats);
+            }
+            if (BaseDamage > 0 || BaseDamage > 0)
+            {
+                stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseDamage) * 10f);
+                if (StackDamage > 0)
+                {
+                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 10f);
+                }
+                stats += " damage</style>";
+                statList.Add(stats);
+            }
+            if (BaseAttack > 0 || StackAttack > 0)
+            {
+                stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseAttack) * 10f);
+                if (StackAttack > 0)
+                {
+                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackAttack * 10f);
+                }
+                stats += " attack speed</style>";
+                statList.Add(stats);
+            }
+            stats = "";
+            for (int i = 0; i < statList.Count; i++)
+            {
+                if (i == statList.Count - 1)
+                {
+                    stats += " and ";
+                }
+                else if (i > 0)
+                {
+                    stats += ", ";
+                }
+                stats += statList[i];
+            }
+            if (stats.Length > 0)
+            {
+                stats = " with " + stats;
+            }
             string pickup = string.Format("Summon an Alpha Construct on kill.");
-            string desc = string.Format("On kill spawn an <style=cIsDamage>Alpha Construct</style> with <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style> and <style=cIsDamage>{2}% <style=cStack>(+{3}% per stack)</style> attack speed</style>. Limited to <style=cIsUtility>4</style>.", (10 + MainPlugin.Nucleus_BaseHealth.Value) * 10f, MainPlugin.Nucleus_StackHealth.Value * 10f, (10 + MainPlugin.Nucleus_BaseAttack.Value) * 10f, MainPlugin.Nucleus_StackAttack.Value * 10f);
+            string desc = string.Format("On kill spawn an <style=cIsDamage>Alpha Construct</style>{0}. Limited to <style=cIsUtility>4</style>.", stats);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
         }
@@ -42,7 +120,7 @@ namespace FlatItemBuff.ItemChanges
                 {
                     CharacterMaster deployer = null;
                     CharacterMaster owner = null;
-                    if (MainPlugin.Nucleus_Infinite.Value)
+                    if (CanInfinite)
                     {
                         owner = Helpers.GetOwnerAsDeployable(damageReport.attackerMaster, DeployableSlot.MinorConstructOnKill);
                     }
@@ -71,7 +149,7 @@ namespace FlatItemBuff.ItemChanges
                             if (!comp)
                             {
                                 comp = deployer.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
-                                comp.duration = 0.25f;
+                                comp.duration = Cooldown;
                                 DeployConstructFromCorpse(deployer, damageReport.victimBody);
                             }
                         }
@@ -91,15 +169,12 @@ namespace FlatItemBuff.ItemChanges
         internal static void SetupConstructInventory(CharacterMaster self, CharacterMaster owner)
         {
             int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
-            int hpitem = MainPlugin.Nucleus_BaseHealth.Value + (MainPlugin.Nucleus_StackHealth.Value * stackbonus);
-            int atkitem = MainPlugin.Nucleus_BaseAttack.Value + (MainPlugin.Nucleus_StackAttack.Value * stackbonus);
-            if (atkitem > 50)
-            {
-                self.inventory.GiveItem(RoR2Content.Items.BoostDamage, atkitem - 50);
-                atkitem = 50;
-            }
+            int hpitem = BaseHealth + (StackHealth * stackbonus);
+            int atkitem = BaseAttack + (StackAttack * stackbonus);
+            int dmgitem = BaseDamage + (StackDamage * stackbonus);
             self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
             self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
+            self.inventory.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
         }
         private static void DeployConstructFromCorpse(CharacterMaster owner, CharacterBody victim)
         {

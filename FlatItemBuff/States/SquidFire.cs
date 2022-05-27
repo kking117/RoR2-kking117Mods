@@ -89,8 +89,8 @@ namespace FlatItemBuff.States
 		public static GameObject hitEffectPrefab = EntityStates.Squid.SquidWeapon.FireSpine.hitEffectPrefab;
 		public static GameObject muzzleflashEffectPrefab = EntityStates.Squid.SquidWeapon.FireSpine.muzzleflashEffectPrefab;
 
-		public static float damageCoefficient = 1f;
-		public static float procCoefficient = 1f;
+		public static float damageCoefficient = 5f;
+		public static float procCoefficient = 0.1f;
 		public static float baseDuration = 0.75f; //was 2f originally, but that seems way too slow, also tried 1f slow again, tried 0.75f as that's what the wiki states
 
 		private const float maxVisionDistance = float.PositiveInfinity;

@@ -14,7 +14,8 @@ namespace FlatItemBuff.ItemChanges
 {
     public class DefenseNucleus_Shared
     {
-        public static GameObject ConstructBodyObject;
+        private static CharacterSpawnCard ConstructCSC;
+        private static GameObject ConstructBodyObject;
         public static BodyIndex ConstructBodyIndex = BodyIndex.None;
         public static void EnableChanges()
         {
@@ -44,6 +45,21 @@ namespace FlatItemBuff.ItemChanges
         }
         public static void ExtraChanges()
         {
+            ConstructCSC = Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/MajorAndMinorConstruct/cscMinorConstructOnKill.asset").WaitForCompletion();
+            if (ConstructCSC)
+            {
+                for (int i = 0; i< ConstructCSC.itemsToGrant.Length; i++)
+                {
+                    if(ConstructCSC.itemsToGrant[i].itemDef == RoR2Content.Items.BoostHp)
+                    {
+                        ConstructCSC.itemsToGrant[i].count = 0;
+                    }
+                    else if (ConstructCSC.itemsToGrant[i].itemDef == RoR2Content.Items.BoostDamage)
+                    {
+                        ConstructCSC.itemsToGrant[i].count = 0;
+                    }
+                }
+            }
             ConstructBodyObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MajorAndMinorConstruct/MinorConstructOnKillBody.prefab").WaitForCompletion();
             if(ConstructBodyObject)
             {
@@ -218,7 +234,7 @@ namespace FlatItemBuff.ItemChanges
                     blastAttack.crit = false;
                     blastAttack.procCoefficient = 1f;
                     blastAttack.damageColorIndex = DamageColorIndex.Default;
-                    blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+                    blastAttack.falloffModel = BlastAttack.FalloffModel.Linear;
                     blastAttack.damageType = DamageType.SlowOnHit;
                     blastAttack.Fire();
                 }
