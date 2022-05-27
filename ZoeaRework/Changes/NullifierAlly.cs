@@ -19,54 +19,27 @@ namespace ZoeaRework.Changes
         {
             CreateUtilitySkill();
             CreateSpecialSkill();
-            FindMasterCreateSpawnCard();
-            CheckAndUpdateMasterBody();
+            GatherEditAssets();
             UpdateAI();
         }
-        private static void CheckAndUpdateMasterBody()
+        private static void GatherEditAssets()
         {
-            bool BodyExists = false;
+            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Nullifier/NullifierAllyMaster.prefab").WaitForCompletion();
+            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/Base/Nullifier/cscNullifierAlly.asset").WaitForCompletion());
             CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
             if (master.bodyPrefab)
             {
-                if (master.bodyPrefab.name != "NullifierBody")
-                {
-                    BodyExists = true;
-                    MainPlugin.ModLogger.LogInfo("Master already has a replacement body, skipping creation step.");
-                    AllyBodyObject = master.bodyPrefab;
-                }
-            }
-            if (!BodyExists)
-            {
-                CreateNewBody();
-            }
-            if (master.bodyPrefab)
-            {
+                AllyBodyObject = master.bodyPrefab;
                 Modules.Skills.AddSkillToSlot(AllyBodyObject, UtilitySkill, SkillSlot.Utility);
                 Modules.Skills.AddSkillToSlot(AllyBodyObject, SpecialSkill, SkillSlot.Special);
                 CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
                 if (body)
                 {
                     body.baseMoveSpeed = MainPlugin.Config_Nullifier_BaseSpeed.Value;
-                    body.baseMaxHealth *= 0.3f;
-                    body.levelMaxHealth *= 0.3f;
+                    body.baseMaxHealth *= 0.5f;
+                    body.levelMaxHealth *= 0.5f;
                 }
             }
-        }
-        private static void CreateNewBody()
-        {
-            GameObject bodyprefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Nullifier/NullifierBody.prefab").WaitForCompletion();
-            AllyBodyObject = bodyprefab.InstantiateClone("NullifierAllyBody", true);
-            AllyBodyObject.GetComponent<DeathRewards>().logUnlockableDef = null;
-            Modules.Prefabs.bodyPrefabs.Add(AllyBodyObject);
-            AllyMasterObject.GetComponent<CharacterMaster>().bodyPrefab = AllyBodyObject;
-        }
-        private static void FindMasterCreateSpawnCard()
-        {
-            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Nullifier/NullifierAllyMaster.prefab").WaitForCompletion();
-            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/Base/Nullifier/cscNullifierAlly.asset").WaitForCompletion());
-            AllySpawnCard.name = "cscZoeaReworkNullifier";
-            AllySpawnCard.prefab = AllyMasterObject;
         }
         private static void UpdateAI()
         {

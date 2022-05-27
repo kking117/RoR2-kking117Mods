@@ -22,38 +22,8 @@ namespace ZoeaRework.Changes
         public static void Begin()
         {
             CreateUtilitySkill();
-            FindMasterCreateSpawnCard();
-            CheckAndUpdateMasterBody();
+            GatherEditAssets();
             UpdateAI();
-        }
-        private static void CheckAndUpdateMasterBody()
-        {
-            bool BodyExists = false;
-            CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
-            if (master.bodyPrefab)
-            {
-                if(master.bodyPrefab.name != "VoidMegaCrabBody")
-                {
-                    BodyExists = true;
-                    MainPlugin.ModLogger.LogInfo("Master already has a replacement body, skipping creation step.");
-                    AllyBodyObject = master.bodyPrefab;
-                }
-            }
-            if(!BodyExists)
-            {
-                CreateNewBody();
-            }
-            if (master.bodyPrefab)
-            {
-                Modules.Skills.AddSkillToSlot(AllyBodyObject, UtilitySkill, SkillSlot.Utility);
-                CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
-                if (body)
-                {
-                    body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed.Value;
-                    body.baseMaxHealth *= 0.5f;
-                    body.levelMaxHealth *= 0.5f;
-                }
-            }
         }
         internal static void PostLoad()
         {
@@ -66,20 +36,23 @@ namespace ZoeaRework.Changes
                 }
             }
         }
-        private static void CreateNewBody()
-        {
-            GameObject bodyprefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabBody.prefab").WaitForCompletion();
-            AllyBodyObject = bodyprefab.InstantiateClone("VoidMegaCrabAllyBody", true);
-            AllyBodyObject.GetComponent<DeathRewards>().logUnlockableDef = null;
-            Modules.Prefabs.bodyPrefabs.Add(AllyBodyObject);
-            AllyMasterObject.GetComponent<CharacterMaster>().bodyPrefab = AllyBodyObject;
-        }
-        private static void FindMasterCreateSpawnCard()
+        private static void GatherEditAssets()
         {
             AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabAllyMaster.prefab").WaitForCompletion();
-            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidMegaCrab/cscVoidMegaCrab.asset").WaitForCompletion());
-            AllySpawnCard.name = "cscZoeaReworkVoidMegaCrabAlly";
-            AllySpawnCard.prefab = AllyMasterObject;
+            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidMegaCrab/cscVoidMegaCrabAlly.asset").WaitForCompletion());
+            CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
+            if (master.bodyPrefab)
+            {
+                AllyBodyObject = master.bodyPrefab;
+                Modules.Skills.AddSkillToSlot(AllyBodyObject, UtilitySkill, SkillSlot.Utility);
+                CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
+                if (body)
+                {
+                    body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed.Value;
+                    body.baseMaxHealth *= 0.5f;
+                    body.levelMaxHealth *= 0.5f;
+                }
+            }
         }
         private static void UpdateAI()
         {

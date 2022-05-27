@@ -25,7 +25,7 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.5";
+		public const string MODVERSION = "1.1.6";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 

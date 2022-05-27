@@ -21,29 +21,17 @@ namespace ZoeaRework.Changes
         public static void Begin()
         {
             CreateUtilitySkill();
-            FindMasterCreateSpawnCard();
-            CheckAndUpdateMasterBody();
+            GatherEditAssets();
             UpdateAI();
         }
-        private static void CheckAndUpdateMasterBody()
+        private static void GatherEditAssets()
         {
-            bool BodyExists = false;
+            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidJailer/VoidJailerAllyMaster.prefab").WaitForCompletion();
+            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidJailer/cscVoidJailerAlly.asset").WaitForCompletion());
             CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
             if (master.bodyPrefab)
             {
-                if(master.bodyPrefab.name != "VoidJailerBody")
-                {
-                    BodyExists = true;
-                    MainPlugin.ModLogger.LogInfo("Master already has a replacement body, skipping creation step.");
-                    AllyBodyObject = master.bodyPrefab;
-                }
-            }
-            if(!BodyExists)
-            {
-                CreateNewBody();
-            }
-            if (master.bodyPrefab)
-            {
+                AllyBodyObject = master.bodyPrefab;
                 Modules.Skills.AddSkillToSlot(AllyBodyObject, UtilitySkill, SkillSlot.Utility);
                 CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
                 if (body)
@@ -53,21 +41,6 @@ namespace ZoeaRework.Changes
                     body.levelMaxHealth *= 0.5f;
                 }
             }
-        }
-        private static void CreateNewBody()
-        {
-            GameObject bodyprefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidJailer/VoidJailerBody.prefab").WaitForCompletion();
-            AllyBodyObject = bodyprefab.InstantiateClone("VoidJailerAllyBody", true);
-            AllyBodyObject.GetComponent<DeathRewards>().logUnlockableDef = null;
-            Modules.Prefabs.bodyPrefabs.Add(AllyBodyObject);
-            AllyMasterObject.GetComponent<CharacterMaster>().bodyPrefab = AllyBodyObject;
-        }
-        private static void FindMasterCreateSpawnCard()
-        {
-            AllyMasterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidJailer/VoidJailerAllyMaster.prefab").WaitForCompletion();
-            AllySpawnCard = UnityEngine.Object.Instantiate<CharacterSpawnCard>(Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidJailer/cscVoidJailer.asset").WaitForCompletion());
-            AllySpawnCard.name = "cscZoeaReworkVoidJailerAlly";
-            AllySpawnCard.prefab = AllyMasterObject;
         }
         private static void UpdateAI()
         {
@@ -338,7 +311,6 @@ namespace ZoeaRework.Changes
             UtilitySkill.skillName = UtilitySkill.skillNameToken;
 
             Modules.Skills.RegisterSkill(UtilitySkill);
-            
         }
     }
 }
