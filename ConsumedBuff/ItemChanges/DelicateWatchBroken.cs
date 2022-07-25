@@ -98,7 +98,8 @@ namespace ConsumedBuff.ItemChanges
             }
             pickup += string.Format(".");
             desc += string.Format(".");
-
+            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_PICKUP", pickup);
+            LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_DESC", desc);
             LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_PICKUP", pickup, "en");
             LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_DESC", desc, "en");
         }
@@ -106,7 +107,7 @@ namespace ConsumedBuff.ItemChanges
         {
             ILCursor ilcursor = new ILCursor(il);
             ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchStloc(x, 27)
+                x => ILPatternMatchingExt.MatchStloc(x, 25)
             );
             ilcursor.Emit(OpCodes.Ldarg_1);
             ilcursor.EmitDelegate<Func<DamageInfo, int>>((damageInfo) =>
@@ -117,10 +118,10 @@ namespace ConsumedBuff.ItemChanges
             });
             ilcursor.Emit(OpCodes.Add);
             ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 27)
+                x => ILPatternMatchingExt.MatchLdloc(x, 25)
             );
             ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 27)
+                x => ILPatternMatchingExt.MatchLdloc(x, 25)
             );
             ilcursor.Remove();
             ilcursor.Emit(OpCodes.Ldarg_1);

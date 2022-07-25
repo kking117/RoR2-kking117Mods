@@ -37,6 +37,8 @@ namespace ConsumedBuff.ItemChanges
             {
                 if(self.body.inventory)
                 {
+                    //ToDo: Just give the item it's own dodge chance
+                    //So it doesn't break with a mod that changes how tougher times works
                     self.itemCounts.bear += self.body.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed) * MainPlugin.Dio_BearWorth.Value;
                 }
             }

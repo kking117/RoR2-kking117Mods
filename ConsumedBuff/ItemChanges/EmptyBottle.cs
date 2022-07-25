@@ -33,6 +33,8 @@ namespace ConsumedBuff.ItemChanges
                 pickup = string.Format("An empty container from an Elixir you consumed. Does nothing.");
                 desc = string.Format("A spent item with no remaining power.");
             }
+            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_PICKUP", pickup);
+            LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_DESC", desc);
             LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_PICKUP", pickup, "en");
             LanguageAPI.Add("ITEM_HEALINGPOTIONCONSUMED_DESC", desc, "en");
         }
