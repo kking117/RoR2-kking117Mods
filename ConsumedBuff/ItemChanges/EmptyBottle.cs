@@ -25,7 +25,7 @@ namespace ConsumedBuff.ItemChanges
             string desc = string.Format("");
             if(MainPlugin.Elixir_Regen.Value != 0f)
             {
-                pickup = string.Format("An empty container from an Elixir you consumed. Boosts health regen.");
+                pickup = string.Format("Increases health regeneration.");
                 desc = string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s</style> <style=cStack>(+{0} per stack)</style>.", MainPlugin.Elixir_Regen.Value);
             }
             else

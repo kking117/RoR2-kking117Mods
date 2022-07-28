@@ -52,7 +52,8 @@ namespace ConsumedBuff.ItemChanges
             {
                 number *= -1;
             }
-            if(number < 11 || number > 19)
+            int number2 = number % 100;
+            if (number2 < 11 || number2 > 19)
             {
                 number = number % 10;
                 switch(number)

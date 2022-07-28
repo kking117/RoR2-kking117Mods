@@ -1,14 +1,16 @@
 ﻿using System;
 using RoR2;
+using RoR2.Projectile;
 using RoR2.Items;
 using R2API;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ConsumedBuff.ItemChanges
 {
     public class PluripotentLarvaConsumed
     {
+        private static float StackDamage;
         public static void Enable()
         {
             UpdateText();
@@ -17,48 +19,69 @@ namespace ConsumedBuff.ItemChanges
             {
                 On.RoR2.CharacterMaster.OnInventoryChanged += OnInventoryChanged;
             }
-            if (MainPlugin.VoidDio_BearWorth.Value != 0)
+            if (MainPlugin.VoidDio_BlockCooldown.Value <= 1.0f)
             {
-                IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
+                //Figure out a better way of doing this?
+                On.RoR2.CharacterBody.AddTimedBuff_BuffDef_float += AddTimedBuff;
             }
-            if (MainPlugin.VoidDio_BleedWorth.Value != 0)
+            if (MainPlugin.VoidDio_CollapseChance.Value > 0.0f)
             {
-                IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
+                On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
             }
         }
         private static void UpdateText()
         {
-            string pickup = string.Format("");
-            string desc = string.Format("");
+            string pickup = "";
+            string desc = "";
+
+            if (MainPlugin.VoidDio_CollapseChance.Value > 0.0f)
+            {
+                pickup += string.Format("Chance to collapse enemies on hit.");
+                desc += string.Format("<style=cIsDamage>{0}%</style> <style=cStack>(+{0}% per stack)</style> chance to <style=cIsDamage>collapse</style> an enemy for <style=cIsDamage>{1}%</style> ", MainPlugin.VoidDio_CollapseChance.Value, MainPlugin.VoidDio_CollapseDamage.Value * 100);
+                if (MainPlugin.VoidDio_CollapseUseTotal.Value)
+                {
+                    desc += "TOTAL damage.";
+                }
+                else
+                {
+                    desc += "base damage.";
+                }
+            }
+            if (MainPlugin.VoidDio_BlockCooldown.Value <= 1.0f)
+            {
+                if (pickup.Length > 0)
+                {
+                    pickup += " ";
+                    desc += " ";
+                }
+                pickup += string.Format("Block the next source of damage.");
+                desc += "<style=cIsHealing>Blocks</style> incoming damage once, recharging after <style=cIsUtility>15 ";
+                if (MainPlugin.VoidDio_BlockCooldown.Value < 1.0f)
+                {
+                    desc += string.Format("<style=cStack>(-{0}% per stack)</style> ", (1.0f - MainPlugin.VoidDio_BlockCooldown.Value) * 100);
+                }
+                desc += "seconds</style>.";
+            }
+            if (MainPlugin.VoidDio_Curse.Value > 0f)
+            {
+                if (pickup.Length > 0)
+                {
+                    pickup += " ";
+                    desc += " ";
+                }
+                pickup += string.Format("Reduced maximum health.");
+                desc += string.Format("<style=cIsHealth>Reduces maximum health by {0}%</style> <style=cStack>(+{0}% per stack)</style>.", MainPlugin.VoidDio_Curse.Value * 100f);
+            }
             if (MainPlugin.VoidDio_Corrupt.Value)
             {
-                pickup = string.Format("Corrupts your life. ");
-                desc = string.Format("All of your items that can be <style=cIsUtility>corrupted</style> will be. ");
-            }
-            if(MainPlugin.VoidDio_Curse.Value > 0f)
-            {
-                pickup += string.Format("Reduced maximum health. ");
-                desc += string.Format("<style=cIsHealth>Reduces maximum health by {0}%</style> <style=cStack>(+{0}% per stack)</style>. ", MainPlugin.VoidDio_Curse.Value * 100f);
-            }
-            if (MainPlugin.VoidDio_BearWorth.Value != 0 || MainPlugin.VoidDio_BleedWorth.Value != 0)
-            {
-                pickup += string.Format("Gain the powers of the Void.");
-                desc += string.Format("Counts as ");
-                if (MainPlugin.VoidDio_BearWorth.Value != 0)
+                if (pickup.Length > 0)
                 {
-                    desc += string.Format("<style=cIsVoid>{0}<style=cStack> (+{0} per stack)</style> Safer Spaces</style>", MainPlugin.VoidDio_BearWorth.Value);
-                    if (MainPlugin.VoidDio_BleedWorth.Value != 0)
-                    {
-                        desc += string.Format(" and ");
-                    }
+                    pickup += " ";
+                    desc += " ";
                 }
-                if (MainPlugin.VoidDio_BleedWorth.Value != 0)
-                {
-                    desc += string.Format("<style=cIsVoid>{0}<style=cStack> (+{0} per stack)</style> Needleticks</style>", MainPlugin.VoidDio_BleedWorth.Value);
-                }
-                desc += string.Format(".");
+                pickup += "<style=cIsVoid>Corrupts ALL items</style>.";
+                desc += "<style=cIsVoid>Corrupts ALL items</style>.";
             }
-
             LanguageAPI.Add("ITEM_EXTRALIFEVOIDCONSUMED_PICKUP", pickup);
             LanguageAPI.Add("ITEM_EXTRALIFEVOIDCONSUMED_DESC", desc);
         }
@@ -77,7 +100,7 @@ namespace ConsumedBuff.ItemChanges
                     {
                         args.baseCurseAdd += MainPlugin.VoidDio_Curse.Value * itemCount;
                     }
-                    if (MainPlugin.VoidDio_BearWorth.Value > 0)
+                    if (MainPlugin.VoidDio_BlockCooldown.Value <= 1.0f)
                     {
                         if (!sender.HasBuff(DLC1Content.Buffs.BearVoidCooldown) && !sender.HasBuff(DLC1Content.Buffs.BearVoidReady))
                         {
@@ -111,6 +134,80 @@ namespace ConsumedBuff.ItemChanges
                 }
             }
         }
+        private static void AddTimedBuff(On.RoR2.CharacterBody.orig_AddTimedBuff_BuffDef_float orig, CharacterBody self, BuffDef buffDef, float duration)
+        {
+            if (NetworkServer.active)
+            {
+                if (self.inventory)
+                {
+                    if (buffDef == DLC1Content.Buffs.BearVoidCooldown)
+                    {
+                        int itemCount = self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+                        if (itemCount > 0)
+                        {
+                            duration *= Mathf.Pow(MainPlugin.VoidDio_BlockCooldown.Value, itemCount);
+                        }
+                    }
+                }
+            }
+            orig(self, buffDef, duration);
+        }
+        private static void OnTakeDamagePost(On.RoR2.GlobalEventManager.orig_ServerDamageDealt orig, DamageReport dr)
+        {
+            if (!NetworkServer.active)
+            {
+                return;
+            }
+            if (dr.damageInfo.rejected || dr.damageInfo.procCoefficient <= 0f)
+            {
+                return;
+            }
+            if (dr.attacker)
+            {
+                uint? MaxStacks = null;
+                if (dr.damageInfo.inflictor)
+                {
+                    ProjectileDamage component = dr.damageInfo.inflictor.GetComponent<ProjectileDamage>();
+                    if (component && component.useDotMaxStacksFromAttacker)
+                    {
+                        MaxStacks = component.dotMaxStacksFromAttacker;
+                    }
+                }
+                CharacterBody attackerBody = dr.attackerBody;
+                CharacterBody victimBody = dr.victimBody;
+                if (attackerBody)
+                {
+                    CharacterMaster attackerMaster = attackerBody.master;
+                    if (attackerMaster && attackerMaster.inventory)
+                    {
+                        Inventory inventory = attackerMaster.inventory;
+
+                        int itemCount = inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+                        if (itemCount > 0 && Util.CheckRoll(dr.damageInfo.procCoefficient * itemCount * MainPlugin.VoidDio_CollapseChance.Value, attackerMaster))
+                        {
+                            DotController.DotDef dotDef = DotController.GetDotDef(DotController.DotIndex.Fracture);
+
+                            float damage = 0.0f;
+
+                            if (MainPlugin.VoidDio_CollapseUseTotal.Value)
+                            {
+                                damage = MainPlugin.VoidDio_CollapseDamage.Value * dr.damageDealt / dotDef.damageCoefficient / attackerBody.damage;
+                            }
+                            else
+                            {
+                                damage = MainPlugin.VoidDio_CollapseDamage.Value / dotDef.damageCoefficient;
+                            }
+
+                            if (damage > 0.0f)
+                            {
+                                DotController.InflictDot(victimBody.gameObject, attackerBody.gameObject, DotController.DotIndex.Fracture, dotDef.interval, damage, MaxStacks);
+                            }
+                        }
+                    }
+                }
+            }
+            orig(dr);
+        }
         private static void OnInventoryChanged(On.RoR2.CharacterMaster.orig_OnInventoryChanged orig, CharacterMaster self)
         {
             orig(self);
@@ -119,39 +216,6 @@ namespace ConsumedBuff.ItemChanges
             {
                 CorruptAllItems(self.inventory);
             }
-        }
-        private static void IL_OnHitEnemy(ILContext il)
-        {
-            ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchStloc(x, 24)
-            );
-            ilcursor.Emit(OpCodes.Ldarg_1);
-            ilcursor.EmitDelegate<Func<DamageInfo, int>>((damageInfo) =>
-            {
-                CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-                int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed) * MainPlugin.VoidDio_BleedWorth.Value;
-                return itemCount;
-            });
-            ilcursor.Emit(OpCodes.Add);
-        }
-        private static void IL_TakeDamage(ILContext il)
-        {
-            ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchStloc(x, 14)
-            );
-            ilcursor.Emit(OpCodes.Ldarg_0);
-            ilcursor.EmitDelegate<Func<HealthComponent, int>>((hpcomp) =>
-            {
-                CharacterBody body = hpcomp.body;
-                if (body.inventory)
-                {
-                    return body.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed) * MainPlugin.VoidDio_BearWorth.Value;
-                }
-                return 0;
-            });
-            ilcursor.Emit(OpCodes.Add);
         }
         private static void CorruptAllItems(Inventory inventory)
         {

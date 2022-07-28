@@ -1,5 +1,7 @@
 ﻿using RoR2;
 using R2API;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ConsumedBuff.ItemChanges
 {
@@ -7,41 +9,61 @@ namespace ConsumedBuff.ItemChanges
     {
         public static void Enable()
         {
-            UpdateText();
-            if (MainPlugin.Dio_BearWorth.Value != 0)
+
+            if (MainPlugin.Dio_BlockChance.Value > 0.0f)
             {
-                On.RoR2.HealthComponent.OnInventoryChanged += OnInventoryChanged;
+                UpdateText();
+                On.RoR2.HealthComponent.TakeDamage += OnTakeDamage;
             }
         }
         private static void UpdateText()
         {
-            string pickup = string.Format("");
-            string desc = string.Format("");
-            if (MainPlugin.Dio_BearWorth.Value != 0)
-            {
-                pickup = string.Format("Chance to block incoming damage.");
-                desc = string.Format("Counts as <style=cIsUtility>{0}<style=cStack> (+{0} per stack)</style> Tougher Times</style>.", MainPlugin.Dio_BearWorth.Value);
-            }
-            else
-            {
-                pickup = string.Format("A spent item with no remaining power.");
-                desc = string.Format("A spent item with no remaining power.");
-            }
+            string pickup = "";
+            string desc = "";
+
+            pickup = string.Format("Chance to block incoming damage.");
+            desc = string.Format("<style=cIsHealing>{0}%</style> <style=cStack>(+{0}% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cIsUtility>Unaffected by luck</style>.", MainPlugin.Dio_BlockChance.Value);
+
             LanguageAPI.Add("ITEM_EXTRALIFECONSUMED_PICKUP", pickup);
             LanguageAPI.Add("ITEM_EXTRALIFECONSUMED_DESC", desc);
         }
-        private static void OnInventoryChanged(On.RoR2.HealthComponent.orig_OnInventoryChanged orig, HealthComponent self)
+        private static void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
         {
-            orig(self);
-            if(self.body)
+            if (!NetworkServer.active)
             {
-                if(self.body.inventory)
+                return;
+            }
+            if (!self.alive || self.godMode)
+            {
+                return;
+            }
+            if (self.ospTimer > 0f)
+            {
+                return;
+            }
+            bool IgnoreBlock = (damageInfo.damageType & DamageType.BypassBlock) > DamageType.Generic;
+            if (!IgnoreBlock)
+            {
+                if(self.body && self.body.master)
                 {
-                    //ToDo: Just give the item it's own dodge chance
-                    //So it doesn't break with a mod that changes how tougher times works
-                    self.itemCounts.bear += self.body.inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed) * MainPlugin.Dio_BearWorth.Value;
+                    Inventory inventory = self.body.inventory;
+                    if (inventory)
+                    {
+                        int itemCount = inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed);
+                        if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance.Value * itemCount), 0f, null))
+                        {
+                            EffectData effectData = new EffectData
+                            {
+                                origin = damageInfo.position,
+                                rotation = Util.QuaternionSafeLookRotation((damageInfo.force != Vector3.zero) ? damageInfo.force : UnityEngine.Random.onUnitSphere)
+                            };
+                            EffectManager.SpawnEffect(HealthComponent.AssetReferences.bearEffectPrefab, effectData, true);
+                            damageInfo.rejected = true;
+                        }
+                    }
                 }
             }
+            orig(self, damageInfo);
         }
     }
 }
