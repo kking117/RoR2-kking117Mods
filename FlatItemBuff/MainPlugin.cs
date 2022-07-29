@@ -25,7 +25,10 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.12.4";
+		public const string MODVERSION = "1.13.0";
+
+		//ToDo:
+		//Make mentions of "multiple and single stacks" consistent in config descriptions.
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -100,6 +103,14 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> WarHorn_StackDuration;
 		public static ConfigEntry<float> WarHorn_BaseSpeed;
 		public static ConfigEntry<float> WarHorn_StackSpeed;
+
+		public static ConfigEntry<bool> WaxQuail_Enable;
+		public static ConfigEntry<float> WaxQuail_BaseHori;
+		public static ConfigEntry<float> WaxQuail_StackHori;
+		public static ConfigEntry<float> WaxQuail_BaseVert;
+		public static ConfigEntry<float> WaxQuail_StackVert;
+		public static ConfigEntry<float> WaxQuail_BaseAirSpeed;
+		public static ConfigEntry<float> WaxQuail_StackAirSpeed;
 
 		public static ConfigEntry<bool> Aegis_Enable;
 		public static ConfigEntry<bool> Aegis_Regen;
@@ -207,6 +218,10 @@ namespace FlatItemBuff
 			{
 				ItemChanges.WarHorn.EnableChanges();
 			}
+			if (WaxQuail_Enable.Value)
+            {
+				ItemChanges.WaxQuail.EnableChanges();
+			}
 			//Legendary/Red
 			if (Aegis_Enable.Value)
 			{
@@ -269,8 +284,8 @@ namespace FlatItemBuff
 			General_OutOfDangerTime = Config.Bind<float>(new ConfigDefinition("!General!", "Out of Danger Time"), 7f, new ConfigDescription("How long it takes to be considered Out of Danger. (7 = Vanilla) (Is used for internal reference, does not affect the game.)", null, Array.Empty<object>()));
 
 			Steak_Enable = Config.Bind<bool>(new ConfigDefinition("Bison Steak", "Enable Changes"), true, new ConfigDescription("Enables changes to Bison Steak.", null, Array.Empty<object>()));
-			Steak_BaseHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base HP"), 25.0f, new ConfigDescription("The amount of HP each stack increases. (Set to 0 or less to disable health.)", null, Array.Empty<object>()));
-			Steak_LevelHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Level HP"), 2.5f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
+			Steak_BaseHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base HP"), 20.0f, new ConfigDescription("The amount of HP each stack increases. (Set to 0 or less to disable health.)", null, Array.Empty<object>()));
+			Steak_LevelHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Level HP"), 2.0f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
 			Steak_BaseBuffDur = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base Buff Duration"), 3f, new ConfigDescription("Gives the Fresh Meat regen effect for X seconds on kill. (Set to 0 or less to disable regen.)", null, Array.Empty<object>()));
 			Steak_StackBuffDur = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Stack Buff Duration"), 3f, new ConfigDescription("Gives the Fresh Meat regen effect for X seconds on kill per stack.", null, Array.Empty<object>()));
 
@@ -300,7 +315,7 @@ namespace FlatItemBuff
 			Infusion_Boss_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Boss Bonus"), 2, new ConfigDescription("Sample multiplier for bosses.", null, Array.Empty<object>()));
 
 			LeechingSeed_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed", "Enable Changes"), true, new ConfigDescription("Enables changes for Leeching Seed.", null, Array.Empty<object>()));
-			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 1f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
+			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 0.5f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
 			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regardless of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
 
 			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
@@ -312,8 +327,8 @@ namespace FlatItemBuff
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 0f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
 
 			LeptonDaisy_Enable = Config.Bind<bool>(new ConfigDefinition("Lepton Daisy", "Enable Changes"), true, new ConfigDescription("Enables changes for Lepton Daisy.", null, Array.Empty<object>()));
-			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.1f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
-			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.1f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
+			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.15f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
+			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.15f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
 			RedWhip_Enable = Config.Bind<bool>(new ConfigDefinition("Red Whip", "Enable Changes"), true, new ConfigDescription("Enables changes for Red Whip.", null, Array.Empty<object>()));
@@ -337,6 +352,14 @@ namespace FlatItemBuff
 			WarHorn_BaseSpeed = Config.Bind<float>(new ConfigDefinition("War Horn", "Base Attack Speed"), 0.6f, new ConfigDescription("How much attack speed the buff gives at 1 stack.", null, Array.Empty<object>()));
 			WarHorn_StackSpeed = Config.Bind<float>(new ConfigDefinition("War Horn", "Stack Attack Speed"), 0.15f, new ConfigDescription("How much extra attack speed the buff gives from additional stacks.", null, Array.Empty<object>()));
 
+			WaxQuail_Enable = Config.Bind<bool>(new ConfigDefinition("Wax Quail", "Enable Changes"), true, new ConfigDescription("Enables changes to Wax Quail.", null, Array.Empty<object>()));
+			WaxQuail_BaseHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Horizontal Boost"), 15f, new ConfigDescription("How far horizontally to boost the user at 1 stack. (10 = Vanilla)", null, Array.Empty<object>()));
+			WaxQuail_StackHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Horizontal Boost"), 5f, new ConfigDescription("How far horizontally to boost the user from additional stacks. (10 = Vanilla)", null, Array.Empty<object>()));
+			WaxQuail_BaseVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Vertical Boost"), 0.3f, new ConfigDescription("How far vertically to boost the user at 1 stack. (0.5 = Hopoo Feather)", null, Array.Empty<object>()));
+			WaxQuail_StackVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Vertical Boost"), 0f, new ConfigDescription("How far vertically to boost the user from additional stacks.", null, Array.Empty<object>()));
+			WaxQuail_BaseAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Air Speed Bonus"), 0.14f, new ConfigDescription("Aerial speed boost at 1 stack.", null, Array.Empty<object>()));
+			WaxQuail_StackAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Air Speed Bonus"), 0.07f, new ConfigDescription("Aerial speed boost from additional stacks.", null, Array.Empty<object>()));
+
 			Aegis_Enable = Config.Bind<bool>(new ConfigDefinition("Aegis", "Enable Changes"), true, new ConfigDescription("Enables changes to Aegis.", null, Array.Empty<object>()));
 			Aegis_Regen = Config.Bind<bool>(new ConfigDefinition("Aegis", "Count Regen"), true, new ConfigDescription("Allows Aegis to convert excess regen into barrier.", null, Array.Empty<object>()));
 			Aegis_Armor = Config.Bind<float>(new ConfigDefinition("Aegis", "Armor"), 20f, new ConfigDescription("How much Armor each Aegis gives.", null, Array.Empty<object>()));
@@ -351,8 +374,8 @@ namespace FlatItemBuff
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
 
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));
-			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack.", null, Array.Empty<object>()));
-			VoidsentFlame_StackRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Stack Radius"), 2f, new ConfigDescription("How much larger the blast radius becomes from additional stacks.", null, Array.Empty<object>()));
+			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack. (12 = Vanilla)", null, Array.Empty<object>()));
+			VoidsentFlame_StackRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Stack Radius"), 2f, new ConfigDescription("How much larger the blast radius becomes from additional stacks. (2.4 = Vanilla)", null, Array.Empty<object>()));
 
 			Knurl_Enable = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));

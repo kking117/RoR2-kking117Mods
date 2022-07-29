@@ -30,13 +30,14 @@ namespace FlatItemBuff.ItemChanges
 		private static void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			if (MainPlugin.LeechingSeed_ProcHeal.Value > 0f)
-			{
-				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
-			}
 			if (MainPlugin.LeechingSeed_NoProcHeal.Value > 0f)
 			{
 				GlobalEventManager.onServerDamageDealt += Global_DamageDealt;
+				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
+			}
+			else if (MainPlugin.LeechingSeed_ProcHeal.Value != 1.0f)
+			{
+				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_ModOldFunction);
 			}
 		}
 		private static void Global_DamageDealt(DamageReport damageReport)
@@ -51,12 +52,24 @@ namespace FlatItemBuff.ItemChanges
 					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
 					if (itemCount > 0)
 					{
-						damageReport.attackerBody.healthComponent.Heal(MainPlugin.LeechingSeed_NoProcHeal.Value * itemCount, procChainMask, true);
+						float healing = MainPlugin.LeechingSeed_NoProcHeal.Value + (damageReport.damageInfo.procCoefficient * MainPlugin.LeechingSeed_NoProcHeal.Value);
+						damageReport.attackerBody.healthComponent.Heal(healing * itemCount, procChainMask, true);
 					}
 				}
 			}
 		}
-		private static void IL_OnHitEnemy(ILContext il)
+		private static void IL_RemoveOldFunction(ILContext il)
+		{
+			//Stop the old code
+			ILCursor ilcursor = new ILCursor(il);
+			ilcursor.GotoNext(
+				x => ILPatternMatchingExt.MatchLdloc(x, 19)
+			);
+			ilcursor.Index += 1;
+			ilcursor.Emit(OpCodes.Ldc_I4_0);
+			ilcursor.Emit(OpCodes.Mul);
+		}
+		private static void IL_ModOldFunction(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
