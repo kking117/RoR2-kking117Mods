@@ -26,7 +26,7 @@ namespace ConsumedBuff.ItemChanges
             }
             if (MainPlugin.VoidDio_CollapseChance.Value > 0.0f)
             {
-                On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
+                GlobalEventManager.onServerDamageDealt += OnTakeDamagePost;
             }
         }
         private static void UpdateText()
@@ -152,7 +152,7 @@ namespace ConsumedBuff.ItemChanges
             }
             orig(self, buffDef, duration);
         }
-        private static void OnTakeDamagePost(On.RoR2.GlobalEventManager.orig_ServerDamageDealt orig, DamageReport dr)
+        private static void OnTakeDamagePost(DamageReport dr)
         {
             if (!NetworkServer.active)
             {
@@ -206,7 +206,6 @@ namespace ConsumedBuff.ItemChanges
                     }
                 }
             }
-            orig(dr);
         }
         private static void OnInventoryChanged(On.RoR2.CharacterMaster.orig_OnInventoryChanged orig, CharacterMaster self)
         {

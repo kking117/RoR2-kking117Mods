@@ -21,7 +21,7 @@ namespace ConsumedBuff
     {
         public const string MODUID = "com.kking117.ConsumedBuff";
         public const string MODNAME = "ConsumedBuff";
-        public const string MODVERSION = "1.2.3";
+        public const string MODVERSION = "1.2.4";
         public const string MODTOKEN = "KKING117_CONSUMEDBUFF_";
 
         public static ConfigEntry<bool> VoidDio_Enable;

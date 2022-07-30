@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.13.0";
+		public const string MODVERSION = "1.13.1";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.

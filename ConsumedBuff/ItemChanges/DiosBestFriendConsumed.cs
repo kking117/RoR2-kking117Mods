@@ -29,36 +29,33 @@ namespace ConsumedBuff.ItemChanges
         }
         private static void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
         {
-            if (!NetworkServer.active)
+            if (NetworkServer.active)
             {
-                return;
-            }
-            if (!self.alive || self.godMode)
-            {
-                return;
-            }
-            if (self.ospTimer > 0f)
-            {
-                return;
-            }
-            bool IgnoreBlock = (damageInfo.damageType & DamageType.BypassBlock) > DamageType.Generic;
-            if (!IgnoreBlock)
-            {
-                if(self.body && self.body.master)
+                if (self.alive && !self.godMode)
                 {
-                    Inventory inventory = self.body.inventory;
-                    if (inventory)
+                    if (self.ospTimer <= 0f)
                     {
-                        int itemCount = inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed);
-                        if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance.Value * itemCount), 0f, null))
+                        bool IgnoreBlock = (damageInfo.damageType & DamageType.BypassBlock) > DamageType.Generic;
+                        if (!IgnoreBlock)
                         {
-                            EffectData effectData = new EffectData
+                            if (self.body && self.body.master)
                             {
-                                origin = damageInfo.position,
-                                rotation = Util.QuaternionSafeLookRotation((damageInfo.force != Vector3.zero) ? damageInfo.force : UnityEngine.Random.onUnitSphere)
-                            };
-                            EffectManager.SpawnEffect(HealthComponent.AssetReferences.bearEffectPrefab, effectData, true);
-                            damageInfo.rejected = true;
+                                Inventory inventory = self.body.inventory;
+                                if (inventory)
+                                {
+                                    int itemCount = inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed);
+                                    if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance.Value * itemCount), 0f, null))
+                                    {
+                                        EffectData effectData = new EffectData
+                                        {
+                                            origin = damageInfo.position,
+                                            rotation = Util.QuaternionSafeLookRotation((damageInfo.force != Vector3.zero) ? damageInfo.force : UnityEngine.Random.onUnitSphere)
+                                        };
+                                        EffectManager.SpawnEffect(HealthComponent.AssetReferences.bearEffectPrefab, effectData, true);
+                                        damageInfo.rejected = true;
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -35,7 +35,7 @@ namespace FlatItemBuff.ItemChanges
 				GlobalEventManager.onServerDamageDealt += Global_DamageDealt;
 				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
 			}
-			else if (MainPlugin.LeechingSeed_ProcHeal.Value != 1.0f)
+			else
 			{
 				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_ModOldFunction);
 			}
@@ -45,15 +45,14 @@ namespace FlatItemBuff.ItemChanges
 			//This is pretty much a copy paste of Withor's LeechingSeedBuff
 			if(damageReport.attacker && damageReport.attackerBody)
             {
-				ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
 				Inventory inventory = damageReport.attackerBody.inventory;
 				if (inventory)
 				{
 					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
 					if (itemCount > 0)
 					{
-						float healing = MainPlugin.LeechingSeed_NoProcHeal.Value + (damageReport.damageInfo.procCoefficient * MainPlugin.LeechingSeed_NoProcHeal.Value);
-						damageReport.attackerBody.healthComponent.Heal(healing * itemCount, procChainMask, true);
+						float healing = MainPlugin.LeechingSeed_NoProcHeal.Value + (damageReport.damageInfo.procCoefficient * MainPlugin.LeechingSeed_ProcHeal.Value);
+						damageReport.attackerBody.healthComponent.Heal(healing * itemCount, damageReport.damageInfo.procChainMask, true);
 					}
 				}
 			}
