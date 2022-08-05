@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.13.1";
+		public const string MODVERSION = "1.13.2";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -89,8 +89,12 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> RedWhip_StackSpeed;
 
 		public static ConfigEntry<bool> StealthKit_Enable;
+		public static ConfigEntry<float> StealthKit_BaseRecharge;
+		public static ConfigEntry<float> StealthKit_StackRecharge;
+		public static ConfigEntry<float> StealthKit_BuffDuration;
 		public static ConfigEntry<bool> StealthKit_CancelCombat;
 		public static ConfigEntry<bool> StealthKit_CancelDanger;
+		public static ConfigEntry<float> StealthKit_CancelDuration;
 
 		public static ConfigEntry<bool> Squid_Enable;
 		public static ConfigEntry<bool> Squid_ClayHit;
@@ -337,8 +341,12 @@ namespace FlatItemBuff
 			RedWhip_StackSpeed = Config.Bind<float>(new ConfigDefinition("Red Whip", "Stack Speed"), 0.3f, new ConfigDescription("How much extra movement speed to give for each additional stack.", null, Array.Empty<object>()));
 
 			StealthKit_Enable = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
-			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' during the stealth buff.", null, Array.Empty<object>()));
-			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' during the stealth buff.", null, Array.Empty<object>()));
+			StealthKit_BaseRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Base Cooldown"), 30.0f, new ConfigDescription("How long it takes for this item to recharge. (Vanilla = 30)", null, Array.Empty<object>()));
+			StealthKit_StackRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Stack Cooldown"), 0.5f, new ConfigDescription("How much faster it recharges for each additional stack. (Vanilla = 0.5)", null, Array.Empty<object>()));
+			StealthKit_BuffDuration = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Buff Duration"), 5.0f, new ConfigDescription("Duration of the Stealth buff upon activation. (Vanilla = 5)", null, Array.Empty<object>()));
+			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' upon activation.", null, Array.Empty<object>()));
+			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' upon activation.", null, Array.Empty<object>()));
+			StealthKit_CancelDuration = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Cancel Duration"), 1.0f, new ConfigDescription("Duration of the Combat and Danger cancel.", null, Array.Empty<object>()));
 
 			Squid_Enable = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Enable Changes"), true, new ConfigDescription("Enables changes to Squid Polyp.", null, Array.Empty<object>()));
 			Squid_ClayHit = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Apply Tar"), true, new ConfigDescription("Makes Squid Polyps apply the Tar debuff with their attack.", null, Array.Empty<object>()));
