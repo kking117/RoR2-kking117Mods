@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.13.2";
+		public const string MODVERSION = "1.13.3";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -144,6 +144,9 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> KnurlRework_StackDamage;
 		public static ConfigEntry<float> KnurlRework_BaseSpeed;
 		public static ConfigEntry<float> KnurlRework_StackSpeed;
+		public static ConfigEntry<float> KnurlRework_ProcRate;
+		public static ConfigEntry<float> KnurlRework_AttackRange;
+		public static ConfigEntry<int> KnurlRework_TargetType;
 
 		public static ConfigEntry<bool> Nucleus_Enable;
 		public static ConfigEntry<bool> Nucleus_Infinite;
@@ -392,10 +395,13 @@ namespace FlatItemBuff
 			Knurl_LevelRegen = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Level Regen"), 0.32f, new ConfigDescription("How much extra health regen to give per level.", null, Array.Empty<object>()));
 
 			KnurlRework_Enable = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Enable Rework"), false, new ConfigDescription("Enables the rework to Titanic Knurl. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			KnurlRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Damage"), 7f, new ConfigDescription("Base Damage of the stone fist. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			KnurlRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Damage"), 7f, new ConfigDescription("Base Damage of the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 3.5f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Cooldown"), 6f, new ConfigDescription("Cooldown between each stone fist.", null, Array.Empty<object>()));
 			KnurlRework_StackSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Cooldown"), 0.15f, new ConfigDescription("Reduces the cooldown between each stone fist per stack. (Works as attack speed does.)", null, Array.Empty<object>()));
+			KnurlRework_ProcRate = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Proc Coefficient"), 1.0f, new ConfigDescription("The proc coefficient of the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_AttackRange = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Attack Distance"), 50.0f, new ConfigDescription("The maximum targeting radius in metres around you for the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_TargetType = Config.Bind<int>(new ConfigDefinition("Titanic Knurl Rework", "Target Mode"), 0, new ConfigDescription("Decides how the target is selected. (0 = Weak, 1 = Closest)", null, Array.Empty<object>()));
 
 			Nucleus_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Enable Changes"), true, new ConfigDescription("Enables changes to Defense Nucleus.", null, Array.Empty<object>()));
 			Nucleus_Infinite = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Minion Can Proc"), true, new ConfigDescription("Allows constructs to proc their owner's defense nucleus when they kill.", null, Array.Empty<object>()));

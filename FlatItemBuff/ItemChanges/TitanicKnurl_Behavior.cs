@@ -31,7 +31,15 @@ namespace FlatItemBuff.ItemChanges
 			}
 			if (nextAttack <= 0f)
             {
-				HurtBox victim = GetFistTarget();
+				HurtBox victim;
+				if (MainPlugin.KnurlRework_TargetType.Value == 0)
+                {
+					victim = GetFistTarget_Weak();
+				}
+				else
+                {
+					victim = GetFistTarget_Close();
+				}
 				if(victim && victim.healthComponent && victim.healthComponent.body)
                 {
 					FireFist(victim.healthComponent.body.gameObject);
@@ -67,24 +75,7 @@ namespace FlatItemBuff.ItemChanges
 			};
 			ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 		}
-		private bool CanPunchAirborne(HurtBox target)
-        {
-			if (target.healthComponent && target.healthComponent.body)
-			{
-				RaycastHit raycastHit;
-				Physics.Raycast(target.transform.position, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
-				{
-				"World"
-				}));
-				float distance = Vector3.Distance(raycastHit.point, target.healthComponent.body.footPosition);
-				if (distance <= 7f)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-		private HurtBox GetFistTarget()
+		private HurtBox GetFistTarget_Weak()
 		{
 			float damage = GetFistDamage();
 			BullseyeSearch search = new BullseyeSearch();
@@ -93,7 +84,7 @@ namespace FlatItemBuff.ItemChanges
 			search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
 			search.minDistanceFilter = 0f;
-			search.maxDistanceFilter = 50f;
+			search.maxDistanceFilter = MainPlugin.KnurlRework_AttackRange.Value;
 			search.searchOrigin = body.inputBank.aimOrigin;
 			search.searchDirection = body.inputBank.aimDirection;
 			search.maxAngleFilter = 180f;
@@ -105,25 +96,26 @@ namespace FlatItemBuff.ItemChanges
 			float lowesthealth = -1f;
 			foreach (HurtBox target in search.GetResults())
 			{
-				if (IsGrounded(target) || CanPunchAirborne(target))
+				if (IsValidTarget(target))
 				{
 					HealthComponent hpcomp = target.healthComponent;
 					if (hpcomp.alive)
 					{
-						if (hpcomp.combinedHealth * 0.8f <= damage)
+						float actualHealth = GetEffectiveHealth(hpcomp);
+						if (actualHealth < damage)
 						{
-							if(hpcomp.combinedHealth > highesthealth)
+							if(actualHealth > highesthealth)
                             {
-								highesthealth = hpcomp.combinedHealth;
+								highesthealth = actualHealth;
 								resultA = target;
 							}
 						}
 						else
 						{
-							if (lowesthealth == -1f || hpcomp.combinedHealth < lowesthealth)
+							if (lowesthealth == -1f || actualHealth < lowesthealth)
 							{
 								resultB = target;
-								lowesthealth = hpcomp.combinedHealth;
+								lowesthealth = actualHealth;
 							}
 						}
 					}
@@ -135,21 +127,80 @@ namespace FlatItemBuff.ItemChanges
             }
 			return resultA;
 		}
+
+		private HurtBox GetFistTarget_Close()
+		{
+			float damage = GetFistDamage();
+			BullseyeSearch search = new BullseyeSearch();
+			search.viewer = body;
+			search.teamMaskFilter = TeamMask.allButNeutral;
+			search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
+			search.sortMode = BullseyeSearch.SortMode.Distance;
+			search.minDistanceFilter = 0f;
+			search.maxDistanceFilter = MainPlugin.KnurlRework_AttackRange.Value;
+			search.searchOrigin = body.inputBank.aimOrigin;
+			search.searchDirection = body.inputBank.aimDirection;
+			search.maxAngleFilter = 180f;
+			search.filterByLoS = false;
+			search.RefreshCandidates();
+			foreach (HurtBox target in search.GetResults())
+			{
+				if (IsValidTarget(target))
+				{
+					HealthComponent hpcomp = target.healthComponent;
+					if (hpcomp.alive)
+					{
+						return target;
+					}
+				}
+			}
+			return null;
+		}
 		private float GetFistDamage()
         {
 			float dmgcof = MainPlugin.KnurlRework_BaseDamage.Value + (MainPlugin.KnurlRework_StackDamage.Value * (stack - 1));
 			return dmgcof * body.damage;
         }
-		private bool IsGrounded(HurtBox target)
+
+		private float GetEffectiveHealth(HealthComponent hpcomp)
         {
-			if (target.healthComponent && target.healthComponent.body)
+			CharacterBody body = hpcomp.body;
+			float effhp = hpcomp.combinedHealth;
+			if (body)
             {
-				if (target.healthComponent.body.characterMotor)
+				if (body.armor > 0)
                 {
-					if (target.healthComponent.body.characterMotor.isGrounded)
-                    {
+					effhp = effhp / (100 / (100 + body.armor));
+				}
+				else
+                {
+					effhp = effhp * (100 / (100 - body.armor));
+				}
+			}
+			return effhp;
+        }
+
+		private bool IsValidTarget(HurtBox target)
+        {
+			HealthComponent hpcomp = target.healthComponent;
+			if (hpcomp && hpcomp.body)
+			{
+				if (hpcomp.body.characterMotor)
+				{
+					if (hpcomp.body.characterMotor.isGrounded)
+					{
 						return true;
-                    }
+					}
+				}
+				RaycastHit raycastHit;
+				Physics.Raycast(target.transform.position, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
+				{
+					"World"
+				}));
+				float distance = Vector3.Distance(raycastHit.point, hpcomp.body.footPosition);
+				if (distance <= 6f)
+				{
+					return true;
 				}
 			}
 			return false;

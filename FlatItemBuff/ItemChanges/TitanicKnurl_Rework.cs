@@ -27,7 +27,16 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = string.Format("Every few seconds a Stone Titan attacks a nearby enemy.");
-			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> a weak enemy within <style=cIsUtility>50m</style> is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{2}%</style> <style=cStack>(+{3}% per stack)</style> damage.", MainPlugin.KnurlRework_BaseSpeed.Value, MainPlugin.KnurlRework_StackSpeed.Value * 100f, MainPlugin.KnurlRework_BaseDamage.Value * 100f, MainPlugin.KnurlRework_StackDamage.Value * 100f);
+			string targetText;
+			if (MainPlugin.KnurlRework_TargetType.Value == 0)
+            {
+				targetText = string.Format("a weak enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
+			}
+			else
+            {
+				targetText = string.Format("a nearby enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
+			}
+			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> {2} is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{3}%</style> <style=cStack>(+{4}% per stack)</style> damage.", MainPlugin.KnurlRework_BaseSpeed.Value, MainPlugin.KnurlRework_StackSpeed.Value * 100f, targetText, MainPlugin.KnurlRework_BaseDamage.Value * 100f, MainPlugin.KnurlRework_StackDamage.Value * 100f);
 			LanguageAPI.Add("ITEM_KNURL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_KNURL_DESC", desc);
 		}
@@ -41,6 +50,8 @@ namespace FlatItemBuff.ItemChanges
         {
 			StoneFistProjectile = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/titanprefistprojectile").InstantiateClone(MainPlugin.MODTOKEN + "StonePreFist", true);
 			ProjectileDamage projDmg = StoneFistProjectile.GetComponent<ProjectileDamage>();
+			ProjectileController projController = StoneFistProjectile.GetComponent<ProjectileController>();
+			projController.procCoefficient = MainPlugin.KnurlRework_ProcRate.Value;
 			projDmg.damageType = DamageType.Stun1s;
 			Modules.Projectiles.AddProjectile(StoneFistProjectile);
 		}
