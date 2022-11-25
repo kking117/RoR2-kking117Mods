@@ -77,6 +77,7 @@ namespace FlatItemBuff.ItemChanges
 			if (damageReport.attacker && damageReport.attackerBody)
 			{
 				float healing = 0f;
+				float procrate = damageReport.damageInfo.procCoefficient;
 				ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
 				Inventory inventory = damageReport.attackerBody.inventory;
 				if (inventory)
@@ -86,7 +87,6 @@ namespace FlatItemBuff.ItemChanges
 					{
 						if (MainPlugin.LeechingSeedRework_DoTChance.Value > 0f)
                         {
-							float procrate = damageReport.damageInfo.procCoefficient;
 							if (procrate > 0f)
 							{
 								if (damageReport.victim)
@@ -112,7 +112,7 @@ namespace FlatItemBuff.ItemChanges
 				{
 					if (damageReport.victimBody.HasBuff(LeechBuff))
 					{
-						healing += damageReport.damageDealt * MainPlugin.LeechingSeedRework_DoTLifeSteal.Value;
+						healing += Math.Max(damageReport.attackerBody.level * 0.2f, damageReport.damageDealt * MainPlugin.LeechingSeedRework_DoTLifeSteal.Value) * procrate;
 					}
 				}
 				if (healing > 0f)

@@ -12,11 +12,31 @@ namespace FlatItemBuff.ItemChanges
 {
 	public class LeptonDaisy
 	{
+		private static float BaseHealing = 0.1f;
+		private static float StackHealing = 0.1f;
+		private static float ActualBaseHealing = 0.05f;
+		private static float ActualStackHealing = 0.05f;
+		private static float CapHealing = 2f;
+		private static float HealTime = 10f;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Lepton Daisy");
+			SetupConfigValues();
 			UpdateText();
 			Hooks();
+		}
+		private static void SetupConfigValues()
+		{
+			BaseHealing = MainPlugin.LeptonDaisy_BaseHeal.Value * 0.5f;
+			StackHealing = MainPlugin.LeptonDaisy_StackHeal.Value * 0.5f;
+			CapHealing = MainPlugin.LeptonDaisy_CapHeal.Value;
+			HealTime = MainPlugin.LeptonDaisy_HealTime.Value;
+
+			if (CapHealing > 0f)
+            {
+				ActualBaseHealing = BaseHealing / CapHealing;
+				ActualStackHealing = BaseHealing / CapHealing;
+			}
 		}
 		private static void UpdateText()
 		{
@@ -89,8 +109,11 @@ namespace FlatItemBuff.ItemChanges
 					num += characterMaster.inventory.GetItemCount(RoR2Content.Items.TPHealingNova);
 				}
 			}
-			float healing = Utils.Helpers.HyperbolicResult(num, MainPlugin.LeptonDaisy_BaseHeal.Value, MainPlugin.LeptonDaisy_StackHeal.Value, 1);
-			return healing;
+			if (CapHealing > 0f)
+            {
+				return Utils.Helpers.HyperbolicResult(num, ActualBaseHealing, ActualStackHealing, 1) * CapHealing;
+			}
+			return BaseHealing + (StackHealing * (num - 1));
 		}
 	}
 }

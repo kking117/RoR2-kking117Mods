@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.13.3";
+		public const string MODVERSION = "1.13.4";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -82,6 +82,7 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeptonDaisy_BaseHeal;
 		public static ConfigEntry<float> LeptonDaisy_StackHeal;
 		public static ConfigEntry<float> LeptonDaisy_HealTime;
+		public static ConfigEntry<float> LeptonDaisy_CapHeal;
 
 		public static ConfigEntry<bool> RedWhip_Enable;
 		public static ConfigEntry<int> RedWhip_StartSecond;
@@ -111,10 +112,13 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> WaxQuail_Enable;
 		public static ConfigEntry<float> WaxQuail_BaseHori;
 		public static ConfigEntry<float> WaxQuail_StackHori;
+		public static ConfigEntry<float> WaxQuail_CapHori;
 		public static ConfigEntry<float> WaxQuail_BaseVert;
 		public static ConfigEntry<float> WaxQuail_StackVert;
+		public static ConfigEntry<float> WaxQuail_CapVert;
 		public static ConfigEntry<float> WaxQuail_BaseAirSpeed;
 		public static ConfigEntry<float> WaxQuail_StackAirSpeed;
+		public static ConfigEntry<float> WaxQuail_CapAirSpeed;
 
 		public static ConfigEntry<bool> Aegis_Enable;
 		public static ConfigEntry<bool> Aegis_Regen;
@@ -326,16 +330,17 @@ namespace FlatItemBuff
 			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regardless of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
 
 			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1.5f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTChance = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Chance"), 25f, new ConfigDescription("Proc chance of the Leeching debuff. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.04f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.01f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 0f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
 
 			LeptonDaisy_Enable = Config.Bind<bool>(new ConfigDefinition("Lepton Daisy", "Enable Changes"), true, new ConfigDescription("Enables changes for Lepton Daisy.", null, Array.Empty<object>()));
-			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.15f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
-			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.15f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
+			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.1f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
+			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.1f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
+			LeptonDaisy_CapHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Capped Healing"), 2f, new ConfigDescription("Healing limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
 			RedWhip_Enable = Config.Bind<bool>(new ConfigDefinition("Red Whip", "Enable Changes"), true, new ConfigDescription("Enables changes for Red Whip.", null, Array.Empty<object>()));
@@ -364,12 +369,15 @@ namespace FlatItemBuff
 			WarHorn_StackSpeed = Config.Bind<float>(new ConfigDefinition("War Horn", "Stack Attack Speed"), 0.15f, new ConfigDescription("How much extra attack speed the buff gives from additional stacks.", null, Array.Empty<object>()));
 
 			WaxQuail_Enable = Config.Bind<bool>(new ConfigDefinition("Wax Quail", "Enable Changes"), true, new ConfigDescription("Enables changes to Wax Quail.", null, Array.Empty<object>()));
-			WaxQuail_BaseHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Horizontal Boost"), 15f, new ConfigDescription("How far horizontally to boost the user at 1 stack. (10 = Vanilla)", null, Array.Empty<object>()));
-			WaxQuail_StackHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Horizontal Boost"), 5f, new ConfigDescription("How far horizontally to boost the user from additional stacks. (10 = Vanilla)", null, Array.Empty<object>()));
-			WaxQuail_BaseVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Vertical Boost"), 0.3f, new ConfigDescription("How far vertically to boost the user at 1 stack. (0.5 = Hopoo Feather)", null, Array.Empty<object>()));
+			WaxQuail_BaseHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Horizontal Boost"), 12f, new ConfigDescription("How far horizontally to boost the user at 1 stack. (10 = Vanilla)", null, Array.Empty<object>()));
+			WaxQuail_StackHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Horizontal Boost"), 6f, new ConfigDescription("How far horizontally to boost the user from additional stacks. (10 = Vanilla)", null, Array.Empty<object>()));
+			WaxQuail_CapHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Horizontal Boost"), 150f, new ConfigDescription("Horizontal boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
+			WaxQuail_BaseVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Vertical Boost"), 0.2f, new ConfigDescription("How far vertically to boost the user at 1 stack. (0.5 = Hopoo Feather)", null, Array.Empty<object>()));
 			WaxQuail_StackVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Vertical Boost"), 0f, new ConfigDescription("How far vertically to boost the user from additional stacks.", null, Array.Empty<object>()));
+			WaxQuail_CapVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Vertical Boost"), 1f, new ConfigDescription("Vertical boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			WaxQuail_BaseAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Air Speed Bonus"), 0.14f, new ConfigDescription("Aerial speed boost at 1 stack.", null, Array.Empty<object>()));
 			WaxQuail_StackAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Air Speed Bonus"), 0.07f, new ConfigDescription("Aerial speed boost from additional stacks.", null, Array.Empty<object>()));
+			WaxQuail_CapAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Air Speed Bonus"), 1.5f, new ConfigDescription("Aerial speed boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 
 			Aegis_Enable = Config.Bind<bool>(new ConfigDefinition("Aegis", "Enable Changes"), true, new ConfigDescription("Enables changes to Aegis.", null, Array.Empty<object>()));
 			Aegis_Regen = Config.Bind<bool>(new ConfigDefinition("Aegis", "Count Regen"), true, new ConfigDescription("Allows Aegis to convert excess regen into barrier.", null, Array.Empty<object>()));
@@ -411,7 +419,7 @@ namespace FlatItemBuff
 			Nucleus_StackAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Attack Speed"), 0, new ConfigDescription("How much extra attack speed the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_BaseDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Damage"), 6, new ConfigDescription("How much extra damage the constructs get. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_StackDamage = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Damage"), 8, new ConfigDescription("How much extra damage the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
-			Nucleus_Cooldown = Config.Bind<float>(new ConfigDefinition("Defense Nucleus", "Cooldown"), 1.5f, new ConfigDescription("Cooldown before this item can be procced again. (Cannot go below 0.25 because I said so.)", null, Array.Empty<object>()));
+			Nucleus_Cooldown = Config.Bind<float>(new ConfigDefinition("Defense Nucleus", "Cooldown"), 1f, new ConfigDescription("Cooldown before this item can be procced again. (Cannot go below 0.25 because I said so.)", null, Array.Empty<object>()));
 
 			NucleusRework_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework to the Defense Nucleus. (Has priority over the normal changes.)", null, Array.Empty<object>()));
 			NucleusRework_SummonCount = Config.Bind<int>(new ConfigDefinition("Defense Nucleus Rework", "Summon Count"), 3, new ConfigDescription("How many constructs to summon on activation. (Cannot go above 6 because I said so.)", null, Array.Empty<object>()));

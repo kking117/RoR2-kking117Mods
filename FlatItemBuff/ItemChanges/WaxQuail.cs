@@ -11,18 +11,23 @@ namespace FlatItemBuff.ItemChanges
 {
 	public class WaxQuail
 	{
-		private static float BaseHori = 15f;
-		private static float StackHori = 5f;
+		private static float BaseHori = 12f;
+		private static float StackHori = 8f;
+		private static float ActualBaseHori = 0.12f;
+		private static float ActualStackHori = 0.08f;
+		private static float CapHori = 100f;
 
 		private static float BaseVert = 0.3f;
-		private static float StackVert = 0.0f;
+		private static float StackVert = 0f;
+		private static float ActualBaseVert = 0f;
+		private static float ActualStackVert = 0f;
+		private static float CapVert = 0.0f;
 
-		private static float BaseAirSpeed = 0.14f;
-		private static float StackAirSpeed = 0.07f;
-		
-		//Todo:
-		//Disable WaxQuail_Behaviour if StormyItems is enabled to avoid redundant code.
-		//Add hyperbolic scaling or even a hard cap to all effects. (Actually just do this, it would greatly improve it and no one would really complain.)
+		private static float BaseAirSpeed = 0.12f;
+		private static float StackAirSpeed = 0.08f;
+		private static float ActualBaseAirSpeed = 0.12f;
+		private static float ActualStackAirSpeed = 0.08f;
+		private static float CapAirSpeed = 1f;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Wax Quail");
@@ -34,10 +39,44 @@ namespace FlatItemBuff.ItemChanges
 		{
 			BaseHori = MainPlugin.WaxQuail_BaseHori.Value;
 			StackHori = MainPlugin.WaxQuail_StackHori.Value;
+			CapHori = MainPlugin.WaxQuail_CapHori.Value;
 			BaseVert = MainPlugin.WaxQuail_BaseVert.Value;
 			StackVert = MainPlugin.WaxQuail_StackVert.Value;
+			CapVert = MainPlugin.WaxQuail_CapVert.Value;
 			BaseAirSpeed = MainPlugin.WaxQuail_BaseAirSpeed.Value;
 			StackAirSpeed = MainPlugin.WaxQuail_StackAirSpeed.Value;
+			CapAirSpeed = MainPlugin.WaxQuail_CapAirSpeed.Value;
+
+			if (CapAirSpeed > 0f)
+            {
+				ActualBaseAirSpeed = BaseAirSpeed / CapAirSpeed;
+				ActualStackAirSpeed = StackAirSpeed / CapAirSpeed;
+			}
+			else
+            {
+				ActualBaseAirSpeed = BaseAirSpeed;
+				ActualStackAirSpeed = StackAirSpeed;
+			}
+			if (CapVert > 0f)
+			{
+				ActualBaseVert = BaseVert / CapVert;
+				ActualStackVert = StackVert / CapVert;
+			}
+			else
+            {
+				ActualBaseVert = BaseVert;
+				ActualStackVert = StackVert;
+			}
+			if (CapHori > 0f)
+            {
+				ActualBaseHori = BaseHori / CapHori;
+				ActualStackHori = StackHori / CapHori;
+			}
+			else
+            {
+				ActualBaseHori = BaseHori;
+				ActualStackHori = StackHori;
+			}
 		}
 		private static void UpdateText()
 		{
@@ -74,8 +113,11 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.EntityStates.GenericCharacterMain.ProcessJump += new ILContext.Manipulator(IL_ProcessJump);
-			CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
-			RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+			if (StackAirSpeed != 0f || StackAirSpeed != 0f)
+            {
+				CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
+				RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+			}
 		}
 		private static void OnInventoryChanged(CharacterBody self)
 		{
@@ -93,11 +135,21 @@ namespace FlatItemBuff.ItemChanges
 				{
 					if (sender.characterMotor && !sender.characterMotor.isGrounded)
                     {
-						float speedBonus = BaseAirSpeed + ((itemCount - 1) * StackAirSpeed);
-						if (!sender.isSprinting)
+						float speedBonus = 0f;
+						if (CapAirSpeed > 0f)
+						{
+							speedBonus = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseAirSpeed, ActualStackAirSpeed, 1) * CapAirSpeed;
+						}
+						else
+                        {
+							speedBonus = BaseAirSpeed + ((itemCount - 1) * StackAirSpeed);
+						}
+
+						//Leaving this here in the case someone wants it back later.
+						/*if (!sender.isSprinting)
 						{
 							speedBonus *= sender.sprintingSpeedMultiplier;
-						}
+						}*/
 						args.moveSpeedMultAdd += speedBonus;
 					}
 				}
@@ -138,25 +190,40 @@ namespace FlatItemBuff.ItemChanges
 				ilcursor.Emit(OpCodes.Ldloc_2);
 				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 				{
+					if (CapHori > 0f)
+					{
+						return Utils.Helpers.HyperbolicResult(itemCount, ActualBaseHori, ActualStackHori, 1) * CapHori;
+					}
 					return BaseHori + (StackHori * (itemCount - 1));
 				});
 			}
 			//Vertical Boost
 			//This was surprisingly easy to add, was expecting it to be an hour of head banging to no end.
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchStloc(x, 3)
-			);
-			if (ilcursor.Index > 0)
+			if (BaseVert != 0f || StackVert != 0f)
 			{
-				ilcursor.Index += 1;
-				ilcursor.Emit(OpCodes.Ldloc, 4);
-				ilcursor.Emit(OpCodes.Ldloc_2);
-				ilcursor.EmitDelegate<Func<float, int, float>>((verticalBonus, itemCount) =>
+				ilcursor.GotoNext(
+					x => ILPatternMatchingExt.MatchStloc(x, 3)
+				);
+				if (ilcursor.Index > 0)
 				{
-					float jumpBoost = BaseVert + (StackVert * (itemCount - 1));
-					return verticalBonus + jumpBoost;
-				});
-				ilcursor.Emit(OpCodes.Stloc, 4);
+					ilcursor.Index += 1;
+					ilcursor.Emit(OpCodes.Ldarg, 0);
+					ilcursor.Emit(OpCodes.Ldloc, 4);
+					ilcursor.Emit(OpCodes.Ldloc_2);
+					ilcursor.EmitDelegate<Func<EntityState, float, int, float>>((statebase, verticalBonus, itemCount) =>
+					{
+						float jumpBoost = 0f;
+						if (CapVert > 0f)
+						{
+							jumpBoost = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseVert, ActualStackVert, 1) * CapVert;
+						}
+						{
+							jumpBoost = BaseVert + (StackVert * (itemCount - 1));
+						}
+						return verticalBonus + jumpBoost;
+					});
+					ilcursor.Emit(OpCodes.Stloc, 4);
+				}
 			}
 		}
 	}
