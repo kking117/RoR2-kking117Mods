@@ -49,8 +49,19 @@ namespace ZoeaRework.Changes
                 if (body)
                 {
                     body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed.Value;
-                    body.baseMaxHealth *= 0.5f;
-                    body.levelMaxHealth *= 0.5f;
+                    if (MainPlugin.Config_Rework_Enable.Value)
+                    {
+                        body.baseMaxHealth *= MainPlugin.Config_VoidMegaCrab_Rework_BaseHealth.Value;
+                        body.levelMaxHealth *= MainPlugin.Config_VoidMegaCrab_Rework_BaseHealth.Value;
+
+                        body.baseDamage *= MainPlugin.Config_VoidMegaCrab_Rework_BaseDamage.Value;
+                        body.levelDamage *= MainPlugin.Config_VoidMegaCrab_Rework_BaseDamage.Value;
+                    }
+                    else
+                    {
+                        body.baseMaxHealth *= 0.5f;
+                        body.levelMaxHealth *= 0.5f;
+                    }
                 }
             }
         }

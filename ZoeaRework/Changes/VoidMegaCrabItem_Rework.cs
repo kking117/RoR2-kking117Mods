@@ -271,11 +271,9 @@ namespace ZoeaRework.Changes
                 int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
                 if (MainPlugin.Config_ReworkInherit_Enable.Value)
                 {
-                    inv.CopyItemsFrom(CloneThis(owneritems));
+                    inv.CopyItemsFrom(owneritems);
                 }
-                inv.ResetItem(RoR2Content.Items.BoostDamage);
-                inv.ResetItem(RoR2Content.Items.BoostHp);
-                inv.ResetItem(RoR2Content.Items.MinionLeash);
+                inv = FilterInventory(inv);
                 int dmg = MainPlugin.Config_Rework_DamageBase.Value + (MainPlugin.Config_Rework_DamageStack.Value * itemCount);
                 int hp = MainPlugin.Config_Rework_HealthBase.Value + (MainPlugin.Config_Rework_HealthStack.Value * itemCount);
                 inv.GiveItem(RoR2Content.Items.BoostDamage, dmg);
@@ -284,24 +282,24 @@ namespace ZoeaRework.Changes
             }
         }
 
-        private static Inventory CloneThis(Inventory inventory)
+        private static Inventory FilterInventory(Inventory inventory)
         {
             //I can't be assed getting filters working.
-            Inventory inv = new Inventory();
-            inv.CopyItemsFrom(inventory, Inventory.defaultItemCopyFilterDelegate);
-            for(int i = 0; i<inv.itemStacks.Length;i++)
+            inventory.ResetItem(RoR2Content.Items.BoostDamage);
+            inventory.ResetItem(RoR2Content.Items.BoostHp);
+            inventory.ResetItem(RoR2Content.Items.MinionLeash);
+            for(int i = 0; i< inventory.itemStacks.Length;i++)
             {
-                if(inv.itemStacks[i] != 0)
+                if(inventory.itemStacks[i] != 0)
                 {
                     ItemDef itemDef = ItemCatalog.GetItemDef((ItemIndex)i);
                     if(IsBlackListed(itemDef))
                     {
-                        inv.ResetItem(itemDef);
+                        inventory.ResetItem(itemDef);
                     }
-
                 }
             }
-            return inv;
+            return inventory;
         }
 
         private static bool IsBlackListed(ItemDef item)
@@ -316,6 +314,7 @@ namespace ZoeaRework.Changes
                 {
                     return ItemBlackList.Contains(item);
                 }
+                return !item.ContainsTag(ItemTag.CannotCopy);
             }
             return true;
         }

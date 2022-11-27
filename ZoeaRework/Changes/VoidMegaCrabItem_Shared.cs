@@ -27,7 +27,6 @@ namespace ZoeaRework.Changes
             {
                 List<ItemTag> itemtags = itemDef.tags.ToList();
                 itemtags.Add(ItemTag.CannotCopy);
-                //itemtags.Add(ItemTag.BrotherBlacklist);
                 itemDef.tags = itemtags.ToArray();
 
                 itemDef.pickupToken = MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP";

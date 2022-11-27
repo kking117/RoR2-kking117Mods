@@ -25,7 +25,7 @@ namespace ZoeaRework
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.6";
+		public const string MODVERSION = "1.1.7";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
@@ -51,6 +51,9 @@ namespace ZoeaRework
 		public static ConfigEntry<int> Config_Buff_HealthStack;
 		public static ConfigEntry<int> Config_Buff_HealthBase;
 		public static ConfigEntry<float> Config_Buff_SpawnTime;
+
+		public static ConfigEntry<float> Config_VoidMegaCrab_Rework_BaseHealth;
+		public static ConfigEntry<float> Config_VoidMegaCrab_Rework_BaseDamage;
 
 		public static ConfigEntry<float> Config_VoidMegaCrab_BaseSpeed;
 		public static ConfigEntry<float> Config_VoidMegaCrab_RecallCooldown;
@@ -99,8 +102,8 @@ namespace ZoeaRework
 			Config_Rework_DamageBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Damage Bonus"), 0, new ConfigDescription("How many extra BoostDamage items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_DamageStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Damage Bonus"), 2, new ConfigDescription("How many extra BoostDamage items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Rework_HealthBase = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Base Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
-			Config_Rework_HealthStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
-
+			Config_Rework_HealthStack = Config.Bind<int>(new ConfigDefinition("Zoea Rework", "Stack Health Bonus"), 1, new ConfigDescription("How many extra BoostHP items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
+			
 			Config_ReworkInherit_Enable = Config.Bind<bool>(new ConfigDefinition("Rework Inheritance", "Allow Item Inhertiance"), true, new ConfigDescription("Should the Rework's Void Devastator inherit the user's items?", null, Array.Empty<object>()));
 			Config_ReworkInherit_ItemBlackList = Config.Bind<string>(new ConfigDefinition("Rework Inheritance", "Item Blacklist"), "LunarPrimaryReplacement LunarSecondaryReplacement LunarUtilityReplacement LunarSpecialReplacement", new ConfigDescription("Blacklist these item from the Void Devastator. (Note: It cannot use Heresy Skills.)", null, Array.Empty<object>()));
 			Config_ReworkInherit_TierBlackList = Config.Bind<string>(new ConfigDefinition("Rework Inheritance", "Tier Blacklist"), "", new ConfigDescription("Blacklist all items in this tier from the Void Devastator. (Tier1Def, Tier2Def, Tier3Def, BossTierDef, LunarTierDef, VoidTier1Def, VoidTier2Def, VoidTier3Def, VoidBossDef)", null, Array.Empty<object>()));
@@ -113,6 +116,9 @@ namespace ZoeaRework
 			Config_Buff_HealthBase = Config.Bind<int>(new ConfigDefinition("Zoea Buff", "Base Health Bonus"), 0, new ConfigDescription("How many extra BoostHP items the summons get at 1 stack. (1 = +10%)", null, Array.Empty<object>()));
 			Config_Buff_HealthStack = Config.Bind<int>(new ConfigDefinition("Zoea Buff", "Stack Health Bonus"), 2, new ConfigDescription("How many extra BoostHP items the summons get from additional stacks. (1 = +10%)", null, Array.Empty<object>()));
 
+			Config_VoidMegaCrab_Rework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Rework VoidMegaCrabAlly", "Base Damage"), 0.5f, new ConfigDescription("Base Damage multiplier for the Void Devastator.", null, Array.Empty<object>()));
+			Config_VoidMegaCrab_Rework_BaseHealth = Config.Bind<float>(new ConfigDefinition("Rework VoidMegaCrabAlly", "Base Health"), 0.5f, new ConfigDescription("Base Health multiplier for the Void Devastator.", null, Array.Empty<object>()));
+
 			Config_VoidMegaCrab_BaseSpeed = Config.Bind<float>(new ConfigDefinition("VoidMegaCrabAlly", "Base Movement Speed"), 8f, new ConfigDescription("Base movement speed of the Void Devastator. (8 = Vanilla)", null, Array.Empty<object>()));
 			Config_VoidMegaCrab_RecallCooldown = Config.Bind<float>(new ConfigDefinition("VoidMegaCrabAlly", "Recall Cooldown"), 25f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 			Config_VoidMegaCrab_EnableDisplays = Config.Bind<bool>(new ConfigDefinition("VoidMegaCrabAlly", "Enable Item Displays"), true, new ConfigDescription("Should the Void Devastator have custom item displays?", null, Array.Empty<object>()));
@@ -121,9 +127,9 @@ namespace ZoeaRework
 			Config_VoidJailer_RecallCooldown = Config.Bind<float>(new ConfigDefinition("VoidJailerAlly", "Recall Cooldown"), 25f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 
 			Config_Nullifier_BaseSpeed = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Base Movement Speed"), 7f, new ConfigDescription("Base movement speed of the Void Reaver. (6 = Vanilla)", null, Array.Empty<object>()));
-			Config_Nullifier_RecallCooldown = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Recall Cooldown"), 15f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
+			Config_Nullifier_RecallCooldown = Config.Bind<float>(new ConfigDefinition("NullifierAlly", "Recall Cooldown"), 20f, new ConfigDescription("Cooldown time of its recall ability.", null, Array.Empty<object>()));
 
-			Config_AIShared_MinRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Base Recall Distance"), 125f, new ConfigDescription("Minimum distance in metres before the AI will recall itself.", null, Array.Empty<object>()));
+			Config_AIShared_MinRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Base Recall Distance"), 130f, new ConfigDescription("Minimum distance in metres before the AI will recall itself.", null, Array.Empty<object>()));
 			Config_AIShared_MaxRecallDist = Config.Bind<float>(new ConfigDefinition("AI Shared", "Max Recall Distance"), 300f, new ConfigDescription("Max distance cap for recalling.", null, Array.Empty<object>()));
 			Config_AIShared_RecallDistDiff = Config.Bind<float>(new ConfigDefinition("AI Shared", "Recall Distance Scaler"), 4f, new ConfigDescription("Scales the minimum recall distance with the current run difficulty by this much.", null, Array.Empty<object>()));
 		}
