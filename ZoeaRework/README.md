@@ -41,8 +41,8 @@ I'm personally against allowing item summons to inherit items, but I believe thi
 ## Known Issues
 
 - The teleport's visual effects might be out of sync for clients in some situations. (I'm guessing this exists, it might not.)
-- If an Umbra's Void Devastator dies after it dies, the Void Devastator will drop an item. This is a vanilla bug that also occurs with Engineer turrets.
-- Void Reavers are clearly not designed to fight anything that can fly.
+- Void Devastators in the rework will drop an item if its Umbral owner is killed first, this is a "feature" that happens in vanilla with Engineer Turrets.
+- Void Reavers are clearly not designed to fight anything that can avoid floor.
 
 ## Change Log
 
