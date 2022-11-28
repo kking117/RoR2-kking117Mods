@@ -15,6 +15,7 @@ namespace QueenGlandBuff.Changes
 		private static float AggroChance = 1f;
 		private static float BossAggroChance = 0.025f;
 		private static float AggroRange = 100f;
+		private static float Armor = 100f;
 		internal static void Begin()
 		{
 			if (MainPlugin.Config_Debug.Value)
@@ -24,13 +25,17 @@ namespace QueenGlandBuff.Changes
 			AggroChance = MainPlugin.Config_Staunch_AggroChance.Value;
 			BossAggroChance = MainPlugin.Config_Staunch_AggroBossChance.Value;
 			AggroRange = MainPlugin.Config_Staunch_AggroRange.Value;
+			Armor = MainPlugin.Config_Staunch_Armor.Value;
 
 			BuffDef beetlebuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Beetle/bdBeetleJuice.asset").WaitForCompletion();
 			BuffDef warcrybuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/TeamWarCry/bdTeamWarCry.asset").WaitForCompletion();
 			Staunching = Modules.Buffs.AddNewBuff("Staunch", beetlebuff.iconSprite, warcrybuff.buffColor, false, false, false);
 
-			On.RoR2.CharacterBody.OnBuffFirstStackGained += CharacterBody_OnBuffFirstStackGained;
-			On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
+			if (AggroRange > 0f)
+			{
+				On.RoR2.CharacterBody.OnBuffFirstStackGained += CharacterBody_OnBuffFirstStackGained;
+				On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
+			}
 			RecalculateStatsAPI.GetStatCoefficients += CalculateStatsHook;
 		}
 		private static void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
@@ -39,7 +44,7 @@ namespace QueenGlandBuff.Changes
 			{
 				if (sender.HasBuff(Staunching))
 				{
-					args.armorAdd += 100f;
+					args.armorAdd += Armor;
 				}
 			}
 		}

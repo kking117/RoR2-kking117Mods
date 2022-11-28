@@ -214,8 +214,43 @@ namespace QueenGlandBuff.Changes
 			if (MainPlugin.Config_AddSpecial.Value)
 			{
 				StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
+				string desc = "";
+				if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
+				{
+					desc = "Draw the <style=cIsHealth>attention</style> of nearby enemies";
+					if (MainPlugin.Config_Staunch_Armor.Value != 0f)
+					{
+						desc += " and";
+					}
+				}
+				if (MainPlugin.Config_Staunch_Armor.Value > 0f)
+                {
+					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
+                    {
+						desc += "Gain";
+					}
+					else
+                    {
+						desc += " gain";
+					}
+					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
+                }
+				else if(MainPlugin.Config_Staunch_Armor.Value < 0f)
+				{
+					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
+					{
+						desc += "Lose";
+					}
+					else
+					{
+						desc += " lose";
+					}
+					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
+				}
+				desc += " for <style=cIsUtility>10</style> seconds.";
+
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies and gain <style=cIsUtility>100</style> armor for <style=cIsUtility>10</style> seconds.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", desc);
 
 				StaunchSkill.activationState = new SerializableEntityStateType(typeof(States.Staunch));
 				StaunchSkill.activationStateMachineName = "Body";

@@ -18,7 +18,6 @@ Its Sunder skill now fires 5 projectiles in the direction the Guard is aiming. T
 **AI Changes**
 
 The AI now prefers to use Sunder over Slam, this is so it doesn't get locked into using Slam against flying enemies that are slightly out of reach.
-The Beetle Guard will often target nearby grounded enemies over flying ones.
 
 **Item/Stacking Changes**
 
@@ -39,6 +38,14 @@ A new Special called "Staunch". This skill gives the user a buff for 10 seconds 
 - None for now?
 
 ## Change Log
+
+**1.3.7**
+
+```
+- Changed "Aggro Range" default configuration to match the teleporter radius. (100 -> 60)
+- Changed "Aggro Boss Chance" default configuration. (0.025 -> 0)
+- Added "Armor" configuration, controls how much armor the Staunch buff gives.
+```
 
 **1.3.6**
 

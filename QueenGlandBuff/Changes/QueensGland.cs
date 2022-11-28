@@ -12,8 +12,15 @@ namespace QueenGlandBuff.Changes
     {
 		public static List<EquipmentDef> StageEliteEquipmentDefs = new List<EquipmentDef>();
 		public static EquipmentIndex Gland_DefaultAffix_Var;
+		private static int BaseDamage = 20;
+		private static int StackDamage = 20;
+		private static int BaseHealth = 10;
+		private static int StackHealth = 10;
+		private static int MaxSummons = 1;
+		private static float RespawnTime = 20f;
 		internal static void Begin()
         {
+			SetupConfigValues();
 			UpdateItemDescription();
 			if (MainPlugin.Config_QueensGland_SpawnAffix.Value != 0)
 			{
@@ -22,6 +29,16 @@ namespace QueenGlandBuff.Changes
 			On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
 			CharacterBody.onBodyInventoryChangedGlobal += CharacterBody_OnInventoryChanged;
 			BeetleGland_Override();
+		}
+
+		private static void SetupConfigValues()
+		{
+			BaseDamage = MainPlugin.Config_QueensGland_BaseDamage.Value;
+			StackDamage = MainPlugin.Config_QueensGland_StackDamage.Value;
+			BaseHealth = MainPlugin.Config_QueensGland_BaseHealth.Value;
+			StackHealth = MainPlugin.Config_QueensGland_StackHealth.Value;
+			MaxSummons = MainPlugin.Config_QueensGland_MaxSummons.Value;
+			RespawnTime = MainPlugin.Config_QueensGland_RespawnTime.Value;
 		}
 		
 		private static void UpdateItemDescription()
@@ -42,20 +59,37 @@ namespace QueenGlandBuff.Changes
 				pickup += "a Beetle Guard.";
 				desc += "a Beetle Guard</style>";
 			}
-			desc += " with <style=cIsHealing>" + (10 + MainPlugin.Config_BaseHealth.Value) * 10 + "% health</style>";
-			desc += " and <style=cIsDamage>" + (10 + MainPlugin.Config_BaseDamage.Value) * 10 + "% damage</style>.";
-			desc += " Can have <style=cIsUtility>1</style> <style=cStack>(+1 per stack)</style> total Guards, up to <style=cIsUtility>" + MainPlugin.Config_QueensGland_MaxSummons.Value + "</style>.";
-			if(MainPlugin.Config_StackHealth.Value != 0 || MainPlugin.Config_StackDamage.Value != 0)
+			if (MaxSummons > 1)
             {
-				desc += " Further stacks give";
-				if(MainPlugin.Config_StackHealth.Value != 0)
+				desc += string.Format(" with bonus <style=cIsDamage>{0}% damage</style>", (10 + BaseDamage) * 10);
+				desc += string.Format(" and <style=cIsHealing>{0}% health</style>.", (10 + BaseHealth) * 10);
+
+				desc += string.Format(" Can have <style=cIsUtility>1</style> <style=cStack>(+1 per stack)</style> total Guards, up to <style=cIsUtility>{0}</style>.", MaxSummons);
+				if (StackHealth != 0 || StackDamage != 0)
                 {
-					desc += " <style=cStack>+" + MainPlugin.Config_StackHealth.Value * 10 + "%</style> <style=cIsHealing>health</style>";
+					desc += " Further stacks give";
+					if (StackDamage != 0)
+					{
+						desc += string.Format(" <style=cStack>+{0}%</style> <style=cIsDamage>damage</style>", StackDamage * 10);
+						if (StackHealth != 0)
+						{
+							desc += " and";
+						}
+						else
+                        {
+							desc += ".";
+                        }
+					}
+					if (StackHealth != 0)
+					{
+						desc += string.Format(" <style=cStack>+{0}%</style> <style=cIsHealing>health</style>", StackHealth * 10);
+					}
 				}
-				if (MainPlugin.Config_StackDamage.Value != 0)
-				{
-					desc += " and <style=cStack>+" + MainPlugin.Config_StackDamage.Value * 10 + "%</style> <style=cIsDamage>damage</style>.";
-				}
+			}
+			else
+            {
+				desc += string.Format(" with bonus <style=cIsDamage>{0}% <style=cStack>(+{1}% per stack)</style> damage</style>", (10 + BaseDamage) * 10, StackDamage * 10);
+				desc += string.Format(" and <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style>.", (10 + BaseHealth) * 10, StackHealth * 10);
 			}
 			LanguageAPI.Add("ITEM_BEETLEGLAND_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_BEETLEGLAND_DESC", desc);
@@ -116,7 +150,7 @@ namespace QueenGlandBuff.Changes
 			{
 				return result;
 			}
-			return Math.Min(MainPlugin.Config_QueensGland_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland));
+			return Math.Min(MaxSummons, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland));
 		}
 		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
 		{
@@ -134,9 +168,9 @@ namespace QueenGlandBuff.Changes
 				{
 					int deployableCount = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
 					int itemCount = owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland);
-					int stackBonus = Math.Max(0, itemCount - MainPlugin.Config_QueensGland_MaxSummons.Value);
-					int dmgitem = MainPlugin.Config_BaseDamage.Value + (MainPlugin.Config_StackDamage.Value * stackBonus);
-					int hpitem = MainPlugin.Config_BaseHealth.Value + (MainPlugin.Config_StackHealth.Value * stackBonus);
+					int stackBonus = Math.Max(0, itemCount - MaxSummons);
+					int dmgitem = BaseDamage + (StackDamage * stackBonus);
+					int hpitem = BaseHealth + (StackHealth * stackBonus);
 					int summonCount = 0;
 					for (int i = 0; i < owner.deployablesList.Count; i++)
 					{
@@ -162,10 +196,6 @@ namespace QueenGlandBuff.Changes
 											inv.ResetItem(RoR2Content.Items.BoostHp);
 											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
 											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-											if (deployableMaster.GetBody())
-											{
-												MainPlugin.ModLogger.LogInfo("Level = " + deployableMaster.GetBody().level);
-											}
 										}
 									}
 								}
@@ -188,7 +218,7 @@ namespace QueenGlandBuff.Changes
 					CharacterMaster owner = self.body.master;
 					if (owner)
 					{
-						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MainPlugin.Config_QueensGland_MaxSummons.Value);
+						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MaxSummons);
 						int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
 						int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
 						if (deployableCount < maxdeployable)
@@ -211,7 +241,7 @@ namespace QueenGlandBuff.Changes
 								{
 									if (SetupSummonedBeetleGuard(spawnResult, owner, extraglands))
 									{
-										self.guardResummonCooldown = MainPlugin.Config_QueensGland_RespawnTime.Value;
+										self.guardResummonCooldown = RespawnTime;
 									}
 								}));
 								DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
