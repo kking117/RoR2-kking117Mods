@@ -12,24 +12,24 @@ namespace QueenGlandBuff.Utils
 		private static readonly System.Random rng = new System.Random();
 		internal static void GiveRandomEliteAffix(CharacterMaster self)
 		{
-			if(MainPlugin.Config_SpawnAffix.Value == 0)
+			if(MainPlugin.Config_QueensGland_SpawnAffix.Value == 0)
             {
 				return;
             }
-			if (MainPlugin.Config_SpawnAffix.Value == 2 && !RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly))
+			if (MainPlugin.Config_QueensGland_SpawnAffix.Value == 2 && !RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly))
             {
 				return;
             }
-			if (MainPlugin.StageEliteEquipmentDefs.Count > 0)
+			if (Changes.QueensGland.StageEliteEquipmentDefs.Count > 0)
             {
-				int result = rng.Next(MainPlugin.StageEliteEquipmentDefs.Count);
-				if (MainPlugin.StageEliteEquipmentDefs[result])
+				int result = rng.Next(Changes.QueensGland.StageEliteEquipmentDefs.Count);
+				if (Changes.QueensGland.StageEliteEquipmentDefs[result])
 				{
-					self.inventory.SetEquipmentIndex(MainPlugin.StageEliteEquipmentDefs[result].equipmentIndex);
+					self.inventory.SetEquipmentIndex(Changes.QueensGland.StageEliteEquipmentDefs[result].equipmentIndex);
 					return;
 				}
 			}
-			self.inventory.SetEquipmentIndex(MainPlugin.Gland_DefaultAffix_Var);
+			self.inventory.SetEquipmentIndex(Changes.QueensGland.Gland_DefaultAffix_Var);
 		}
 		internal static int TeleportToOwner(CharacterBody self)
 		{

@@ -1,19 +1,29 @@
-﻿using R2API;
+﻿using System;
+using System.Collections.Generic;
+using R2API;
 using RoR2;
-using RoR2.CharacterAI;
 using UnityEngine;
 using UnityEngine.Networking;
+using QueenGlandBuff.Utils;
 
 namespace QueenGlandBuff.Changes
 {
     public class QueensGland
     {
+		public static List<EquipmentDef> StageEliteEquipmentDefs = new List<EquipmentDef>();
+		public static EquipmentIndex Gland_DefaultAffix_Var;
 		internal static void Begin()
         {
-			BeetleGuardAlly.Begin();
 			UpdateItemDescription();
-			QueensGlandHooks.Begin();
+			if (MainPlugin.Config_QueensGland_SpawnAffix.Value != 0)
+			{
+				Stage.onServerStageBegin += ServerStageBegin;
+			}
+			On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
+			CharacterBody.onBodyInventoryChangedGlobal += CharacterBody_OnInventoryChanged;
+			BeetleGland_Override();
 		}
+		
 		private static void UpdateItemDescription()
 		{
 			if (MainPlugin.Config_Debug.Value)
@@ -22,7 +32,7 @@ namespace QueenGlandBuff.Changes
 			}
 			string pickup = "Recruit ";
 			string desc = "<style=cIsUtility>Summon ";
-			if (MainPlugin.Config_SpawnAffix.Value == 1)
+			if (MainPlugin.Config_QueensGland_SpawnAffix.Value == 1)
 			{
 				pickup += "an Elite Beetle Guard.";
 				desc += "an Elite Beetle Guard</style>";
@@ -34,7 +44,7 @@ namespace QueenGlandBuff.Changes
 			}
 			desc += " with <style=cIsHealing>" + (10 + MainPlugin.Config_BaseHealth.Value) * 10 + "% health</style>";
 			desc += " and <style=cIsDamage>" + (10 + MainPlugin.Config_BaseDamage.Value) * 10 + "% damage</style>.";
-			desc += " Can have <style=cIsUtility>1</style> <style=cStack>(+1 per stack)</style> total Guards, up to <style=cIsUtility>" + MainPlugin.Config_MaxSummons.Value + "</style>.";
+			desc += " Can have <style=cIsUtility>1</style> <style=cStack>(+1 per stack)</style> total Guards, up to <style=cIsUtility>" + MainPlugin.Config_QueensGland_MaxSummons.Value + "</style>.";
 			if(MainPlugin.Config_StackHealth.Value != 0 || MainPlugin.Config_StackDamage.Value != 0)
             {
 				desc += " Further stacks give";
@@ -50,81 +60,112 @@ namespace QueenGlandBuff.Changes
 			LanguageAPI.Add("ITEM_BEETLEGLAND_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_BEETLEGLAND_DESC", desc);
 		}
-		internal static void UpdateAILeash(CharacterMaster master)
+		private static void ServerStageBegin(Stage self)
 		{
-			if (master)
-			{
-				foreach (AISkillDriver driver in master.GetComponentsInChildren<AISkillDriver>())
-				{
-					if (driver.customName == "ReturnToOwnerLeash")
-					{
-						driver.minDistance = GetLeashDistance();
-						break;
-					}
-				}
-			}
+			UpdateEliteList();
 		}
-		internal static float GetLeashDistance()
-		{
-			Run run = Run.instance;
-			float distance = MainPlugin.Config_AI_MinRecallDist.Value;
-			if (run)
-			{
-				float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AI_RecallDistDiff.Value;
-				if (diff > 0f)
-				{
-					distance += diff;
-				}
-				distance = Mathf.Min(MainPlugin.Config_AI_MaxRecallDist.Value, distance);
-				distance = Mathf.Max(MainPlugin.Config_AI_MinRecallDist.Value, distance);
-			}
-			//MainPlugin.ModLogger.LogInfo("Recall distance: " + distance + "m.");
-			return distance;
-		}
-		internal static void TickStaunchBuff(CharacterBody self)
-		{
-			DrawAggro(self);
-			EmpowerBeetles(self);
-		}
-		internal static void DrawAggro(CharacterBody self)
+		private static void UpdateEliteList()
 		{
 			if (!NetworkServer.active)
 			{
 				return;
 			}
-			BullseyeSearch search = new BullseyeSearch();
-			search.viewer = self;
-			search.teamMaskFilter = TeamMask.allButNeutral;
-			search.teamMaskFilter.RemoveTeam(self.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Config_Staunch_AggroRange.Value;
-			search.searchOrigin = self.inputBank.aimOrigin;
-			search.searchDirection = self.inputBank.aimDirection;
-			search.maxAngleFilter = 180f;
-			search.filterByLoS = true;
-			search.RefreshCandidates();
-			foreach (HurtBox target in search.GetResults())
+			Gland_DefaultAffix_Var = EquipmentCatalog.FindEquipmentIndex(MainPlugin.Config_QueensGland_DefaultAffix.Value);
+			if (Gland_DefaultAffix_Var != EquipmentIndex.None)
 			{
-				if (target && target.healthComponent)
+				if (Run.instance.IsEquipmentExpansionLocked(Gland_DefaultAffix_Var))
 				{
-					if (target.healthComponent.body)
+					Gland_DefaultAffix_Var = EquipmentIndex.None;
+				}
+			}
+			StageEliteEquipmentDefs.Clear();
+			CombatDirector.EliteTierDef[] DirectorElite = EliteAPI.GetCombatDirectorEliteTiers();
+			bool IsMoon = Stage.instance.sceneDef.cachedName.Contains("moon");
+			bool IsHonor = RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly);
+			bool IsLoop = Run.instance.loopClearCount > 0;
+
+			SpawnCard.EliteRules eliterules = SpawnCard.EliteRules.Default;
+			if (IsHonor)
+			{
+				eliterules = SpawnCard.EliteRules.ArtifactOnly;
+			}
+			if (IsMoon)
+			{
+				eliterules = SpawnCard.EliteRules.Lunar;
+			}
+
+			for (int i = 0; i < DirectorElite.Length; i++)
+			{
+				if (DirectorElite[i].isAvailable.Invoke(eliterules))
+				{
+					for (int z = 0; z < DirectorElite[i].eliteTypes.GetLength(0); z++)
 					{
-						CharacterBody targetbody = target.healthComponent.body;
-						if (targetbody.master)
+						if (DirectorElite[i].eliteTypes[z])
 						{
-							CharacterMaster targetmaster = target.healthComponent.body.master;
-							BaseAI targetai = targetmaster.GetComponent<BaseAI>();
-							if (targetai)
+							StageEliteEquipmentDefs.Add(DirectorElite[i].eliteTypes[z].eliteEquipmentDef);
+						}
+					}
+				}
+			}
+		}
+		
+		private static int CharacterMaster_GetDeployableSameSlotLimit(On.RoR2.CharacterMaster.orig_GetDeployableSameSlotLimit orig, CharacterMaster self, DeployableSlot slot)
+		{
+			var result = orig(self, slot);
+			if (slot != DeployableSlot.BeetleGuardAlly)
+			{
+				return result;
+			}
+			return Math.Min(MainPlugin.Config_QueensGland_MaxSummons.Value, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland));
+		}
+		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
+		{
+			UpdateBeetleGuardStacks(self.master);
+		}
+		private static void UpdateBeetleGuardStacks(CharacterMaster owner)
+		{
+			if (!NetworkServer.active)
+			{
+				return;
+			}
+			if (owner)
+			{
+				if (owner.deployablesList != null)
+				{
+					int deployableCount = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
+					int itemCount = owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland);
+					int stackBonus = Math.Max(0, itemCount - MainPlugin.Config_QueensGland_MaxSummons.Value);
+					int dmgitem = MainPlugin.Config_BaseDamage.Value + (MainPlugin.Config_StackDamage.Value * stackBonus);
+					int hpitem = MainPlugin.Config_BaseHealth.Value + (MainPlugin.Config_StackHealth.Value * stackBonus);
+					int summonCount = 0;
+					for (int i = 0; i < owner.deployablesList.Count; i++)
+					{
+						if (owner.deployablesList[i].slot == DeployableSlot.BeetleGuardAlly)
+						{
+							Deployable deployable = owner.deployablesList[i].deployable;
+							if (deployable)
 							{
-								if (!targetai.isHealer)
+								CharacterMaster deployableMaster = deployable.GetComponent<CharacterMaster>();
+								if (deployableMaster)
 								{
-									if (!targetai.currentEnemy.gameObject || targetai.enemyAttention <= 0f)
+									summonCount++;
+									if (summonCount > deployableCount)
 									{
-										if (RollAggroChance(targetbody))
+										deployableMaster.TrueKill();
+									}
+									else
+									{
+										Inventory inv = deployableMaster.inventory;
+										if (inv)
 										{
-											targetai.currentEnemy.gameObject = self.gameObject;
-											targetai.currentEnemy.bestHurtBox = self.mainHurtBox;
-											targetai.enemyAttention = targetai.enemyAttentionDuration;
+											inv.ResetItem(RoR2Content.Items.BoostDamage);
+											inv.ResetItem(RoR2Content.Items.BoostHp);
+											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
+											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
+											if (deployableMaster.GetBody())
+											{
+												MainPlugin.ModLogger.LogInfo("Level = " + deployableMaster.GetBody().level);
+											}
 										}
 									}
 								}
@@ -134,49 +175,84 @@ namespace QueenGlandBuff.Changes
 				}
 			}
 		}
-		internal static void EmpowerBeetles(CharacterBody self)
+		private static void BeetleGland_Override()
 		{
-			if (!NetworkServer.active)
+			On.RoR2.Items.BeetleGlandBodyBehavior.FixedUpdate += (orig, self) =>
 			{
-				return;
-			}
-			BullseyeSearch search = new BullseyeSearch();
-			search.viewer = self;
-			search.teamMaskFilter = TeamMask.none;
-			search.teamMaskFilter.AddTeam(self.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.maxDistanceFilter = MainPlugin.Config_Staunch_AggroRange.Value;
-			search.searchOrigin = self.inputBank.aimOrigin;
-			search.searchDirection = self.inputBank.aimDirection;
-			search.maxAngleFilter = 180f;
-			search.filterByLoS = false;
-			search.RefreshCandidates();
-			foreach (HurtBox target in search.GetResults())
-			{
-				if (target && target.healthComponent)
+				if (Stage.instance.sceneDef == MainPlugin.BazaarSceneDef)
 				{
-					CharacterBody targetBody = target.healthComponent.body;
-					if (targetBody)
+					return;
+				}
+				if (self.body && self.body.inventory)
+				{
+					CharacterMaster owner = self.body.master;
+					if (owner)
 					{
-						if (targetBody != self)
+						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MainPlugin.Config_QueensGland_MaxSummons.Value);
+						int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
+						int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
+						if (deployableCount < maxdeployable)
 						{
-							if (QueensGlandHooks.BeetleFrenzyWhiteList.Contains(targetBody.bodyIndex))
+							self.guardResummonCooldown -= Time.fixedDeltaTime;
+							if (self.guardResummonCooldown <= 0f)
 							{
-								targetBody.AddTimedBuff(BeetleGuardAlly.BeetleFrenzy, 1.5f);
+								self.guardResummonCooldown = 2f;
+								DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest((SpawnCard)Resources.Load("SpawnCards/CharacterSpawnCards/cscBeetleGuardAlly"), new DirectorPlacementRule
+								{
+									placementMode = DirectorPlacementRule.PlacementMode.Approximate,
+									minDistance = 3f,
+									maxDistance = 40f,
+									spawnOnTarget = self.transform,
+								}, RoR2Application.rng);
+								directorSpawnRequest.summonerBodyObject = self.gameObject;
+								directorSpawnRequest.teamIndexOverride = TeamIndex.Player;
+								directorSpawnRequest.ignoreTeamMemberLimit = true;
+								directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(directorSpawnRequest.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult spawnResult)
+								{
+									if (SetupSummonedBeetleGuard(spawnResult, owner, extraglands))
+									{
+										self.guardResummonCooldown = MainPlugin.Config_QueensGland_RespawnTime.Value;
+									}
+								}));
+								DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
 							}
 						}
 					}
 				}
-			}
+			};
 		}
-		private static bool RollAggroChance(CharacterBody target)
+		private static bool SetupSummonedBeetleGuard(SpawnCard.SpawnResult spawnResult, CharacterMaster owner, int itemcount)
 		{
-			float result = UnityEngine.Random.Range(0f, 1f);
-			if (target.isBoss)
+			GameObject spawnedInstance = spawnResult.spawnedInstance;
+			if (!spawnedInstance)
 			{
-				return MainPlugin.Config_Staunch_AggroBossChance.Value > result;
+				return false;
 			}
-			return MainPlugin.Config_Staunch_AggroChance.Value > result;
+			CharacterMaster spawnMaster = spawnedInstance.GetComponent<CharacterMaster>();
+			if (spawnMaster)
+			{
+				Deployable deployable = spawnMaster.GetComponent<Deployable>();
+				if (!deployable)
+				{
+					deployable = spawnMaster.gameObject.AddComponent<Deployable>();
+				}
+				if (owner)
+				{
+					CharacterBody spawnBody = spawnMaster.GetBody();
+					if (spawnBody)
+					{
+						spawnMaster.teamIndex = owner.teamIndex;
+						spawnBody.teamComponent.teamIndex = owner.teamIndex;
+					}
+					Helpers.GiveRandomEliteAffix(spawnMaster);
+					BeetleGuardAlly.UpdateAILeash(spawnMaster);
+					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(spawnMaster.TrueKill));
+					owner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
+					UpdateBeetleGuardStacks(owner);
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

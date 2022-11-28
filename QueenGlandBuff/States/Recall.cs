@@ -38,18 +38,14 @@ namespace QueenGlandBuff.States
 					if (NetworkServer.active)
 					{
 						int teleresult = Utils.Helpers.TeleportToOwner(characterBody);
-						if (teleresult == 0)
+						if (teleresult == 2)
 						{
-							characterBody.AddTimedBuff(Changes.BeetleGuardAlly.BeetleFrenzy, buffDuration);
-						}
-						else if (teleresult == 1)
-						{
-							characterBody.AddTimedBuff(RoR2Content.Buffs.CloakSpeed, buffDuration / 2f);
+							PlayCrossfade("Body", "Spawn1", "Spawn1.playbackRate", duration - fixedAge, 0.2f);
+							Changes.BeetleGuardAlly.UpdateAILeash(characterBody.master);
 						}
 						else
 						{
-							PlayCrossfade("Body", "Spawn1", "Spawn1.playbackRate", duration - fixedAge, 0.2f);
-							Changes.QueensGland.UpdateAILeash(characterBody.master);
+							characterBody.AddTimedBuff(RoR2Content.Buffs.CloakSpeed, buffDuration);
 						}
 					}
 				}

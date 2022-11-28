@@ -42,7 +42,7 @@ namespace QueenGlandBuff.States
 					hasCastBuff = true;
 					if (NetworkServer.active)
 					{
-						characterBody.AddTimedBuff(Changes.BeetleGuardAlly.Staunching, buffDuration);
+						characterBody.AddTimedBuff(Changes.StaunchBuff.Staunching, buffDuration);
 					}
 				}
 			}

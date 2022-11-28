@@ -22,7 +22,7 @@ namespace QueenGlandBuff.Changes
 
 		public static BaseAI BaseAI;
 
-		public static BuffDef Staunching;
+		
 		public static BuffDef BeetleFrenzy;
 
 		public static SkillDef SlamSkill;
@@ -44,19 +44,9 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void CreateBuffs()
         {
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly buffs.");
-			}
-			BuffDef beetlebuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Beetle/bdBeetleJuice.asset").WaitForCompletion();
-			BuffDef warcrybuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/TeamWarCry/bdTeamWarCry.asset").WaitForCompletion();
-			if (MainPlugin.Config_AddUtility.Value || MainPlugin.Config_AddSpecial.Value)
-			{
-				BeetleFrenzy = Modules.Buffs.AddNewBuff("BeetleFrenzy", warcrybuff.iconSprite, beetlebuff.buffColor, false, false, false);
-			}
 			if (MainPlugin.Config_AddSpecial.Value)
 			{
-				Staunching = Modules.Buffs.AddNewBuff("Staunch", beetlebuff.iconSprite, warcrybuff.buffColor, false, false, false);
+				StaunchBuff.Begin();
 			}
 		}
 		private static void CreateProjectiles()
@@ -81,12 +71,19 @@ namespace QueenGlandBuff.Changes
 				MainPlugin.ModLogger.LogInfo("Changing BeetleGuardAlly attributes.");
 			}
 			CharacterBody charBody = BodyObject.GetComponent<CharacterBody>();
+
 			charBody.baseAcceleration *= 1.5f;
 			charBody.baseJumpPower *= 1.3f;
 			charBody.baseRegen = 1f;
 			charBody.levelRegen = 0.2f;
 			CharacterDirection charDir = BodyObject.GetComponent<CharacterDirection>();
 			charDir.turnSpeed *= 2f;
+
+			charBody.baseMaxHealth *= MainPlugin.Config_BeetleGuardAlly_HealthMult.Value;
+			charBody.levelMaxHealth *= MainPlugin.Config_BeetleGuardAlly_HealthMult.Value;
+
+			charBody.baseDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
+			charBody.levelDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
 		}
 		private static void CreateSkills()
         {
@@ -183,7 +180,7 @@ namespace QueenGlandBuff.Changes
 				RecallSkill = ScriptableObject.CreateInstance<SkillDef>();
 
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side. Enter a <style=cIsDamage>frenzy</style> for <style=cIsUtility>10</style> seconds if you have no owner.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side.");
 
 				RecallSkill.activationState = new SerializableEntityStateType(typeof(States.Recall));
 				RecallSkill.activationStateMachineName = "Body";
@@ -218,7 +215,7 @@ namespace QueenGlandBuff.Changes
 			{
 				StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies for <style=cIsUtility>10</style> seconds. While active gain <style=cIsUtility>100</style> armor and send nearby <style=cIsHealing>friendly beetles</style> into a <style=cIsDamage>frenzy</style>.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", "Draw the <style=cIsHealth>attention</style> of nearby enemies and gain <style=cIsUtility>100</style> armor for <style=cIsUtility>10</style> seconds.");
 
 				StaunchSkill.activationState = new SerializableEntityStateType(typeof(States.Staunch));
 				StaunchSkill.activationStateMachineName = "Body";
@@ -267,7 +264,6 @@ namespace QueenGlandBuff.Changes
 				Modules.Skills.AddSkillToSlot(BodyObject, StaunchSkill, SkillSlot.Special);
 			}
 		}
-
 		private static void UpdateAI()
 		{
 			if (MainPlugin.Config_Debug.Value)
@@ -574,6 +570,37 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver9.shouldFireEquipment = false;
 			aiskillDriver9.shouldSprint = false;
 			aiskillDriver9.skillSlot = SkillSlot.None;
+		}
+
+		internal static void UpdateAILeash(CharacterMaster master)
+		{
+			if (master)
+			{
+				foreach (AISkillDriver driver in master.GetComponentsInChildren<AISkillDriver>())
+				{
+					if (driver.customName == "ReturnToOwnerLeash")
+					{
+						driver.minDistance = GetLeashDistance();
+						break;
+					}
+				}
+			}
+		}
+		internal static float GetLeashDistance()
+		{
+			Run run = Run.instance;
+			float distance = MainPlugin.Config_AI_MinRecallDist.Value;
+			if (run)
+			{
+				float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AI_RecallDistDiff.Value;
+				if (diff > 0f)
+				{
+					distance += diff;
+				}
+				distance = Mathf.Min(MainPlugin.Config_AI_MaxRecallDist.Value, distance);
+				distance = Mathf.Max(MainPlugin.Config_AI_MinRecallDist.Value, distance);
+			}
+			return distance;
 		}
 	}
 }
