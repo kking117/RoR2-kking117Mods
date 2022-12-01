@@ -1,0 +1,431 @@
+**1.14.0**
+
+```
+- Removed Red Whip Changes.
+
+- Voidsent Flame:
+- Added "Base Damage" and "Stack Damage" configurations, controls the damage of the Voidsent Flame explosion.
+- Added "Proc Coefficient" configuration, controls the Proc Coefficient of the Voidsent Flame explosion.
+
+- Leeching Seed Rework:
+- Leech's minimum healing is now enforced after being multiplied by the proc coefficient.
+- Changed "DoT Heal" default configuration. (1 -> 2)
+- Changed "Leech Life Steal" default configuration. (0.01 -> 0.02)
+- Added "Leech Minimum Life Steal" configuration, controls the minimum amount of healing Leech gives.
+
+- Titanic Knurl Rework:
+- Changed "Stack Damage" default configuration. (3.5 -> 4)
+
+- Added a rework for Lost Seer's Lenses.
+```
+
+**1.13.4**
+
+```
+- Leeching Seed Rework:
+- Changed "DoT Heal" default configuration. (1.5 -> 1)
+- Changed "Leech Life Steal" default configuration. (0.05 -> 0.01)
+- Leech Debuff heals at minimum 20% of the attacker's level. (2 healing at level 10 for example)
+- Leech Debuff healing is now affected by Proc Coefficient, and is applied AFTER the minimum healing.
+
+- Lepton Daisy:
+- Changed "Base Healing" default configuration. (0.15 -> 0.1)
+- Changed "Stack Healing" default configuration. (0.15 -> 0.1)
+- Caps at 200% of the target's maximum health instead of 100%.
+- Added "Capped Healing" configuration, controls the hyperbolic stacking cap of the healing.
+
+- Wax Quail:
+- Changed "Base Horizontal Boost" default configuration. (15 -> 12)
+- Changed "Stack Horizontal Boost" default configuration. (5 -> 6)
+- Changed "Base Air Speed Bonus" default configuration. (0.14 -> 0.12)
+- Changed "Base Vertical Boost" default configuration. (0.3 -> 0.2)
+- All effects given now have a limit, stacking is Hyperbolic as a result.
+- Added "Capped Horizontal Boost", "Capped Vertical Boost" and "Capped Air Speed Bonus" configurations, they control the stacking limits.
+- Aerial speed bonus is no longer multiplied by the sprinting speed multiplier while not sprinting. (Yeah don't ask.)
+
+- Defense Nucleus Buff:
+- Changed "Cooldown" default configuration. (1.5 - > 1)
+```
+
+**1.13.3**
+
+```
+- Titanic Knurl Rework:
+- Added "Proc Coefficient" configuration, controls the proc coefficient of the Stone Fist.
+- Added "Attack Distance" configuration, controls the maximum targeting distance of the Stone Fist.
+- Added "Target Mode" configuration, controls which targeting mode the Stone Fist uses.
+- Changed the "weak" targeting to account for the armor stat.
+```
+
+**1.13.2**
+
+```
+Old War Stealthkit:
+- No longer activates if the user is still "Stealthed".
+- "danger" and "combat" cancels are no longer tied to the "Stealthed" buff.
+- Activation forces the user out of "danger" and "combat" for 1 second.
+- Added "Cancel Duration" configuration, controls how long the "danger" and "combat" cancel lasts for.
+- Added "Buff Duration" configuration, controls how long the "Stealthed" buff is given for.
+- Added "Base Cooldown" configuration, controls the base cooldown between activations.
+- Added "Stack Cooldown" configuration, controls the cooldown reduction from additional item stacks.
+```
+
+**1.13.1**
+
+```
+Leeching Seed:
+- Fixed "Normal Heal" configuration not being used.
+```
+
+**1.13.0**
+
+_Would appreciate feedback on the Wax Quail changes, including default configurations. Felt Lepton Daisy was bit too weak for how situational it is and also might look into Simulacrum specific changes._
+
+```
+Bison Steak:
+- Changed "Base HP" default configuration. (25.0 -> 20.0)
+- Changed "Level HP" default configuration. (2.5 -> 2.0)
+
+Leeching Seed:
+- Healing is received in a single instance instead of two.
+- Changed "Normal Heal" default configuration. (1.0 -> 0.5)
+
+Lepton Daisy:
+- Changed "Base Healing" default configuration. (0.1 -> 0.15)
+- Changed "Stack Healing" default configuration. (0.1 -> 0.15)
+
+Wax Quail:
+- Added changes to Wax Quail.
+```
+
+**1.12.4**
+
+_This update includes balance changes for the Defense Nucleus Buff. The intent is to be less spammy, reducing the difference between this and the Vanilla version._
+
+```
+Infusion:
+- No longer triggers a level up when gaining levels from samples.
+
+Lepton Daisy:
+- Changed "Base Healing" default configuration. (0.08 -> 0.1)
+- Changed "Stack Healing" default configuration. (0.08 -> 0.1)
+
+Squid Polyp:
+- Damage and Proc Coefficient updated to reflect Patch 1.2.4's values.
+
+Voidsent Flame:
+- Fixed for Patch 1.2.4.
+
+Defense Nucleus Shared:
+- Removed the attack speed cap for Defense Nucleus' stacking bonus.
+
+Defense Nucleus Buff:
+- Added "Cooldown" configuration, controls the cooldown for spawning constructs from kills.
+- Added "Base Damage" configuration, changes the base damage of summoned constructs.
+- Added "Stack Damage" configuration, changes the stack damage of summoned constructs.
+- Changed "Cooldown"  default configuration. (0.25 -> 1.5)
+- Changed "Base Health" default configuration. (0 -> 10)
+- Changed "Stack Health" default configuration. (5 -> 10)
+- Changed "Base Attack Speed" default configuration. (10 -> 6)
+- Changed "Stack Attack Speed" default configuration. (10 -> 0)
+
+Defense Nucleus Rework:
+- Added "Base Damage" configuration, changes the base damage of summoned constructs.
+- Added "Stack Damage" configuration, changes the stack damage of summoned constructs.
+- Changed "Base Attack Speed" default configuration. (10 -> 6)
+- Changed "Stack Attack Speed" default configuration. (10 -> 0)
+```
+
+**1.12.3**
+
+_Benthic Bloom rework has been removed due to being made into a standalone item in hex3's [item mod](https://thunderstore.io/package/hex3/Hex3Mod/), special thanks to Conq for the original item concept._
+
+```
+Benthic Bloom Rework:
+- Removed, see update comment.
+
+Red Whip:
+- Added changes to Red Whip.
+
+Other:
+- Added "General" configuration category.
+- Added "Out of Combat Time" configuration, used as an internal reference for the mod.
+- Added "Out of Danger Time" configuration, used as an internal reference for the mod.
+```
+
+**1.12.2**
+
+```
+Titanic Knurl Rework:
+- Improved pickup text.
+
+Defense Nucleus Rework:
+- Changed "Summon Count" default configuration. (4 -> 3)
+- Changed "Shield Base Duration" default configuration. (3s -> 3.5s)
+- Changed "Shield Stack Duration" default configuration. (0.75s -> 1s)
+
+Defense Nucleus Shared:
+- More checks in place to prevent summoning over the limit.
+
+Infusions:
+- Tracker updates more accurately.
+```
+
+**1.12.1**
+
+```
+Laser Scope:
+- Fixed description showing the critical strike chance being 100 times larger than what it actually was.
+```
+
+**1.12.0**
+
+```
+Lepton Daisy:
+- Added changes for Lepton Daisy.
+
+Laser Scope:
+- Added changes for Laser Scope.
+
+Hunter's Harpoon:
+- Slightly improved description text.
+
+Voidsent Flame:
+- Added changes for Voidsent Flame.
+```
+
+**1.11.0**
+
+```
+Benthic Bloom:
+- Added a rework for Benthic Bloom.
+```
+
+**1.10.3**
+
+```
+Infusion:
+- Updated the tracker icon to better match vanilla buff icons.
+
+Leeching Seed Rework:
+- Changed "Leech Stack Duration" configuration. (2.5 -> 0)
+
+Old War Stealthkit:
+- Updated description.
+
+Titanic Knurl Rework:
+- Now prefers enemies that are roughly within its kill range rather than the weakest.
+```
+
+**1.10.2**
+
+```
+Infusion:
+- Added "Tracker" configuration, adds a cosmetic buff to help track samples.
+
+Ben's Raincoat:
+- Added changes for Ben's Raincoat.
+```
+
+**1.10.1**
+
+```
+- Quick fix for the latest patch.
+```
+
+**1.10.0**
+
+```
+Hunter's Harpoon:
+- Added changes for Hunter's Harpoon.
+
+Squid Polyp:
+- Went back and made it use a new SkillState to apply the Tar debuff. (I feel this is be better for performance and compatability.)
+- Fixed a few random bugs from the previous update's changes.
+```
+
+**1.9.0**
+
+_I've made some big changes to how the mod handles the Squid Polyps, please bring any errors or compatibility issues to my attention._
+
+```
+Aegis:
+- Added changes for Aegis.
+
+War Horn:
+- Added changes for War Horn.
+
+Infusion:
+- Updated the pickup test to be less confusing.
+
+Squid Polyp:
+- Now takes advantage of IL instead of checking and modifying Squid Polyps that spawn in.
+- No longer creates a whole new SkillState to modify its primary skill.
+- Now changes the damageType on RoR2.Orbs.SquidOrb.Begin instead.
+```
+
+**1.8.0**
+
+```
+Old War Stealthkit:
+- Added changes for Old War Stealthkit.
+```
+
+**1.7.3**
+
+_This update is mainly an attempt to resolve Alpha Construct Ally spawning beyond the deployable limit. I also suddenly wanted to try my hand at adding item displays, so Alpha Constructs are now flagged as Mechanical, have fun!_
+
+```
+Bison Steak:
+- Added "Stack Buff Duration" configuration, controls how long the Regen buff lasts from additional stacks.
+- Also renamed a few of the other configurations, go check your config.
+
+Defense Nucleus:
+- Now has a brief cooldown for the on kill effect.
+- The summoned constructs will now replace the nearest construct within 6m before trying to replace the oldest.
+- Changed "Base Attack Speed" default value. (5 -> 10)
+
+Defense Nucleus Rework:
+- Changed "Base Attack Speed" default value. (5 -> 10)
+
+Alpha Construct Ally:
+- Added "Is Mechanical" configuration, makes it have the Mechanical flag, allowing it to get boosted by Spare Drone Parts and Captain's passive.
+- Added "Enable Modded Displays" configuration, enables extra item displays for Spare Drone Parts.
+```
+
+**1.7.2**
+
+_This update changes how the Infusion changes work. The item on its own is now weaker, but has better synergy with items that scale with level._
+
+```
+Infusion:
+- Directly increases level instead of using level stats.
+- Default config values have been changed to account for this.
+- Changed "Max Stacks" default value. (200 -> 100)
+- Changed "Kill Stack" default value. (2 -> 1)
+- Changed "Champion Stack" default value. (8 -> 5)
+- Changed "Elite Bonus" defaul value. (3 -> 2)
+```
+
+**1.7.1**
+
+```
+Defense Nucleus:
+- Improved logic for the death checks.
+
+Defense Nucleus Rework:
+- Added "Summon Count" configuration, controls how many constructs are summoned.
+```
+
+**1.7.0**
+
+```
+Defense Nucleus:
+- Increased the default health and fire rate config values.
+- Turrets and other minions now proc their owner's Defense Nucleus instead of their own.
+
+Defense Nucleus Rework:
+- Increased the default health and fire rate config values.
+
+Leeching Seed:
+- Added a choice between buffing or reworking this item.
+```
+
+**1.6.0**
+
+```
+Defense Nucleus:
+- Added a choice between buffing or reworking this item.
+```
+
+**1.5.2**
+
+```
+Squid Polyp:
+- Fixed them not applying Tar when configured.
+```
+
+**1.5.1** 
+
+```
+Infusion:
+- Fixed changes causing almost everything to break.
+```
+
+**1.5.0** 
+
+_This update hasn't been thoroughly tested just as an FYI._
+
+```
+Updated for SotV.
+
+Titanic Knurl Rework:
+- Default configuration for "Base Damage" changed. (500% -> 700%)
+- Default configuration for "Stack Damage" changed. (300% -> 350%)
+- Default configuration for "Stack Cooldown" changed. (20% -> 15%)
+```
+
+**1.4.1**
+
+```
+- Fixed incompatibility with ZetAspects and GoldenCoastPlus.
+```
+
+**1.4.0**
+
+```
+Titanic Knurl:
+- Added a choice between buffing or reworking this item.
+
+Squid Polyp:
+- Removed configuration "Attack to Damage", found that this could be a bit game breaking under certain situations.
+```
+
+**1.3.0**
+
+_Most of this update changed how the code is structured, so there isn't many changes. A few bugs/issues may have been fixed but I can't say for sure._
+
+```
+Bison Steak:
+- Added "Buff Duration" configuration for Bison Steak. Enables the Fresh Meat's health regen boost on kill for this item.
+- "Level HP" configuration now works as a flat number instead of being a multiplier based on "Base HP".
+- Default configuration for "Level HP" changed due to the above (0.1 -> 2.5).
+
+Squid Polyp:
+- "Armor" configuration for Squid Poly is now how much armor each stack gives to the Squid Polyp.
+- Default configuration for "Armor" changed due to the above (50 -> 10).
+
+Infusion:
+- "Champion Stack" for Infusion default configuration is higher (6 -> 8).
+- Removed configuration "Normal Stat Gain" for Infusion. Felt completely unnecessary, item functions as if this was enabled.
+```
+
+**1.2.0**
+
+```
+Bison Steak:
+- Health boost from levels reduced (0.2 -> 0.1) as it scaled a bit too quickly.
+
+Infusion:
+- Added configuration "Gives To Owner". This controls if orbs from minion kills go to the owner instead.
+- Added configuration "Inherit From Owner". This controls if minions with infusions inherit their owner's collected samples.
+
+Squid Polyp:
+- Added balance changes for Squid Polyps.
+
+Topaz Brooch:
+- Added balance changes for Topaz Brooch.
+```
+
+**1.1.0**
+
+```
+Infusion:
+- Added changes for Infusion.
+```
+
+**1.0.0**
+
+```
+Public release.
+```

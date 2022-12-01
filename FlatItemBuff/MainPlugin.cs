@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.13.4";
+		public const string MODVERSION = "1.14.0";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -74,6 +74,7 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeechingSeedRework_DoTFlatHeal;
 		public static ConfigEntry<float> LeechingSeedRework_DoTChance;
 		public static ConfigEntry<float> LeechingSeedRework_DoTLifeSteal;
+		public static ConfigEntry<float> LeechingSeedRework_DoTMinLifeSteal;
 		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDamage;
 		public static ConfigEntry<float> LeechingSeedRework_DoTBaseDuration;
 		public static ConfigEntry<float> LeechingSeedRework_DoTStackDuration;
@@ -84,10 +85,13 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeptonDaisy_HealTime;
 		public static ConfigEntry<float> LeptonDaisy_CapHeal;
 
-		public static ConfigEntry<bool> RedWhip_Enable;
-		public static ConfigEntry<int> RedWhip_StartSecond;
-		public static ConfigEntry<float> RedWhip_BaseSpeed;
-		public static ConfigEntry<float> RedWhip_StackSpeed;
+		public static ConfigEntry<bool> LigmaLenses_Enable;
+		public static ConfigEntry<float> LigmaLenses_BaseDamage;
+		public static ConfigEntry<float> LigmaLenses_StackDamage;
+		public static ConfigEntry<float> LigmaLenses_BaseRadius;
+		public static ConfigEntry<float> LigmaLenses_StackRadius;
+		public static ConfigEntry<int> LigmaLenses_Cooldown;
+		public static ConfigEntry<float> LigmaLenses_ProcRate;
 
 		public static ConfigEntry<bool> StealthKit_Enable;
 		public static ConfigEntry<float> StealthKit_BaseRecharge;
@@ -136,6 +140,9 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> VoidsentFlame_Enable;
 		public static ConfigEntry<float> VoidsentFlame_BaseRadius;
 		public static ConfigEntry<float> VoidsentFlame_StackRadius;
+		public static ConfigEntry<float> VoidsentFlame_BaseDamage;
+		public static ConfigEntry<float> VoidsentFlame_StackDamage;
+		public static ConfigEntry<float> VoidsentFlame_ProcRate;
 
 		public static ConfigEntry<bool> Knurl_Enable;
 		public static ConfigEntry<float> Knurl_BaseHP;
@@ -209,10 +216,6 @@ namespace FlatItemBuff
 			{
 				ItemChanges.LeptonDaisy.EnableChanges();
 			}
-			if(RedWhip_Enable.Value)
-            {
-				ItemChanges.RedWhip.EnableChanges();
-            }
 			if (Harpoon_Enable.Value)
 			{
 				ItemChanges.HuntersHarpoon.EnableChanges();
@@ -264,6 +267,10 @@ namespace FlatItemBuff
 				ItemChanges.DefenseNucleus.EnableChanges();
 			}
 			//Void
+			if (LigmaLenses_Enable.Value)
+			{
+				ItemChanges.LigmaLenses.EnableChanges();
+			}
 			if (VoidsentFlame_Enable.Value)
 			{
 				ItemChanges.VoidsentFlame.EnableChanges();
@@ -330,9 +337,10 @@ namespace FlatItemBuff
 			LeechingSeed_NoProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Fixed Heal"), 0.5f, new ConfigDescription("How much extra healing to give regardless of proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
 
 			LeechingSeedRework_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed Rework", "Enable Changes"), false, new ConfigDescription("Enables the rework for Leeching Seed. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 1f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTFlatHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "DoT Heal"), 2f, new ConfigDescription("How much healing DoTs give per hit per stack. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTChance = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Chance"), 25f, new ConfigDescription("Proc chance of the Leeching debuff. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.01f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Life Steal"), 0.02f, new ConfigDescription("Life steal multiplier when damaging enemies with Leech.", null, Array.Empty<object>()));
+			LeechingSeedRework_DoTMinLifeSteal = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Minimum Life Steal"), 0.1f, new ConfigDescription("Minimum amount of life steal with leech, gets multiplied by the attackers level.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTBaseDamage = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Damage"), 0.5f, new ConfigDescription("How much damage the Leeching debuff deals per second.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTBaseDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Base Duration"), 5f, new ConfigDescription("How long the Leeching debuff lasts.", null, Array.Empty<object>()));
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 0f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
@@ -343,10 +351,13 @@ namespace FlatItemBuff
 			LeptonDaisy_CapHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Capped Healing"), 2f, new ConfigDescription("Healing limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
-			RedWhip_Enable = Config.Bind<bool>(new ConfigDefinition("Red Whip", "Enable Changes"), true, new ConfigDescription("Enables changes for Red Whip.", null, Array.Empty<object>()));
-			RedWhip_StartSecond = Config.Bind<int>(new ConfigDefinition("Red Whip", "Build Up Second"), 1, new ConfigDescription("How many seconds without using a combat skill are needed to start building up speed. (Set to -1 or less to disable entirely)", null, Array.Empty<object>()));
-			RedWhip_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Red Whip", "Base Speed"), 0.3f, new ConfigDescription("How much movement speed to give at a single stack.", null, Array.Empty<object>()));
-			RedWhip_StackSpeed = Config.Bind<float>(new ConfigDefinition("Red Whip", "Stack Speed"), 0.3f, new ConfigDescription("How much extra movement speed to give for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));
+			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.15f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
+			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.15f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 20f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
+			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
+			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0f, new ConfigDescription("Proc Coefficient for the void seekers.", null, Array.Empty<object>()));
 
 			StealthKit_Enable = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
 			StealthKit_BaseRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Base Cooldown"), 30.0f, new ConfigDescription("How long it takes for this item to recharge. (Vanilla = 30)", null, Array.Empty<object>()));
@@ -395,6 +406,9 @@ namespace FlatItemBuff
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));
 			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack. (12 = Vanilla)", null, Array.Empty<object>()));
 			VoidsentFlame_StackRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Stack Radius"), 2f, new ConfigDescription("How much larger the blast radius becomes from additional stacks. (2.4 = Vanilla)", null, Array.Empty<object>()));
+			VoidsentFlame_BaseDamage = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Damage"), 2.6f, new ConfigDescription("Blast damage at a single stack. (2.6 = Vanilla)", null, Array.Empty<object>()));
+			VoidsentFlame_StackDamage = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Stack Damage"), 1.56f, new ConfigDescription("Blast damage from additional stacks. (1.56 = Vanilla)", null, Array.Empty<object>()));
+			VoidsentFlame_ProcRate = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Proc Coefficient"), 1f, new ConfigDescription("Blast proc coefficient. (1 = Vanilla)", null, Array.Empty<object>()));
 
 			Knurl_Enable = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl", "Enable Changes"), true, new ConfigDescription("Enables changes to Titanic Knurl.", null, Array.Empty<object>()));
 			Knurl_BaseHP = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Base HP"), 40f, new ConfigDescription("The amount of HP each stack gives. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
@@ -404,7 +418,7 @@ namespace FlatItemBuff
 
 			KnurlRework_Enable = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Enable Rework"), false, new ConfigDescription("Enables the rework to Titanic Knurl. (Has priority over the normal changes.)", null, Array.Empty<object>()));
 			KnurlRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Damage"), 7f, new ConfigDescription("Base Damage of the stone fist.", null, Array.Empty<object>()));
-			KnurlRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 3.5f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 4f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Cooldown"), 6f, new ConfigDescription("Cooldown between each stone fist.", null, Array.Empty<object>()));
 			KnurlRework_StackSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Cooldown"), 0.15f, new ConfigDescription("Reduces the cooldown between each stone fist per stack. (Works as attack speed does.)", null, Array.Empty<object>()));
 			KnurlRework_ProcRate = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Proc Coefficient"), 1.0f, new ConfigDescription("The proc coefficient of the stone fist.", null, Array.Empty<object>()));

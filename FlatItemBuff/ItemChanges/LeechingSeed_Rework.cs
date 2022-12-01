@@ -16,15 +16,34 @@ namespace FlatItemBuff.ItemChanges
 		public static BuffDef LeechBuff = RoR2Content.Buffs.Warbanner;
 		public static DotController.DotDef LeechDotDef;
 		private static DotController.DotIndex LeechDotIndex;
+
+		private static float FlatHealing = 2f;
+		private static float LeechChance = 0.25f;
+		private static float LifeSteal = 0.02f;
+		private static float MinLifeStealPerLevel = 0.1f;
+		private static float LeechBaseDamage = 0.5f;
+		private static float LeechBaseDuration = 5f;
+		private static float LeechStackDuration = 0f;
 		public static void EnableChanges()
 		{
-			if (MainPlugin.LeechingSeedRework_DoTChance.Value > 0f)
-            {
+			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
+			if (LeechChance > 0f)
+			{
 				CreateBuff();
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
+			SetupConfigValues();
 			UpdateText();
 			Hooks();
+		}
+		private static void SetupConfigValues()
+        {
+			LifeSteal = MainPlugin.LeechingSeedRework_DoTLifeSteal.Value;
+			MinLifeStealPerLevel = MainPlugin.LeechingSeedRework_DoTMinLifeSteal.Value;
+			LeechChance = MainPlugin.LeechingSeedRework_DoTChance.Value;
+			FlatHealing = MainPlugin.LeechingSeedRework_DoTFlatHeal.Value;
+			LeechBaseDamage = MainPlugin.LeechingSeedRework_DoTBaseDamage.Value;
+			LeechBaseDuration = MainPlugin.LeechingSeedRework_DoTBaseDuration.Value;
+			LeechStackDuration = MainPlugin.LeechingSeedRework_DoTStackDuration.Value;
 		}
 		private static void CreateBuff()
 		{
@@ -32,7 +51,7 @@ namespace FlatItemBuff.ItemChanges
 			LeechDotDef = new DotController.DotDef
 			{
 				associatedBuff = LeechBuff,
-				damageCoefficient = MainPlugin.LeechingSeedRework_DoTBaseDamage.Value / 4f,
+				damageCoefficient = LeechBaseDamage / 4f,
 				damageColorIndex = DamageColorIndex.Item,
 				interval = 0.25f
 			};
@@ -43,25 +62,25 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "";
 			string desc = "";
-			if(MainPlugin.LeechingSeedRework_DoTFlatHeal.Value > 0f)
+			if(FlatHealing > 0f)
             {
 				pickup += string.Format("Dealing status damage heals you.");
-				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", MainPlugin.LeechingSeedRework_DoTFlatHeal.Value);
+				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", FlatHealing);
 			}
-			if(MainPlugin.LeechingSeedRework_DoTChance.Value > 0f)
+			if(LeechChance > 0f)
             {
-				if (MainPlugin.LeechingSeedRework_DoTFlatHeal.Value > 0f)
+				if (FlatHealing > 0f)
                 {
 					pickup += " ";
 					desc += " ";
                 }
 				pickup += "Chance to leech enemies on hit.";
-				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style>", MainPlugin.LeechingSeedRework_DoTChance.Value, MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTBaseDuration.Value * 100f);
-				if (MainPlugin.LeechingSeedRework_DoTStackDuration.Value != 0f)
-                {
-					desc += string.Format(" <style=cStack>(+{0}% per stack)</style>", MainPlugin.LeechingSeedRework_DoTBaseDamage.Value * MainPlugin.LeechingSeedRework_DoTStackDuration.Value * 100f);
+				string StackB = "";
+				if (LeechStackDuration != 0f)
+				{
+					StackB += string.Format(" <style=cStack>(+{0}% per stack)</style>", LeechBaseDamage * LeechStackDuration * 100f);
 				}
-				desc += " base damage.";
+				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style>{2} base damage.", LeechChance, LeechBaseDamage * LeechBaseDuration * 100f, StackB);
 			}
 			LanguageAPI.Add("ITEM_SEED_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);
@@ -74,6 +93,10 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private static void Global_DamageDealt(DamageReport damageReport)
 		{
+			if (!NetworkServer.active)
+			{
+				return;
+			}
 			if (damageReport.attacker && damageReport.attackerBody)
 			{
 				float healing = 0f;
@@ -85,34 +108,34 @@ namespace FlatItemBuff.ItemChanges
 					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
 					if (itemCount > 0)
 					{
-						if (MainPlugin.LeechingSeedRework_DoTChance.Value > 0f)
+						if (LeechChance > 0f)
                         {
 							if (procrate > 0f)
 							{
 								if (damageReport.victim)
 								{
-									if (Util.CheckRoll(procrate * MainPlugin.LeechingSeedRework_DoTChance.Value, damageReport.attackerMaster))
+									if (Util.CheckRoll(procrate * LeechChance, damageReport.attackerMaster))
 									{
-										float duration = MainPlugin.LeechingSeedRework_DoTBaseDuration.Value + (MainPlugin.LeechingSeedRework_DoTStackDuration.Value * (itemCount - 1));
+										float duration = LeechBaseDuration + (LeechStackDuration * (itemCount - 1));
 										DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, duration * procrate, 1f, 1);
 									}
 								}
 							}
 						}
-						if (MainPlugin.LeechingSeedRework_DoTFlatHeal.Value > 0f)
+						if (FlatHealing > 0f)
 						{
 							if (damageReport.dotType != DotController.DotIndex.None)
 							{
-								healing += MainPlugin.LeechingSeedRework_DoTFlatHeal.Value * itemCount;
+								healing += FlatHealing * itemCount;
 							}
 						}
 					}
 				}
-				if (MainPlugin.LeechingSeedRework_DoTChance.Value > 0f)
+				if (LeechChance > 0f)
 				{
 					if (damageReport.victimBody.HasBuff(LeechBuff))
 					{
-						healing += Math.Max(damageReport.attackerBody.level * 0.2f, damageReport.damageDealt * MainPlugin.LeechingSeedRework_DoTLifeSteal.Value) * procrate;
+						healing += Math.Max(damageReport.attackerBody.level * MinLifeStealPerLevel, damageReport.damageDealt * LifeSteal * procrate);
 					}
 				}
 				if (healing > 0f)
