@@ -21,6 +21,7 @@ namespace FlatItemBuff.ItemChanges
 		private static float StackRadius = 0f;
 		private static int Cooldown = 10;
 		private static float ProcRate = 0f;
+		private static float TriggerThresh = 4f;
 
 		internal static void EnableChanges()
 		{
@@ -38,11 +39,26 @@ namespace FlatItemBuff.ItemChanges
 			StackRadius = MainPlugin.LigmaLenses_StackRadius.Value;
 			Cooldown = MainPlugin.LigmaLenses_Cooldown.Value;
 			ProcRate = MainPlugin.LigmaLenses_ProcRate.Value;
+			TriggerThresh = MainPlugin.LigmaLenses_TriggerThresh.Value;
 		}
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickup = "'Critical Strikes' also release void seekers to nearby enemies. Recharges over time. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.";
+			string pickup = " also releases seekers that 'Critically Strike'. Recharges over time. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.";
+			if (TriggerThresh > 0)
+            {
+				pickup = "High damage hits" + pickup;
+
+			}
+			else
+            {
+				pickup = "Hits" + pickup;
+			}
+			string Imagine = "Hits";
+			if (TriggerThresh > 0)
+            {
+				Imagine = string.Format("Hits that deal <style=cIsDamage>more than {0}% damage</style>",TriggerThresh * 100f);
+            }
 			string stackA = "";
 			if (StackRadius != 0)
             {
@@ -53,7 +69,7 @@ namespace FlatItemBuff.ItemChanges
 			{
 				stackB = string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 100f);
 			}
-			string desc = string.Format("Your next hit will be a <style=cIsDamage>Critical Strike</style> that releases <style=cIsDamage>void seekers</style> in a <style=cIsDamage>{0}m</style>{1} radius, dealing <style=cIsDamage>{2}%</style>{3} TOTAL damage. Recharges every <style=cIsUtility>{4}</style> seconds. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.", BaseRadius, stackA, BaseDamage * 100f, stackB, Cooldown);
+			string desc = string.Format("{0} also releases <style=cIsDamage>seekers</style> in a <style=cIsDamage>{1}m</style>{2} radius, dealing <style=cIsDamage>{3}%</style>{4} TOTAL damage that <style=cIsDamage>critically strikes</style>. Recharges every <style=cIsUtility>{5}</style> seconds. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.", Imagine, BaseRadius, stackA, BaseDamage * 100f, stackB, Cooldown);
 			LanguageAPI.Add("ITEM_CRITGLASSESVOID_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_CRITGLASSESVOID_DESC", desc);
 		}
@@ -67,8 +83,7 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
 			RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
-			On.RoR2.HealthComponent.TakeDamage += HealthComponent_TakeDamage;
-			GlobalEventManager.onServerDamageDealt += Global_DamageDealt;
+			On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
 		}
 		private static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
@@ -84,31 +99,33 @@ namespace FlatItemBuff.ItemChanges
 				}
 			}
 		}
-		private static void HealthComponent_TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
+		private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
         {
-			if (!NetworkServer.active)
+			if (NetworkServer.active)
 			{
-				return;
-			}
-			if (!damageInfo.crit)
-			{
-				if (damageInfo.attacker && damageInfo.procCoefficient > 0f)
+				if (!damageInfo.rejected && damageInfo.procCoefficient > 0)
 				{
-					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-					if (attackerBody)
+					if (damageInfo.attacker)
 					{
-						CharacterMaster attackerMaster = attackerBody.master;
-						if (attackerMaster)
+						CharacterBody victimBody = victim.GetComponent<CharacterBody>();
+						CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+						if (victimBody && attackerBody && attackerBody.inventory)
 						{
-							Inventory inventory = attackerMaster.inventory;
-							if (inventory)
+							if (damageInfo.damage / attackerBody.damage >= TriggerThresh)
 							{
-								int itemCount = inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
-								if (itemCount > 0)
+								if (attackerBody.HasBuff(SeerReady))
 								{
-									if (attackerBody.HasBuff(SeerReady))
+									int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
+									if (itemCount > 0)
 									{
-										damageInfo.crit = true;
+										int i = 0;
+										while (i < Cooldown)
+										{
+											attackerBody.AddTimedBuff(SeerCooldown, i * 1f);
+											i++;
+										}
+										attackerBody.RemoveBuff(SeerReady);
+										Wreck(damageInfo, attackerBody, victimBody, itemCount);
 									}
 								}
 							}
@@ -116,53 +133,16 @@ namespace FlatItemBuff.ItemChanges
 					}
 				}
 			}
-			orig(self, damageInfo);
-        }
-		private static void Global_DamageDealt(DamageReport damageReport)
-		{
-			if (!NetworkServer.active)
-			{
-				return;
-			}
-			DamageInfo damageInfo = damageReport.damageInfo;
-			if (damageInfo.crit && damageInfo.procCoefficient > 0f)
-			{
-				CharacterBody victimBody = damageReport.victimBody;
-				if (damageReport.victim && victimBody)
-				{
-					CharacterMaster attackerMaster = damageReport.attackerMaster;
-					CharacterBody attackerBody = damageReport.attackerBody;
-					if (attackerBody && attackerMaster)
-					{
-						Inventory inventory = damageReport.attackerBody.inventory;
-						if (inventory)
-						{
-							int itemCount = inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
-							if (itemCount > 0)
-							{
-								if(attackerBody.HasBuff(SeerReady))
-                                {
-									int i = 0;
-									while (i < Cooldown)
-									{
-										attackerBody.AddTimedBuff(SeerCooldown, i * 1f);
-										i++;
-									}
-									attackerBody.RemoveBuff(SeerReady);
-									Wreck(damageInfo, attackerBody, victimBody, itemCount);
-								}
-							}
-						}
-					}
-				}
-			}
+			orig(self, damageInfo, victim);
 		}
 		private static void Wreck(DamageInfo damageInfo, CharacterBody attackerBody, CharacterBody victimBody, int itemCount)
         {
 			TeamIndex teamIndex = attackerBody.master.teamIndex;
-			float totalDamage = damageInfo.damage;
-			totalDamage *= BaseDamage + (StackDamage * (itemCount - 1));
+			float damageCo = BaseDamage + (StackDamage * (itemCount - 1));
+			float totalDamage = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, damageCo);
 			float searchDist = BaseRadius + (StackRadius * (itemCount - 1));
+			ProcChainMask procChain = damageInfo.procChainMask;
+			procChain.AddProc(ProcType.Rings);
 
 			BullseyeSearch search = new BullseyeSearch();
 			search.viewer = attackerBody;
@@ -191,7 +171,7 @@ namespace FlatItemBuff.ItemChanges
 						voidLightningOrb.totalStrikes = 1;
 						voidLightningOrb.teamIndex = teamIndex;
 						voidLightningOrb.attacker = damageInfo.attacker;
-						voidLightningOrb.procChainMask = damageInfo.procChainMask;
+						voidLightningOrb.procChainMask = procChain;
 						voidLightningOrb.procCoefficient = ProcRate;
 						voidLightningOrb.damageColorIndex = DamageColorIndex.Void;
 						voidLightningOrb.secondsPerStrike = 0.1f;
@@ -212,7 +192,7 @@ namespace FlatItemBuff.ItemChanges
 			voidLightningOrbSelf.totalStrikes = 1;
 			voidLightningOrbSelf.teamIndex = teamIndex;
 			voidLightningOrbSelf.attacker = damageInfo.attacker;
-			voidLightningOrbSelf.procChainMask = damageInfo.procChainMask;
+			voidLightningOrbSelf.procChainMask = procChain;
 			voidLightningOrbSelf.procCoefficient = ProcRate;
 			voidLightningOrbSelf.damageColorIndex = DamageColorIndex.Void;
 			voidLightningOrbSelf.secondsPerStrike = 0.1f;

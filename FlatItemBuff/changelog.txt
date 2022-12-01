@@ -1,3 +1,12 @@
+**1.14.1**
+
+```
+- Lost Seer's Lenses
+- Removed the automatic crit effect.
+- Now triggers on a damage threshold like Runald's and Kjaro's.
+- Added "Trigger Threshold" configuration, controls the amount of damage needed to trigger the effect.
+```
+
 **1.14.0**
 
 ```

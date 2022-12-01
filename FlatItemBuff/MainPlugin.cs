@@ -25,7 +25,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.14.0";
+		public const string MODVERSION = "1.14.1";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -85,14 +85,6 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> LeptonDaisy_HealTime;
 		public static ConfigEntry<float> LeptonDaisy_CapHeal;
 
-		public static ConfigEntry<bool> LigmaLenses_Enable;
-		public static ConfigEntry<float> LigmaLenses_BaseDamage;
-		public static ConfigEntry<float> LigmaLenses_StackDamage;
-		public static ConfigEntry<float> LigmaLenses_BaseRadius;
-		public static ConfigEntry<float> LigmaLenses_StackRadius;
-		public static ConfigEntry<int> LigmaLenses_Cooldown;
-		public static ConfigEntry<float> LigmaLenses_ProcRate;
-
 		public static ConfigEntry<bool> StealthKit_Enable;
 		public static ConfigEntry<float> StealthKit_BaseRecharge;
 		public static ConfigEntry<float> StealthKit_StackRecharge;
@@ -136,6 +128,15 @@ namespace FlatItemBuff
 		public static ConfigEntry<int> BensRaincoat_StackBlock;
 		public static ConfigEntry<float> BensRaincoat_Cooldown;
 		public static ConfigEntry<bool> BensRaincoat_FixCooldown;
+
+		public static ConfigEntry<bool> LigmaLenses_Enable;
+		public static ConfigEntry<float> LigmaLenses_BaseDamage;
+		public static ConfigEntry<float> LigmaLenses_StackDamage;
+		public static ConfigEntry<float> LigmaLenses_BaseRadius;
+		public static ConfigEntry<float> LigmaLenses_StackRadius;
+		public static ConfigEntry<int> LigmaLenses_Cooldown;
+		public static ConfigEntry<float> LigmaLenses_ProcRate;
+		public static ConfigEntry<float> LigmaLenses_TriggerThresh;
 
 		public static ConfigEntry<bool> VoidsentFlame_Enable;
 		public static ConfigEntry<float> VoidsentFlame_BaseRadius;
@@ -351,14 +352,6 @@ namespace FlatItemBuff
 			LeptonDaisy_CapHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Capped Healing"), 2f, new ConfigDescription("Healing limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
 
-			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));
-			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.15f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
-			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.15f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
-			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 20f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
-			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
-			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
-			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0f, new ConfigDescription("Proc Coefficient for the void seekers.", null, Array.Empty<object>()));
-
 			StealthKit_Enable = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Enable Changes"), true, new ConfigDescription("Enables changes for Old War Stealthkit.", null, Array.Empty<object>()));
 			StealthKit_BaseRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Base Cooldown"), 30.0f, new ConfigDescription("How long it takes for this item to recharge. (Vanilla = 30)", null, Array.Empty<object>()));
 			StealthKit_StackRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Stack Cooldown"), 0.5f, new ConfigDescription("How much faster it recharges for each additional stack. (Vanilla = 0.5)", null, Array.Empty<object>()));
@@ -402,6 +395,15 @@ namespace FlatItemBuff
 			BensRaincoat_BaseBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Base Block"), 2, new ConfigDescription("How many debuff blocks to give at a single stack.", null, Array.Empty<object>()));
 			BensRaincoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 1, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
+
+			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));
+			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.15f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
+			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.15f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 20f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
+			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
+			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0f, new ConfigDescription("Proc Coefficient of the seekers.", null, Array.Empty<object>()));
+			LigmaLenses_TriggerThresh = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Trigger Threshold"), 4f, new ConfigDescription("How much damage is required to proc the effect.", null, Array.Empty<object>()));
 
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));
 			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack. (12 = Vanilla)", null, Array.Empty<object>()));
