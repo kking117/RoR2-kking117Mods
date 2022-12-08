@@ -5,7 +5,7 @@ The goal of this mod is to buff Beetle Guards spawned by the Queen's Gland so th
 **Skill Changes**
 
 The biggest issue with Beetle Guards is their inability to fight an aerial enemy, to counter this its attacks now launch projectiles.
-These extra projectiles also make Beetle Guards deal a lot of extra damage so their damage has been reduced, however the additional projectiles make it higher than before.
+These extra projectiles also make Beetle Guards deal a lot of extra damage so their damage has been reduced to compensate.
 
 <a href="https://imgur.com/wWG1E1P"><img src="https://i.imgur.com/wWG1E1P.png" title="source: imgur.com" /></a>
 
@@ -31,13 +31,23 @@ The mod also adds 2 new skills to the Beetle Guard to make them useful beyond da
 
 A new Utility called "Recall". This skill teleports the user back to their owner, the AI uses this when it's beyond the leash length. This ability is useful for those situations where the Beetle Guard is incapable of navigating back to their owner.
 
-A new Special called "Staunch". This skill gives the user a buff for 10 seconds that forces nearby enemy AI to target it, also during this nearby friendly Beetle Guards gain increased stats. This ability helps keep Beetle Guards useful even after their damage has fallen off.
+A new Special called "Staunch". This skill gives the user a buff for 10 seconds that forces nearby enemy AI to target it. This ability helps keep Beetle Guards useful even after their damage has fallen off.
 
 ## Known Issues
 
 - None for now?
 
 ## Change Log
+
+**1.3.8**
+
+```
+- Fixed "Regen" configuration doing nothing.
+- Changed "Regen" default configuration. (3 -> 4)
+- Changed "Max Summons" default configuration. (3 -> 1)
+- Changed "Respawn Time" default configuration. (20 -> 30)
+- Allowed Swarms to double to the total summons.
+```
 
 **1.3.7**
 

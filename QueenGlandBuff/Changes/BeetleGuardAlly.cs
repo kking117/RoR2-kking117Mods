@@ -74,8 +74,7 @@ namespace QueenGlandBuff.Changes
 
 			charBody.baseAcceleration *= 1.5f;
 			charBody.baseJumpPower *= 1.3f;
-			charBody.baseRegen = 1f;
-			charBody.levelRegen = 0.2f;
+			
 			CharacterDirection charDir = BodyObject.GetComponent<CharacterDirection>();
 			charDir.turnSpeed *= 2f;
 
@@ -84,6 +83,9 @@ namespace QueenGlandBuff.Changes
 
 			charBody.baseDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
 			charBody.levelDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
+
+			charBody.baseRegen = 1f * MainPlugin.Config_BeetleGuardAlly_RegenMult.Value;
+			charBody.levelRegen = 0.2f * MainPlugin.Config_BeetleGuardAlly_RegenMult.Value;
 		}
 		private static void CreateSkills()
         {
@@ -227,11 +229,11 @@ namespace QueenGlandBuff.Changes
                 {
 					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
                     {
-						desc += "Gain";
+						desc += " gain";
 					}
 					else
                     {
-						desc += " gain";
+						desc += "Gain";
 					}
 					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
                 }
@@ -239,11 +241,11 @@ namespace QueenGlandBuff.Changes
 				{
 					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
 					{
-						desc += "Lose";
+						desc += " lose";
 					}
 					else
 					{
-						desc += " lose";
+						desc += "Lose";
 					}
 					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
 				}

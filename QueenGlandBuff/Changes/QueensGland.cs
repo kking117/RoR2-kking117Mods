@@ -17,7 +17,7 @@ namespace QueenGlandBuff.Changes
 		private static int BaseHealth = 10;
 		private static int StackHealth = 10;
 		private static int MaxSummons = 1;
-		private static float RespawnTime = 20f;
+		private static float RespawnTime = 30f;
 		internal static void Begin()
         {
 			SetupConfigValues();
@@ -40,7 +40,6 @@ namespace QueenGlandBuff.Changes
 			MaxSummons = MainPlugin.Config_QueensGland_MaxSummons.Value;
 			RespawnTime = MainPlugin.Config_QueensGland_RespawnTime.Value;
 		}
-		
 		private static void UpdateItemDescription()
 		{
 			if (MainPlugin.Config_Debug.Value)
@@ -150,7 +149,12 @@ namespace QueenGlandBuff.Changes
 			{
 				return result;
 			}
-			return Math.Min(MaxSummons, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland));
+			int baseMult = 1;
+			if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef))
+            {
+				baseMult = 2;
+            }
+			return Math.Min(MaxSummons, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * baseMult;
 		}
 		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
 		{
@@ -218,15 +222,15 @@ namespace QueenGlandBuff.Changes
 					CharacterMaster owner = self.body.master;
 					if (owner)
 					{
-						int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MaxSummons);
-						int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
-						int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
-						if (deployableCount < maxdeployable)
+						self.guardResummonCooldown -= Time.fixedDeltaTime;
+						if (self.guardResummonCooldown <= 0f)
 						{
-							self.guardResummonCooldown -= Time.fixedDeltaTime;
-							if (self.guardResummonCooldown <= 0f)
+							int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MaxSummons);
+							int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
+							int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
+							self.guardResummonCooldown = 1f;
+							if (deployableCount < maxdeployable)
 							{
-								self.guardResummonCooldown = 2f;
 								DirectorSpawnRequest directorSpawnRequest = new DirectorSpawnRequest((SpawnCard)Resources.Load("SpawnCards/CharacterSpawnCards/cscBeetleGuardAlly"), new DirectorPlacementRule
 								{
 									placementMode = DirectorPlacementRule.PlacementMode.Approximate,

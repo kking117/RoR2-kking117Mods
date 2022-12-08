@@ -29,7 +29,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.3.7";
+		public const string MODVERSION = "1.3.8";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -104,8 +104,8 @@ namespace QueenGlandBuff
 			Config_Debug = Config.Bind<bool>(new ConfigDefinition("Misc", "Debug"), false, new ConfigDescription("Enables debug messages.", null, Array.Empty<object>()));
 
 			Config_QueensGland_Enable = Config.Bind<bool>(new ConfigDefinition("Queens Gland", "Enable Changes"), true, new ConfigDescription("Enable changes to the Queens Gland item. (Suggest setting to False if using RiskyMod's changes.)", null, Array.Empty<object>()));
-			Config_QueensGland_MaxSummons = Config.Bind<int>(new ConfigDefinition("Queens Gland", "Max Summons"), 3, new ConfigDescription("The Max amount of Beetle Guards each player can have.", null, Array.Empty<object>()));
-			Config_QueensGland_RespawnTime = Config.Bind<float>(new ConfigDefinition("Queens Gland", "Respawn Time"), 20, new ConfigDescription("How long it takes for Beetle Guards to respawn.", null, Array.Empty<object>()));
+			Config_QueensGland_MaxSummons = Config.Bind<int>(new ConfigDefinition("Queens Gland", "Max Summons"), 1, new ConfigDescription("The Max amount of Beetle Guards each player can have.", null, Array.Empty<object>()));
+			Config_QueensGland_RespawnTime = Config.Bind<float>(new ConfigDefinition("Queens Gland", "Respawn Time"), 30, new ConfigDescription("How long it takes for Beetle Guards to respawn.", null, Array.Empty<object>()));
 			Config_QueensGland_BaseHealth = Config.Bind<int>(new ConfigDefinition("Queens Gland", "BaseHealth"), 10, new ConfigDescription("How many BoostHP items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
 			Config_QueensGland_StackHealth = Config.Bind<int>(new ConfigDefinition("Queens Gland", "StackHealth"), 10, new ConfigDescription("How many extra BoostHP to give when stacking above Max Summons.", null, Array.Empty<object>()));
 			Config_QueensGland_BaseDamage = Config.Bind<int>(new ConfigDefinition("Queens Gland", "BaseDamage"), 20, new ConfigDescription("How many DamageBonus items the Beetle Guards spawn with. (1 = +10%)", null, Array.Empty<object>()));
@@ -129,7 +129,7 @@ namespace QueenGlandBuff
 
 			Config_BeetleGuardAlly_HealthMult = Config.Bind<float>(new ConfigDefinition("Beetle Guard Ally Base Stats", "Health"), 1f, new ConfigDescription("Health multiplier.", null, Array.Empty<object>()));
 			Config_BeetleGuardAlly_DamageMult = Config.Bind<float>(new ConfigDefinition("Beetle Guard Ally Base Stats", "Damage"), 1f, new ConfigDescription("Damage multiplier.", null, Array.Empty<object>()));
-			Config_BeetleGuardAlly_RegenMult = Config.Bind<float>(new ConfigDefinition("Beetle Guard Ally Base Stats", "Regen"), 3f, new ConfigDescription("Regen multiplier.", null, Array.Empty<object>()));
+			Config_BeetleGuardAlly_RegenMult = Config.Bind<float>(new ConfigDefinition("Beetle Guard Ally Base Stats", "Regen"), 4f, new ConfigDescription("Regen multiplier.", null, Array.Empty<object>()));
 		}
 	}
 }
