@@ -1,7 +1,6 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Configuration;
-using R2API.Utils;
 using RoR2;
 using UnityEngine;
 using BepInEx.Bootstrap;
@@ -12,21 +11,20 @@ using System.Security.Permissions;
 
 namespace FlatItemBuff
 {
-	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.content_management", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.damagetype", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.dot", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.RiskyLives.RiskyMod", BepInDependency.DependencyFlags.SoftDependency)]
-	[R2APISubmoduleDependency(new string[]
-	{
-		"LanguageAPI",
-		"RecalculateStatsAPI",
-		"DotAPI",
-	})]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.14.2";
+		public const string MODVERSION = "1.14.3";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -191,12 +189,11 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> NucleusShared_Mechanical;
 		public static ConfigEntry<bool> NucleusShared_ExtraDisplays;
 
-		internal static bool RiskyMod = false;
+		internal static bool RiskyModLoaded = false;
 		private void Awake()
 		{
-
 			ModLogger = this.Logger;
-			RiskyMod = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
+			RiskyModLoaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
 			ReadConfig();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
 			//Common/White
@@ -278,7 +275,7 @@ namespace FlatItemBuff
 			//Void
 			if (LigmaLenses_Enable.Value)
 			{
-				ItemChanges.LigmaLenses.EnableChanges();
+				new ItemChanges.LigmaLenses();
 			}
 			if (VoidsentFlame_Enable.Value)
 			{
@@ -293,7 +290,7 @@ namespace FlatItemBuff
 			{
 				ItemChanges.DefenseNucleus_Shared.ExtraChanges();
 			}
-        }
+		}
 		//Shamelessly taken from FW_Artifacts
 		internal static Sprite LoadAsSprite(byte[] resourceBytes, int size)
 		{
@@ -414,7 +411,7 @@ namespace FlatItemBuff
 			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 25f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
 			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
 			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
-			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0f, new ConfigDescription("Proc Coefficient of the seekers.", null, Array.Empty<object>()));
+			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0.1f, new ConfigDescription("Proc Coefficient of the seekers.", null, Array.Empty<object>()));
 			LigmaLenses_TriggerThresh = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Trigger Threshold"), 4f, new ConfigDescription("How much damage is required to proc the effect.", null, Array.Empty<object>()));
 
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));

@@ -6,7 +6,7 @@ using RoR2.Orbs;
 
 namespace FlatItemBuff.Components
 {
-	public class SeerSeeker: Orb
+	public class SeerSeeker : Orb
 	{
 		private GameObject effectPrefab;
 		private Vector3 endPosSafe;
@@ -23,12 +23,13 @@ namespace FlatItemBuff.Components
 		public DamageType damageType;
 		public float SearchDistance = 25f;
 		public List<HealthComponent> hitList;
+		public bool isFirst = false;
 
 		public override void Begin()
 		{
 			base.duration = strikeTime;
 			if (hitList == null)
-            {
+			{
 				hitList = new List<HealthComponent>();
 				HealthComponent hpcomp = target.healthComponent;
 				if (hpcomp)
@@ -38,6 +39,10 @@ namespace FlatItemBuff.Components
 			}
 			endPosSafe = target.transform.position;
 			effectPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/OrbEffects/VoidLightningOrbEffect");
+			if (isFirst)
+			{ 
+				Redirect();
+			}
 		}
 		public override void OnArrival()
 		{
@@ -81,7 +86,7 @@ namespace FlatItemBuff.Components
 					EffectManager.SpawnEffect(effectPrefab, effectData, true);
 				}
 			}
-			if (SearchDistance > 0f)
+			if (SearchDistance > 0f && !isFirst)
 			{
 				Redirect();
 			}
@@ -95,6 +100,8 @@ namespace FlatItemBuff.Components
 			search.teamMaskFilter = TeamMask.GetEnemyTeams(teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
 			search.maxDistanceFilter = SearchDistance;
+			search.minThetaDot = -3.2f;
+			search.maxThetaDot = 3.2f;
 			search.RefreshCandidates();
 			foreach (HurtBox target in search.GetResults())
 			{

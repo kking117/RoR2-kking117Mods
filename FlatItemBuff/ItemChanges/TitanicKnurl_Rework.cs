@@ -1,11 +1,10 @@
-﻿using System;
-using RoR2;
+﻿using RoR2;
 using R2API;
-using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.Networking;
 using RoR2.Projectile;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -27,16 +26,26 @@ namespace FlatItemBuff.ItemChanges
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = string.Format("Every few seconds a Stone Titan attacks a nearby enemy.");
+			string stackCool = "";
+			if (MainPlugin.KnurlRework_StackSpeed.Value != 0f)
+            {
+				stackCool = string.Format(" <style=cStack>(+{0}% cooldown rate per stack)</style>", MainPlugin.KnurlRework_StackSpeed.Value * 100f);
+			}
 			string targetText;
 			if (MainPlugin.KnurlRework_TargetType.Value == 0)
             {
-				targetText = string.Format("a weak enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
+				targetText = string.Format(" a weak enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
 			}
 			else
             {
-				targetText = string.Format("a nearby enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
+				targetText = string.Format(" a nearby enemy within <style=cIsUtility>{0}m</style>", MainPlugin.KnurlRework_AttackRange.Value);
 			}
-			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds <style=cStack>(+{1}% cooldown rate per stack)</style> {2} is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{3}%</style> <style=cStack>(+{4}% per stack)</style> damage.", MainPlugin.KnurlRework_BaseSpeed.Value, MainPlugin.KnurlRework_StackSpeed.Value * 100f, targetText, MainPlugin.KnurlRework_BaseDamage.Value * 100f, MainPlugin.KnurlRework_StackDamage.Value * 100f);
+			string stackDamage = "";
+			if (MainPlugin.KnurlRework_StackDamage.Value != 0f)
+			{
+				stackDamage = string.Format(" <style=cStack>(+{0}% per stack)</style>", MainPlugin.KnurlRework_StackDamage.Value * 100f);
+			}
+			string desc = string.Format("Every <style=cIsUtility>{0}</style> seconds{1}{2} is attacked by a <style=cIsDamage>Stone Titan's fist</style> for <style=cIsDamage>{3}%</style>{4} base damage.", MainPlugin.KnurlRework_BaseSpeed.Value, stackCool, targetText, MainPlugin.KnurlRework_BaseDamage.Value * 100f, stackDamage);
 			LanguageAPI.Add("ITEM_KNURL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_KNURL_DESC", desc);
 		}
@@ -48,7 +57,7 @@ namespace FlatItemBuff.ItemChanges
 		}
 		private static void CreateProjectiles()
         {
-			StoneFistProjectile = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/titanprefistprojectile").InstantiateClone(MainPlugin.MODTOKEN + "StonePreFist", true);
+			StoneFistProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanPreFistProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "StonePreFist");
 			ProjectileDamage projDmg = StoneFistProjectile.GetComponent<ProjectileDamage>();
 			ProjectileController projController = StoneFistProjectile.GetComponent<ProjectileController>();
 			projController.procCoefficient = MainPlugin.KnurlRework_ProcRate.Value;

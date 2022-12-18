@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using RoR2;
 using R2API;
@@ -8,6 +9,7 @@ using RoR2.Orbs;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
+using RiskyMod.Items.Common;
 
 namespace FlatItemBuff.ItemChanges
 {
@@ -23,7 +25,7 @@ namespace FlatItemBuff.ItemChanges
 		private static float ProcRate = 0f;
 		private static float TriggerThresh = 4f;
 
-		internal static void EnableChanges()
+		public LigmaLenses()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Lost Seer's Lenses");
 			SetupConfigValues();
@@ -34,7 +36,7 @@ namespace FlatItemBuff.ItemChanges
 			UpdateText();
 			Hooks();
 		}
-		private static void SetupConfigValues()
+		private void SetupConfigValues()
         {
 			BaseDamage = MainPlugin.LigmaLenses_BaseDamage.Value;
 			StackDamage = MainPlugin.LigmaLenses_StackDamage.Value;
@@ -44,7 +46,7 @@ namespace FlatItemBuff.ItemChanges
 			ProcRate = MainPlugin.LigmaLenses_ProcRate.Value;
 			TriggerThresh = MainPlugin.LigmaLenses_TriggerThresh.Value;
 		}
-		private static void UpdateText()
+		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string Imagine = "Hits";
@@ -69,7 +71,7 @@ namespace FlatItemBuff.ItemChanges
 			if (Cooldown > 0)
             {
 				Recharge = string.Format(" Recharges every <style=cIsUtility>{0}</style> seconds.", Cooldown);
-				pickupRecharge = "Recharges over time.";
+				pickupRecharge = " Recharges over time.";
 
 			}
 			string pickup = string.Format("{0} also release a chaining seeker that 'Critically Strikes'.{1} <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.", pickupImagine, pickupRecharge);
@@ -77,12 +79,12 @@ namespace FlatItemBuff.ItemChanges
 			LanguageAPI.Add("ITEM_CRITGLASSESVOID_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_CRITGLASSESVOID_DESC", desc);
 		}
-		private static void CreateBuffs()
+		private void CreateBuffs()
 		{
 			SeerReady = Modules.Buffs.AddNewBuff("Seer Ready", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/CritOnUse/bdFullCrit.asset").WaitForCompletion().iconSprite, new Color(0.705f, 0.313f, 0.784f, 1f), false, false, false);
 			SeerCooldown = Modules.Buffs.AddNewBuff("Seer Cooldown", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/CritOnUse/bdFullCrit.asset").WaitForCompletion().iconSprite, new Color(0.313f, 0.313f, 0.313f, 1f), true, false, true);
 		}
-		private static void Hooks()
+		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
@@ -92,7 +94,7 @@ namespace FlatItemBuff.ItemChanges
 			}
 			On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
 		}
-		private static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
 			if (sender.inventory)
 			{
@@ -106,7 +108,7 @@ namespace FlatItemBuff.ItemChanges
 				}
 			}
 		}
-		private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
+		private void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
         {
 			if (NetworkServer.active)
 			{
@@ -120,7 +122,7 @@ namespace FlatItemBuff.ItemChanges
 							CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
 							if (victimBody && attackerBody && attackerBody.inventory)
 							{
-								if (HitDamageThresh(damageInfo, attackerBody))
+								if (HitDamageThresh(damageInfo, victim, attackerBody))
 								{
 									if (Cooldown > 0)
 									{
@@ -150,7 +152,7 @@ namespace FlatItemBuff.ItemChanges
 			}
 			orig(self, damageInfo, victim);
 		}
-		private static void ApplyCooldown(CharacterBody characterBody)
+		private void ApplyCooldown(CharacterBody characterBody)
         {
 			int i = 0;
 			while (i < Cooldown)
@@ -160,23 +162,31 @@ namespace FlatItemBuff.ItemChanges
 			}
 			characterBody.RemoveBuff(SeerReady);
 		}
-		private static bool HitDamageThresh(DamageInfo damageInfo, CharacterBody attackerBody)
+		private bool HitDamageThresh(DamageInfo damageInfo, GameObject victim, CharacterBody attackerBody)
         {
 			float threshHold = TriggerThresh;
-			if (MainPlugin.RiskyMod && attackerBody.inventory)
+			if (MainPlugin.RiskyModLoaded && attackerBody.inventory)
             {
-				if (RiskyMod.Items.Common.Crowbar.enabled)
+				if (RiskyModCompat.IsEnabled())
 				{
-					if (DamageAPI.HasModdedDamageType(damageInfo, RiskyMod.Items.Common.Crowbar.CrowbarDamage))
-					{
-						int bobars = attackerBody.inventory.GetItemCount(RoR2Content.Items.Crowbar);
-						threshHold *= RiskyMod.Items.Common.Crowbar.GetCrowbarMult(bobars);
+					CharacterBody victimBody = victim.GetComponent<CharacterBody>();
+					if (victimBody)
+                    {
+						HealthComponent hpComp = victimBody.healthComponent;
+						if (hpComp)
+                        {
+							if (DamageAPI.HasModdedDamageType(damageInfo, Crowbar.CrowbarDamage))
+                            {
+								int bobars = attackerBody.inventory.GetItemCount(RoR2Content.Items.Crowbar);
+								threshHold *= Crowbar.GetCrowbarMult(bobars);
+							}
+						}
 					}
 				}
 			}
 			return damageInfo.damage / attackerBody.damage >= threshHold;
         }
-		private static void SeerAOE(DamageInfo damageInfo, CharacterBody attackerBody, CharacterBody victimBody, int itemCount)
+		private void SeerAOE(DamageInfo damageInfo, CharacterBody attackerBody, CharacterBody victimBody, int itemCount)
 		{
 			TeamIndex teamIndex = attackerBody.master.teamIndex;
 			float damageCo = BaseDamage + (StackDamage * (itemCount - 1));
@@ -197,6 +207,7 @@ namespace FlatItemBuff.ItemChanges
 			Seerker.damageType = damageInfo.damageType;
 			Seerker.SearchDistance = searchDist;
 			Seerker.strikeTime = 0.2f;
+			Seerker.isFirst = true;
 			HurtBox mainHurtBox2 = victimBody.mainHurtBox;
 			if (mainHurtBox2)
 			{
@@ -204,7 +215,7 @@ namespace FlatItemBuff.ItemChanges
 				OrbManager.instance.AddOrb(Seerker);
 			}
 		}
-		private static void IL_TakeDamage(ILContext il)
+		private void IL_TakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
@@ -214,6 +225,15 @@ namespace FlatItemBuff.ItemChanges
 				x => x.MatchLdcR4(0.5f)
 			);
 			ilcursor.Next.Operand = 0f;
+		}
+
+		public static class RiskyModCompat
+        {
+			[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+			public static bool IsEnabled()
+			{
+				return RiskyMod.Items.Common.Crowbar.enabled;
+			}
 		}
 	}
 }
