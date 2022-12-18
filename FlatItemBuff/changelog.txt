@@ -1,3 +1,14 @@
+**1.14.3**
+
+```
+- Updated R2API dependencies.
+- Likely broke 10 other things.
+
+- Lost Seer's Lenses:
+- Fixed breaking everything if RiskyMod wasn't installed.
+- Changed "Proc Coefficient" default configuration. (0 -> 0.1)
+```
+
 **1.14.2**
 
 ```

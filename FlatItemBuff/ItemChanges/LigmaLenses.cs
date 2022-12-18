@@ -175,10 +175,10 @@ namespace FlatItemBuff.ItemChanges
 						HealthComponent hpComp = victimBody.healthComponent;
 						if (hpComp)
                         {
-							if (DamageAPI.HasModdedDamageType(damageInfo, Crowbar.CrowbarDamage))
+							if (DamageAPI.HasModdedDamageType(damageInfo, RiskyModCompat.CustomDamageType()))
                             {
 								int bobars = attackerBody.inventory.GetItemCount(RoR2Content.Items.Crowbar);
-								threshHold *= Crowbar.GetCrowbarMult(bobars);
+								threshHold *= RiskyModCompat.GetDamageBoost(bobars);
 							}
 						}
 					}
@@ -232,7 +232,17 @@ namespace FlatItemBuff.ItemChanges
 			[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 			public static bool IsEnabled()
 			{
-				return RiskyMod.Items.Common.Crowbar.enabled;
+				return Crowbar.enabled;
+			}
+
+			public static DamageAPI.ModdedDamageType CustomDamageType()
+			{
+				return Crowbar.CrowbarDamage;
+			}
+
+			public static float GetDamageBoost(int itemCount)
+			{
+				return Crowbar.GetCrowbarMult(itemCount);
 			}
 		}
 	}
