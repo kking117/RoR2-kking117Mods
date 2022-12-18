@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RoR2;
 using R2API;
 using UnityEngine.Networking;
@@ -13,12 +14,37 @@ namespace FlatItemBuff.ItemChanges
 	{
 		public static BuffDef HarpoonBuff = DLC1Content.Buffs.KillMoveSpeed;
 		private static Color BuffColor = new Color(0.717f, 0.545f, 0.952f, 1f);
+		private static float BaseDuration = 1.5f;
+		private static float StackDuration = 0.75f;
+		private static float MovementSpeed = 0.2f;
+		private static float CooldownRate = 0.2f;
+		private static bool DoesCool = true;
+		private static bool CoolPrimary = true;
+		private static bool CoolSecondary = true;
+		private static bool CoolUtility = false;
+		private static bool CoolSpecial = false;
 		public static void EnableChanges()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Hunter's Harpoon");
+			SetupConfigValues();
 			UpdateText();
 			CreateBuff();
 			Hooks();
+		}
+		private static void SetupConfigValues()
+		{
+			BaseDuration = MainPlugin.Harpoon_BaseDuration.Value;
+			StackDuration = MainPlugin.Harpoon_StackDuration.Value;
+			MovementSpeed = MainPlugin.Harpoon_MoveSpeed.Value;
+			CooldownRate = MainPlugin.Harpoon_CooldownRate.Value;
+			CoolPrimary = MainPlugin.Harpoon_CoolPrimary.Value;
+			CoolSecondary = MainPlugin.Harpoon_CoolSecondary.Value;
+			CoolUtility = MainPlugin.Harpoon_CoolUtility.Value;
+			CoolSpecial = MainPlugin.Harpoon_CoolSpecial.Value;
+			if (!CoolPrimary && !CoolSecondary && !CoolUtility && !CoolSpecial)
+            {
+				DoesCool = false;
+			}
 		}
 		private static void CreateBuff()
 		{
@@ -27,30 +53,73 @@ namespace FlatItemBuff.ItemChanges
 		private static void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickup = "Killing an enemy gives you a burst of";
-			string desc = "Killing an enemy increases";
-			bool AND = false;
-			if (MainPlugin.Harpoon_MoveSpeed.Value > 0f)
+			string pickupSpeed = "";
+			string descSpeed = "";
+			if (MovementSpeed > 0f)
             {
-				pickup += " movement speed";
-				desc += string.Format(" <style=cIsUtility>movement speed</style> by <style=cIsUtility>{0}%</style>", MainPlugin.Harpoon_MoveSpeed.Value * 500);
-				AND = true;
+				pickupSpeed = " movement speed";
+				descSpeed = string.Format(" <style=cIsUtility>movement speed</style> by <style=cIsUtility>{0}%</style>", MovementSpeed * 500);
 			}
-			if (MainPlugin.Harpoon_BaseDuration.Value > 0f)
-			{
-				string pickup_skill = " primary and secondary skill cooldown rate";
-				string desc_skill = " <style=cIsUtility>primary</style> and <style=cIsUtility>secondary skill cooldown rate</style>";
-				if (AND)
+			string pickupCooldown = "";
+			string descCooldown = "";
+			if (DoesCool)
+            {
+				if (MovementSpeed > 0f)
                 {
-					pickup += " and also";
-					desc += " and also";
+					pickupCooldown += " and";
+					descCooldown += " and";
 				}
-				pickup += pickup_skill;
-				desc += string.Format("{0} by <style=cIsUtility>{1}%</style>", desc_skill, MainPlugin.Harpoon_CooldownRate.Value * 500);
+				
+				if (!CoolPrimary || !CoolSecondary || !CoolUtility || !CoolSpecial)
+                {
+					List<string> skillStrings = new List<string>();
+					List<string> skillStringsPik = new List<string>();
+					if (CoolPrimary)
+					{
+						skillStringsPik.Add(" primary");
+						skillStrings.Add(" <style=cIsUtility>Primary</style>");
+					}
+					if (CoolSecondary)
+					{
+						skillStringsPik.Add(" secondary");
+						skillStrings.Add(" <style=cIsUtility>Secondary</style>");
+					}
+					if (CoolUtility)
+					{
+						skillStringsPik.Add(" utility");
+						skillStrings.Add(" <style=cIsUtility>Utility</style>");
+					}
+					if (CoolSpecial)
+					{
+						skillStringsPik.Add(" special");
+						skillStrings.Add(" <style=cIsUtility>Special</style>");
+					}
+					for(int i = 0; i<skillStrings.Count; i++)
+                    {
+						if (i > 0)
+                        {
+							
+							if (i < skillStrings.Count - 1)
+                            {
+								pickupCooldown += ",";
+								descCooldown += ",";
+							}
+							else
+                            {
+								pickupCooldown += " and";
+								descCooldown += " and";
+							}
+                        }
+						pickupCooldown += skillStringsPik[i];
+						descCooldown += skillStrings[i];
+
+					}
+				}
+				pickupCooldown += " skill cooldown rate";
+				descCooldown += string.Format(" <style=cIsUtility>skill cooldown rate</style> by <style=cIsUtility>{0}%</style>", CooldownRate * 500);
 			}
-			pickup += ".";
-			desc += ".";
-			desc += string.Format(" Fades over <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds.", MainPlugin.Harpoon_BaseDuration.Value, MainPlugin.Harpoon_StackDuration.Value);
+			string pickup = string.Format("Killing an enemy gives a burst of{0}{1}.", pickupSpeed, pickupCooldown);
+			string desc = string.Format("Killing an enemy increases{0}{1}. Fades over <style=cIsUtility>{2}</style> <style=cStack>(+{3} per stack)</style> seconds.", descSpeed, descCooldown, BaseDuration, StackDuration);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_DESC", desc);
 		}
@@ -59,11 +128,11 @@ namespace FlatItemBuff.ItemChanges
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-			if(MainPlugin.Harpoon_MoveSpeed.Value != 0f)
+			if(MovementSpeed != 0f)
             {
 				RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
 			}
-			if(MainPlugin.Harpoon_CooldownRate.Value != 0f)
+			if(CooldownRate != 0f && DoesCool)
             {
 				On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
             }
@@ -77,18 +146,40 @@ namespace FlatItemBuff.ItemChanges
 				SkillLocator skillLocator = self.skillLocator;
 				if(skillLocator)
                 {
-					float cooldown = Time.fixedDeltaTime * (buffCount * MainPlugin.Harpoon_CooldownRate.Value);
-					GenericSkill primary = skillLocator.primary;
-					if (primary)
+					float cooldown = Time.fixedDeltaTime * (buffCount * CooldownRate);
+					if (CoolPrimary)
 					{
-						primary.RunRecharge(cooldown);
+						GenericSkill primary = skillLocator.primary;
+						if (primary)
+						{
+							primary.RunRecharge(cooldown);
+						}
 					}
-					GenericSkill secondary = skillLocator.secondary;
-					if (secondary)
+					if (CoolSecondary)
+					{
+						GenericSkill secondary = skillLocator.secondary;
+						if (secondary)
+						{
+							secondary.RunRecharge(cooldown);
+						}
+					}
+					if (CoolUtility)
                     {
-						secondary.RunRecharge(cooldown);
+						GenericSkill utility = skillLocator.utility;
+						if (utility)
+						{
+							utility.RunRecharge(cooldown);
+						}
 					}
-                }
+					if (CoolSpecial)
+					{
+						GenericSkill special = skillLocator.special;
+						if (special)
+						{
+							special.RunRecharge(cooldown);
+						}
+					}
+				}
 			}
         }
 		private static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
@@ -96,7 +187,7 @@ namespace FlatItemBuff.ItemChanges
 			int buffCount = sender.GetBuffCount(HarpoonBuff.buffIndex);
 			if (buffCount > 0)
 			{
-				args.moveSpeedMultAdd += buffCount * MainPlugin.Harpoon_MoveSpeed.Value;
+				args.moveSpeedMultAdd += buffCount * MovementSpeed;
 			}
 		}
 		private static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
@@ -113,8 +204,8 @@ namespace FlatItemBuff.ItemChanges
 					int itemCount = attacker.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
 					if (itemCount > 0)
 					{
-						float duration = MainPlugin.Harpoon_BaseDuration.Value;
-						duration += (itemCount - 1) * MainPlugin.Harpoon_StackDuration.Value;
+						float duration = BaseDuration;
+						duration += (itemCount - 1) * StackDuration;
 						if (duration > 0f)
 						{
 							attacker.ClearTimedBuffs(HarpoonBuff.buffIndex);

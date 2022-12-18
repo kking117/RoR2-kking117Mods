@@ -4,7 +4,7 @@ using BepInEx.Configuration;
 using R2API.Utils;
 using RoR2;
 using UnityEngine;
-
+using BepInEx.Bootstrap;
 using System.Security;
 using System.Security.Permissions;
 
@@ -13,6 +13,7 @@ using System.Security.Permissions;
 namespace FlatItemBuff
 {
 	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.RiskyLives.RiskyMod", BepInDependency.DependencyFlags.SoftDependency)]
 	[R2APISubmoduleDependency(new string[]
 	{
 		"LanguageAPI",
@@ -25,7 +26,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.14.1";
+		public const string MODVERSION = "1.14.2";
 
 		//ToDo:
 		//Make mentions of "multiple and single stacks" consistent in config descriptions.
@@ -52,6 +53,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> Harpoon_StackDuration;
 		public static ConfigEntry<float> Harpoon_MoveSpeed;
 		public static ConfigEntry<float> Harpoon_CooldownRate;
+		public static ConfigEntry<bool> Harpoon_CoolPrimary;
+		public static ConfigEntry<bool> Harpoon_CoolSecondary;
+		public static ConfigEntry<bool> Harpoon_CoolUtility;
+		public static ConfigEntry<bool> Harpoon_CoolSpecial;
 
 		public static ConfigEntry<bool> Infusion_Enable;
 		public static ConfigEntry<int> Infusion_Stacks;
@@ -157,6 +162,7 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> KnurlRework_BaseSpeed;
 		public static ConfigEntry<float> KnurlRework_StackSpeed;
 		public static ConfigEntry<float> KnurlRework_ProcRate;
+		public static ConfigEntry<bool> KnurlRework_ProcBands;
 		public static ConfigEntry<float> KnurlRework_AttackRange;
 		public static ConfigEntry<int> KnurlRework_TargetType;
 
@@ -182,13 +188,15 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> NucleusRework_ShieldStackDuration;
 
 		public static ConfigEntry<bool> NucleusShared_TweakAI;
-		public static ConfigEntry<float> NucleusShared_BlastRadius;
-		public static ConfigEntry<float> NucleusShared_BlastDamage;
 		public static ConfigEntry<bool> NucleusShared_Mechanical;
 		public static ConfigEntry<bool> NucleusShared_ExtraDisplays;
+
+		internal static bool RiskyMod = false;
 		private void Awake()
 		{
+
 			ModLogger = this.Logger;
+			RiskyMod = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
 			ReadConfig();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
 			//Common/White
@@ -318,7 +326,11 @@ namespace FlatItemBuff
 			Harpoon_BaseDuration = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Base Duration"), 1.5f, new ConfigDescription("Buff duration at a single stack.", null, Array.Empty<object>()));
 			Harpoon_StackDuration = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Stack Duration"), 0.75f, new ConfigDescription("Extra buff duration from additional stacks.", null, Array.Empty<object>()));
 			Harpoon_MoveSpeed = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Move Speed Bonus"), 0.25f, new ConfigDescription("How much movement speed each stack of the buff gives. (Set to 0 to disable)", null, Array.Empty<object>()));
-			Harpoon_CooldownRate = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Cooldown Rate Bonus"), 0.25f, new ConfigDescription("How much primary and secondary cooldown rate each stack of the buff gives. (Set to 0 to disable)", null, Array.Empty<object>()));
+			Harpoon_CooldownRate = Config.Bind<float>(new ConfigDefinition("Hunters Harpoon", "Cooldown Rate Bonus"), 0.25f, new ConfigDescription("How much cooldown rate each stack of the buff gives. (Set to 0 to disable)", null, Array.Empty<object>()));
+			Harpoon_CoolPrimary = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Cooldown Primary"), true, new ConfigDescription("Should Primary skills be affected by cooldown rate?", null, Array.Empty<object>()));
+			Harpoon_CoolSecondary = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Cooldown Secondary"), true, new ConfigDescription("Should Secondary skills be affected by cooldown rate?", null, Array.Empty<object>()));
+			Harpoon_CoolUtility = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Cooldown Utility"), false, new ConfigDescription("Should Utility skills be affected by cooldown rate?", null, Array.Empty<object>()));
+			Harpoon_CoolSpecial = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Cooldown Special"), false, new ConfigDescription("Should Special skills be affected by cooldown rate?", null, Array.Empty<object>()));
 
 			Infusion_Enable = Config.Bind<bool>(new ConfigDefinition("Infusion", "Enable Changes"), true, new ConfigDescription("Enables changes to Infusion.", null, Array.Empty<object>()));
 			Infusion_Stacks = Config.Bind<int>(new ConfigDefinition("Infusion", "Max Stacks"), 100, new ConfigDescription("How many stacks an infusion has (100 is the vanilla value).", null, Array.Empty<object>()));
@@ -347,7 +359,7 @@ namespace FlatItemBuff
 			LeechingSeedRework_DoTStackDuration = Config.Bind<float>(new ConfigDefinition("Leeching Seed Rework", "Leech Stack Duration"), 0f, new ConfigDescription("How much longer the Leeching debuff lasts per stack.", null, Array.Empty<object>()));
 
 			LeptonDaisy_Enable = Config.Bind<bool>(new ConfigDefinition("Lepton Daisy", "Enable Changes"), true, new ConfigDescription("Enables changes for Lepton Daisy.", null, Array.Empty<object>()));
-			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.1f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
+			LeptonDaisy_BaseHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Base Healing"), 0.15f, new ConfigDescription("How much healing to give at a single stack.", null, Array.Empty<object>()));
 			LeptonDaisy_StackHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Stack Healing"), 0.1f, new ConfigDescription("How much extra healing to give for each additional stack.", null, Array.Empty<object>()));
 			LeptonDaisy_CapHeal = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Capped Healing"), 2f, new ConfigDescription("Healing limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			LeptonDaisy_HealTime = Config.Bind<float>(new ConfigDefinition("Lepton Daisy", "Nova Interval"), 10f, new ConfigDescription("The duration between each healing nova.", null, Array.Empty<object>()));
@@ -397,9 +409,9 @@ namespace FlatItemBuff
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
 
 			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));
-			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.15f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
-			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.15f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
-			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 20f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
+			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.1f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
+			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.1f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 25f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
 			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
 			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
 			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0f, new ConfigDescription("Proc Coefficient of the seekers.", null, Array.Empty<object>()));
@@ -424,6 +436,7 @@ namespace FlatItemBuff
 			KnurlRework_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Cooldown"), 6f, new ConfigDescription("Cooldown between each stone fist.", null, Array.Empty<object>()));
 			KnurlRework_StackSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Cooldown"), 0.15f, new ConfigDescription("Reduces the cooldown between each stone fist per stack. (Works as attack speed does.)", null, Array.Empty<object>()));
 			KnurlRework_ProcRate = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Proc Coefficient"), 1.0f, new ConfigDescription("The proc coefficient of the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_ProcBands = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Proc Bands"), false, new ConfigDescription("Should the stone fist be allowed to proc bands?", null, Array.Empty<object>()));
 			KnurlRework_AttackRange = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Attack Distance"), 50.0f, new ConfigDescription("The maximum targeting radius in metres around you for the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_TargetType = Config.Bind<int>(new ConfigDefinition("Titanic Knurl Rework", "Target Mode"), 0, new ConfigDescription("Decides how the target is selected. (0 = Weak, 1 = Closest)", null, Array.Empty<object>()));
 
@@ -451,8 +464,6 @@ namespace FlatItemBuff
 			NucleusShared_TweakAI = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Better AI"), true, new ConfigDescription("Gives 360 Degree vision and prevents retaliation against team members.", null, Array.Empty<object>()));
 			NucleusShared_Mechanical = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Is Mechanical"), true, new ConfigDescription("Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.", null, Array.Empty<object>()));
 			NucleusShared_ExtraDisplays = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Enable Modded Displays"), true, new ConfigDescription("Adds a few item displays to the Alpha Construct. (For Spare Drone Parts)", null, Array.Empty<object>()));
-			NucleusShared_BlastRadius = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Radius"), 12f, new ConfigDescription("Blast radius when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
-			NucleusShared_BlastDamage = Config.Bind<float>(new ConfigDefinition("Alpha Construct Ally", "Death Explosion Damage"), 4.5f, new ConfigDescription("Blast damage when they die. (Set to 0 to disable this effect entirely)", null, Array.Empty<object>()));
 		}
 	}
 }

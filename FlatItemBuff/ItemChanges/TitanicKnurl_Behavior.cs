@@ -60,6 +60,11 @@ namespace FlatItemBuff.ItemChanges
 			{
 				"World"
 			}));
+			ProcChainMask procChainMask = new ProcChainMask();
+			if (!MainPlugin.KnurlRework_ProcBands.Value)
+			{
+				procChainMask.AddProc(ProcType.Rings);
+			}
 			FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
 			{
 				projectilePrefab = TitanicKnurl_Rework.StoneFistProjectile,
@@ -69,6 +74,7 @@ namespace FlatItemBuff.ItemChanges
 				owner = body.gameObject,
 				damage = damage,
 				crit = body.RollCrit(),
+				procChainMask = procChainMask,
 				force = 0f,
 				damageColorIndex = DamageColorIndex.Item,
 				fuseOverride = body.teamComponent.teamIndex == TeamIndex.Player ? 0.5f : -1f

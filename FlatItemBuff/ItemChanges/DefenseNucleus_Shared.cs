@@ -23,10 +23,6 @@ namespace FlatItemBuff.ItemChanges
             {
                 UpdateAI();
             }
-            if (MainPlugin.NucleusShared_BlastRadius.Value > 0f && MainPlugin.NucleusShared_BlastDamage.Value > 0f)
-            {
-                On.RoR2.CharacterMaster.OnBodyDeath += CharacterMaster_OnBodyDeath;
-            }
             On.RoR2.Projectile.ProjectileSpawnMaster.SpawnMaster += Projectile_SpawnMaster;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
@@ -205,38 +201,6 @@ namespace FlatItemBuff.ItemChanges
                         SummonDeclutter component = self.gameObject.AddComponent<SummonDeclutter>();
                         component.slot = DeployableSlot.MinorConstructOnKill;
                     }
-                }
-            }
-        }
-        private static void CharacterMaster_OnBodyDeath(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
-        {
-            orig(self, body);
-            if (NetworkServer.active)
-            {
-                if (body.bodyIndex == ConstructBodyIndex)
-                {
-                    float damage = body.damage * MainPlugin.NucleusShared_BlastDamage.Value;
-                    float radius = MainPlugin.NucleusShared_BlastRadius.Value;
-                    EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/OmniEffect/OmniExplosionVFXQuick"), new EffectData
-                    {
-                        origin = body.transform.position,
-                        scale = radius,
-                        rotation = Util.QuaternionSafeLookRotation(body.transform.forward)
-                    }, true);
-                    BlastAttack blastAttack = new BlastAttack();
-                    blastAttack.position = body.transform.position;
-                    blastAttack.baseDamage = damage;
-                    blastAttack.baseForce = 0f;
-                    blastAttack.radius = radius;
-                    blastAttack.attacker = body.gameObject;
-                    blastAttack.inflictor = null;
-                    blastAttack.teamIndex = TeamComponent.GetObjectTeam(blastAttack.attacker);
-                    blastAttack.crit = false;
-                    blastAttack.procCoefficient = 1f;
-                    blastAttack.damageColorIndex = DamageColorIndex.Default;
-                    blastAttack.falloffModel = BlastAttack.FalloffModel.Linear;
-                    blastAttack.damageType = DamageType.SlowOnHit;
-                    blastAttack.Fire();
                 }
             }
         }

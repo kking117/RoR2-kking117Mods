@@ -1,7 +1,32 @@
+**1.14.2**
+
+```
+- Hunter's Harpoon:
+- Added configurations to enable the cooldown effect for Primary, Secondary, Utility and Special skills.
+
+- Lepton Daisy:
+- Changed "Base Healing" default configuration. (0.1 -> 0.15)
+
+- Lost Seer's Lenses:
+- Rework effect so that it chains to nearby enemies instead of acting like a blast.
+- Now ignores hits that have the "Rings" proc mask.
+- Fixed crowbar changes from RiskyMod triggering the damage threshold.
+- Changed "Base Radius" default configuration. (20 -> 25)
+- Changed "Base Damage" default configuration. (0.15 -> 0.1)
+- Changed "Stack Damage" default configuration. (0.15 -> 0.1)
+
+- Titanic Knurl Rework:
+- Added "Proc Bands" configuration, controls if the stone fist is allowed to proc bands.
+
+- Defense Nucleus Shared:
+- Removed "Death Explosion Radius" and "Death Explosion Damage" configurations.
+- Alpha Construct Ally no longer create explosions on death.
+```
+
 **1.14.1**
 
 ```
-- Lost Seer's Lenses
+- Lost Seer's Lenses:
 - Removed the automatic crit effect.
 - Now triggers on a damage threshold like Runald's and Kjaro's.
 - Added "Trigger Threshold" configuration, controls the amount of damage needed to trigger the effect.
