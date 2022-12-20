@@ -24,10 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.14.3";
-
-		//ToDo:
-		//Make mentions of "multiple and single stacks" consistent in config descriptions.
+		public const string MODVERSION = "1.14.4";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -165,7 +162,6 @@ namespace FlatItemBuff
 		public static ConfigEntry<int> KnurlRework_TargetType;
 
 		public static ConfigEntry<bool> Nucleus_Enable;
-		public static ConfigEntry<bool> Nucleus_Infinite;
 		public static ConfigEntry<int> Nucleus_BaseHealth;
 		public static ConfigEntry<int> Nucleus_StackHealth;
 		public static ConfigEntry<int> Nucleus_BaseAttack;
@@ -189,6 +185,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> NucleusShared_Mechanical;
 		public static ConfigEntry<bool> NucleusShared_ExtraDisplays;
 
+		public static ConfigEntry<bool> ArtifactSpite_Enable;
+		public static ConfigEntry<float> ArtifactSpite_BaseDamage;
+		public static ConfigEntry<float> ArtifactSpite_LevelDamage;
+
 		internal static bool RiskyModLoaded = false;
 		private void Awake()
 		{
@@ -199,88 +199,93 @@ namespace FlatItemBuff
 			//Common/White
 			if (Steak_Enable.Value)
 			{
-				ItemChanges.BisonSteak.EnableChanges();
+				new Items.BisonSteak();
 			}
 			if (Brooch_Enable.Value)
 			{
-				ItemChanges.TopazBrooch.EnableChanges();
+				new Items.TopazBrooch();
 			}
 			//Uncommon/Green
 			if (Infusion_Enable.Value)
 			{
-				ItemChanges.Infusion.EnableChanges();
+				new Items.Infusion();
 			}
 			if (LeechingSeedRework_Enable.Value)
 			{
-				ItemChanges.LeechingSeed_Rework.EnableChanges();
+				new Items.LeechingSeed_Rework();
 			}
 			else if (LeechingSeed_Enable.Value)
 			{
-				ItemChanges.LeechingSeed.EnableChanges();
+				new Items.LeechingSeed();
 			}
 			if (LeptonDaisy_Enable.Value)
 			{
-				ItemChanges.LeptonDaisy.EnableChanges();
+				new Items.LeptonDaisy();
 			}
 			if (Harpoon_Enable.Value)
 			{
-				ItemChanges.HuntersHarpoon.EnableChanges();
+				new Items.HuntersHarpoon();
 			}
 			if (StealthKit_Enable.Value)
 			{
-				ItemChanges.Stealthkit.EnableChanges();
+				new Items.Stealthkit();
 			}
 			if (Squid_Enable.Value)
 			{
-				ItemChanges.SquidPolyp.EnableChanges();
+				new Items.SquidPolyp();
 			}
 			if (WarHorn_Enable.Value)
 			{
-				ItemChanges.WarHorn.EnableChanges();
+				new Items.WarHorn();
 			}
 			if (WaxQuail_Enable.Value)
             {
-				ItemChanges.WaxQuail.EnableChanges();
+				new Items.WaxQuail();
 			}
 			//Legendary/Red
 			if (Aegis_Enable.Value)
 			{
-				ItemChanges.Aegis.EnableChanges();
+				new Items.Aegis();
 			}
 			if (LaserScope_Enable.Value)
 			{
-				ItemChanges.LaserScope.EnableChanges();
+				new Items.LaserScope();
 			}
 			if (BensRaincoat_Enable.Value)
 			{
-				ItemChanges.BensRaincoat.EnableChanges();
+				new Items.BensRaincoat();
 			}
 			//Boss/Yellow
 			if (KnurlRework_Enable.Value)
 			{
-				ItemChanges.TitanicKnurl_Rework.EnableChanges();
+				new Items.TitanicKnurl_Rework();
 			}
 			else if (Knurl_Enable.Value)
 			{
-				ItemChanges.TitanicKnurl.EnableChanges();
+				new Items.TitanicKnurl();
 			}
 			if (NucleusRework_Enable.Value)
 			{
-				ItemChanges.DefenseNucleus_Rework.EnableChanges();
+				new Items.DefenseNucleus_Rework();
 			}
 			else if (Nucleus_Enable.Value)
 			{
-				ItemChanges.DefenseNucleus.EnableChanges();
+				new Items.DefenseNucleus();
 			}
 			//Void
 			if (LigmaLenses_Enable.Value)
 			{
-				new ItemChanges.LigmaLenses();
+				new Items.LigmaLenses();
 			}
 			if (VoidsentFlame_Enable.Value)
 			{
-				ItemChanges.VoidsentFlame.EnableChanges();
+				new Items.VoidsentFlame();
 			}
+			//Artifacts
+			if (ArtifactSpite_Enable.Value)
+            {
+				new Artifacts.Spite();
+            }
 			ModLogger.LogInfo("Initializing ContentPack.");
 			new Modules.ContentPacks().Initialize();
 		}
@@ -288,7 +293,7 @@ namespace FlatItemBuff
         {
 			if (NucleusRework_Enable.Value || Nucleus_Enable.Value)
 			{
-				ItemChanges.DefenseNucleus_Shared.ExtraChanges();
+				Items.DefenseNucleus_Shared.ExtraChanges();
 			}
 		}
 		//Shamelessly taken from FW_Artifacts
@@ -438,7 +443,6 @@ namespace FlatItemBuff
 			KnurlRework_TargetType = Config.Bind<int>(new ConfigDefinition("Titanic Knurl Rework", "Target Mode"), 0, new ConfigDescription("Decides how the target is selected. (0 = Weak, 1 = Closest)", null, Array.Empty<object>()));
 
 			Nucleus_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Enable Changes"), true, new ConfigDescription("Enables changes to Defense Nucleus.", null, Array.Empty<object>()));
-			Nucleus_Infinite = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Minion Can Proc"), true, new ConfigDescription("Allows constructs to proc their owner's defense nucleus when they kill.", null, Array.Empty<object>()));
 			Nucleus_BaseHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Health"), 10, new ConfigDescription("How much extra health the constructs get. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_StackHealth = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Stack Health"), 10, new ConfigDescription("How much extra health the constructs get per stack. (1 = +10%)", null, Array.Empty<object>()));
 			Nucleus_BaseAttack = Config.Bind<int>(new ConfigDefinition("Defense Nucleus", "Base Attack Speed"), 6, new ConfigDescription("How much extra attack speed the constructs get. (1 = +10%)", null, Array.Empty<object>()));
@@ -461,6 +465,10 @@ namespace FlatItemBuff
 			NucleusShared_TweakAI = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Better AI"), true, new ConfigDescription("Gives 360 Degree vision and prevents retaliation against team members.", null, Array.Empty<object>()));
 			NucleusShared_Mechanical = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Is Mechanical"), true, new ConfigDescription("Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.", null, Array.Empty<object>()));
 			NucleusShared_ExtraDisplays = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Enable Modded Displays"), true, new ConfigDescription("Adds a few item displays to the Alpha Construct. (For Spare Drone Parts)", null, Array.Empty<object>()));
+
+			ArtifactSpite_Enable = Config.Bind<bool>(new ConfigDefinition("Artifact of Spite", "Enable Changes"), false, new ConfigDescription("Enables changes to the Artifact of Spite.", null, Array.Empty<object>()));
+			ArtifactSpite_BaseDamage = Config.Bind<float>(new ConfigDefinition("Artifact of Spite", "Base Damage"), 12f, new ConfigDescription("Base damage of Spite bombs.", null, Array.Empty<object>()));
+			ArtifactSpite_LevelDamage = Config.Bind<float>(new ConfigDefinition("Artifact of Spite", "Level Damage"), 2.4f, new ConfigDescription("Extra danage Spite bombs get per victim's level.", null, Array.Empty<object>()));
 		}
 	}
 }

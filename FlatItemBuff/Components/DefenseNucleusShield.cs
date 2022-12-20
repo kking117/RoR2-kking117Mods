@@ -14,7 +14,7 @@ namespace FlatItemBuff.Components
         private void Awake()
         {
             CharacterBody body = GetComponent<CharacterBody>();
-            shieldObject = Instantiate<GameObject>(ItemChanges.DefenseNucleus_Rework.ShieldPrefab).GetComponent<NetworkedBodyAttachment>();
+            shieldObject = Instantiate<GameObject>(Items.DefenseNucleus_Shared.ShieldPrefab).GetComponent<NetworkedBodyAttachment>();
             shieldObject.AttachToGameObjectAndSpawn(body.gameObject, null);
             duration = MainPlugin.NucleusRework_ShieldBaseDuration.Value;
         }

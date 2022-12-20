@@ -1,3 +1,15 @@
+**1.14.4**
+
+```
+- Added changes for Artifact of Spite that are disabled by default.
+
+- Defense Nucleus Buff:
+- No longer procs itself when it kills, removed the "Minion Can Proc" configuration as a result.
+
+- Lepton Daisy:
+- Fixed various bugs involving heal amounts.
+```
+
 **1.14.3**
 
 ```
