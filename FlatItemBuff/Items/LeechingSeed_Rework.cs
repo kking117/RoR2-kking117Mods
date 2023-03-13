@@ -149,12 +149,19 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
+			);
+			ilcursor.Index += 2;
+			ilcursor.Emit(OpCodes.Ldc_I4_0);
+			ilcursor.Emit(OpCodes.Mul);
+			/*
+			ilcursor.GotoNext(
 				x => ILPatternMatchingExt.MatchStloc(x, 19),
 				x => ILPatternMatchingExt.MatchLdloc(x, 19)
 			);
 			ilcursor.Index -= 3;
 			ilcursor.RemoveRange(3);
-			ilcursor.Emit(OpCodes.Ldc_I4, 0);
+			ilcursor.Emit(OpCodes.Ldc_I4, 0);*/
 		}
 	}
 }

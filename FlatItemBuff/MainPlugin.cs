@@ -17,19 +17,16 @@ namespace FlatItemBuff
 	[BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.damagetype", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.dot", BepInDependency.DependencyFlags.HardDependency)]
-	[BepInDependency("com.RiskyLives.RiskyMod", BepInDependency.DependencyFlags.SoftDependency)]
+	[BepInDependency("com.bepis.r2api.items", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.14.4";
+		public const string MODVERSION = "1.15.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
-
-		public static ConfigEntry<float> General_OutOfCombatTime;
-		public static ConfigEntry<float> General_OutOfDangerTime;
 
 		public static ConfigEntry<bool> Steak_Enable;
 		public static ConfigEntry<float> Steak_BaseHP;
@@ -54,17 +51,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> Harpoon_CoolSpecial;
 
 		public static ConfigEntry<bool> Infusion_Enable;
-		public static ConfigEntry<int> Infusion_Stacks;
-		public static ConfigEntry<int> Infusion_Level;
-		public static ConfigEntry<bool> Infusion_OwnerGains;
-		public static ConfigEntry<bool> Infusion_InheritOwner;
-		public static ConfigEntry<bool> Infusion_Tracker;
-
-		public static ConfigEntry<int> Infusion_Fake_Bonus;
-		public static ConfigEntry<int> Infusion_Kill_Bonus;
-		public static ConfigEntry<int> Infusion_Champ_Bonus;
-		public static ConfigEntry<int> Infusion_Elite_Bonus;
-		public static ConfigEntry<int> Infusion_Boss_Bonus;
+		public static ConfigEntry<float> Infusion_StackGain;
+		public static ConfigEntry<int> Infusion_FakeBaseGain;
+		public static ConfigEntry<int> Infusion_CloneCost;
+		public static ConfigEntry<int> Infusion_LevelCost;
 
 		public static ConfigEntry<bool> LeechingSeed_Enable;
 		public static ConfigEntry<float> LeechingSeed_ProcHeal;
@@ -89,9 +79,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<float> StealthKit_BaseRecharge;
 		public static ConfigEntry<float> StealthKit_StackRecharge;
 		public static ConfigEntry<float> StealthKit_BuffDuration;
+		public static ConfigEntry<float> StealthKit_GraceDuration;
 		public static ConfigEntry<bool> StealthKit_CancelCombat;
 		public static ConfigEntry<bool> StealthKit_CancelDanger;
-		public static ConfigEntry<float> StealthKit_CancelDuration;
+		public static ConfigEntry<bool> StealthKit_CleanseDoT;
 
 		public static ConfigEntry<bool> Squid_Enable;
 		public static ConfigEntry<bool> Squid_ClayHit;
@@ -130,13 +121,10 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> BensRaincoat_FixCooldown;
 
 		public static ConfigEntry<bool> LigmaLenses_Enable;
+		public static ConfigEntry<float> LigmaLenses_BaseChance;
+		public static ConfigEntry<float> LigmaLenses_StackChance;
 		public static ConfigEntry<float> LigmaLenses_BaseDamage;
 		public static ConfigEntry<float> LigmaLenses_StackDamage;
-		public static ConfigEntry<float> LigmaLenses_BaseRadius;
-		public static ConfigEntry<float> LigmaLenses_StackRadius;
-		public static ConfigEntry<int> LigmaLenses_Cooldown;
-		public static ConfigEntry<float> LigmaLenses_ProcRate;
-		public static ConfigEntry<float> LigmaLenses_TriggerThresh;
 
 		public static ConfigEntry<bool> VoidsentFlame_Enable;
 		public static ConfigEntry<float> VoidsentFlame_BaseRadius;
@@ -185,15 +173,24 @@ namespace FlatItemBuff
 		public static ConfigEntry<bool> NucleusShared_Mechanical;
 		public static ConfigEntry<bool> NucleusShared_ExtraDisplays;
 
+		public static ConfigEntry<bool> Planula_Enable;
+		public static ConfigEntry<float> Planula_BaseFlatHeal;
+		public static ConfigEntry<float> Planula_StackFlatHeal;
+		public static ConfigEntry<float> Planula_BaseMaxHeal;
+		public static ConfigEntry<float> Planula_StackMaxHeal;
+
+		public static ConfigEntry<bool> PlanulaRework_Enable;
+		public static ConfigEntry<float> PlanulaRework_BaseDamage;
+		public static ConfigEntry<float> PlanulaRework_StackDamage;
+		public static ConfigEntry<float> PlanulaRework_Duration;
+		public static ConfigEntry<float> PlanulaRework_Radius;
+
 		public static ConfigEntry<bool> ArtifactSpite_Enable;
 		public static ConfigEntry<float> ArtifactSpite_BaseDamage;
 		public static ConfigEntry<float> ArtifactSpite_LevelDamage;
-
-		internal static bool RiskyModLoaded = false;
 		private void Awake()
 		{
 			ModLogger = this.Logger;
-			RiskyModLoaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
 			ReadConfig();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
 			//Common/White
@@ -272,6 +269,14 @@ namespace FlatItemBuff
 			{
 				new Items.DefenseNucleus();
 			}
+			if (PlanulaRework_Enable.Value)
+			{
+				new Items.Planula_Rework();
+			}
+			else if (Planula_Enable.Value)
+            {
+				new Items.Planula();
+			}
 			//Void
 			if (LigmaLenses_Enable.Value)
 			{
@@ -296,22 +301,8 @@ namespace FlatItemBuff
 				Items.DefenseNucleus_Shared.ExtraChanges();
 			}
 		}
-		//Shamelessly taken from FW_Artifacts
-		internal static Sprite LoadAsSprite(byte[] resourceBytes, int size)
-		{
-			if (resourceBytes == null)
-			{
-				throw new ArgumentNullException("resourceBytes");
-			}
-			Texture2D texture2D = new Texture2D(size, size, TextureFormat.RGBA32, false);
-			texture2D.LoadImage(resourceBytes, false);
-			return Sprite.Create(texture2D, new Rect(0f, 0f, (float)size, (float)size), new Vector2(0f, 0f));
-		}
 		public void ReadConfig()
 		{
-			General_OutOfCombatTime = Config.Bind<float>(new ConfigDefinition("!General!", "Out of Combat Time"), 5f, new ConfigDescription("How long it takes to be considered Out of Combat. (5 = Vanilla) (Is used for internal reference, does not affect the game.)", null, Array.Empty<object>()));
-			General_OutOfDangerTime = Config.Bind<float>(new ConfigDefinition("!General!", "Out of Danger Time"), 7f, new ConfigDescription("How long it takes to be considered Out of Danger. (7 = Vanilla) (Is used for internal reference, does not affect the game.)", null, Array.Empty<object>()));
-
 			Steak_Enable = Config.Bind<bool>(new ConfigDefinition("Bison Steak", "Enable Changes"), true, new ConfigDescription("Enables changes to Bison Steak.", null, Array.Empty<object>()));
 			Steak_BaseHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Base HP"), 20.0f, new ConfigDescription("The amount of HP each stack increases. (Set to 0 or less to disable health.)", null, Array.Empty<object>()));
 			Steak_LevelHP = Config.Bind<float>(new ConfigDefinition("Bison Steak", "Level HP"), 2.0f, new ConfigDescription("How much extra HP to give per level.", null, Array.Empty<object>()));
@@ -335,17 +326,10 @@ namespace FlatItemBuff
 			Harpoon_CoolSpecial = Config.Bind<bool>(new ConfigDefinition("Hunters Harpoon", "Cooldown Special"), false, new ConfigDescription("Should Special skills be affected by cooldown rate?", null, Array.Empty<object>()));
 
 			Infusion_Enable = Config.Bind<bool>(new ConfigDefinition("Infusion", "Enable Changes"), true, new ConfigDescription("Enables changes to Infusion.", null, Array.Empty<object>()));
-			Infusion_Stacks = Config.Bind<int>(new ConfigDefinition("Infusion", "Max Stacks"), 100, new ConfigDescription("How many stacks an infusion has (100 is the vanilla value).", null, Array.Empty<object>()));
-			Infusion_Level = Config.Bind<int>(new ConfigDefinition("Infusion", "Level Per Stacks"), 100, new ConfigDescription("How many stacks are needed to gain a level up.", null, Array.Empty<object>()));
-			Infusion_OwnerGains = Config.Bind<bool>(new ConfigDefinition("Infusion", "Give To Owner"), true, new ConfigDescription("Should minions with infusions send their uncollected samples to their owner instead?", null, Array.Empty<object>()));
-			Infusion_InheritOwner = Config.Bind<bool>(new ConfigDefinition("Infusion", "Inherit From Owner"), true, new ConfigDescription("Should minions with infusions inherit their owner's collected samples.", null, Array.Empty<object>()));
-			Infusion_Tracker = Config.Bind<bool>(new ConfigDefinition("Infusion", "Tracker"), true, new ConfigDescription("Enables a cosmetic buff icon to help keep track of your infusion stacks.", null, Array.Empty<object>()));
-
-			Infusion_Fake_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Fake Stack"), 1, new ConfigDescription("How many samples certain non-ai and non-player enemies give.", null, Array.Empty<object>()));
-			Infusion_Kill_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Kill Stack"), 1, new ConfigDescription("How many samples normal enemies give.", null, Array.Empty<object>()));
-			Infusion_Champ_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Champion Stack"), 5, new ConfigDescription("How many samples champion enemies give.", null, Array.Empty<object>()));
-			Infusion_Elite_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Elite Bonus"), 2, new ConfigDescription("Sample multiplier for elites.", null, Array.Empty<object>()));
-			Infusion_Boss_Bonus = Config.Bind<int>(new ConfigDefinition("Infusion", "Boss Bonus"), 2, new ConfigDescription("Sample multiplier for bosses.", null, Array.Empty<object>()));
+			Infusion_StackGain = Config.Bind<float>(new ConfigDefinition("Infusion", "Stack Gain"), 0.5f, new ConfigDescription("How much blood you gain for each additional stack.", null, Array.Empty<object>()));
+			Infusion_FakeBaseGain = Config.Bind<int>(new ConfigDefinition("Infusion", "Fake Kill Gain"), 10, new ConfigDescription("How much blood fake kills are worth.", null, Array.Empty<object>()));
+			Infusion_CloneCost = Config.Bind<int>(new ConfigDefinition("Infusion", "Clone Cost"), 400, new ConfigDescription("How much blood is needed to create the clone.", null, Array.Empty<object>()));
+			Infusion_LevelCost = Config.Bind<int>(new ConfigDefinition("Infusion", "Level Cost"), 4000, new ConfigDescription("How much blood is needed to double the clone's level.", null, Array.Empty<object>()));
 
 			LeechingSeed_Enable = Config.Bind<bool>(new ConfigDefinition("Leeching Seed", "Enable Changes"), true, new ConfigDescription("Enables changes for Leeching Seed.", null, Array.Empty<object>()));
 			LeechingSeed_ProcHeal = Config.Bind<float>(new ConfigDefinition("Leeching Seed", "Normal Heal"), 0.5f, new ConfigDescription("How much healing to give on hits with a proc coefficient. (Set to 0 to disable this effect entirely.)", null, Array.Empty<object>()));
@@ -370,9 +354,10 @@ namespace FlatItemBuff
 			StealthKit_BaseRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Base Cooldown"), 30.0f, new ConfigDescription("How long it takes for this item to recharge. (Vanilla = 30)", null, Array.Empty<object>()));
 			StealthKit_StackRecharge = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Stack Cooldown"), 0.5f, new ConfigDescription("How much faster it recharges for each additional stack. (Vanilla = 0.5)", null, Array.Empty<object>()));
 			StealthKit_BuffDuration = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Buff Duration"), 5.0f, new ConfigDescription("Duration of the Stealth buff upon activation. (Vanilla = 5)", null, Array.Empty<object>()));
+			StealthKit_GraceDuration = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Cancel Duration"), 0.5f, new ConfigDescription("How long to force Combat and Danger cancels upon activation.", null, Array.Empty<object>()));
 			StealthKit_CancelCombat = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Combat"), true, new ConfigDescription("Puts you in 'Out of Combat' upon activation.", null, Array.Empty<object>()));
 			StealthKit_CancelDanger = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Cancel Danger"), true, new ConfigDescription("Puts you in 'Out of Danger' upon activation.", null, Array.Empty<object>()));
-			StealthKit_CancelDuration = Config.Bind<float>(new ConfigDefinition("Old War Stealthkit", "Cancel Duration"), 1.0f, new ConfigDescription("Duration of the Combat and Danger cancel.", null, Array.Empty<object>()));
+			StealthKit_CleanseDoT = Config.Bind<bool>(new ConfigDefinition("Old War Stealthkit", "Clean DoTs"), true, new ConfigDescription("Removes damage over time effects upon activation.", null, Array.Empty<object>()));
 
 			Squid_Enable = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Enable Changes"), true, new ConfigDescription("Enables changes to Squid Polyp.", null, Array.Empty<object>()));
 			Squid_ClayHit = Config.Bind<bool>(new ConfigDefinition("Squid Polyp", "Apply Tar"), true, new ConfigDescription("Makes Squid Polyps apply the Tar debuff with their attack.", null, Array.Empty<object>()));
@@ -411,13 +396,10 @@ namespace FlatItemBuff
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
 
 			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));
-			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 0.1f, new ConfigDescription("Total damage at the first stack.", null, Array.Empty<object>()));
-			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.1f, new ConfigDescription("Total damage for each additional stack.", null, Array.Empty<object>()));
-			LigmaLenses_BaseRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Radius"), 25f, new ConfigDescription("Radius at the first stack", null, Array.Empty<object>()));
-			LigmaLenses_StackRadius = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Radius"), 0f, new ConfigDescription("Radius for each additional stack.", null, Array.Empty<object>()));
-			LigmaLenses_Cooldown = Config.Bind<int>(new ConfigDefinition("Lost Seers Lenses", "Cooldown"), 10, new ConfigDescription("Cooldown between each use.", null, Array.Empty<object>()));
-			LigmaLenses_ProcRate = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Proc Coefficient"), 0.1f, new ConfigDescription("Proc Coefficient of the seekers.", null, Array.Empty<object>()));
-			LigmaLenses_TriggerThresh = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Trigger Threshold"), 4f, new ConfigDescription("How much damage is required to proc the effect.", null, Array.Empty<object>()));
+			LigmaLenses_BaseChance = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Chance"), 0.5f, new ConfigDescription("Proc chance at the first stack.", null, Array.Empty<object>()));
+			LigmaLenses_StackChance = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Chance"), 0.5f, new ConfigDescription("Proc chance for each additional stack.", null, Array.Empty<object>()));
+			LigmaLenses_BaseDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Base Damage"), 50.0f, new ConfigDescription("Base damage at the first stack.", null, Array.Empty<object>()));
+			LigmaLenses_StackDamage = Config.Bind<float>(new ConfigDefinition("Lost Seers Lenses", "Stack Damage"), 0.0f, new ConfigDescription("Base damage for each additional stack.", null, Array.Empty<object>()));
 
 			VoidsentFlame_Enable = Config.Bind<bool>(new ConfigDefinition("Voidsent Flame", "Enable Changes"), true, new ConfigDescription("Enables changes to Voidsent Flame.", null, Array.Empty<object>()));
 			VoidsentFlame_BaseRadius = Config.Bind<float>(new ConfigDefinition("Voidsent Flame", "Base Radius"), 10f, new ConfigDescription("How large the blast radius is at a single stack. (12 = Vanilla)", null, Array.Empty<object>()));
@@ -433,13 +415,13 @@ namespace FlatItemBuff
 			Knurl_LevelRegen = Config.Bind<float>(new ConfigDefinition("Titanic Knurl", "Level Regen"), 0.32f, new ConfigDescription("How much extra health regen to give per level.", null, Array.Empty<object>()));
 
 			KnurlRework_Enable = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Enable Rework"), false, new ConfigDescription("Enables the rework to Titanic Knurl. (Has priority over the normal changes.)", null, Array.Empty<object>()));
-			KnurlRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Damage"), 7f, new ConfigDescription("Base Damage of the stone fist.", null, Array.Empty<object>()));
-			KnurlRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 4f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Damage"), 8f, new ConfigDescription("Base Damage of the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Damage"), 6f, new ConfigDescription("Stacking Damage of the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_BaseSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Base Cooldown"), 6f, new ConfigDescription("Cooldown between each stone fist.", null, Array.Empty<object>()));
 			KnurlRework_StackSpeed = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Stack Cooldown"), 0.15f, new ConfigDescription("Reduces the cooldown between each stone fist per stack. (Works as attack speed does.)", null, Array.Empty<object>()));
 			KnurlRework_ProcRate = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Proc Coefficient"), 1.0f, new ConfigDescription("The proc coefficient of the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_ProcBands = Config.Bind<bool>(new ConfigDefinition("Titanic Knurl Rework", "Proc Bands"), false, new ConfigDescription("Should the stone fist be allowed to proc bands?", null, Array.Empty<object>()));
-			KnurlRework_AttackRange = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Attack Distance"), 50.0f, new ConfigDescription("The maximum targeting radius in metres around you for the stone fist.", null, Array.Empty<object>()));
+			KnurlRework_AttackRange = Config.Bind<float>(new ConfigDefinition("Titanic Knurl Rework", "Attack Distance"), 60.0f, new ConfigDescription("The maximum targeting radius in metres around you for the stone fist.", null, Array.Empty<object>()));
 			KnurlRework_TargetType = Config.Bind<int>(new ConfigDefinition("Titanic Knurl Rework", "Target Mode"), 0, new ConfigDescription("Decides how the target is selected. (0 = Weak, 1 = Closest)", null, Array.Empty<object>()));
 
 			Nucleus_Enable = Config.Bind<bool>(new ConfigDefinition("Defense Nucleus", "Enable Changes"), true, new ConfigDescription("Enables changes to Defense Nucleus.", null, Array.Empty<object>()));
@@ -465,6 +447,18 @@ namespace FlatItemBuff
 			NucleusShared_TweakAI = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Better AI"), true, new ConfigDescription("Gives 360 Degree vision and prevents retaliation against team members.", null, Array.Empty<object>()));
 			NucleusShared_Mechanical = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Is Mechanical"), true, new ConfigDescription("Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.", null, Array.Empty<object>()));
 			NucleusShared_ExtraDisplays = Config.Bind<bool>(new ConfigDefinition("Alpha Construct Ally", "Enable Modded Displays"), true, new ConfigDescription("Adds a few item displays to the Alpha Construct. (For Spare Drone Parts)", null, Array.Empty<object>()));
+
+			Planula_Enable = Config.Bind<bool>(new ConfigDefinition("Planula", "Enable Changes"), true, new ConfigDescription("Enables changes to Planula.", null, Array.Empty<object>()));
+			Planula_BaseFlatHeal = Config.Bind<float>(new ConfigDefinition("Planula", "Base Flat Healing"), 10.0f, new ConfigDescription("Flat healing at a single stack.", null, Array.Empty<object>()));
+			Planula_StackFlatHeal = Config.Bind<float>(new ConfigDefinition("Planula", "Stack Flat Healing"), 10.0f, new ConfigDescription("Flat healing for each additional stack", null, Array.Empty<object>()));
+			Planula_BaseMaxHeal = Config.Bind<float>(new ConfigDefinition("Planula", "Base Max Healing"), 0.02f, new ConfigDescription("Percent healing at a single stack.", null, Array.Empty<object>()));
+			Planula_StackMaxHeal = Config.Bind<float>(new ConfigDefinition("Planula", "Stack Max Healing"), 0.02f, new ConfigDescription("Percent healing for each additional stack", null, Array.Empty<object>()));
+
+			PlanulaRework_Enable = Config.Bind<bool>(new ConfigDefinition("Planula Rework", "Enable Rework"), false, new ConfigDescription("Enables the rework to Planula. (Has priority over the normal changes.)", null, Array.Empty<object>()));
+			PlanulaRework_BaseDamage = Config.Bind<float>(new ConfigDefinition("Planula Rework", "Base Damage"), 1f, new ConfigDescription("How much damage the burn deals per second at a single stack.", null, Array.Empty<object>()));
+			PlanulaRework_StackDamage = Config.Bind<float>(new ConfigDefinition("Planula Rework", "Stack Damage"), 1f, new ConfigDescription("How much damage the burn deals per second for each additional stack", null, Array.Empty<object>()));
+			PlanulaRework_Duration = Config.Bind<float>(new ConfigDefinition("Planula Rework", "Burn Duration"), 5f, new ConfigDescription("Duration of the burn.", null, Array.Empty<object>()));
+			PlanulaRework_Radius = Config.Bind<float>(new ConfigDefinition("Planula Rework", "Effect Radius"), 13f, new ConfigDescription("Radius for enemies to be within to start burning.", null, Array.Empty<object>()));
 
 			ArtifactSpite_Enable = Config.Bind<bool>(new ConfigDefinition("Artifact of Spite", "Enable Changes"), false, new ConfigDescription("Enables changes to the Artifact of Spite.", null, Array.Empty<object>()));
 			ArtifactSpite_BaseDamage = Config.Bind<float>(new ConfigDefinition("Artifact of Spite", "Base Damage"), 12f, new ConfigDescription("Base damage of Spite bombs.", null, Array.Empty<object>()));

@@ -22,13 +22,6 @@ namespace FlatItemBuff.Items.Behaviors
 				return;
 			}
 			nextAttack -= Time.fixedDeltaTime;
-			if (body.healthComponent)
-            {
-				if (body.healthComponent.isHealthLow)
-				{
-					nextAttack -= Time.fixedDeltaTime * 0.5f;
-				}
-			}
 			if (nextAttack <= 0f)
             {
 				HurtBox victim;
@@ -136,7 +129,6 @@ namespace FlatItemBuff.Items.Behaviors
 
 		private HurtBox GetFistTarget_Close()
 		{
-			float damage = GetFistDamage();
 			BullseyeSearch search = new BullseyeSearch();
 			search.viewer = body;
 			search.teamMaskFilter = TeamMask.allButNeutral;
@@ -176,11 +168,11 @@ namespace FlatItemBuff.Items.Behaviors
             {
 				if (body.armor > 0)
                 {
-					effhp = effhp / (100 / (100 + body.armor));
+					effhp /= (100 / (100 + body.armor));
 				}
 				else
                 {
-					effhp = effhp * (100 / (100 - body.armor));
+					effhp *= (100 / (100 - body.armor));
 				}
 			}
 			return effhp;

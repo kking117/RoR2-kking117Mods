@@ -10,10 +10,6 @@ namespace FlatItemBuff.Items
 {
 	public class TitanicKnurl_Rework
 	{
-		private static string IL_ItemName = "Knurl";
-		private static int IL_LocationOffset = 2;
-		private static int IL_Location = 16;
-
 		public static GameObject StoneFistProjectile;
 		public TitanicKnurl_Rework()
 		{
@@ -75,11 +71,10 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", IL_ItemName),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount"),
-				x => ILPatternMatchingExt.MatchStloc(x, IL_Location)
+				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Knurl"),
+				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount")
 			);
-			ilcursor.Index -= IL_LocationOffset;
+			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
 		}
 	}

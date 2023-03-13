@@ -28,10 +28,8 @@ namespace FlatItemBuff.Artifacts
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => x.MatchLdloca(6),
-				x => x.MatchLdloc(0)
+				x => x.MatchCallvirt<CharacterBody>("get_damage")
 			);
-			ilcursor.Index +=2;
 			ilcursor.Remove();
 			ilcursor.EmitDelegate<Func<CharacterBody, float>>((victimBody) =>
 			{

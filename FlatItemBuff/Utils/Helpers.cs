@@ -10,7 +10,6 @@ namespace FlatItemBuff.Utils
 {
     internal class Helpers
     {
-		
 		public static float HyperbolicResult(int itemCount, float baseBonus, float stackBonus, int hardCap)
 		{
 			float bonus = baseBonus + (stackBonus * (itemCount - 1));
@@ -70,6 +69,32 @@ namespace FlatItemBuff.Utils
 				}
 			}
 			return null;
+		}
+
+		public static bool IsDeployableSlot(CharacterMaster self, DeployableSlot slot)
+		{
+			Deployable deployable = self.GetComponent<Deployable>();
+			if (deployable)
+			{
+				CharacterMaster owner = deployable.ownerMaster;
+				if (owner)
+				{
+					if (owner.deployablesList != null)
+					{
+						for (int i = 0; i < owner.deployablesList.Count; i++)
+						{
+							if (slot == DeployableSlot.None || owner.deployablesList[i].slot == slot)
+							{
+								if (owner.deployablesList[i].deployable == deployable)
+								{
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+			return false;
 		}
 		public static void KillCloseDeployables(CharacterMaster exception, TeamIndex team, DeployableSlot slot, Vector3 origin, float killRange)
         {

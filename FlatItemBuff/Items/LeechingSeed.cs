@@ -62,9 +62,9 @@ namespace FlatItemBuff.Items
 			//Stop the old code
 			ILCursor ilcursor = new ILCursor(il);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 19)
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
 			);
-			ilcursor.Index += 1;
+			ilcursor.Index += 2;
 			ilcursor.Emit(OpCodes.Ldc_I4_0);
 			ilcursor.Emit(OpCodes.Mul);
 		}

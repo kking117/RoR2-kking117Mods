@@ -50,6 +50,17 @@ namespace FlatItemBuff.Items
 
             SummonCount = MainPlugin.NucleusRework_SummonCount.Value;
         }
+        private void UpdateItemDef()
+        {
+            ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKill.asset").WaitForCompletion();
+            if (itemDef)
+            {
+                List<ItemTag> itemtags = itemDef.tags.ToList();
+                itemtags.Add(ItemTag.EquipmentRelated);
+                itemtags.Remove(ItemTag.OnKillEffect);
+                itemDef.tags = itemtags.ToArray();
+            }
+        }
         private void UpdateText()
         {
             MainPlugin.ModLogger.LogInfo("Updating item text");
@@ -118,17 +129,6 @@ namespace FlatItemBuff.Items
             }
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
             LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
-        }
-        private void UpdateItemDef()
-        {
-            ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKill.asset").WaitForCompletion();
-            if (itemDef)
-            {
-                List<ItemTag> itemtags = itemDef.tags.ToList();
-                itemtags.Add(ItemTag.EquipmentRelated);
-                itemtags.Remove(ItemTag.OnKillEffect);
-                itemDef.tags = itemtags.ToArray();
-            }
         }
         private void Hooks()
         {

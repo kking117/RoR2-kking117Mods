@@ -9,20 +9,31 @@ namespace FlatItemBuff.Items
 	public class Stealthkit
 	{
 		public static BuffDef StealthBuff = RoR2Content.Buffs.Cloak;
-		private static bool CanCancel = false;
+		private static float BaseRecharge = 30.0f;
+		private static float StackRecharge = 0.5f;
+		private static float BuffDuration = 5.0f;
+		private static float GraceDuration = 1.0f;
+		private static bool CancelCombat = true;
+		private static bool CancelDanger = true;
+		private static bool CleanseDoT = true;
 		public Stealthkit()
 		{
 			MainPlugin.ModLogger.LogInfo("Changing Old War Stealthkit");
-			if (MainPlugin.StealthKit_CancelDuration.Value > 0.0f)
-            {
-				if (MainPlugin.StealthKit_CancelCombat.Value || MainPlugin.StealthKit_CancelDanger.Value)
-				{
-					CanCancel = true;
-				}
-			}
+			SetupConfigValues();
 			CreateBuffs();
 			Hooks();
 			UpdateText();
+		}
+		private void SetupConfigValues()
+		{
+			CancelDanger = MainPlugin.StealthKit_CancelDanger.Value;
+			CancelCombat = MainPlugin.StealthKit_CancelCombat.Value;
+			CleanseDoT = MainPlugin.StealthKit_CleanseDoT.Value;
+
+			BaseRecharge = MainPlugin.StealthKit_BaseRecharge.Value;
+			StackRecharge = MainPlugin.StealthKit_StackRecharge.Value;
+			BuffDuration = MainPlugin.StealthKit_BuffDuration.Value;
+			GraceDuration = MainPlugin.StealthKit_GraceDuration.Value;
 		}
 		private void UpdateText()
 		{
@@ -30,16 +41,16 @@ namespace FlatItemBuff.Items
 			string pickup = "Become stealthed at low health.";
 			string desc = "";
 			desc += "Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style>, gaining <style=cIsUtility>40% movement speed</style>";
-			if (CanCancel)
+			if (CancelCombat || CancelDanger)
 			{
 				desc += ", <style=cIsUtility>invisibility</style> and forces you out of";
 				bool DoAnAnd = false;
-				if(MainPlugin.StealthKit_CancelCombat.Value)
+				if(CancelCombat)
                 {
 					desc += " <style=cIsDamage>combat</style>";
 					DoAnAnd = true;
 				}
-				if (MainPlugin.StealthKit_CancelDanger.Value)
+				if (CancelDanger)
 				{
 					if(DoAnAnd)
                     {
@@ -53,76 +64,107 @@ namespace FlatItemBuff.Items
             {
 				desc += "and <style=cIsUtility>invisibility</style>.";
 			}
-			desc += string.Format(" Lasts <style=cIsUtility>{0}s</style> and recharges every <style=cIsUtility>{1} seconds</style> <style=cStack>(-{2}% per stack)</style>.", MainPlugin.StealthKit_BuffDuration.Value, MainPlugin.StealthKit_BaseRecharge.Value, MainPlugin.StealthKit_StackRecharge.Value * 100);
+			desc += string.Format(" Lasts <style=cIsUtility>{0}s</style> and recharges every <style=cIsUtility>{1} seconds</style> <style=cStack>(-{2}% per stack)</style>.", BuffDuration, BaseRecharge, StackRecharge * 100);
 			LanguageAPI.Add("ITEM_PHASING_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_PHASING_DESC", desc);
 		}
 		private void Hooks()
 		{
-			if (CanCancel)
-            {
-				On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
-				if (MainPlugin.StealthKit_CancelCombat.Value)
-				{
-					On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
-				}
-				if (MainPlugin.StealthKit_CancelDanger.Value)
-				{
-					On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
-				}
-			}
 			Stealthkit_Override();
 			On.RoR2.CharacterBody.GetVisibilityLevel_TeamIndex += CharacterBody_GetVisibility;
 			RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsHook;
+			if (CancelDanger || CancelCombat)
+			{
+				if (GraceDuration > 0.0f)
+				{
+					if (CancelCombat)
+					{
+						On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
+					}
+					if (CancelDanger)
+					{
+						On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
+					}
+					On.RoR2.CharacterBody.OnBuffFinalStackLost += CharacterBody_OnBuffFinalStackLost;
+				}
+			}
 		}
 		private void CreateBuffs()
         {
 			StealthBuff = Modules.Buffs.AddNewBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, new Color(0.266f, 0.368f, 0.713f, 1f), false, false, false);
-			//Hate the idea of using a component for this, but the grace period just isn't suitable as a buff/debuff/cooldown.
 		}
 		private void Stealthkit_Override()
         {
 			On.RoR2.Items.PhasingBodyBehavior.FixedUpdate += (orig, self) =>
 			{
-				if(!self.body.healthComponent.alive)
+				CharacterBody body = self.body;
+				if (!body.healthComponent.alive)
                 {
 					return;
                 }
 				self.rechargeStopwatch += Time.fixedDeltaTime;
-				if(self.body.healthComponent.isHealthLow)
+				if(body.healthComponent.isHealthLow)
                 {
-					if (!self.body.HasBuff(StealthBuff.buffIndex))
+					if (!body.HasBuff(StealthBuff.buffIndex))
 					{
-						float cooldown = MainPlugin.StealthKit_BaseRecharge.Value / (1 + (MainPlugin.StealthKit_StackRecharge.Value * (self.stack - 1)));
+						float cooldown = BaseRecharge / (1 + (StackRecharge * (self.stack - 1)));
 						if (self.rechargeStopwatch >= cooldown)
 						{
-							self.body.AddTimedBuff(StealthBuff.buffIndex, MainPlugin.StealthKit_BuffDuration.Value);
-							if (CanCancel)
-							{
-								Components.CancelBuffer comp = self.body.GetComponent<Components.CancelBuffer>();
-								if (!comp)
-								{
-									comp = self.body.gameObject.AddComponent<Components.CancelBuffer>();
-								}
-								comp.duration = MainPlugin.StealthKit_CancelDuration.Value;
-							}
+							body.AddTimedBuff(StealthBuff.buffIndex, BuffDuration);
 							EffectManager.SpawnEffect(self.effectPrefab, new EffectData
 							{
 								origin = self.transform.position,
 								rotation = Quaternion.identity
 							}, true);
 							self.rechargeStopwatch = 0f;
+
+							if (CleanseDoT)
+							{
+								Util.CleanseBody(self.body, false, false, false, true, true, false);
+							}
+							if (CancelCombat || CancelDanger)
+							{
+								if (CancelCombat)
+								{
+									self.body.outOfCombat = true;
+									self.body.outOfCombatStopwatch = float.PositiveInfinity;
+								}
+								if (CancelDanger)
+								{
+									self.body.outOfDanger = true;
+									self.body.outOfDangerStopwatch = float.PositiveInfinity;
+								}
+
+								if (GraceDuration > 0.0f)
+								{
+									Components.CancelBuffer comp = self.body.GetComponent<Components.CancelBuffer>();
+									if (!comp)
+									{
+										comp = self.body.gameObject.AddComponent<Components.CancelBuffer>();
+									}
+									comp.duration = GraceDuration;
+								}
+							}
 						}
 					}
                 }
 			};
 		}
-		private bool HasBuffer(CharacterBody body)
+		private VisibilityLevel CharacterBody_GetVisibility(On.RoR2.CharacterBody.orig_GetVisibilityLevel_TeamIndex orig, CharacterBody self, TeamIndex observerTeam)
         {
-			return body.GetComponent<Components.CancelBuffer>();
+			var result = orig(self, observerTeam);
+			if (self.HasBuff(StealthBuff.buffIndex))
+			{
+				if (observerTeam != self.teamComponent.teamIndex)
+				{
+					return VisibilityLevel.Cloaked;
+				}
+				return VisibilityLevel.Revealed;
+			}
+			return result;
 		}
 		private void CharacterBody_OnTakeDamageServer(On.RoR2.CharacterBody.orig_OnTakeDamageServer orig, CharacterBody self, DamageReport damageReport)
-        {
+		{
 			orig(self, damageReport);
 			if (HasBuffer(self))
 			{
@@ -139,25 +181,13 @@ namespace FlatItemBuff.Items
 				self.outOfCombatStopwatch = float.PositiveInfinity;
 			}
 		}
-		private void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
-        {
-			if (HasBuffer(self))
-            {
-				if(self.HasBuff(StealthBuff.buffIndex))
-                {
-					if (MainPlugin.StealthKit_CancelCombat.Value)
-					{
-						self.outOfCombat = true;
-						self.outOfCombatStopwatch = float.PositiveInfinity;
-					}
-					if (MainPlugin.StealthKit_CancelDanger.Value)
-					{
-						self.outOfDanger = true;
-						self.outOfDangerStopwatch = float.PositiveInfinity;
-					}
-				}
-				else
-                {
+		private void CharacterBody_OnBuffFinalStackLost(On.RoR2.CharacterBody.orig_OnBuffFinalStackLost orig, CharacterBody self, BuffDef buffDef)
+		{
+			orig(self, buffDef);
+			if (buffDef == StealthBuff)
+			{
+				if (HasBuffer(self))
+				{
 					Components.CancelBuffer comp = self.GetComponent<Components.CancelBuffer>();
 					if (comp)
 					{
@@ -165,20 +195,6 @@ namespace FlatItemBuff.Items
 					}
 				}
 			}
-			orig(self);
-        }
-		private VisibilityLevel CharacterBody_GetVisibility(On.RoR2.CharacterBody.orig_GetVisibilityLevel_TeamIndex orig, CharacterBody self, TeamIndex observerTeam)
-        {
-			var result = orig(self, observerTeam);
-			if (self.HasBuff(StealthBuff.buffIndex))
-			{
-				if (observerTeam != self.teamComponent.teamIndex)
-				{
-					return VisibilityLevel.Cloaked;
-				}
-				return VisibilityLevel.Revealed;
-			}
-			return result;
 		}
 		private void RecalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
@@ -186,6 +202,10 @@ namespace FlatItemBuff.Items
 			{
 				args.moveSpeedMultAdd += 0.4f;
 			}
+		}
+		private bool HasBuffer(CharacterBody body)
+		{
+			return body.GetComponent<Components.CancelBuffer>();
 		}
 	}
 }

@@ -1,3 +1,34 @@
+**1.15.0**
+
+<details><summary>Notes</summary>Completely changed Lost Seer's Lenses effect since the bands mechanic was too complicated for a common item. Also completely changed Infusion since the previous version didn't address the scaling issue at all and there's a few other mods that already improve it.</details>
+
+```
+- Infusion:
+- Effect has been reworked completely.
+- Collecting enough blood from slain enemies creates a clone of yourself.
+- Further collection of blood increases the clone's level.
+
+- Old War Stealthkit:
+- Removes damage over time effects on activation.
+- Changed "Cancel Duration" default configuration. (1.0 -> 0.5)
+
+- Wax Quail:
+- Changed "Capped Horizontal Boost" default configuration. (150 -> 240)
+- Changed "Capped Air Speed Bonus" default configuration. (1.5 -> 2.8)
+
+- Lost Seer's Lenses:
+- Effect has been changed completely.
+- Works the same as the vanilla version but instead of an instant kill it deals a very high amount of base damage and works against bosses.
+
+- Titanic Knurl Rework:
+- Removed the ummentioned 50% cooldown rate bonus while at low health.
+- Changed "Base Damage" default configuration. (7.0 -> 8.0)
+- Changed "Stack Damage" default configuration. (4.0 -> 6.0)
+- Changed "Attack Distance" default configuration. (50.0 -> 60.0)
+
+- Added a buff and rework to Planula.
+```
+
 **1.14.4**
 
 ```
