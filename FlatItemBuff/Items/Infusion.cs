@@ -302,7 +302,6 @@ namespace FlatItemBuff.Items
 			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
 			//Add new
-			ilcursor.RemoveRange(5);
 			ilcursor.GotoNext(
 				x => x.MatchLdarg(0),
 				x => x.MatchLdarg(0),

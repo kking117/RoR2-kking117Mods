@@ -54,7 +54,7 @@ namespace FlatItemBuff.Items
 			{
 				descDamage += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 100f);
 			}
-			descDamage += " base damage</style>";
+			descDamage += "</style> base damage";
 
 			string pickup = "Chance to detain enemies on hit. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.";
 			string desc = string.Format("Your attacks have a {0} chance to <style=cIsHealth>detain</style> an enemy for {1}. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.", descChance, descDamage);

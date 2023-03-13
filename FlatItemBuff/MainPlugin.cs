@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.15.0";
+		public const string MODVERSION = "1.15.1";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -374,13 +374,13 @@ namespace FlatItemBuff
 			WaxQuail_Enable = Config.Bind<bool>(new ConfigDefinition("Wax Quail", "Enable Changes"), true, new ConfigDescription("Enables changes to Wax Quail.", null, Array.Empty<object>()));
 			WaxQuail_BaseHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Horizontal Boost"), 12f, new ConfigDescription("How far horizontally to boost the user at 1 stack. (10 = Vanilla)", null, Array.Empty<object>()));
 			WaxQuail_StackHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Horizontal Boost"), 6f, new ConfigDescription("How far horizontally to boost the user from additional stacks. (10 = Vanilla)", null, Array.Empty<object>()));
-			WaxQuail_CapHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Horizontal Boost"), 150f, new ConfigDescription("Horizontal boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
+			WaxQuail_CapHori = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Horizontal Boost"), 240f, new ConfigDescription("Horizontal boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			WaxQuail_BaseVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Vertical Boost"), 0.2f, new ConfigDescription("How far vertically to boost the user at 1 stack. (0.5 = Hopoo Feather)", null, Array.Empty<object>()));
 			WaxQuail_StackVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Vertical Boost"), 0f, new ConfigDescription("How far vertically to boost the user from additional stacks.", null, Array.Empty<object>()));
 			WaxQuail_CapVert = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Vertical Boost"), 1f, new ConfigDescription("Vertical boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 			WaxQuail_BaseAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Base Air Speed Bonus"), 0.14f, new ConfigDescription("Aerial speed boost at 1 stack.", null, Array.Empty<object>()));
 			WaxQuail_StackAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Stack Air Speed Bonus"), 0.07f, new ConfigDescription("Aerial speed boost from additional stacks.", null, Array.Empty<object>()));
-			WaxQuail_CapAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Air Speed Bonus"), 1.5f, new ConfigDescription("Aerial speed boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
+			WaxQuail_CapAirSpeed = Config.Bind<float>(new ConfigDefinition("Wax Quail", "Capped Air Speed Bonus"), 2.8f, new ConfigDescription("Aerial speed boost limit, makes the stacking work hyperbolically. (Set to 0 or less to disable this)", null, Array.Empty<object>()));
 
 			Aegis_Enable = Config.Bind<bool>(new ConfigDefinition("Aegis", "Enable Changes"), true, new ConfigDescription("Enables changes to Aegis.", null, Array.Empty<object>()));
 			Aegis_Regen = Config.Bind<bool>(new ConfigDefinition("Aegis", "Count Regen"), true, new ConfigDescription("Allows Aegis to convert excess regen into barrier.", null, Array.Empty<object>()));
@@ -392,7 +392,7 @@ namespace FlatItemBuff
 			BensRaincoat_Enable = Config.Bind<bool>(new ConfigDefinition("Bens Raincoat", "Enable Changes"), true, new ConfigDescription("Enables changes to Ben's Raincoat.", null, Array.Empty<object>()));
 			BensRaincoat_FixCooldown = Config.Bind<bool>(new ConfigDefinition("Bens Raincoat", "Improve Cooldown"), true, new ConfigDescription("Starts the cooldown when losing a stack of block instead of when losing all stacks.", null, Array.Empty<object>()));
 			BensRaincoat_BaseBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Base Block"), 2, new ConfigDescription("How many debuff blocks to give at a single stack.", null, Array.Empty<object>()));
-			BensRaincoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 1, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
+			BensRaincoat_StackBlock = Config.Bind<int>(new ConfigDefinition("Bens Raincoat", "Stack Block"), 2, new ConfigDescription("How many extra debuff blocks to give from additional stacks.", null, Array.Empty<object>()));
 			BensRaincoat_Cooldown = Config.Bind<float>(new ConfigDefinition("Bens Raincoat", "Cooldown Time"), 7f, new ConfigDescription("How long in seconds it takes for the debuff blocks to restock. (Anything less than 0 will skip this change.)", null, Array.Empty<object>()));
 
 			LigmaLenses_Enable = Config.Bind<bool>(new ConfigDefinition("Lost Seers Lenses", "Enable Changes"), true, new ConfigDescription("Enables changes for Lost Seers Lenses.", null, Array.Empty<object>()));

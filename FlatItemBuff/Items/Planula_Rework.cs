@@ -55,7 +55,7 @@ namespace FlatItemBuff.Items
             {
 				damage += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * Duration * 100f);
 			}
-			damage += " base damage</style>";
+			damage += "</style> base damage";
 
 			string pickup = "Burn nearby enemies while in combat.";
 			string desc = string.Format("While in combat, <style=cIsDamage>burn</style> all enemies within {0} for {1}.", radius, damage);
