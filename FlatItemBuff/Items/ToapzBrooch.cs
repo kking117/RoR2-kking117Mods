@@ -11,8 +11,17 @@ namespace FlatItemBuff.Items
 {
 	public class TopazBrooch
 	{
+		internal static bool Enable = true;
+		internal static float BaseFlatBarrier = 15.0f;
+		internal static float StackFlatBarrier = 15.0f;
+		internal static float BaseCentBarrier = 0.005f;
+		internal static float StackCentBarrier = 0.005f;
 		public TopazBrooch()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Topaz Brooch");
 			UpdateText();
 			Hooks();
@@ -21,17 +30,17 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string desc = "Gain a <style=cIsHealing>temporary barrier</style> on kill for ";
-			if (MainPlugin.Brooch_BaseFlatBarrier.Value > 0f || MainPlugin.Brooch_StackFlatBarrier.Value > 0f)
+			if (BaseFlatBarrier > 0f || StackFlatBarrier > 0f)
 			{
-				desc += string.Format("<style=cIsHealing>{0} health <style=cStack>(+{1} per stack)</style></style>", MainPlugin.Brooch_BaseFlatBarrier.Value, MainPlugin.Brooch_StackFlatBarrier.Value);
+				desc += string.Format("<style=cIsHealing>{0} health <style=cStack>(+{1} per stack)</style></style>", BaseFlatBarrier, StackFlatBarrier);
 			}
-			if (MainPlugin.Brooch_BaseCentBarrier.Value > 0f || MainPlugin.Brooch_StackCentBarrier.Value > 0f)
+			if (BaseCentBarrier > 0f || StackCentBarrier > 0f)
 			{
-				if (MainPlugin.Brooch_BaseFlatBarrier.Value > 0f || MainPlugin.Brooch_StackCentBarrier.Value > 0f)
+				if (BaseFlatBarrier > 0f || StackCentBarrier > 0f)
 				{
 					desc += " plus an additional ";
 				}
-				desc += string.Format("<style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style></style> of <style=cIsHealing>maximum health</style>", MainPlugin.Brooch_BaseCentBarrier.Value * 100f, MainPlugin.Brooch_StackCentBarrier.Value * 100f);
+				desc += string.Format("<style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style></style> of <style=cIsHealing>maximum health</style>", BaseCentBarrier * 100f, StackCentBarrier * 100f);
 			}
 			desc += ".";
 			LanguageAPI.Add("ITEM_BARRIERONKILL_DESC", desc);
@@ -56,12 +65,12 @@ namespace FlatItemBuff.Items
 			ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
 			{
 				itemCount--;
-				float basebarrier = MainPlugin.Brooch_BaseFlatBarrier.Value;
-				float stackbarrier = MainPlugin.Brooch_StackFlatBarrier.Value;
+				float basebarrier = BaseFlatBarrier;
+				float stackbarrier = StackFlatBarrier;
 				if (dr.attackerBody.healthComponent)
 				{
-					basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * MainPlugin.Brooch_BaseCentBarrier.Value;
-					stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * MainPlugin.Brooch_StackCentBarrier.Value;
+					basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * BaseCentBarrier;
+					stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * StackCentBarrier;
 				}
 				stackbarrier *= itemCount;
 				return basebarrier + stackbarrier;

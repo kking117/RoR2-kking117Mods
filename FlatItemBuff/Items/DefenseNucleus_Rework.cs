@@ -14,41 +14,29 @@ namespace FlatItemBuff.Items
 {
     class DefenseNucleus_Rework
     {
-        private static float BaseDuration = 3.5f;
-        private static float StackDuration = 1f;
-        private static int BaseHealth = 10;
-        private static int StackHealth = 10;
-        private static int BaseAttack = 6;
-        private static int StackAttack = 0;
-        private static int BaseDamage = 6;
-        private static int StackDamage = 8;
-        private static int SummonCount = 3;
+        internal static bool Enable = false;
+        internal static float ShieldBaseDuration = 3.5f;
+        internal static float ShieldStackDuration = 1f;
+        internal static int BaseHealth = 10;
+        internal static int StackHealth = 10;
+        internal static int BaseAttack = 6;
+        internal static int StackAttack = 0;
+        internal static int BaseDamage = 6;
+        internal static int StackDamage = 8;
+        internal static int SummonCount = 3;
         public DefenseNucleus_Rework()
         {
+            if (!Enable)
+            {
+                new Items.DefenseNucleus();
+                return;
+            }
             MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
-            SetupConfigValues();
+            SummonCount = Math.Min(6, SummonCount);
             UpdateText();
             UpdateItemDef();
             Hooks();
             DefenseNucleus_Shared.EnableChanges();
-        }
-        private void SetupConfigValues()
-        {
-            BaseDuration = MainPlugin.NucleusRework_ShieldBaseDuration.Value;
-            StackDuration = MainPlugin.NucleusRework_ShieldStackDuration.Value;
-
-            BaseHealth = MainPlugin.NucleusRework_BaseHealth.Value;
-            StackHealth = MainPlugin.NucleusRework_StackHealth.Value;
-
-            BaseAttack = MainPlugin.NucleusRework_BaseAttack.Value;
-            StackAttack = MainPlugin.NucleusRework_StackAttack.Value;
-
-            BaseDamage = MainPlugin.NucleusRework_BaseDamage.Value;
-            StackDamage = MainPlugin.NucleusRework_StackDamage.Value;
-
-            MainPlugin.NucleusRework_SummonCount.Value = Math.Min(6, MainPlugin.NucleusRework_SummonCount.Value);
-
-            SummonCount = MainPlugin.NucleusRework_SummonCount.Value;
         }
         private void UpdateItemDef()
         {
@@ -66,9 +54,9 @@ namespace FlatItemBuff.Items
             MainPlugin.ModLogger.LogInfo("Updating item text");
             string pickup = string.Format("Launch additional defensive measures on equipment activation.");
             string desc = string.Format("Activating your equipment deploys ");
-            if (BaseDuration > 0f)
+            if (ShieldBaseDuration > 0f)
             {
-                desc += string.Format("a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", BaseDuration, StackDuration);
+                desc += string.Format("a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", ShieldBaseDuration, ShieldStackDuration);
             }
             if (SummonCount > 0)
             {
@@ -121,7 +109,7 @@ namespace FlatItemBuff.Items
                 {
                     stats = " with " + stats;
                 }
-                if (BaseDuration > 0f)
+                if (ShieldBaseDuration > 0f)
                 {
                     desc += " It also deploys ";
                 }
@@ -161,14 +149,14 @@ namespace FlatItemBuff.Items
                                 comp = self.characterBody.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
                             }
                         }
-                        if (BaseDuration > 0f)
+                        if (ShieldBaseDuration > 0f)
                         {
                             DefenseNucleusShield comp = self.characterBody.GetComponent<DefenseNucleusShield>();
                             if (!comp)
                             {
                                 comp = self.characterBody.gameObject.AddComponent<DefenseNucleusShield>();
                             }
-                            comp.duration = BaseDuration + (StackDuration * (itemCount - 1));
+                            comp.duration = ShieldBaseDuration + (ShieldStackDuration * (itemCount - 1));
                         }
                     }
                 }
@@ -234,8 +222,6 @@ namespace FlatItemBuff.Items
                     if (owner)
                     {
                         SetupConstructInventory(self, owner);
-                        SummonDeclutter component = self.gameObject.AddComponent<SummonDeclutter>();
-                        component.slot = DeployableSlot.MinorConstructOnKill;
                     }
                 }
             }

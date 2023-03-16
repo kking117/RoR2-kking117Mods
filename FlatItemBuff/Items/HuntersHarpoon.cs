@@ -14,37 +14,31 @@ namespace FlatItemBuff.Items
 	{
 		public static BuffDef HarpoonBuff = DLC1Content.Buffs.KillMoveSpeed;
 		private static Color BuffColor = new Color(0.717f, 0.545f, 0.952f, 1f);
-		private static float BaseDuration = 1.5f;
-		private static float StackDuration = 0.75f;
-		private static float MovementSpeed = 0.2f;
-		private static float CooldownRate = 0.2f;
 		private static bool DoesCool = true;
-		private static bool CoolPrimary = true;
-		private static bool CoolSecondary = true;
-		private static bool CoolUtility = false;
-		private static bool CoolSpecial = false;
+
+		internal static bool Enable = true;
+		internal static float BaseDuration = 1.5f;
+		internal static float StackDuration = 0.75f;
+		internal static float MovementSpeed = 0.2f;
+		internal static float CooldownRate = 0.2f;
+		internal static bool CoolPrimary = true;
+		internal static bool CoolSecondary = true;
+		internal static bool CoolUtility = false;
+		internal static bool CoolSpecial = false;
 		public HuntersHarpoon()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Hunter's Harpoon");
-			SetupConfigValues();
+			if (!CoolPrimary && !CoolSecondary && !CoolUtility && !CoolSpecial)
+			{
+				DoesCool = false;
+			}
 			UpdateText();
 			CreateBuff();
 			Hooks();
-		}
-		private void SetupConfigValues()
-		{
-			BaseDuration = MainPlugin.Harpoon_BaseDuration.Value;
-			StackDuration = MainPlugin.Harpoon_StackDuration.Value;
-			MovementSpeed = MainPlugin.Harpoon_MoveSpeed.Value;
-			CooldownRate = MainPlugin.Harpoon_CooldownRate.Value;
-			CoolPrimary = MainPlugin.Harpoon_CoolPrimary.Value;
-			CoolSecondary = MainPlugin.Harpoon_CoolSecondary.Value;
-			CoolUtility = MainPlugin.Harpoon_CoolUtility.Value;
-			CoolSpecial = MainPlugin.Harpoon_CoolSpecial.Value;
-			if (!CoolPrimary && !CoolSecondary && !CoolUtility && !CoolSpecial)
-            {
-				DoesCool = false;
-			}
 		}
 		private void CreateBuff()
 		{
@@ -127,10 +121,10 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
-			GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-			if(MovementSpeed != 0f)
+			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
+			if (MovementSpeed != 0f)
             {
-				RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			}
 			if(CooldownRate != 0f && DoesCool)
             {
@@ -182,7 +176,7 @@ namespace FlatItemBuff.Items
 				}
 			}
         }
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
 			int buffCount = sender.GetBuffCount(HarpoonBuff.buffIndex);
 			if (buffCount > 0)
@@ -190,46 +184,39 @@ namespace FlatItemBuff.Items
 				args.moveSpeedMultAdd += buffCount * MovementSpeed;
 			}
 		}
-		private void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
+		private void GlobalKillEvent(DamageReport damageReport)
 		{
-			if (!NetworkServer.active)
+			CharacterBody attacker = damageReport.attackerBody;
+			if (attacker.inventory)
 			{
-				return;
-			}
-			if (damageReport.attacker && damageReport.attackerBody)
-            {
-				CharacterBody attacker = damageReport.attackerBody;
-				if (attacker.inventory)
+				int itemCount = attacker.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
+				if (itemCount > 0)
 				{
-					int itemCount = attacker.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
-					if (itemCount > 0)
+					float duration = BaseDuration;
+					duration += (itemCount - 1) * StackDuration;
+					if (duration > 0f)
 					{
-						float duration = BaseDuration;
-						duration += (itemCount - 1) * StackDuration;
-						if (duration > 0f)
+						attacker.ClearTimedBuffs(HarpoonBuff.buffIndex);
+						for (int i = 0; i < 5; i++)
 						{
-							attacker.ClearTimedBuffs(HarpoonBuff.buffIndex);
-							for(int i = 0; i<5; i++)
-                            {
-								attacker.AddTimedBuff(HarpoonBuff.buffIndex, duration * (i + 1) / 5);
-							}
-							EffectData effectData = new EffectData();
-							effectData.origin = attacker.corePosition;
-							effectData.rotation = attacker.transform.rotation;
-							CharacterMotor characterMotor = attacker.characterMotor;
-							if (characterMotor)
-							{
-								Vector3 moveDirection = characterMotor.moveDirection;
-								if (moveDirection != Vector3.zero)
-								{
-									effectData.rotation = Util.QuaternionSafeLookRotation(moveDirection);
-								}
-							}
-							EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/MoveSpeedOnKillActivate"), effectData, true);
+							attacker.AddTimedBuff(HarpoonBuff.buffIndex, duration * (i + 1) / 5);
 						}
+						EffectData effectData = new EffectData();
+						effectData.origin = attacker.corePosition;
+						effectData.rotation = attacker.transform.rotation;
+						CharacterMotor characterMotor = attacker.characterMotor;
+						if (characterMotor)
+						{
+							Vector3 moveDirection = characterMotor.moveDirection;
+							if (moveDirection != Vector3.zero)
+							{
+								effectData.rotation = Util.QuaternionSafeLookRotation(moveDirection);
+							}
+						}
+						EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/MoveSpeedOnKillActivate"), effectData, true);
 					}
 				}
-            }
+			}
 		}
 		private void IL_OnCharacterDeath(ILContext il)
 		{

@@ -8,16 +8,19 @@ namespace FlatItemBuff.Items
 {
 	public class LigmaLenses
 	{
-		private static float BaseDamage = 50.0f;
-		private static float StackDamage = 0.0f;
-		private static float BaseChance = 0.5f;
-		private static float StackChance = 0.5f;
+		internal static bool Enable = true;
+		internal static float BaseDamage = 50.0f;
+		internal static float StackDamage = 0.0f;
+		internal static float BaseChance = 0.5f;
+		internal static float StackChance = 0.5f;
 		private static GameObject HitEffect = null;
-
 		public LigmaLenses()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Lost Seer's Lenses");
-			SetupConfigValues();
 			UpdateText();
 			Hooks();
 			//Remove the goofy nubme
@@ -30,13 +33,6 @@ namespace FlatItemBuff.Items
             {
 				MainPlugin.ModLogger.LogInfo("Hit effect not found, expect errors.");
 			}
-		}
-		private void SetupConfigValues()
-        {
-			BaseDamage = MainPlugin.LigmaLenses_BaseDamage.Value;
-			StackDamage = MainPlugin.LigmaLenses_StackDamage.Value;
-			BaseChance = MainPlugin.LigmaLenses_BaseChance.Value;
-			StackChance = MainPlugin.LigmaLenses_StackChance.Value;
 		}
 		private void UpdateText()
 		{
@@ -65,66 +61,53 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
-			On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
+			SharedHooks.Handle_GlobalHitEvent_Actions += GlobalEventManager_HitEnemy;
 		}
-		private void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
+		private void GlobalEventManager_HitEnemy(CharacterBody victimBody, CharacterBody attackerBody, DamageInfo damageInfo)
 		{
-			orig(self, damageInfo, victim);
 			if (damageInfo.procCoefficient <= 0f || damageInfo.rejected)
 			{
 				return;
 			}
-			if (!NetworkServer.active)
+			if (victimBody.healthComponent.alive)
 			{
-				return;
-			}
-			if (damageInfo.attacker)
-            {
-				CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-				CharacterBody victimBody = victim.GetComponent<CharacterBody>();
-				if (attackerBody && victimBody)
-                {
-					if (victimBody.healthComponent.alive)
+				CharacterMaster attackerMaster = attackerBody.master;
+				if (attackerMaster)
+				{
+					Inventory inventory = attackerMaster.inventory;
+					int itemCount = inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
+					if (itemCount > 0)
 					{
-						CharacterMaster attackerMaster = attackerBody.master;
-						if (attackerMaster)
+						float effectChance = BaseChance + (StackChance * (itemCount - 1));
+						if (Util.CheckRoll(effectChance * damageInfo.procCoefficient))
 						{
-							Inventory inventory = attackerMaster.inventory;
-							int itemCount = inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
-							if (itemCount > 0)
+							float coefDamage = BaseDamage + (StackDamage * (itemCount - 1));
+							float baseDamage = attackerBody.damage;
+
+							DamageInfo detainInfo = new DamageInfo
 							{
-								float effectChance = BaseChance + (StackChance * (itemCount - 1));
-								if (Util.CheckRoll(effectChance * damageInfo.procCoefficient))
-								{
-									float coefDamage = BaseDamage + (StackDamage * (itemCount - 1));
-									float baseDamage = attackerBody.damage;
+								damage = baseDamage * coefDamage,
+								damageColorIndex = DamageColorIndex.Void,
+								damageType = DamageType.Generic,
+								attacker = damageInfo.attacker,
+								crit = damageInfo.crit,
+								force = Vector3.zero,
+								inflictor = null,
+								position = damageInfo.position,
+								procChainMask = damageInfo.procChainMask,
+								procCoefficient = 0f
+							};
+							victimBody.healthComponent.TakeDamage(detainInfo);
+							victimBody.healthComponent.killingDamageType = DamageType.VoidDeath;
 
-									DamageInfo detainInfo = new DamageInfo
-									{
-										damage = baseDamage * coefDamage,
-										damageColorIndex = DamageColorIndex.Void,
-										damageType = DamageType.Generic,
-										attacker = damageInfo.attacker,
-										crit = damageInfo.crit,
-										force = Vector3.zero,
-										inflictor = null,
-										position = damageInfo.position,
-										procChainMask = damageInfo.procChainMask,
-										procCoefficient = 0f
-									};
-									victimBody.healthComponent.TakeDamage(detainInfo);
-									victimBody.healthComponent.killingDamageType = DamageType.VoidDeath;
-
-									EffectManager.SpawnEffect(HitEffect, new EffectData
-									{
-										origin = damageInfo.position,
-										scale = victimBody.radius
-									}, true);
-								}
-							}
+							EffectManager.SpawnEffect(HitEffect, new EffectData
+							{
+								origin = damageInfo.position,
+								scale = victimBody.radius
+							}, true);
 						}
 					}
-                }
+				}
 			}
 		}
 		private void IL_TakeDamage(ILContext il)

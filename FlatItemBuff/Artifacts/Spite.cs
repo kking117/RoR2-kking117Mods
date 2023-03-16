@@ -6,18 +6,17 @@ namespace FlatItemBuff.Artifacts
 {
 	public class Spite
 	{
-		private static float BaseDamage = 12f;
-		private static float LevelDamage = 2.4f;
+		internal static bool Enable = false;
+		internal static float BaseDamage = 12f;
+		internal static float LevelDamage = 2.4f;
 		public Spite()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Artifact of Spite");
-			SetupConfigValues();
 			Hooks();
-		}
-		private void SetupConfigValues()
-        {
-			BaseDamage = MainPlugin.ArtifactSpite_BaseDamage.Value;
-			LevelDamage = MainPlugin.ArtifactSpite_LevelDamage.Value;
 		}
 		private void Hooks()
 		{

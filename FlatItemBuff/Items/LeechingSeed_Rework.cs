@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using RoR2;
 using R2API;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
@@ -16,34 +13,28 @@ namespace FlatItemBuff.Items
 		public static BuffDef LeechBuff = RoR2Content.Buffs.Warbanner;
 		public static DotController.DotDef LeechDotDef;
 		private static DotController.DotIndex LeechDotIndex;
-
-		private static float FlatHealing = 2f;
-		private static float LeechChance = 0.25f;
-		private static float LifeSteal = 0.02f;
-		private static float MinLifeStealPerLevel = 0.1f;
-		private static float LeechBaseDamage = 0.5f;
-		private static float LeechBaseDuration = 5f;
-		private static float LeechStackDuration = 0f;
+		internal static bool Enable = false;
+		internal static float HealFromDoT = 2f;
+		internal static float LeechChance = 0.25f;
+		internal static float LeechLifeSteal = 0.02f;
+		internal static float LeechMinLifeSteal = 0.02f;
+		internal static float LeechBaseDamage = 0.5f;
+		internal static float LeechBaseDuration = 5f;
+		internal static float LeechStackDuration = 0f;
 		public LeechingSeed_Rework()
 		{
+			if (!Enable)
+            {
+				new LeechingSeed();
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
 			if (LeechChance > 0f)
 			{
 				CreateBuff();
 			}
-			SetupConfigValues();
 			UpdateText();
 			Hooks();
-		}
-		private void SetupConfigValues()
-        {
-			LifeSteal = MainPlugin.LeechingSeedRework_DoTLifeSteal.Value;
-			MinLifeStealPerLevel = MainPlugin.LeechingSeedRework_DoTMinLifeSteal.Value;
-			LeechChance = MainPlugin.LeechingSeedRework_DoTChance.Value;
-			FlatHealing = MainPlugin.LeechingSeedRework_DoTFlatHeal.Value;
-			LeechBaseDamage = MainPlugin.LeechingSeedRework_DoTBaseDamage.Value;
-			LeechBaseDuration = MainPlugin.LeechingSeedRework_DoTBaseDuration.Value;
-			LeechStackDuration = MainPlugin.LeechingSeedRework_DoTStackDuration.Value;
 		}
 		private void CreateBuff()
 		{
@@ -62,14 +53,14 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "";
 			string desc = "";
-			if(FlatHealing > 0f)
+			if(HealFromDoT > 0f)
             {
 				pickup += string.Format("Dealing status damage heals you.");
-				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", FlatHealing);
+				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", HealFromDoT);
 			}
 			if(LeechChance > 0f)
             {
-				if (FlatHealing > 0f)
+				if (HealFromDoT > 0f)
                 {
 					pickup += " ";
 					desc += " ";
@@ -89,61 +80,59 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
-			GlobalEventManager.onServerDamageDealt += Global_DamageDealt;
+			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 		}
-		private void Global_DamageDealt(DamageReport damageReport)
+		private void GlobalDamageEvent(DamageReport damageReport)
 		{
-			if (!NetworkServer.active)
+			CharacterBody attackerBody = damageReport.attackerBody;
+			float procrate = damageReport.damageInfo.procCoefficient;
+			ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
+			Inventory inventory = damageReport.attackerBody.inventory;
+
+			if (LeechChance > 0f)
 			{
-				return;
-			}
-			if (damageReport.attacker && damageReport.attackerBody)
-			{
-				float healing = 0f;
-				float procrate = damageReport.damageInfo.procCoefficient;
-				ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
-				Inventory inventory = damageReport.attackerBody.inventory;
-				if (inventory)
+				if (damageReport.victimBody.HasBuff(LeechBuff))
 				{
-					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
-					if (itemCount > 0)
-					{
-						if (LeechChance > 0f)
-                        {
-							if (procrate > 0f)
+					damageReport.attackerBody.healthComponent.Heal(LeechHealing(attackerBody.level, damageReport.damageDealt, procrate), procChainMask, true);
+				}
+			}
+
+			if (inventory)
+			{
+				int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
+				if (itemCount > 0)
+				{
+					if (LeechChance > 0f)
+                    {
+						if (procrate > 0f)
+						{
+							if (damageReport.victim)
 							{
-								if (damageReport.victim)
+								if (Util.CheckRoll(procrate * LeechChance, damageReport.attackerMaster))
 								{
-									if (Util.CheckRoll(procrate * LeechChance, damageReport.attackerMaster))
-									{
-										float duration = LeechBaseDuration + (LeechStackDuration * (itemCount - 1));
-										DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, duration * procrate, 1f, 1);
-									}
+									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, LeechDuration(itemCount) * procrate, 1f, 1);
 								}
 							}
 						}
-						if (FlatHealing > 0f)
+					}
+					if (HealFromDoT > 0f)
+					{
+						if (damageReport.dotType != DotController.DotIndex.None)
 						{
-							if (damageReport.dotType != DotController.DotIndex.None)
-							{
-								healing += FlatHealing * itemCount;
-							}
+							damageReport.attackerBody.healthComponent.Heal(HealFromDoT * itemCount, procChainMask, true);
 						}
 					}
 				}
-				if (LeechChance > 0f)
-				{
-					if (damageReport.victimBody.HasBuff(LeechBuff))
-					{
-						healing += Math.Max(damageReport.attackerBody.level * MinLifeStealPerLevel, damageReport.damageDealt * LifeSteal * procrate);
-					}
-				}
-				if (healing > 0f)
-				{
-					damageReport.attackerBody.healthComponent.Heal(healing, procChainMask, true);
-				}
 			}
-			
+		}
+		private float LeechHealing(float level, float damage, float procrate)
+        {
+			return Math.Max(level * LeechMinLifeSteal, damage * LeechLifeSteal * procrate);
+		}
+		private float LeechDuration(float itemCount)
+        {
+			itemCount = Math.Max(0, itemCount - 1);
+			return LeechBaseDuration + (LeechStackDuration * itemCount);
 		}
 		private void IL_OnHitEnemy(ILContext il)
 		{

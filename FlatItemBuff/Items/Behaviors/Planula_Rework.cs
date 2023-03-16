@@ -10,7 +10,7 @@ namespace FlatItemBuff.Items.Behaviors
 		List<HurtBox> SphereResult = new List<HurtBox>();
 
 		private float nextAttack;
-		private float attackRadius = MainPlugin.PlanulaRework_Radius.Value;
+		private float attackRadius = Items.Planula_Rework.Radius;
 		private void FixedUpdate()
         {
 			if (!body)
@@ -55,7 +55,7 @@ namespace FlatItemBuff.Items.Behaviors
 						attackerObject = body.gameObject,
 						totalDamage = baseDamage * damageMult,
 						dotIndex = DotController.DotIndex.Burn,
-						damageMultiplier = 1f * damageMult,
+						damageMultiplier = damageMult,
 					};
 					if (body.inventory)
 					{

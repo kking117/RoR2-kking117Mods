@@ -1,3 +1,37 @@
+**1.15.2**
+
+<details><summary>Notes</summary>The way the mod handles its configs has changed greatly, so be ready to reconfigure them. Also default configurations may have changed that is not listed in this update.</details>
+
+```
+- Bison Steak:
+- Changed pickup text to be consistent with other pickup texts.
+
+- Topaz Brooch:
+- Changed "Base Flat Barrier" default configuration. (14 -> 15)
+- Changed "Stack Flat Barrier" default configuration. (14 -> 15)
+
+- Infusion:
+- Brought back the old infusion changes as per a user's request, the new infusion changes are now listed as a rework.
+
+- Infusion Rework:
+- Added "Leash Distance" configuration, gives the clone a custom minion leash distance.
+- Clones are automatically killed if their owner no longer exists.
+
+- Leeching Seed:
+- Changed "Proc Healing" default configuration. (0.5 -> 0.75)
+- Changed "Base Healing" default configuration. (0.5 -> 0.75)
+
+- Leeching Seed Rework:
+- Changed "Leech Minimum Life Steal" default configuration. (0.1 -> 0.02)
+
+- Squid Polyp:
+- Changed "Inactive Removal" default configuration. (20 -> 30)
+- Squid Turrets are now killed from inactive removal instead of having their healing disabled.
+
+- Ben's Raincoat:
+- Removed "Improve Cooldown" configuration, is now always in effect when changes are enabled.
+```
+
 **1.15.1**
 
 ```

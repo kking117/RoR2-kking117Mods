@@ -7,10 +7,17 @@ namespace FlatItemBuff.Items
 {
 	public class Aegis
 	{
+		internal static bool Enable = true;
+		internal static bool AllowRegen = true;
+		internal static float Armor = 20f;
 		public Aegis()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Aegis");
-			if (MainPlugin.Aegis_Armor.Value != 0f)
+			if (Armor != 0f)
             {
 				UpdateText();
 			}
@@ -20,31 +27,28 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "Healing past full grants you a temporary barrier. Reduces damage taken.";
-			string desc = String.Format("Healing past full grants you a <style=cIsHealing>temporary barrier</style> for <style=cIsHealing>50% <style=cStack>(+50% per stack)</style></style> of the amount you <style=cIsHealing>healed</style>. <style=cIsHealing>Increases armor</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", MainPlugin.Aegis_Armor.Value);
+			string desc = String.Format("Healing past full grants you a <style=cIsHealing>temporary barrier</style> for <style=cIsHealing>50% <style=cStack>(+50% per stack)</style></style> of the amount you <style=cIsHealing>healed</style>. <style=cIsHealing>Increases armor</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", Armor);
 			LanguageAPI.Add("ITEM_BARRIERONOVERHEAL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_BARRIERONOVERHEAL_DESC", desc);
 		}
 		private void Hooks()
 		{
-			if (MainPlugin.Aegis_Regen.Value)
+			if (AllowRegen)
 			{
 				MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 				IL.RoR2.HealthComponent.Heal += new ILContext.Manipulator(IL_Heal);
 			}
-			if(MainPlugin.Aegis_Armor.Value != 0f)
+			if(Armor != 0f)
             {
-				RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			}
 		}
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			if (sender.inventory)
+			int itemCount = inventory.GetItemCount(RoR2Content.Items.BarrierOnOverHeal);
+			if (itemCount > 0)
 			{
-				int itemCount = sender.inventory.GetItemCount(RoR2Content.Items.BarrierOnOverHeal);
-				if (itemCount > 0)
-				{
-					args.armorAdd += itemCount * MainPlugin.Aegis_Armor.Value;
-				}
+				args.armorAdd += itemCount * Armor;
 			}
 		}
 		private void IL_Heal(ILContext il)

@@ -16,9 +16,13 @@ namespace FlatItemBuff.Items
         private static CharacterSpawnCard ConstructCSC;
         private static GameObject ConstructBodyObject;
         public static BodyIndex ConstructBodyIndex = BodyIndex.None;
+
+        internal static bool ForceMechanical = true;
+        internal static bool ExtraDisplays = true;
+        internal static bool TweakAI = true;
         public static void EnableChanges()
         {
-            if (MainPlugin.NucleusShared_TweakAI.Value)
+            if (TweakAI)
             {
                 UpdateAI();
             }
@@ -61,12 +65,12 @@ namespace FlatItemBuff.Items
                 if (body)
                 {
                     ConstructBodyIndex = body.bodyIndex;
-                    if (MainPlugin.NucleusShared_Mechanical.Value)
+                    if (ForceMechanical)
                     {
                         body.bodyFlags |= CharacterBody.BodyFlags.Mechanical;
                     }
                 }
-                if (MainPlugin.NucleusShared_ExtraDisplays.Value)
+                if (ExtraDisplays)
                 {
                     ItemDisplayRuleSet itemdisplayruleSet = ConstructBodyObject.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet;
                     //DisplayRuleGroup displayruleGroup = ConstructBodyObject.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.keyAssetRuleGroups[0].displayRuleGroup;

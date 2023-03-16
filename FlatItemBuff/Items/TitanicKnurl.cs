@@ -11,8 +11,17 @@ namespace FlatItemBuff.Items
 {
 	public class TitanicKnurl
 	{
+		internal static bool Enable = true;
+		internal static float BaseHP = 60f;
+		internal static float LevelHP = 6f;
+		internal static float BaseRegen = 2.4f;
+		internal static float LevelRegen = 0.48f;
 		public TitanicKnurl()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Titanic Knurl");
 			UpdateText();
 			Hooks();
@@ -22,27 +31,27 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = string.Format("");
 			string desc = string.Format("");
-			if(MainPlugin.Knurl_BaseHP.Value > 0f)
+			if(BaseHP > 0f)
             {
 				pickup = string.Format("Boosts health");
-				desc = string.Format("<style=cIsHealing>Increase maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>", MainPlugin.Knurl_BaseHP.Value);
-				if (MainPlugin.Knurl_BaseRegen.Value <= 0f)
+				desc = string.Format("<style=cIsHealing>Increase maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>", BaseHP);
+				if (BaseRegen <= 0f)
                 {
 					pickup += string.Format(".");
 					desc += string.Format(".");
 				}
 			}
-			if (MainPlugin.Knurl_BaseRegen.Value > 0f)
+			if (BaseRegen > 0f)
 			{
-				if(MainPlugin.Knurl_BaseHP.Value > 0f)
+				if(BaseHP > 0f)
                 {
 					pickup += string.Format(" and regeneration.");
-					desc += string.Format(" and <style=cIsHealing> base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{0} per stack)</style></style>.", MainPlugin.Knurl_BaseRegen.Value);
+					desc += string.Format(" and <style=cIsHealing> base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{0} per stack)</style></style>.", BaseRegen);
 				}
 				else
                 {
 					pickup += string.Format("Boosts regeneration.");
-					desc += string.Format("<style=cIsHealing>Increases base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{0} per stack)</style></style>.", MainPlugin.Knurl_BaseRegen.Value);
+					desc += string.Format("<style=cIsHealing>Increases base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{0} per stack)</style></style>.", BaseRegen);
 				}
 			}
 			LanguageAPI.Add("ITEM_KNURL_PICKUP", pickup);
@@ -52,7 +61,7 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 		}
 		private void IL_RecalculateStats(ILContext il)
 		{
@@ -64,22 +73,19 @@ namespace FlatItemBuff.Items
 			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
 		}
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			if (sender.inventory)
+			int itemCount = inventory.GetItemCount(RoR2Content.Items.Knurl);
+			if (itemCount > 0)
 			{
-				int itemCount = sender.inventory.GetItemCount(RoR2Content.Items.Knurl);
-				if (itemCount > 0)
+				float levelBonus = sender.level - 1f;
+				if (BaseRegen > 0f)
 				{
-					float levelBonus = sender.level - 1f;
-					if (MainPlugin.Knurl_BaseRegen.Value>0f)
-					{
-						args.baseRegenAdd += itemCount * (MainPlugin.Knurl_BaseRegen.Value + (levelBonus * MainPlugin.Knurl_LevelRegen.Value));
-					}
-					if (MainPlugin.Knurl_BaseHP.Value > 0f)
-					{
-						args.baseHealthAdd += itemCount * (MainPlugin.Knurl_BaseHP.Value + (levelBonus * MainPlugin.Knurl_LevelHP.Value));
-					}
+					args.baseRegenAdd += itemCount * (BaseRegen + (levelBonus * LevelRegen));
+				}
+				if (BaseHP > 0f)
+				{
+					args.baseHealthAdd += itemCount * (BaseHP + (levelBonus * LevelHP));
 				}
 			}
 		}

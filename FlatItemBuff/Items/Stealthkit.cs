@@ -9,31 +9,24 @@ namespace FlatItemBuff.Items
 	public class Stealthkit
 	{
 		public static BuffDef StealthBuff = RoR2Content.Buffs.Cloak;
-		private static float BaseRecharge = 30.0f;
-		private static float StackRecharge = 0.5f;
-		private static float BuffDuration = 5.0f;
-		private static float GraceDuration = 1.0f;
-		private static bool CancelCombat = true;
-		private static bool CancelDanger = true;
-		private static bool CleanseDoT = true;
+		internal static bool Enable = true;
+		internal static float BaseRecharge = 30.0f;
+		internal static float StackRecharge = 0.5f;
+		internal static float BuffDuration = 5.0f;
+		internal static float GraceDuration = 1.0f;
+		internal static bool CancelCombat = true;
+		internal static bool CancelDanger = true;
+		internal static bool CleanseDoT = true;
 		public Stealthkit()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Old War Stealthkit");
-			SetupConfigValues();
 			CreateBuffs();
 			Hooks();
 			UpdateText();
-		}
-		private void SetupConfigValues()
-		{
-			CancelDanger = MainPlugin.StealthKit_CancelDanger.Value;
-			CancelCombat = MainPlugin.StealthKit_CancelCombat.Value;
-			CleanseDoT = MainPlugin.StealthKit_CleanseDoT.Value;
-
-			BaseRecharge = MainPlugin.StealthKit_BaseRecharge.Value;
-			StackRecharge = MainPlugin.StealthKit_StackRecharge.Value;
-			BuffDuration = MainPlugin.StealthKit_BuffDuration.Value;
-			GraceDuration = MainPlugin.StealthKit_GraceDuration.Value;
 		}
 		private void UpdateText()
 		{
@@ -72,7 +65,7 @@ namespace FlatItemBuff.Items
 		{
 			Stealthkit_Override();
 			On.RoR2.CharacterBody.GetVisibilityLevel_TeamIndex += CharacterBody_GetVisibility;
-			RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsHook;
+			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			if (CancelDanger || CancelCombat)
 			{
 				if (GraceDuration > 0.0f)
@@ -196,7 +189,7 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
-		private void RecalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
 			if (sender.HasBuff(StealthBuff))
 			{

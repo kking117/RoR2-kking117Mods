@@ -4,56 +4,44 @@ using R2API;
 using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using UnityEngine.AddressableAssets;
 using EntityStates;
 
 namespace FlatItemBuff.Items
 {
 	public class WaxQuail
 	{
-		private static float BaseHori = 12f;
-		private static float StackHori = 8f;
-		private static float ActualBaseHori = 0.12f;
-		private static float ActualStackHori = 0.08f;
-		private static float CapHori = 100f;
+		internal static bool Enable = true;
+		internal static float BaseHori = 12f;
+		internal static float StackHori = 8f;
+		internal static float ActualBaseHori = 0.12f;
+		internal static float ActualStackHori = 0.08f;
+		internal static float CapHori = 100f;
 
-		private static float BaseVert = 0.3f;
-		private static float StackVert = 0f;
-		private static float ActualBaseVert = 0f;
-		private static float ActualStackVert = 0f;
-		private static float CapVert = 0.0f;
+		internal static float BaseVert = 0.3f;
+		internal static float StackVert = 0f;
+		internal static float ActualBaseVert = 0f;
+		internal static float ActualStackVert = 0f;
+		internal static float CapVert = 0.0f;
 
-		private static float BaseAirSpeed = 0.12f;
-		private static float StackAirSpeed = 0.08f;
-		private static float ActualBaseAirSpeed = 0.12f;
-		private static float ActualStackAirSpeed = 0.08f;
-		private static float CapAirSpeed = 1f;
+		internal static float BaseAirSpeed = 0.12f;
+		internal static float StackAirSpeed = 0.08f;
+		internal static float ActualBaseAirSpeed = 0.12f;
+		internal static float ActualStackAirSpeed = 0.08f;
+		internal static float CapAirSpeed = 1f;
 		public WaxQuail()
 		{
-			MainPlugin.ModLogger.LogInfo("Changing Wax Quail");
-			SetupConfigValues();
-			UpdateText();
-			Hooks();
-		}
-		private void SetupConfigValues()
-		{
-			BaseHori = MainPlugin.WaxQuail_BaseHori.Value;
-			StackHori = MainPlugin.WaxQuail_StackHori.Value;
-			CapHori = MainPlugin.WaxQuail_CapHori.Value;
-			BaseVert = MainPlugin.WaxQuail_BaseVert.Value;
-			StackVert = MainPlugin.WaxQuail_StackVert.Value;
-			CapVert = MainPlugin.WaxQuail_CapVert.Value;
-			BaseAirSpeed = MainPlugin.WaxQuail_BaseAirSpeed.Value;
-			StackAirSpeed = MainPlugin.WaxQuail_StackAirSpeed.Value;
-			CapAirSpeed = MainPlugin.WaxQuail_CapAirSpeed.Value;
-
-			if (CapAirSpeed > 0f)
+			if (!Enable)
             {
+				return;
+            }
+			MainPlugin.ModLogger.LogInfo("Changing Wax Quail");
+			if (CapAirSpeed > 0f)
+			{
 				ActualBaseAirSpeed = BaseAirSpeed / CapAirSpeed;
 				ActualStackAirSpeed = StackAirSpeed / CapAirSpeed;
 			}
 			else
-            {
+			{
 				ActualBaseAirSpeed = BaseAirSpeed;
 				ActualStackAirSpeed = StackAirSpeed;
 			}
@@ -63,20 +51,22 @@ namespace FlatItemBuff.Items
 				ActualStackVert = StackVert / CapVert;
 			}
 			else
-            {
+			{
 				ActualBaseVert = BaseVert;
 				ActualStackVert = StackVert;
 			}
 			if (CapHori > 0f)
-            {
+			{
 				ActualBaseHori = BaseHori / CapHori;
 				ActualStackHori = StackHori / CapHori;
 			}
 			else
-            {
+			{
 				ActualBaseHori = BaseHori;
 				ActualStackHori = StackHori;
 			}
+			UpdateText();
+			Hooks();
 		}
 		private void UpdateText()
 		{
@@ -116,7 +106,7 @@ namespace FlatItemBuff.Items
 			if (StackAirSpeed != 0f || StackAirSpeed != 0f)
             {
 				CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
-				RecalculateStatsAPI.GetStatCoefficients += GetStatCoefficients;
+				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			}
 		}
 		private void OnInventoryChanged(CharacterBody self)
@@ -126,26 +116,23 @@ namespace FlatItemBuff.Items
 				self.AddItemBehavior<Behaviors.WaxQuail>(self.inventory.GetItemCount(RoR2Content.Items.JumpBoost));
 			}
 		}
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			if (sender.inventory)
+			int itemCount = inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+			if (itemCount > 0)
 			{
-				int itemCount = sender.inventory.GetItemCount(RoR2Content.Items.JumpBoost);
-				if (itemCount > 0)
+				if (sender.characterMotor && !sender.characterMotor.isGrounded)
 				{
-					if (sender.characterMotor && !sender.characterMotor.isGrounded)
-                    {
-						float speedBonus = 0f;
-						if (CapAirSpeed > 0f)
-						{
-							speedBonus = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseAirSpeed, ActualStackAirSpeed, 1) * CapAirSpeed;
-						}
-						else
-                        {
-							speedBonus = BaseAirSpeed + ((itemCount - 1) * StackAirSpeed);
-						}
-						args.moveSpeedMultAdd += speedBonus;
+					float speedBonus = 0f;
+					if (CapAirSpeed > 0f)
+					{
+						speedBonus = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseAirSpeed, ActualStackAirSpeed, 1) * CapAirSpeed;
 					}
+					else
+					{
+						speedBonus = BaseAirSpeed + ((itemCount - 1) * StackAirSpeed);
+					}
+					args.moveSpeedMultAdd += speedBonus;
 				}
 			}
 		}

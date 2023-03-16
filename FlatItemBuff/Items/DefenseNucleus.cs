@@ -11,37 +11,24 @@ namespace FlatItemBuff.Items
 {
     class DefenseNucleus
     {
-        private static float Cooldown = 1.5f;
-        private static int BaseHealth = 10;
-        private static int StackHealth = 10;
-        private static int BaseAttack = 6;
-        private static int StackAttack = 0;
-        private static int BaseDamage = 6;
-        private static int StackDamage = 8;
+        internal static bool Enable = true;
+        internal static float Cooldown = 1f;
+        internal static int BaseHealth = 10;
+        internal static int StackHealth = 10;
+        internal static int BaseAttack = 6;
+        internal static int StackAttack = 0;
+        internal static int BaseDamage = 6;
+        internal static int StackDamage = 8;
         public DefenseNucleus()
         {
-            SetupConfigValues();
+            if (!Enable)
+            {
+                return;
+            }
             MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
             UpdateText();
             Hooks();
             DefenseNucleus_Shared.EnableChanges();
-        }
-        private void SetupConfigValues()
-        {
-            if (MainPlugin.Nucleus_Cooldown.Value < 0.25f)
-            {
-                MainPlugin.Nucleus_Cooldown.Value = 0.25f;
-            }
-            Cooldown = MainPlugin.Nucleus_Cooldown.Value;
-
-            BaseHealth = MainPlugin.Nucleus_BaseHealth.Value;
-            StackHealth = MainPlugin.Nucleus_StackHealth.Value;
-
-            BaseAttack = MainPlugin.Nucleus_BaseAttack.Value;
-            StackAttack = MainPlugin.Nucleus_StackAttack.Value;
-
-            BaseDamage = MainPlugin.Nucleus_BaseDamage.Value;
-            StackDamage = MainPlugin.Nucleus_StackDamage.Value;
         }
         private void UpdateText()
         {
@@ -104,33 +91,31 @@ namespace FlatItemBuff.Items
         {
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
-            On.RoR2.GlobalEventManager.OnCharacterDeath += GlobalEvent_CharacterDeath;
+            SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
         }
-        private void GlobalEvent_CharacterDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
+        private void GlobalKillEvent(DamageReport damageReport)
         {
-            orig(self, damageReport);
-            if(damageReport.attackerMaster)
+            CharacterMaster deployer = damageReport.attackerMaster;
+            if (damageReport.victimBody && deployer)
             {
-                if (damageReport.victimBody)
+                if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
                 {
-                    if (damageReport.attackerMaster.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
+                    CharacterMaster owner = Helpers.GetOwner(deployer.minionOwnership);
+                    if (owner && owner.GetBody())
                     {
-                        CharacterMaster deployer = damageReport.attackerMaster;
-                        if (deployer && deployer.GetBody())
+                        deployer = owner;
+                    }
+                    if (Cooldown > 0f)
+                    {
+                        DefenseNucleusSummonCooldown comp = deployer.GetComponent<DefenseNucleusSummonCooldown>();
+                        if (!comp)
                         {
-                            if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
-                            {
-                                DefenseNucleusSummonCooldown comp = deployer.GetComponent<DefenseNucleusSummonCooldown>();
-                                if (!comp)
-                                {
-                                    comp = deployer.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
-                                    comp.duration = Cooldown;
-                                    DeployConstructFromCorpse(deployer, damageReport.victimBody);
-                                }
-                            }
+                            comp = deployer.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
+                            comp.duration = Cooldown;
                         }
                     }
+                    DeployConstructFromCorpse(deployer, damageReport.victimBody);
                 }
             }
         }
@@ -182,8 +167,6 @@ namespace FlatItemBuff.Items
                     if (owner)
                     {
                         SetupConstructInventory(self, owner);
-                        SummonDeclutter component = self.gameObject.AddComponent<SummonDeclutter>();
-                        component.slot = DeployableSlot.MinorConstructOnKill;
                     }
                 }
             }

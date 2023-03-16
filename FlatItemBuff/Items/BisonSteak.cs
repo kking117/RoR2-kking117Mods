@@ -9,8 +9,17 @@ namespace FlatItemBuff.Items
 {
 	public class BisonSteak
 	{
+		internal static bool Enable = true;
+		internal static float BaseHP = 20f;
+		internal static float LevelHP = 2f;
+		internal static float BaseDuration = 3f;
+		internal static float StackDuration = 3f;
 		public BisonSteak()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Bison Steak");
 			UpdateText();
 			Hooks();
@@ -21,25 +30,24 @@ namespace FlatItemBuff.Items
 			string pickup = "";
 			string desc = "";
 			bool DoASpace = false;
-			if (MainPlugin.Steak_BaseHP.Value > 0f)
+			if (BaseHP > 0f)
             {
-				pickup += string.Format("Gain <style=cIsHealing>{0}</style> max health.", MainPlugin.Steak_BaseHP.Value);
-				desc += string.Format("Increases <style=cIsHealing>maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", MainPlugin.Steak_BaseHP.Value);
+				pickup += "Gain max health.";
+				desc += string.Format("Increases <style=cIsHealing>maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", BaseHP);
 				DoASpace = true;
 			}
-			if (MainPlugin.Steak_BaseBuffDur.Value > 0f)
+			if (BaseDuration > 0f)
 			{
 				if(DoASpace)
                 {
-					DoASpace = false;
 					pickup += " ";
 					desc += " ";
 				}
-				pickup += "<style=cIsHealing>Regenerate health</style> after killing an enemy.";
-				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+2 hp/s</style> for <style=cIsUtility>{0}s</style>", MainPlugin.Steak_BaseBuffDur.Value);
-				if (MainPlugin.Steak_StackBuffDur.Value > 0)
+				pickup += "Regenerate health after killing an enemy.";
+				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+2 hp/s</style> for <style=cIsUtility>{0}s</style>", BaseDuration);
+				if (StackDuration > 0)
                 {
-					desc += string.Format(" <style=cStack>(+{0}s per stack)</style>", MainPlugin.Steak_StackBuffDur.Value);
+					desc += string.Format(" <style=cStack>(+{0}s per stack)</style>", StackDuration);
 				}
 				desc += " after killing an enemy.";
 			}
@@ -50,34 +58,27 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			if (MainPlugin.Steak_BaseBuffDur.Value > 0f)
+			if (BaseDuration > 0f)
             {
-				GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
+				SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
 			}
 		}
-		private void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)
+		private void GlobalKillEvent(DamageReport damageReport)
 		{
-			if (!NetworkServer.active)
+			CharacterBody attacker = damageReport.attackerBody;
+			if (attacker.inventory)
 			{
-				return;
-			}
-			if (damageReport.attacker && damageReport.attackerBody)
-            {
-				CharacterBody attacker = damageReport.attackerBody;
-				if (attacker.inventory)
+				int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
+				if (itemCount > 0)
 				{
-					int itemCount = attacker.inventory.GetItemCount(ItemCatalog.FindItemIndex("FlatHealth"));
-					if (itemCount > 0)
+					float duration = BaseDuration;
+					duration += (itemCount - 1) * StackDuration;
+					if (duration > 0f)
 					{
-						float duration = MainPlugin.Steak_BaseBuffDur.Value;
-						duration += (itemCount-1) * MainPlugin.Steak_StackBuffDur.Value;
-						if (duration > 0f)
-						{
-							attacker.AddTimedBuff(JunkContent.Buffs.MeatRegenBoost, duration);
-						}
+						attacker.AddTimedBuff(JunkContent.Buffs.MeatRegenBoost, duration);
 					}
 				}
-            }
+			}
 		}
 		private void IL_RecalculateStats(ILContext il)
 		{
@@ -96,9 +97,9 @@ namespace FlatItemBuff.Items
 			ilcursor.Emit(OpCodes.Ldarg_0);
 			ilcursor.EmitDelegate<Func<CharacterBody, float>>((bs) =>
 			{
-				if(MainPlugin.Steak_BaseHP.Value > 0f)
+				if(BaseHP > 0f)
                 {
-					return MainPlugin.Steak_BaseHP.Value + ((bs.level - 1f) * MainPlugin.Steak_LevelHP.Value);
+					return BaseHP + ((bs.level - 1f) * LevelHP);
 				}
 				return 0f;
 			});

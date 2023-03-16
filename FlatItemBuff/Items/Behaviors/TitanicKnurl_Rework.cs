@@ -11,6 +11,13 @@ namespace FlatItemBuff.Items.Behaviors
     public class TitanicKnurl_Rework : CharacterBody.ItemBehavior
     {
 		private float nextAttack;
+		private float targetRadius = Items.TitanicKnurl_Rework.TargetRadius;
+		private int targetMode = Items.TitanicKnurl_Rework.TargetMode;
+
+		private void Awake()
+        {
+			nextAttack = Items.TitanicKnurl_Rework.GetFistCooldown(stack);
+		}
 		private void FixedUpdate()
         {
 			if (!body)
@@ -21,11 +28,12 @@ namespace FlatItemBuff.Items.Behaviors
 			{
 				return;
 			}
+			
 			nextAttack -= Time.fixedDeltaTime;
 			if (nextAttack <= 0f)
             {
 				HurtBox victim;
-				if (MainPlugin.KnurlRework_TargetType.Value == 0)
+				if (targetMode == 0)
                 {
 					victim = GetFistTarget_Weak();
 				}
@@ -33,28 +41,27 @@ namespace FlatItemBuff.Items.Behaviors
                 {
 					victim = GetFistTarget_Close();
 				}
-				if(victim && victim.healthComponent && victim.healthComponent.body)
-                {
+				if (victim && victim.healthComponent && victim.healthComponent.body)
+				{
+					nextAttack += Items.TitanicKnurl_Rework.GetFistCooldown(stack);
 					FireFist(victim.healthComponent.body.gameObject);
-					float firerate = 1f + (MainPlugin.KnurlRework_StackSpeed.Value * (stack -1));
-					nextAttack += Math.Max(0.5f, MainPlugin.KnurlRework_BaseSpeed.Value / firerate);
 				}
 				else
-                {
+				{
 					nextAttack += 0.5f;
-                }
+				}
 			}
         }
         private void FireFist(GameObject target)
         {
-			float damage = GetFistDamage();
+			float damage = Items.TitanicKnurl_Rework.GetFistDamage(stack) * body.damage;
 			RaycastHit raycastHit;
 			Physics.Raycast(target.transform.position, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
 			{
 				"World"
 			}));
 			ProcChainMask procChainMask = new ProcChainMask();
-			if (!MainPlugin.KnurlRework_ProcBands.Value)
+			if (!Items.TitanicKnurl_Rework.ProcBands)
 			{
 				procChainMask.AddProc(ProcType.Rings);
 			}
@@ -76,14 +83,14 @@ namespace FlatItemBuff.Items.Behaviors
 		}
 		private HurtBox GetFistTarget_Weak()
 		{
-			float damage = GetFistDamage();
+			float damage = Items.TitanicKnurl_Rework.GetFistDamage(stack) * body.damage;
 			BullseyeSearch search = new BullseyeSearch();
 			search.viewer = body;
 			search.teamMaskFilter = TeamMask.allButNeutral;
 			search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
 			search.minDistanceFilter = 0f;
-			search.maxDistanceFilter = MainPlugin.KnurlRework_AttackRange.Value;
+			search.maxDistanceFilter = targetRadius;
 			search.searchOrigin = body.inputBank.aimOrigin;
 			search.searchDirection = body.inputBank.aimDirection;
 			search.maxAngleFilter = 180f;
@@ -135,7 +142,7 @@ namespace FlatItemBuff.Items.Behaviors
 			search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
 			search.sortMode = BullseyeSearch.SortMode.Distance;
 			search.minDistanceFilter = 0f;
-			search.maxDistanceFilter = MainPlugin.KnurlRework_AttackRange.Value;
+			search.maxDistanceFilter = targetRadius;
 			search.searchOrigin = body.inputBank.aimOrigin;
 			search.searchDirection = body.inputBank.aimDirection;
 			search.maxAngleFilter = 180f;
@@ -154,12 +161,6 @@ namespace FlatItemBuff.Items.Behaviors
 			}
 			return null;
 		}
-		private float GetFistDamage()
-        {
-			float dmgcof = MainPlugin.KnurlRework_BaseDamage.Value + (MainPlugin.KnurlRework_StackDamage.Value * (stack - 1));
-			return dmgcof * body.damage;
-        }
-
 		private float GetEffectiveHealth(HealthComponent hpcomp)
         {
 			CharacterBody body = hpcomp.body;

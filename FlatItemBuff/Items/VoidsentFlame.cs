@@ -9,26 +9,21 @@ namespace FlatItemBuff.Items
 {
 	public class VoidsentFlame
 	{
-		private static float BaseRadius = 10f;
-		private static float StackRadius = 2f;
-		private static float BaseDamage = 2.6f;
-		private static float StackDamage = 1.56f;
-		private static float ProcRate = 1f;
+		internal static bool Enable = true;
+		internal static float BaseRadius = 10f;
+		internal static float StackRadius = 2f;
+		internal static float BaseDamage = 2.6f;
+		internal static float StackDamage = 1.56f;
+		internal static float ProcRate = 1f;
 		public VoidsentFlame()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Voidsent Flame");
-			SetupConfigValues();
 			UpdateText();
 			Hooks();
-		}
-
-		private void SetupConfigValues()
-		{
-			BaseRadius = MainPlugin.VoidsentFlame_BaseRadius.Value;
-			StackRadius = MainPlugin.VoidsentFlame_StackRadius.Value;
-			BaseDamage = MainPlugin.VoidsentFlame_BaseDamage.Value;
-			StackDamage = MainPlugin.VoidsentFlame_StackDamage.Value;
-			ProcRate = MainPlugin.VoidsentFlame_ProcRate.Value;
 		}
 		private void UpdateText()
 		{

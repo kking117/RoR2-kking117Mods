@@ -10,24 +10,21 @@ namespace FlatItemBuff.Items
 {
 	public class Planula
 	{
-		private static float BaseFlatHeal = 10.0f;
-		private static float StackFlatHeal = 10.0f;
-		private static float BaseMaxHeal = 0.01f;
-		private static float StackMaxHeal = 0.01f;
+		internal static bool Enable = true;
+		internal static float BaseFlatHeal = 10.0f;
+		internal static float StackFlatHeal = 10.0f;
+		internal static float BaseMaxHeal = 0.01f;
+		internal static float StackMaxHeal = 0.01f;
 		public Planula()
 		{
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Planula");
-			SetupConfigValues();
 			UpdateItemDef();
 			UpdateText();
 			Hooks();
-		}
-		private void SetupConfigValues()
-		{
-			BaseFlatHeal = MainPlugin.Planula_BaseFlatHeal.Value;
-			StackFlatHeal = MainPlugin.Planula_StackFlatHeal.Value;
-			BaseMaxHeal = MainPlugin.Planula_BaseMaxHeal.Value;
-			StackMaxHeal = MainPlugin.Planula_StackMaxHeal.Value;
 		}
 		private void UpdateItemDef()
 		{

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using RoR2;
 using R2API;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
@@ -11,8 +8,15 @@ namespace FlatItemBuff.Items
 {
 	public class LeechingSeed
 	{
+		internal static bool Enable = true;
+		internal static float ProcHeal = 0.75f;
+		internal static float BaseHeal = 0.75f;
 		public LeechingSeed()
 		{
+			if (!Enable)
+			{
+				return;
+			}
 			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
 			UpdateText();
 			Hooks();
@@ -20,19 +24,15 @@ namespace FlatItemBuff.Items
 		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string desc = "";
-			if (MainPlugin.LeechingSeed_ProcHeal.Value > 0f)
-			{
-				desc += string.Format("Dealing damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", MainPlugin.LeechingSeed_ProcHeal.Value + MainPlugin.LeechingSeed_NoProcHeal.Value);
-			}
+			string desc = string.Format("Dealing damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", ProcHeal + BaseHeal);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);
 		}
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			if (MainPlugin.LeechingSeed_NoProcHeal.Value > 0f)
+			if (BaseHeal > 0f)
 			{
-				GlobalEventManager.onServerDamageDealt += Global_DamageDealt;
+				SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
 			}
 			else
@@ -40,20 +40,17 @@ namespace FlatItemBuff.Items
 				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_ModOldFunction);
 			}
 		}
-		private void Global_DamageDealt(DamageReport damageReport)
+		private void GlobalDamageEvent(DamageReport damageReport)
 		{
 			//This is pretty much a copy paste of Withor's LeechingSeedBuff
-			if(damageReport.attacker && damageReport.attackerBody)
-            {
-				Inventory inventory = damageReport.attackerBody.inventory;
-				if (inventory)
+			Inventory inventory = damageReport.attackerBody.inventory;
+			if (inventory)
+			{
+				int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
+				if (itemCount > 0)
 				{
-					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
-					if (itemCount > 0)
-					{
-						float healing = MainPlugin.LeechingSeed_NoProcHeal.Value + (damageReport.damageInfo.procCoefficient * MainPlugin.LeechingSeed_ProcHeal.Value);
-						damageReport.attackerBody.healthComponent.Heal(healing * itemCount, damageReport.damageInfo.procChainMask, true);
-					}
+					float healing = BaseHeal + (damageReport.damageInfo.procCoefficient * ProcHeal);
+					damageReport.attackerBody.healthComponent.Heal(healing * itemCount, damageReport.damageInfo.procChainMask, true);
 				}
 			}
 		}
@@ -80,7 +77,7 @@ namespace FlatItemBuff.Items
 			ilcursor.Remove();
 			ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 			{
-				return itemCount * MainPlugin.LeechingSeed_ProcHeal.Value;
+				return itemCount * ProcHeal;
 			});
 		}
 	}

@@ -32,7 +32,7 @@ namespace FlatItemBuff.Utils
 		public static  CharacterMaster GetTrueOwner(MinionOwnership minionowner)
 		{
 			CharacterMaster returnmaster = minionowner.ownerMaster;
-			if (minionowner.ownerMaster)
+			if (returnmaster)
 			{
 				do
 				{
@@ -156,7 +156,7 @@ namespace FlatItemBuff.Utils
 		}
 		public static void KillDeployables(CharacterMaster owner, DeployableSlot slot, int killAmount)
 		{
-			if (owner)
+			if (killAmount > 0 && owner)
 			{
 				if (owner.GetDeployableCount(slot) > 0)
 				{

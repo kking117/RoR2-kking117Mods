@@ -13,11 +13,20 @@ namespace FlatItemBuff.Items
 {
     public class SquidPolyp
     {
+		internal static bool Enable = true;
+		internal static bool ApplyTar = true;
+		internal static float RemoveDelay = 10f;
+		internal static int StackDuration = 3;
+		internal static float StackArmor = 10f;
         public SquidPolyp()
         {
+			if (!Enable)
+            {
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Squid Polyp");
 			UpdateText();
-			if (MainPlugin.Squid_ClayHit.Value)
+			if (ApplyTar)
 			{
 				ModifySquidSkill();
 			}
@@ -27,7 +36,7 @@ namespace FlatItemBuff.Items
         {
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string desc = "Activating an interactable summons a <style=cIsDamage>Squid Turret</style> that attacks nearby enemies at <style=cIsDamage>100% <style=cStack>(+100% per stack)</style> attack speed</style>";
-			if (MainPlugin.Squid_ClayHit.Value)
+			if (ApplyTar)
 			{
 				desc += " applying <style=cIsDamage>tar</style>.";
 			}
@@ -35,9 +44,9 @@ namespace FlatItemBuff.Items
 			{
 				desc += ".";
 			}
-			if (MainPlugin.Squid_StackLife.Value > 0)
+			if (StackDuration > 0)
 			{
-				desc = desc + " Lasts <style=cIsUtility>30</style> <style=cStack>(+" + MainPlugin.Squid_StackLife.Value + " per stack)</style> seconds.";
+				desc = desc + " Lasts <style=cIsUtility>30</style> <style=cStack>(+" + StackDuration + " per stack)</style> seconds.";
 			}
 			else
 			{
@@ -95,16 +104,20 @@ namespace FlatItemBuff.Items
 						return;
 					}
 					CharacterMaster master = result.spawnedInstance.GetComponent<CharacterMaster>();
-					if (MainPlugin.Squid_InactiveDecay.Value > 0f)
+					if (RemoveDelay > 0f)
 					{
-						master.gameObject.AddComponent<DisableHealManager>();
+						InactiveManager component = master.gameObject.AddComponent<InactiveManager>();
+						if (component)
+                        {
+							component.MaxLifeTime = RemoveDelay;
+						}
 					}
-					master.inventory.GiveItem(RoR2Content.Items.HealthDecay, 30 + (stacks * MainPlugin.Squid_StackLife.Value));
+					master.inventory.GiveItem(RoR2Content.Items.HealthDecay, 30 + (stacks * StackDuration));
 					master.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, 10 * stacks);
 					CharacterBody body = master.GetBody();
 					if (body)
 					{
-						body.baseArmor += MainPlugin.Squid_Armor.Value * stacks;
+						body.baseArmor += StackArmor * stacks;
 					}
 				}));
 				DirectorCore.instance.TrySpawnObject(directorSpawnRequest);

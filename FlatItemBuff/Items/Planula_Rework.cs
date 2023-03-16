@@ -11,14 +11,19 @@ namespace FlatItemBuff.Items
 {
 	public class Planula_Rework
 	{
-		private static float BaseDamage = 1f;
-		private static float StackDamage = 1f;
-		private static float Duration = 5f;
-		private static float Radius = 13f;
+		internal static bool Enable = false;
+		internal static float BaseDamage = 1f;
+		internal static float StackDamage = 1f;
+		internal static float Duration = 5f;
+		internal static float Radius = 13f;
 		public Planula_Rework()
 		{
+			if (!Enable)
+            {
+				new Planula();
+				return;
+            }
 			MainPlugin.ModLogger.LogInfo("Changing Planula");
-			SetupConfigValues();
 			UpdateItemDef();
 			UpdateText();
 			Hooks();
@@ -34,13 +39,6 @@ namespace FlatItemBuff.Items
 				itemTags.Remove(ItemTag.Healing);
 				itemDef.tags = itemTags.ToArray();
 			}
-		}
-		private void SetupConfigValues()
-		{
-			BaseDamage = MainPlugin.PlanulaRework_BaseDamage.Value;
-			StackDamage = MainPlugin.PlanulaRework_StackDamage.Value;
-			Duration = MainPlugin.PlanulaRework_Duration.Value;
-			Radius = MainPlugin.PlanulaRework_Radius.Value;
 		}
 		private void UpdateText()
 		{
