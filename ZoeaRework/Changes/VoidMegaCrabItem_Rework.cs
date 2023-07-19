@@ -176,19 +176,26 @@ namespace ZoeaRework.Changes
         {
             if (NetworkServer.active)
             {
-                int itemCount = self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem);
-                if (Stage.instance.sceneDef == MainPlugin.BazaarSceneDef)
+                if (self.inventory)
                 {
-                    itemCount = 0;
+                    int itemCount = self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem);
+                    if (Stage.instance.sceneDef == MainPlugin.BazaarSceneDef)
+                    {
+                        itemCount = 0;
+                    }
+                    self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
+                    self.AddItemBehavior<ZoeaBehavior_Rework>(itemCount);
+                    CullSummons(self.master);
                 }
-                self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
-                self.AddItemBehavior<ZoeaBehavior_Rework>(itemCount);
-                CullSummons(self.master);
             }
         }
         internal static void CullSummons(CharacterMaster owner)
         {
             if (!NetworkServer.active)
+            {
+                return;
+            }
+            if (!owner)
             {
                 return;
             }
@@ -268,17 +275,20 @@ namespace ZoeaRework.Changes
             if (owneritems)
             {
                 Inventory inv = summon.inventory;
-                int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
-                if (MainPlugin.Config_ReworkInherit_Enable.Value)
+                if (inv)
                 {
-                    inv.CopyItemsFrom(owneritems);
+                    int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
+                    if (MainPlugin.Config_ReworkInherit_Enable.Value)
+                    {
+                        inv.CopyItemsFrom(owneritems);
+                    }
+                    inv = FilterInventory(inv);
+                    int dmg = MainPlugin.Config_Rework_DamageBase.Value + (MainPlugin.Config_Rework_DamageStack.Value * itemCount);
+                    int hp = MainPlugin.Config_Rework_HealthBase.Value + (MainPlugin.Config_Rework_HealthStack.Value * itemCount);
+                    inv.GiveItem(RoR2Content.Items.BoostDamage, dmg);
+                    inv.GiveItem(RoR2Content.Items.BoostHp, hp);
+                    inv.GiveItem(RoR2Content.Items.MinionLeash, 1);
                 }
-                inv = FilterInventory(inv);
-                int dmg = MainPlugin.Config_Rework_DamageBase.Value + (MainPlugin.Config_Rework_DamageStack.Value * itemCount);
-                int hp = MainPlugin.Config_Rework_HealthBase.Value + (MainPlugin.Config_Rework_HealthStack.Value * itemCount);
-                inv.GiveItem(RoR2Content.Items.BoostDamage, dmg);
-                inv.GiveItem(RoR2Content.Items.BoostHp, hp);
-                inv.GiveItem(RoR2Content.Items.MinionLeash, 1);
             }
         }
 

@@ -46,6 +46,12 @@ I'm personally against allowing item summons to inherit items, but I believe thi
 
 ## Change Log
 
+**1.1.8**
+
+```
+- Added additional checks to help avoid a null reference for OnInventoryChanged.
+```
+
 **1.1.7**
 
 ```

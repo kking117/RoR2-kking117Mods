@@ -11,21 +11,16 @@ using System.Security.Permissions;
 
 namespace ZoeaRework
 {
-	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-	[BepInDependency("com.Wolfo.WolfoQualityOfLife", BepInDependency.DependencyFlags.SoftDependency)]
-	[R2APISubmoduleDependency(new string[]
-	{
-		"LanguageAPI",
-		"RecalculateStatsAPI",
-		"PrefabAPI"
-	})]
+	[BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.prefab", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	[NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.ZoeaRework";
 		public const string MODNAME = "ZoeaRework";
-		public const string MODVERSION = "1.1.7";
+		public const string MODVERSION = "1.1.8";
 
 		public const string MODTOKEN = "KKING117_ZOEAREWORK_";
 
