@@ -1,3 +1,25 @@
+**1.16.0**
+
+```
+- Infusion:
+- Changed how levels are calculated so "Soft Cap" isn't skewed by "Stack Level".
+
+- Leeching Seed Rework:
+- "Leech Minimum Life Steal" no longer scales with level.
+- Changed "Leech Minimum Life Steal" default configuration. (0.2 -> 0.5)
+
+- Lost Seer's Lenses:
+- Added "Deal Total" configuration, makes it use the total damage instead of the base damage.
+
+- Titanic Knurl Rework:
+- Fixed the effect doubling up.
+
+- Planula Rework:
+- Changed "Burn Radius" default configuration. (13 -> 15)
+
+- Added a rework to the Newly Hatched Zoea.
+```
+
 **1.15.2**
 
 <details><summary>Notes</summary>The way the mod handles its configs has changed greatly, so be ready to reconfigure them. Also default configurations may have changed that is not listed in this update.</details>

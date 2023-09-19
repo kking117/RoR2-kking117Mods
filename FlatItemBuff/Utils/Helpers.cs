@@ -124,6 +124,24 @@ namespace FlatItemBuff.Utils
 				}
 			}
 		}
+		internal static void RemoveBuffStacks(CharacterBody body, BuffDef buffDef, int amount)
+        {
+			if (amount < 1)
+            {
+				amount = body.GetBuffCount(buffDef);
+            }
+			else
+            {
+				amount = Math.Min(amount, body.GetBuffCount(buffDef));
+			}
+			if (amount > 0)
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					body.RemoveBuff(buffDef);
+				}
+			}
+        }
 		private static List<Deployable> GetDeployableListFromTeam(TeamIndex team, DeployableSlot slot)
         {
 			List<Deployable> deployableList = new List<Deployable>();

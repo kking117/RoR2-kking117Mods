@@ -59,6 +59,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Changing proc behaviour");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
+			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			if (Inherit)
 			{
 				CharacterMaster.onStartGlobal += CharacterMaster_Start;
@@ -93,6 +94,42 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
+
+		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
+		{
+			int itemCount = inventory.GetItemCount(RoR2Content.Items.Infusion);
+			if (itemCount > 0)
+			{
+				args.levelFlatAdd += GetInfusionLevel(sender);
+			}
+		}
+
+		private float GetInfusionLevel(CharacterBody body)
+        {
+			float levelBonus = 0f;
+			Inventory inventory = body.inventory;
+			if (inventory)
+			{
+				int itemCount = inventory.GetItemCount(RoR2Content.Items.Infusion);
+				if (itemCount > 0)
+				{
+					float levelCost = 100f / StackLevel;
+					float maxCap = itemCount * 100;
+					float samples = inventory.infusionBonus;
+					if (Infinite && samples > maxCap)
+					{
+						levelBonus = maxCap / levelCost;
+						float capReduction = samples / maxCap;
+						levelBonus += ((samples - maxCap) / capReduction) / levelCost;
+					}
+					else
+					{
+						levelBonus = Math.Min(samples, maxCap) / levelCost;
+					}
+				}
+			}
+			return levelBonus;
+        }
 		private float GetInfusionValue(CharacterBody body)
 		{
 			float infusionValue = 1f;
@@ -143,7 +180,9 @@ namespace FlatItemBuff.Items
 			);
 			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
+			//Following is uneeded as of R2API RecalculateStats v1.2.0
 			//Add new
+			/*
 			ilcursor.GotoNext(
 				x => x.MatchLdarg(0),
 				x => x.MatchLdarg(0),
@@ -171,8 +210,8 @@ namespace FlatItemBuff.Items
 						if (Infinite && samples > maxCap)
                         {
 							levelBonus = maxCap / levelCost;
-							float bonus = (float)Math.Pow(samples - maxCap, 0.95f);
-							levelBonus += bonus / levelCost;
+							float capReduction = samples / maxCap;
+							levelBonus += ((samples - maxCap) / capReduction) / levelCost;
 						}
 						else
                         {
@@ -183,6 +222,7 @@ namespace FlatItemBuff.Items
 				return levelBonus;
 			});
 			ilcursor.Emit(OpCodes.Add);
+			*/
 		}
 	}
 }

@@ -57,6 +57,8 @@ namespace FlatItemBuff
 
 		private const string Section_VoidsentFlame_Buff = "Voidsent Flame";
 
+		private const string Section_NewlyHatchedZoea_Rework = "Newly Hatched Zoea Rework";
+
 		private const string Section_Artifact_Spite = "Artifact of Spite";
 
 		private const string Label_EnableBuff = "Enable Changes";
@@ -91,6 +93,7 @@ namespace FlatItemBuff
 			//Void
 			Read_LigmaLenses();
 			Read_VoidsentFlame();
+			Read_NewlyHatchedZoea();
 			//Artifacts
 			Read_ArtifactSpite();
 		}
@@ -145,7 +148,7 @@ namespace FlatItemBuff
 			LeechingSeed_Rework.HealFromDoT = MainConfig.Bind(Section_LeechingSeed_Rework, "DoT Healing", 2f, "Healing amount given from damage over time ticks.").Value;
 			LeechingSeed_Rework.LeechChance = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Chance", 25f, "Chance of applying the Leech debuff.").Value;
 			LeechingSeed_Rework.LeechLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Life Steal", 0.02f, "Percent of damage received as healing when damaging a target with Leech.").Value;
-			LeechingSeed_Rework.LeechMinLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Minimum Life Steal", 0.02f, "Minimum amount of healing received from Leech, scales with level.").Value;
+			LeechingSeed_Rework.LeechMinLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Minimum Life Steal", 0.5f, "Minimum amount of healing received from Leech.").Value;
 			LeechingSeed_Rework.LeechBaseDamage = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Damage", 0.5f, "Damage dealt per second from Leech.").Value;
 			LeechingSeed_Rework.LeechBaseDuration = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Duration", 5f, "How long Leech is applied for.").Value;
 			LeechingSeed_Rework.LeechStackDuration = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Stack Duration", 0f, "How much longer Leech is applied for each additional stack.").Value;
@@ -155,13 +158,13 @@ namespace FlatItemBuff
 			WaxQuail.Enable = MainConfig.Bind(Section_WaxQuail_Buff, Label_EnableBuff, true, Desc_EnableBuff).Value;
 			WaxQuail.BaseHori = MainConfig.Bind(Section_WaxQuail_Buff, "Base Horizontal Boost", 12f, "Horizontal force at a single stack.").Value;
 			WaxQuail.StackHori = MainConfig.Bind(Section_WaxQuail_Buff, "Stack Horizontal Boost", 6f, "Horizontal force for each additional stack.").Value;
-			WaxQuail.CapHori = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Horizontal Boost", 240f, "Hyperbolic cap to horizontal force. (Set ot 0 or less to disable.)").Value;
+			WaxQuail.CapHori = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Horizontal Boost", 240f, "Hyperbolic cap to horizontal force. (Set to 0 or less to disable.)").Value;
 			WaxQuail.BaseVert = MainConfig.Bind(Section_WaxQuail_Buff, "Base Vertical Boost", 0.2f, "Vertical force at a single stack.").Value;
 			WaxQuail.StackVert = MainConfig.Bind(Section_WaxQuail_Buff, "Stack Vertical", 0f, "Vertical force for each additional stack.").Value;
-			WaxQuail.CapVert = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Vertical Boost", 0f, "Hyperbolic cap to vertical force. (Set ot 0 or less to disable.)").Value;
+			WaxQuail.CapVert = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Vertical Boost", 0f, "Hyperbolic cap to vertical force. (Set to 0 or less to disable.)").Value;
 			WaxQuail.BaseAirSpeed = MainConfig.Bind(Section_WaxQuail_Buff, "Base Air Speed", 0.14f, "Airborne movement speed at a single stack.").Value;
 			WaxQuail.StackAirSpeed = MainConfig.Bind(Section_WaxQuail_Buff, "Stack Air Speed", 0.07f, "Airborne movement speed for each additional stack.").Value;
-			WaxQuail.CapAirSpeed = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Air Speed", 2.8f, "Hyperbolic cap to airborne movement speed. (Set ot 0 or less to disable.)").Value;
+			WaxQuail.CapAirSpeed = MainConfig.Bind(Section_WaxQuail_Buff, "Capped Air Speed", 2.8f, "Hyperbolic cap to airborne movement speed. (Set to 0 or less to disable.)").Value;
 		}
 
 		private static void Read_Stealthkit()
@@ -233,7 +236,7 @@ namespace FlatItemBuff
 			Planula_Rework.BaseDamage = MainConfig.Bind(Section_Planula_Rework, "Base Damage", 1f, "Damage per second the burn deals at a single stack.").Value;
 			Planula_Rework.StackDamage = MainConfig.Bind(Section_Planula_Rework, "Base Damage", 1f, "Damage per second the burn deals for each additional stack.").Value;
 			Planula_Rework.Duration = MainConfig.Bind(Section_Planula_Rework, "Burn Duration", 5f, "Duration of the burn.").Value;
-			Planula_Rework.Radius = MainConfig.Bind(Section_Planula_Rework, "Burn Radius", 13f, "Radius for enemies to be within to start burning.").Value;
+			Planula_Rework.Radius = MainConfig.Bind(Section_Planula_Rework, "Burn Radius", 15f, "Radius for enemies to be within to start burning.").Value;
 		}
 		private static void Read_TitanicKnurl()
         {
@@ -286,6 +289,7 @@ namespace FlatItemBuff
 			LigmaLenses.StackChance = MainConfig.Bind(Section_LigmaLenses_Buff, "Stack Chance", 0.5f, "Detain chance for each additional stack.").Value;
 			LigmaLenses.BaseDamage = MainConfig.Bind(Section_LigmaLenses_Buff, "Base Damage", 50.0f, "Base damage at a single stack.").Value;
 			LigmaLenses.StackDamage = MainConfig.Bind(Section_LigmaLenses_Buff, "Stack Damage", 0.0f, "Base damage for each additional stack.").Value;
+			LigmaLenses.UseTotalDamage = MainConfig.Bind(Section_LigmaLenses_Buff, "Deal Total", false, "Deal Total Damage of the attack instead of the attacker's damage stat?").Value;
 		}
 
 		private static void Read_VoidsentFlame()
@@ -296,6 +300,18 @@ namespace FlatItemBuff
 			VoidsentFlame.BaseDamage = MainConfig.Bind(Section_VoidsentFlame_Buff, "Base Damage", 2.6f, "Blast damage at a single stack.").Value;
 			VoidsentFlame.StackDamage = MainConfig.Bind(Section_VoidsentFlame_Buff, "Stack Damage", 1.56f, "Blast damage for each additional stack.").Value;
 			VoidsentFlame.ProcRate = MainConfig.Bind(Section_VoidsentFlame_Buff, "Proc Coefficient", 1f, "Blast proc coefficient.").Value;
+		}
+
+		private static void Read_NewlyHatchedZoea()
+		{
+			NewlyHatchedZoea_Rework.Enable = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			NewlyHatchedZoea_Rework.BaseStock = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Base Stock", 12, "How many missiles to store at a single stack.").Value;
+			NewlyHatchedZoea_Rework.StackStock = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Stack Stock", 4, "Extra missiles for each additional stack.").Value;
+			NewlyHatchedZoea_Rework.BaseDamage = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Base Damage", 3f, "Missile damage at a single stack.").Value;
+			NewlyHatchedZoea_Rework.StackDamage = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Stack Damage", 0.75f, "Missile damage for each additional stack.").Value;
+			NewlyHatchedZoea_Rework.ProcRate = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Proc Coefficient", 0.2f, "Missile proc coefficient.").Value;
+			NewlyHatchedZoea_Rework.RestockTime = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Restock Time", 30, "How long it takes in seconds to fully restock.").Value;
+			NewlyHatchedZoea_Rework.RestockOnFinish = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Restock When Finished", true, "Begin to restock missiles after firing.").Value;
 		}
 		private static void Read_ArtifactSpite()
         {

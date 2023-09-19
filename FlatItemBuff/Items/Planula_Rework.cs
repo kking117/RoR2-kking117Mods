@@ -15,7 +15,7 @@ namespace FlatItemBuff.Items
 		internal static float BaseDamage = 1f;
 		internal static float StackDamage = 1f;
 		internal static float Duration = 5f;
-		internal static float Radius = 13f;
+		internal static float Radius = 15f;
 		public Planula_Rework()
 		{
 			if (!Enable)
@@ -65,14 +65,11 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_HealthTakeDamage);
-			CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
+			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			if(NetworkServer.active)
-            {
-				self.AddItemBehavior<Behaviors.Planula_Rework>(self.inventory.GetItemCount(RoR2Content.Items.ParentEgg));
-			}
+			self.AddItemBehavior<Behaviors.Planula_Rework>(self.inventory.GetItemCount(RoR2Content.Items.ParentEgg));
 		}
 		private void IL_HealthTakeDamage(ILContext il)
 		{

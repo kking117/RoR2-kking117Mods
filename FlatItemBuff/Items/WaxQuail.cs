@@ -105,16 +105,13 @@ namespace FlatItemBuff.Items
 			IL.EntityStates.GenericCharacterMain.ProcessJump += new ILContext.Manipulator(IL_ProcessJump);
 			if (StackAirSpeed != 0f || StackAirSpeed != 0f)
             {
-				CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
+				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			}
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			if (NetworkServer.active)
-			{
-				self.AddItemBehavior<Behaviors.WaxQuail>(self.inventory.GetItemCount(RoR2Content.Items.JumpBoost));
-			}
+			self.AddItemBehavior<Behaviors.WaxQuail>(self.inventory.GetItemCount(RoR2Content.Items.JumpBoost));
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{

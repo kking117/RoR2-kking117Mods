@@ -132,45 +132,48 @@ namespace FlatItemBuff.Items
             }
 		}
 		private void CharacterBody_FixedUpdate(On.RoR2.CharacterBody.orig_FixedUpdate orig, CharacterBody self)
-        {
+		{
 			orig(self);
-			int buffCount = self.GetBuffCount(HarpoonBuff.buffIndex);
-			if (buffCount > 0)
+			if (self)
 			{
-				SkillLocator skillLocator = self.skillLocator;
-				if(skillLocator)
-                {
-					float cooldown = Time.fixedDeltaTime * (buffCount * CooldownRate);
-					if (CoolPrimary)
+				int buffCount = self.GetBuffCount(HarpoonBuff.buffIndex);
+				if (buffCount > 0)
+				{
+					SkillLocator skillLocator = self.skillLocator;
+					if (skillLocator)
 					{
-						GenericSkill primary = skillLocator.primary;
-						if (primary)
+						float cooldown = Time.fixedDeltaTime * (buffCount * CooldownRate);
+						if (CoolPrimary)
 						{
-							primary.RunRecharge(cooldown);
+							GenericSkill primary = skillLocator.primary;
+							if (primary)
+							{
+								primary.RunRecharge(cooldown);
+							}
 						}
-					}
-					if (CoolSecondary)
-					{
-						GenericSkill secondary = skillLocator.secondary;
-						if (secondary)
+						if (CoolSecondary)
 						{
-							secondary.RunRecharge(cooldown);
+							GenericSkill secondary = skillLocator.secondary;
+							if (secondary)
+							{
+								secondary.RunRecharge(cooldown);
+							}
 						}
-					}
-					if (CoolUtility)
-                    {
-						GenericSkill utility = skillLocator.utility;
-						if (utility)
+						if (CoolUtility)
 						{
-							utility.RunRecharge(cooldown);
+							GenericSkill utility = skillLocator.utility;
+							if (utility)
+							{
+								utility.RunRecharge(cooldown);
+							}
 						}
-					}
-					if (CoolSpecial)
-					{
-						GenericSkill special = skillLocator.special;
-						if (special)
+						if (CoolSpecial)
 						{
-							special.RunRecharge(cooldown);
+							GenericSkill special = skillLocator.special;
+							if (special)
+							{
+								special.RunRecharge(cooldown);
+							}
 						}
 					}
 				}

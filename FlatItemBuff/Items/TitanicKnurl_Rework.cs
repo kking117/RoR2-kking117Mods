@@ -65,7 +65,6 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChanged;
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
 		private void CreateProjectiles()

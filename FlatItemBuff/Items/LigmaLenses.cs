@@ -13,6 +13,7 @@ namespace FlatItemBuff.Items
 		internal static float StackDamage = 0.0f;
 		internal static float BaseChance = 0.5f;
 		internal static float StackChance = 0.5f;
+		internal static bool UseTotalDamage = false;
 		private static GameObject HitEffect = null;
 		public LigmaLenses()
 		{
@@ -50,7 +51,14 @@ namespace FlatItemBuff.Items
 			{
 				descDamage += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 100f);
 			}
-			descDamage += "</style> base damage";
+			if (UseTotalDamage)
+            {
+				descDamage += "</style> TOTAL damage";
+			}
+			else
+            {
+				descDamage += "</style> base damage";
+			}
 
 			string pickup = "Chance to detain enemies on hit. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.";
 			string desc = string.Format("Your attacks have a {0} chance to <style=cIsHealth>detain</style> an enemy for {1}. <style=cIsVoid>Corrupts all Lens-Maker's Glasses</style>.", descChance, descDamage);
@@ -83,7 +91,10 @@ namespace FlatItemBuff.Items
 						{
 							float coefDamage = BaseDamage + (StackDamage * (itemCount - 1));
 							float baseDamage = attackerBody.damage;
-
+							if (UseTotalDamage)
+                            {
+								baseDamage = damageInfo.damage;
+                            }
 							DamageInfo detainInfo = new DamageInfo
 							{
 								damage = baseDamage * coefDamage,

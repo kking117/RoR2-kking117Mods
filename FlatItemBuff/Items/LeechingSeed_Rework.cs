@@ -17,7 +17,7 @@ namespace FlatItemBuff.Items
 		internal static float HealFromDoT = 2f;
 		internal static float LeechChance = 0.25f;
 		internal static float LeechLifeSteal = 0.02f;
-		internal static float LeechMinLifeSteal = 0.02f;
+		internal static float LeechMinLifeSteal = 0.5f;
 		internal static float LeechBaseDamage = 0.5f;
 		internal static float LeechBaseDuration = 5f;
 		internal static float LeechStackDuration = 0f;
@@ -84,7 +84,6 @@ namespace FlatItemBuff.Items
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
-			CharacterBody attackerBody = damageReport.attackerBody;
 			float procrate = damageReport.damageInfo.procCoefficient;
 			ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
 			Inventory inventory = damageReport.attackerBody.inventory;
@@ -93,7 +92,7 @@ namespace FlatItemBuff.Items
 			{
 				if (damageReport.victimBody.HasBuff(LeechBuff))
 				{
-					damageReport.attackerBody.healthComponent.Heal(LeechHealing(attackerBody.level, damageReport.damageDealt, procrate), procChainMask, true);
+					damageReport.attackerBody.healthComponent.Heal(LeechHealing(damageReport.damageDealt, procrate), procChainMask, true);
 				}
 			}
 
@@ -102,16 +101,13 @@ namespace FlatItemBuff.Items
 				int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
 				if (itemCount > 0)
 				{
-					if (LeechChance > 0f)
+					if (LeechChance > 0f && procrate > 0f)
                     {
-						if (procrate > 0f)
+						if (damageReport.victim)
 						{
-							if (damageReport.victim)
+							if (Util.CheckRoll(procrate * LeechChance, damageReport.attackerMaster))
 							{
-								if (Util.CheckRoll(procrate * LeechChance, damageReport.attackerMaster))
-								{
-									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, LeechDuration(itemCount) * procrate, 1f, 1);
-								}
+								DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, LeechDuration(itemCount) * procrate, 1f, 1);
 							}
 						}
 					}
@@ -125,9 +121,13 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
-		private float LeechHealing(float level, float damage, float procrate)
+		private float LeechHealing(float damage, float procrate)
         {
-			return Math.Max(level * LeechMinLifeSteal, damage * LeechLifeSteal * procrate);
+			if (procrate < 0.1f)
+            {
+				procrate = 0.1f;
+			}
+			return Math.Max(LeechMinLifeSteal, damage * LeechLifeSteal * procrate);
 		}
 		private float LeechDuration(float itemCount)
         {
