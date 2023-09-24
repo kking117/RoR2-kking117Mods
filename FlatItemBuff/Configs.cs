@@ -311,7 +311,6 @@ namespace FlatItemBuff
 			NewlyHatchedZoea_Rework.StackDamage = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Stack Damage", 0.75f, "Missile damage for each additional stack.").Value;
 			NewlyHatchedZoea_Rework.ProcRate = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Proc Coefficient", 0.2f, "Missile proc coefficient.").Value;
 			NewlyHatchedZoea_Rework.RestockTime = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Restock Time", 30, "How long it takes in seconds to fully restock.").Value;
-			NewlyHatchedZoea_Rework.RestockOnFinish = MainConfig.Bind(Section_NewlyHatchedZoea_Rework, "Restock When Finished", true, "Begin to restock missiles after firing.").Value;
 		}
 		private static void Read_ArtifactSpite()
         {

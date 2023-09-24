@@ -10,9 +10,9 @@ namespace FlatItemBuff.Items.Behaviors
 		private SkillLocator skillLocator;
 		private InputBankTest inputBank;
 
+		private int loadedMissiles = 0;
 		private float nextMissile;
 		private float nextStock;
-		private bool isFiring = false;
 
 		internal static float FireDelay = 0.25f;
 
@@ -48,7 +48,8 @@ namespace FlatItemBuff.Items.Behaviors
 				{
 					if (body.GetBuffCount(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff) > 0)
 					{
-						isFiring = true;
+						loadedMissiles += body.GetBuffCount(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff);
+						body.SetBuffCount(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff.buffIndex, 0);
 					}
 				}
             }
@@ -63,32 +64,30 @@ namespace FlatItemBuff.Items.Behaviors
 			{
 				return;
 			}
-			if (isFiring)
+			if (loadedMissiles > 0)
 			{
 				nextMissile -= Time.fixedDeltaTime;
 				if (nextMissile <= 0f)
 				{
-					nextMissile += FireDelay / body.attackSpeed;
-
-					body.RemoveBuff(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff);
+					loadedMissiles -= 1;
 					FireMissile();
-					if (!body.HasBuff(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff))
+					if (loadedMissiles < 1)
 					{
-						isFiring = false;
 						nextMissile = 0f;
+					}
+					else
+                    {
+						nextMissile += FireDelay / body.attackSpeed;
 					}
 				}
 			}
-			if (!Items.NewlyHatchedZoea_Rework.RestockOnFinish || !isFiring)
-            {
-				if (body.GetBuffCount(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff) < Items.NewlyHatchedZoea_Rework.GetMaxStock(stack))
+			if (body.GetBuffCount(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff) < Items.NewlyHatchedZoea_Rework.GetMaxStock(stack))
+			{
+				nextStock -= Time.fixedDeltaTime;
+				if (nextStock <= 0f)
 				{
-					nextStock -= Time.fixedDeltaTime;
-					if (nextStock <= 0f)
-					{
-						nextStock += Items.NewlyHatchedZoea_Rework.RestockTime / Items.NewlyHatchedZoea_Rework.GetMaxStock(stack);
-						body.AddBuff(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff);
-					}
+					nextStock += Items.NewlyHatchedZoea_Rework.RestockTime / Items.NewlyHatchedZoea_Rework.GetMaxStock(stack);
+					body.AddBuff(Items.NewlyHatchedZoea_Rework.VoidMissileStockBuff);
 				}
 			}
 		}

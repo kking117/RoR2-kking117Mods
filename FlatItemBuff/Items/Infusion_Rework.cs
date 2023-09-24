@@ -92,9 +92,13 @@ namespace FlatItemBuff.Items
 		private void OnInventoryChanged(CharacterBody self)
 		{
 			int itemCount = self.inventory.GetItemCount(BloodCloneItem);
-			if (itemCount > 0 && CustomLeash > 0f)
+			if (itemCount > 0)
 			{
-				self.AddItemBehavior<Behaviors.BloodClone>(itemCount);
+				if (CustomLeash > 0f)
+				{
+					self.AddItemBehavior<Behaviors.BloodClone>(itemCount);
+				}
+				self.AddItemBehavior<Behaviors.Infusion_Rework>(0);
 			}
 			else
             {

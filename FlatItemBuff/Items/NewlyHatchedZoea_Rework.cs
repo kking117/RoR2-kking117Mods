@@ -23,7 +23,6 @@ namespace FlatItemBuff.Items
 		internal static float StackDamage = 6f;
 		internal static float ProcRate = 0.2f;
 		internal static int RestockTime = 30;
-		internal static bool RestockOnFinish = true;
 		public NewlyHatchedZoea_Rework()
 		{
 			if (!Enable)
