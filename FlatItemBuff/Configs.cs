@@ -19,6 +19,8 @@ namespace FlatItemBuff
 
 		private const string Section_Brooch_Buff = "Topaz Brooch";
 
+		private const string Section_Chronobauble_Buff = "Chronobauble";
+
 		private const string Section_LeptonDaisy_Buff = "Lepton Daisy";
 
 		private const string Section_LeechingSeed_Buff = "Leeching Seed";
@@ -74,13 +76,14 @@ namespace FlatItemBuff
 			Read_Steak();
 			Read_Brooch();
 			//Uncommon
+			Read_Chronobauble();
 			Read_Infusion();
 			Read_LeechingSeed();
+			Read_LeptonDaisy();
 			Read_Stealthkit();
 			Read_HuntersHarpoon();
 			Read_SquidPolyp();
 			Read_WarHorn();
-			Read_LeptonDaisy();
 			Read_WaxQuail();
 			//Legendary
 			Read_BensRaincoat();
@@ -109,9 +112,17 @@ namespace FlatItemBuff
         {
 			TopazBrooch.Enable = MainConfig.Bind(Section_Brooch_Buff, Label_EnableBuff, true, Desc_EnableBuff).Value;
 			TopazBrooch.BaseFlatBarrier = MainConfig.Bind(Section_Brooch_Buff, "Base Flat Barrier", 15.0f, "Flat amount of barrier given at a single stack.").Value;
-			TopazBrooch.StackFlatBarrier = MainConfig.Bind(Section_Brooch_Buff, "Stack Flat Barrier", 15.0f, "Flat amount of barrier given at for each additional stack.").Value;
+			TopazBrooch.StackFlatBarrier = MainConfig.Bind(Section_Brooch_Buff, "Stack Flat Barrier", 15.0f, "Flat amount of barrier given for each additional stack.").Value;
 			TopazBrooch.BaseCentBarrier = MainConfig.Bind(Section_Brooch_Buff, "Base Percent Barrier", 0.005f, "Percent amount of barrier given at a single stack.").Value;
 			TopazBrooch.StackCentBarrier = MainConfig.Bind(Section_Brooch_Buff, "Stack Percent Barrier", 0.005f, "Percent amount of barrier given at for each additional stack.").Value;
+		}
+		private static void Read_Chronobauble()
+        {
+			Chronobauble.Enable = MainConfig.Bind(Section_Chronobauble_Buff, Label_EnableBuff, true, Desc_EnableBuff).Value;
+			Chronobauble.SlowDown = MainConfig.Bind(Section_Chronobauble_Buff, "Move Speed Reduction", 0.6f, "Move Speed debuff amount.").Value;
+			Chronobauble.AttackDown = MainConfig.Bind(Section_Chronobauble_Buff, "Attack Speed Reduction", 0.3f, "Attack Speed debuff amount.").Value;
+			Chronobauble.BaseDuration = MainConfig.Bind(Section_Chronobauble_Buff, "Base Duration", 2.0f, "Debuff duration at a single stack.").Value;
+			Chronobauble.StackDuration = MainConfig.Bind(Section_Chronobauble_Buff, "Stack Duration", 2.0f, "Debuff duration for each additional.").Value;
 		}
 		private static void Read_LeptonDaisy()
         {

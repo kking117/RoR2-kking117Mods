@@ -1,3 +1,9 @@
+**1.17.0**
+
+```
+- Added changes for Chronobauble.
+```
+
 **1.16.1**
 
 ```
@@ -5,7 +11,7 @@
 - Blood Clones now no longer run the effects of infusion to prevent infinite loops under certain conditions.
 
 - Newly Hatched Zoea Rework:
-- Missiles are now loaded upon activation so that it doesn't fire forever if you rrecharge missiles faster than you fire them.
+- Missiles are now loaded upon activation so that it doesn't fire forever if you recharge missiles faster than you fire them.
 - Removed configuration "Restock When Finished".
 ```
 

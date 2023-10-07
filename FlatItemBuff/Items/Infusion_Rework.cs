@@ -87,7 +87,6 @@ namespace FlatItemBuff.Items
 			IL.RoR2.HealthComponent.GetHealthBarValues += new ILContext.Manipulator(IL_GetHealthBarValues);
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
-			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
@@ -103,14 +102,6 @@ namespace FlatItemBuff.Items
 			else
             {
 				self.AddItemBehavior<Behaviors.Infusion_Rework>(self.inventory.GetItemCount(RoR2Content.Items.Infusion));
-			}
-		}
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
-		{
-			int itemCount = inventory.GetItemCount(BloodCloneItem);
-			if (itemCount > 0)
-			{
-				args.levelFlatAdd += GetBloodLevelBonus(sender);
 			}
 		}
 		private float GetBloodLevelBonus(CharacterBody body)
@@ -233,9 +224,6 @@ namespace FlatItemBuff.Items
 			);
 			ilcursor.Index -= 2;
 			ilcursor.RemoveRange(5);
-			//Following is uneeded as of R2API RecalculateStats v1.2.0
-			//Add new
-			/*
 			ilcursor.GotoNext(
 				x => x.MatchLdarg(0),
 				x => x.MatchLdarg(0),
@@ -249,38 +237,10 @@ namespace FlatItemBuff.Items
 			ilcursor.Emit(OpCodes.Ldarg_0);
 			ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
 			{
-				float levelBonus = 0.0f;
-				Inventory inventory = self.inventory;
-				if (inventory)
-				{
-					CharacterMaster master = self.master;
-					int itemCount = inventory.GetItemCount(BloodCloneItem);
-					if (itemCount > 0)
-					{
-						float bloodBonus = (int)inventory.infusionBonus - CloneCost;
-						if (bloodBonus > 0)
-						{
-							levelBonus += self.level * (bloodBonus / LevelCost);
-						}
-						MasterSuicideOnTimer component = master.gameObject.GetComponent<MasterSuicideOnTimer>();
-						if (component)
-						{
-							component.hasDied = false;
-						}
-						else
-                        {
-							if (!IsValidBloodClone(master))
-							{
-								master.gameObject.AddComponent<MasterSuicideOnTimer>().lifeTimer = 5f;
-							}
-						}
-						
-					}
-				}
+				float levelBonus = GetBloodLevelBonus(self);
 				return levelBonus;
 			});
 			ilcursor.Emit(OpCodes.Add);
-			*/
 		}
 		private void IL_GetHealthBarValues(ILContext il)
 		{

@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.16.1";
+		public const string MODVERSION = "1.17.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -45,26 +45,27 @@ namespace FlatItemBuff
 			new Items.BisonSteak();
 			new Items.TopazBrooch();
 			//Uncommon
-			new Items.WaxQuail();
-			new Items.LeptonDaisy();
+			new Items.Chronobauble();
+			new Items.HuntersHarpoon();
 			new Items.Infusion_Rework();
 			new Items.LeechingSeed_Rework();
+			new Items.LeptonDaisy();
 			new Items.Stealthkit();
-			new Items.HuntersHarpoon();
 			new Items.SquidPolyp();
 			new Items.WarHorn();
+			new Items.WaxQuail();
 			//Legendary
+			new Items.Aegis();
 			new Items.BensRaincoat();
 			new Items.LaserScope();
-			new Items.Aegis();
 			//Boss
+			new Items.DefenseNucleus_Rework();
 			new Items.Planula_Rework();
 			new Items.TitanicKnurl_Rework();
-			new Items.DefenseNucleus_Rework();
 			//Void
 			new Items.LigmaLenses();
-			new Items.VoidsentFlame();
 			new Items.NewlyHatchedZoea_Rework();
+			new Items.VoidsentFlame();
 			//Artifacts
 			new Artifacts.Spite();
 		}
