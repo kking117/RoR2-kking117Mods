@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RoR2;
 using R2API;
 using MonoMod.Cil;
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using Mono.Cecil.Cil;

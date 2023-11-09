@@ -69,9 +69,9 @@ namespace FlatItemBuff.Items
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
-			//float procrate = damageReport.damageInfo.procCoefficient;
+			float procrate = damageReport.damageInfo.procCoefficient;
 			
-			if (damageReport.victim)
+			if (procrate > 0f && damageReport.victim)
 			{
 				CharacterBody victimBody = damageReport.victim.body;
 				if (victimBody)

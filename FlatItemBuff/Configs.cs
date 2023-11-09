@@ -26,6 +26,8 @@ namespace FlatItemBuff
 		private const string Section_LeechingSeed_Buff = "Leeching Seed";
 		private const string Section_LeechingSeed_Rework = "Leeching Seed Rework";
 
+		private const string Section_IgnitionTank_Rework = "Ignition Tank Rework";
+
 		private const string Section_Infusion_Buff = "Infusion";
 		private const string Section_Infusion_Rework = "Infusion Rework";
 
@@ -77,6 +79,7 @@ namespace FlatItemBuff
 			Read_Brooch();
 			//Uncommon
 			Read_Chronobauble();
+			Read_IgnitionTank();
 			Read_Infusion();
 			Read_LeechingSeed();
 			Read_LeptonDaisy();
@@ -132,6 +135,23 @@ namespace FlatItemBuff
 			LeptonDaisy.CapHeal = MainConfig.Bind(Section_LeptonDaisy_Buff, "Capped Healing", 2f, "Hyperbolic healing limit. (Set ot 0 or less to disable.)").Value;
 			LeptonDaisy.Cooldown = MainConfig.Bind(Section_LeptonDaisy_Buff, "Cooldown", 10f, "Cooldown of the healing nova.").Value;
 		}
+		private static void Read_IgnitionTank()
+		{
+			IgnitionTank_Rework.Enable = MainConfig.Bind(Section_IgnitionTank_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			IgnitionTank_Rework.BurnChance = MainConfig.Bind(Section_IgnitionTank_Rework, "Burn Chance", 10f, "Chance to Burn on hit.").Value;
+			IgnitionTank_Rework.BurnBaseDamage = MainConfig.Bind(Section_IgnitionTank_Rework, "Burn Damage", 0.8f, "How much damage Burn deals per second.").Value;
+			IgnitionTank_Rework.BurnDuration = MainConfig.Bind(Section_IgnitionTank_Rework, "Burn Duration", 3f, "How long in seconds Burn lasts for.").Value;
+
+			IgnitionTank_Rework.BlastChance = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Chance", 10f, "Chance to cause an explosion when dealing status damage.").Value;
+			IgnitionTank_Rework.BlastBaseDamage = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Base Damage", 2.5f, "Damage the explosion deals at a single stack.").Value;
+			IgnitionTank_Rework.BlastStackDamage = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Stack Damage", 2.0f, "Extra damage the explosion deals for each additional stack.").Value;
+			IgnitionTank_Rework.BlastBaseRadius = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Base Radius", 12f, "Radius of the the explosion at a single stack.").Value;
+			IgnitionTank_Rework.BlastStackRadius = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Stack Radius", 2.4f, "Extra explosion radius for each additional stack.").Value;
+			IgnitionTank_Rework.BlastAddBodyRadius = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Bonus Radius From Target", false, "Give the explosion extra radius based on the size of the enemy hit.").Value;
+			IgnitionTank_Rework.BlastScaleTickrate = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Scale DoT Tickrate", false, "Makes the explosion less likely to proc the faster the DoT ticks but increases its damage to compensate, may improve visual clarity and performance.").Value;
+			IgnitionTank_Rework.BlastInheritDamageType = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Inherit Damage Type", false, "Makes the explosion inherit the damage types used from the hit that procced. (For example it would make the explosion non-lethal if it was from Acrid's poison)").Value;
+			IgnitionTank_Rework.BlastRollCrit = MainConfig.Bind(Section_IgnitionTank_Rework, "Explosion Roll Crits", true, "Allows the explosion to roll for crits, it will still inherit crits from the hit that procced regardless of this setting.").Value;
+		}
 		private static void Read_Infusion()
         {
 			Infusion.Enable = MainConfig.Bind(Section_Infusion_Buff, Label_EnableBuff, true, Desc_EnableBuff).Value;
@@ -156,12 +176,13 @@ namespace FlatItemBuff
 			LeechingSeed.BaseHeal = MainConfig.Bind(Section_LeechingSeed_Buff, "Base Healing", 0.75f, "Extra healing amount regardless of proc coefficient.").Value;
 
 			LeechingSeed_Rework.Enable = MainConfig.Bind(Section_LeechingSeed_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			LeechingSeed_Rework.HealFromDoT = MainConfig.Bind(Section_LeechingSeed_Rework, "DoT Healing", 2f, "Healing amount given from damage over time ticks.").Value;
-			LeechingSeed_Rework.LeechChance = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Chance", 25f, "Chance of applying the Leech debuff.").Value;
+			LeechingSeed_Rework.BaseDoTHeal = MainConfig.Bind(Section_LeechingSeed_Rework, "Base DoT Healing", 4f, "Healing amount given from damage over time ticks at a single stack.").Value;
+			LeechingSeed_Rework.StackDoTHeal = MainConfig.Bind(Section_LeechingSeed_Rework, "Stack DoT Healing", 4f, "Healing amount given from damage over time for each additional stack.").Value;
+			LeechingSeed_Rework.LeechChance = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Chance", 20f, "Chance of applying the Leech debuff.").Value;
 			LeechingSeed_Rework.LeechLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Life Steal", 0.02f, "Percent of damage received as healing when damaging a target with Leech.").Value;
-			LeechingSeed_Rework.LeechMinLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Minimum Life Steal", 0.5f, "Minimum amount of healing received from Leech.").Value;
+			LeechingSeed_Rework.LeechMinLifeSteal = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Minimum Life Steal", 0.5f, "Minimum amount of healing received when damaging a target with Leech.").Value;
 			LeechingSeed_Rework.LeechBaseDamage = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Damage", 0.5f, "Damage dealt per second from Leech.").Value;
-			LeechingSeed_Rework.LeechBaseDuration = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Duration", 5f, "How long Leech is applied for.").Value;
+			LeechingSeed_Rework.LeechBaseDuration = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Duration", 5f, "How long Leech is applied for at a single stack.").Value;
 			LeechingSeed_Rework.LeechStackDuration = MainConfig.Bind(Section_LeechingSeed_Rework, "Leech Stack Duration", 0f, "How much longer Leech is applied for each additional stack.").Value;
 		}
 		private static void Read_WaxQuail()

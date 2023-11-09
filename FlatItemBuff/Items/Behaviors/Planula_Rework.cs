@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RoR2;
 using UnityEngine;
+using FlatItemBuff.Components;
 
 namespace FlatItemBuff.Items.Behaviors
 {

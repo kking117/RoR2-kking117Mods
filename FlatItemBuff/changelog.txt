@@ -1,3 +1,22 @@
+**1.18.0**
+
+<details><summary>Notes</summary>I greatly suggest checking the configs in regards to the Ignition Tank rework, there's a few umentioned options that might be worth changing. Also no full bug testing has been done in regards to the recent RoR2 Update, wanted to churn this out before RoRR.</details>
+
+```
+- Leeching Seed Rework:
+- The Healing from DoTs is now scaled by the DoT's tick rate, faster ticks heal less and slower ticks heal more. (For context most DoTs tick 4 times a second so they will give 1/4th of the intended amount.)
+- Added "Base DoT Healing" configuration, controls how much healing each DoT tick gives at single stack. Default Value: (4)
+- Added "Stack DoT Healing" configuration, controls how much healing each DoT tick gives for each additional stack. Default Value: (4)
+- Changed "Leech Chance" default configuration. (25 -> 20)
+- Damage over time ticks from the Leech debuff no longer triggers its life steal effect, so it doesn't double dip with Leeching Seed.
+- Healing from the Leech debuff and Leeching Seed are now rolled into a singular instance of healing, for visual clarity and because they're both related to the same item.
+
+- Chronobauble:
+- Fixed it applying the slow on hits with a proc coefficient of 0 or less.
+
+- Added a rework for Ignition Tank.
+```
+
 **1.17.0**
 
 ```

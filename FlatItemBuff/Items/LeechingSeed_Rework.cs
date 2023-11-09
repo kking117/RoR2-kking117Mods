@@ -14,7 +14,8 @@ namespace FlatItemBuff.Items
 		public static DotController.DotDef LeechDotDef;
 		private static DotController.DotIndex LeechDotIndex;
 		internal static bool Enable = false;
-		internal static float HealFromDoT = 2f;
+		internal static float BaseDoTHeal = 4f;
+		internal static float StackDoTHeal = 4f;
 		internal static float LeechChance = 0.25f;
 		internal static float LeechLifeSteal = 0.02f;
 		internal static float LeechMinLifeSteal = 0.5f;
@@ -53,14 +54,14 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "";
 			string desc = "";
-			if(HealFromDoT > 0f)
+			if(BaseDoTHeal > 0f)
             {
 				pickup += string.Format("Dealing status damage heals you.");
-				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", HealFromDoT);
+				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{1} per stack)</style> health</style>.", BaseDoTHeal, StackDoTHeal);
 			}
 			if(LeechChance > 0f)
             {
-				if (HealFromDoT > 0f)
+				if (BaseDoTHeal > 0f)
                 {
 					pickup += " ";
 					desc += " ";
@@ -87,15 +88,23 @@ namespace FlatItemBuff.Items
 			float procrate = damageReport.damageInfo.procCoefficient;
 			ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
 			Inventory inventory = damageReport.attackerBody.inventory;
+			bool isDot = false;
+			float totalHealing = 0f;
+			float tickMult = 1f;
+			if (damageReport.dotType != DotController.DotIndex.None)
+			{
+				isDot = true;
+				DotController.DotDef dotDef = DotController.GetDotDef(damageReport.dotType);
+				tickMult = dotDef.interval;
+			}
 
 			if (LeechChance > 0f)
 			{
-				if (damageReport.victimBody.HasBuff(LeechBuff))
+				if (damageReport.dotType != LeechDotIndex && damageReport.victimBody.HasBuff(LeechBuff))
 				{
-					damageReport.attackerBody.healthComponent.Heal(LeechHealing(damageReport.damageDealt, procrate), procChainMask, true);
+					totalHealing += LeechHealing(damageReport.damageDealt, procrate, isDot);
 				}
 			}
-
 			if (inventory)
 			{
 				int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
@@ -111,25 +120,40 @@ namespace FlatItemBuff.Items
 							}
 						}
 					}
-					if (HealFromDoT > 0f)
+					if (BaseDoTHeal > 0f)
 					{
-						if (damageReport.dotType != DotController.DotIndex.None)
+						if (isDot)
 						{
-							damageReport.attackerBody.healthComponent.Heal(HealFromDoT * itemCount, procChainMask, true);
+							
+							totalHealing += LeechDoTHealing(itemCount) * tickMult;
 						}
 					}
 				}
 			}
-		}
-		private float LeechHealing(float damage, float procrate)
-        {
-			if (procrate < 0.1f)
+			//For visual clarity and since they're both very much related to the same item
+			if (totalHealing != 0f)
             {
-				procrate = 0.1f;
+				damageReport.attackerBody.healthComponent.Heal(totalHealing, procChainMask, true);
+			}
+		}
+		private float LeechHealing(float damage, float procrate, bool isDot = false)
+        {
+			if (isDot)
+			{
+				if (procrate < 0.5f)
+				{
+					procrate = 0.5f;
+				}
 			}
 			return Math.Max(LeechMinLifeSteal, damage * LeechLifeSteal * procrate);
 		}
-		private float LeechDuration(float itemCount)
+		private float LeechDoTHealing(float itemCount)
+        {
+			itemCount = Math.Max(0, itemCount - 1);
+			return BaseDoTHeal + (StackDoTHeal * itemCount);
+		}
+
+		private float LeechDuration(int itemCount)
         {
 			itemCount = Math.Max(0, itemCount - 1);
 			return LeechBaseDuration + (LeechStackDuration * itemCount);
