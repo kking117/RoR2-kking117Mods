@@ -10,6 +10,18 @@ namespace FlatItemBuff.Utils
 {
     internal class Helpers
     {
+		public static float GetBuffDuration(CharacterBody body, BuffDef buffDef)
+        {
+			List<CharacterBody.TimedBuff> buffList = body.timedBuffs;
+			for (int i = 0; i < buffList.Count; i++)
+			{
+				if (buffList[i].buffIndex == buffDef.buffIndex)
+                {
+					return buffList[i].timer;
+                }
+			}
+			return 0f;
+        }
 		public static float HyperbolicResult(int itemCount, float baseBonus, float stackBonus, int hardCap)
 		{
 			float bonus = baseBonus + (stackBonus * (itemCount - 1));

@@ -18,6 +18,7 @@ namespace FlatItemBuff.Modules
         {
             //this.contentPack.SetFieldValue("identifier", this.identifier);
             contentPack.identifier = identifier;
+            contentPack.itemDefs.Add(Items.itemDefs.ToArray());
             //contentPack.bodyPrefabs.Add(Prefabs.bodyPrefabs.ToArray());
             contentPack.buffDefs.Add(Buffs.buffDefs.ToArray());
             //contentPack.effectDefs.Add(Assets.effectDefs.ToArray());

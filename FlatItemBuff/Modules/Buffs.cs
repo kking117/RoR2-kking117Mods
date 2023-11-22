@@ -12,7 +12,7 @@ namespace FlatItemBuff.Modules
         internal static BuffDef AddNewBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown)
         {
             BuffDef buffDef = ScriptableObject.CreateInstance<BuffDef>();
-            buffDef.name = buffName;
+            buffDef.name = buffName + " (FlatItemBuff)";
             buffDef.buffColor = buffColor;
             buffDef.canStack = canStack;
             buffDef.isDebuff = isDebuff;

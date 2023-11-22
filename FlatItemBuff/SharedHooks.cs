@@ -21,6 +21,9 @@ namespace FlatItemBuff
 		public delegate void Handle_GlobalHitEvent(CharacterBody victim, CharacterBody attacker, DamageInfo damageInfo);
 		public static Handle_GlobalHitEvent Handle_GlobalHitEvent_Actions;
 
+		public delegate void Handle_CharacterMaster_OnBodyDeath(CharacterMaster master, CharacterBody body);
+		public static Handle_CharacterMaster_OnBodyDeath Handle_CharacterMaster_OnBodyDeath_Actions;
+
 		public delegate void Handle_GlobalInventoryChangedEvent(CharacterBody self);
 		public static Handle_GlobalInventoryChangedEvent Handle_GlobalInventoryChangedEvent_Actions;
 		public static void Setup()
@@ -45,7 +48,12 @@ namespace FlatItemBuff
             {
 				CharacterBody.onBodyInventoryChangedGlobal += GlobalEventManager_OnInventoryChanged;
 			}
+			if (Handle_CharacterMaster_OnBodyDeath_Actions != null)
+			{
+				On.RoR2.CharacterMaster.OnBodyDeath += CharacterMaster_OnBodyDeath;
+			}
 		}
+		
 		internal static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
 			if (sender.inventory)
@@ -94,6 +102,16 @@ namespace FlatItemBuff
 					Handle_GlobalHitEvent_Actions.Invoke(victimBody, attackerBody, damageInfo);
 				}
 			}
+		}
+
+		internal static void CharacterMaster_OnBodyDeath(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
+		{
+			orig(self, body);
+			if (!NetworkServer.active)
+			{
+				return;
+			}
+			Handle_CharacterMaster_OnBodyDeath_Actions.Invoke(self, body);
 		}
 
 		internal static void GlobalEventManager_OnInventoryChanged(CharacterBody self)
