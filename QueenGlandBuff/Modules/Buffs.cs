@@ -11,10 +11,6 @@ namespace QueenGlandBuff.Modules
         internal static BuffDef AddNewBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown)
         {
             buffName += "(" + MainPlugin.MODNAME + ")";
-            if (MainPlugin.Config_Debug.Value)
-            {
-                MainPlugin.ModLogger.LogInfo("Adding Buff: " + buffName);
-            }
             BuffDef buffDef = ScriptableObject.CreateInstance<BuffDef>();
             buffDef.name = buffName;
             buffDef.buffColor = buffColor;

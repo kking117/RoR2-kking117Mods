@@ -9,67 +9,76 @@ using RoR2.Projectile;
 
 namespace QueenGlandBuff.Changes
 {
-    public class BeetleGuardAlly
-    {
-		public static GameObject Default_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/hermitcrabbombprojectile");
-		public static GameObject Perfect_Sunder_MainProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brothersunderwave");
-		public static GameObject Perfect_Sunder_SecProj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/lunarshardprojectile");
-		public static GameObject Perfect_Slam_Proj = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/brotherfirepillar");
-		public static GameObject SlamRockProjectile;
+	public class BeetleGuardAlly
+	{
+		private static string LogName = "(BeetleGuardAlly)";
+		internal static float Stats_Base_Health = 480f;
+		internal static float Stats_Base_Damage = 12f;
+		internal static float Stats_Base_Regen = 5f;
 
+		internal static float Stats_Level_Health = 144f;
+		internal static float Stats_Level_Damage = 2.4f;
+		internal static float Stats_Level_Regen = 1f;
+
+		internal static bool Elite_Skills = true;
+
+		internal static bool Enable_Slam_Skill = true;
+
+		internal static bool Enable_Sunder_Skill = true;
+
+		internal static bool Enable_Valor_Skill = true;
+
+		public static GameObject Perfected_Slam_RockProjectile;
+		public static GameObject Perfected_Sunder_RockProjectile;
+		public static GameObject Perfected_Sunder_MainProjectile;
+
+		public static GameObject Default_RockProjectile;
+		
 		public static GameObject BodyObject = LegacyResourcesAPI.Load<GameObject>("prefabs/characterbodies/BeetleGuardAllyBody");
 		public static GameObject MasterObject = LegacyResourcesAPI.Load<GameObject>("prefabs/charactermasters/BeetleGuardAllyMaster");
 
 		public static BaseAI BaseAI;
 
-		
-		public static BuffDef BeetleFrenzy;
-
 		public static SkillDef SlamSkill;
 		public static SkillDef SunderSkill;
-		public static SkillDef RecallSkill;
-		public static SkillDef StaunchSkill;
+		public static SkillDef ValorSkill;
 
 		public static SkillDef OldSlamSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodyGroundSlam.asset").WaitForCompletion();
 		public static SkillDef OldSunderSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodySunder.asset").WaitForCompletion();
 
 		public static void Begin()
-        {
-			CreateBuffs();
+		{
+			MainPlugin.ModLogger.LogInfo(LogName + " Beginning changes.");
 			CreateProjectiles();
 			UpdateBody();
 			CreateSkills();
 			UpdateLoadouts();
 			UpdateAI();
 		}
-		private static void CreateBuffs()
-        {
-			if (MainPlugin.Config_AddSpecial.Value)
-			{
-				StaunchBuff.Begin();
-			}
-		}
 		private static void CreateProjectiles()
-        {
-			if (MainPlugin.Config_Debug.Value)
+		{
+			MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly projectiles.");
+			if (Enable_Slam_Skill || Enable_Sunder_Skill)
 			{
-				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly projectiles.");
-			}
-			if (MainPlugin.Config_PrimaryBuff.Value || MainPlugin.Config_SecondaryBuff.Value)
-			{
-				SlamRockProjectile = PrefabAPI.InstantiateClone(Default_Proj, MainPlugin.MODTOKEN + "RockProjectile", true);
-				SlamRockProjectile.GetComponent<ProjectileExplosion>().falloffModel = BlastAttack.FalloffModel.Linear;
-				SlamRockProjectile.GetComponent<ProjectileExplosion>().bonusBlastForce = Vector3.down * 4f;
-				SlamRockProjectile.GetComponent<ProjectileExplosion>().blastRadius *= 1.5f;
-				Modules.Projectiles.AddProjectile(SlamRockProjectile);
+				Default_RockProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/HermitCrab/HermitCrabBombProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "RockProjectile", true);
+				ProjectileExplosion projExplode = Default_RockProjectile.GetComponent<ProjectileExplosion>();
+				projExplode.falloffModel = BlastAttack.FalloffModel.SweetSpot;
+				projExplode.bonusBlastForce = Vector3.down * 10f;
+				projExplode.blastRadius = 8f; //default is 7
+				projExplode.blastProcCoefficient *= 0.3f; //default is 0.5
+				Modules.Projectiles.AddProjectile(Default_RockProjectile);
+
+				if (Elite_Skills)
+				{
+					Perfected_Slam_RockProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherFirePillar.prefab").WaitForCompletion();
+					Perfected_Sunder_RockProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/LunarShardProjectile.prefab").WaitForCompletion();
+					Perfected_Sunder_MainProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherSunderWave.prefab").WaitForCompletion();
+				}
 			}
 		}
 		private static void UpdateBody()
 		{
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Changing BeetleGuardAlly attributes.");
-			}
+			MainPlugin.ModLogger.LogInfo(LogName + " Changing body attributes.");
 			CharacterBody charBody = BodyObject.GetComponent<CharacterBody>();
 
 			charBody.baseAcceleration *= 1.5f;
@@ -78,28 +87,25 @@ namespace QueenGlandBuff.Changes
 			CharacterDirection charDir = BodyObject.GetComponent<CharacterDirection>();
 			charDir.turnSpeed *= 2f;
 
-			charBody.baseMaxHealth *= MainPlugin.Config_BeetleGuardAlly_HealthMult.Value;
-			charBody.levelMaxHealth *= MainPlugin.Config_BeetleGuardAlly_HealthMult.Value;
+			charBody.baseMaxHealth = Stats_Base_Health;
+			charBody.levelMaxHealth = Stats_Level_Health;
 
-			charBody.baseDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
-			charBody.levelDamage *= MainPlugin.Config_BeetleGuardAlly_DamageMult.Value;
+			charBody.baseDamage = Stats_Base_Damage;
+			charBody.levelDamage = Stats_Level_Damage;
 
-			charBody.baseRegen = 1f * MainPlugin.Config_BeetleGuardAlly_RegenMult.Value;
-			charBody.levelRegen = 0.2f * MainPlugin.Config_BeetleGuardAlly_RegenMult.Value;
+			charBody.baseRegen = Stats_Base_Regen;
+			charBody.levelRegen = Stats_Level_Regen;
 		}
 		private static void CreateSkills()
         {
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly skills.");
-			}
+			MainPlugin.ModLogger.LogInfo(LogName + " Creating/Changing skills.");
 			SlamSkill = ScriptableObject.CreateInstance<SkillDef>();
 
 			LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_NAME", "Slam");
-			if (MainPlugin.Config_PrimaryBuff.Value)
+			if (Enable_Slam_Skill)
 			{
 				SlamSkill.activationState = new SerializableEntityStateType(typeof(States.Slam));
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>5x75%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "PRIMARY_SLAM_DESC", "Strike the ground for <style=cIsDamage>400%</style> and launch debris for <style=cIsDamage>3x125%</style> damage.");
 				Modules.States.RegisterState(typeof(States.Slam));
 			}
 			else
@@ -140,10 +146,10 @@ namespace QueenGlandBuff.Changes
 			SunderSkill = ScriptableObject.CreateInstance<SkillDef>();
 
 			LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_NAME", "Sunder");
-			if (MainPlugin.Config_SecondaryBuff.Value)
+			if (Enable_Sunder_Skill)
 			{
 				SunderSkill.activationState = new SerializableEntityStateType(typeof(States.Sunder));
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>5x75%</style> damage.");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SECONDARY_SUNDER_DESC", "Tear the ground infront of you for <style=cIsDamage>400%</style>, launching a cluster of rocks for <style=cIsDamage>3x125%</style> damage.");
 				Modules.States.RegisterState(typeof(States.Sunder));
 			}
 			else
@@ -177,138 +183,91 @@ namespace QueenGlandBuff.Changes
 
 			Modules.Skills.RegisterSkill(SunderSkill);
 
-			if (MainPlugin.Config_AddUtility.Value)
+			if (Enable_Valor_Skill)
 			{
-				RecallSkill = ScriptableObject.CreateInstance<SkillDef>();
-
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME", "Recall");
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC", "<style=cIsUtility>Burrow</style> to your owner's side.");
-
-				RecallSkill.activationState = new SerializableEntityStateType(typeof(States.Recall));
-				RecallSkill.activationStateMachineName = "Body";
-				Modules.States.RegisterState(typeof(States.Recall));
-
-				RecallSkill.baseMaxStock = 1;
-				RecallSkill.rechargeStock = 1;
-				RecallSkill.requiredStock = 1;
-				RecallSkill.stockToConsume = 1;
-				RecallSkill.fullRestockOnAssign = true;
-
-				RecallSkill.baseRechargeInterval = 12f;
-				RecallSkill.beginSkillCooldownOnSkillEnd = false;
-
-				RecallSkill.canceledFromSprinting = false;
-				RecallSkill.cancelSprintingOnActivation = true;
-				RecallSkill.forceSprintDuringState = false;
-
-				RecallSkill.interruptPriority = InterruptPriority.Skill;
-				RecallSkill.isCombatSkill = false;
-				RecallSkill.mustKeyPress = false;
-
-				RecallSkill.icon = null;
-				RecallSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_DESC";
-				RecallSkill.skillNameToken = MainPlugin.MODTOKEN + "UTILITY_TELEPORT_NAME";
-				RecallSkill.skillName = RecallSkill.skillNameToken;
-
-				Modules.Skills.RegisterSkill(RecallSkill);
-			}
-
-			if (MainPlugin.Config_AddSpecial.Value)
-			{
-				StaunchSkill = ScriptableObject.CreateInstance<SkillDef>();
+				ValorBuff.Begin();
+				ValorSkill = ScriptableObject.CreateInstance<SkillDef>();
 				string desc = "";
-				if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
+				if (ValorBuff.Aggro_Range > 0f)
 				{
 					desc = "Draw the <style=cIsHealth>attention</style> of nearby enemies";
-					if (MainPlugin.Config_Staunch_Armor.Value != 0f)
-					{
-						desc += " and";
-					}
 				}
-				if (MainPlugin.Config_Staunch_Armor.Value > 0f)
+				if (ValorBuff.Buff_Armor != 0f)
                 {
-					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
+					if (ValorBuff.Buff_Armor > 0f)
                     {
-						desc += " gain";
+						if (ValorBuff.Aggro_Range > 0f)
+						{
+							desc += " and gain";
+						}
+						else
+						{
+							desc += "Gain";
+						}
 					}
 					else
                     {
-						desc += "Gain";
+						if (ValorBuff.Aggro_Range > 0f)
+						{
+							desc += " and lose";
+						}
+						else
+						{
+							desc += "Lose";
+						}
 					}
-					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
+					desc += string.Format(" <style=cIsUtility>{0}</style> armor", ValorBuff.Buff_Armor);
                 }
-				else if(MainPlugin.Config_Staunch_Armor.Value < 0f)
-				{
-					if (MainPlugin.Config_Staunch_AggroRange.Value > 0f)
-					{
-						desc += " lose";
-					}
-					else
-					{
-						desc += "Lose";
-					}
-					desc += string.Format(" <style=cIsUtility>{0}</style> armor", MainPlugin.Config_Staunch_Armor.Value);
-				}
 				desc += " for <style=cIsUtility>10</style> seconds.";
 
-				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Staunch");
+				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME", "Valor");
 				LanguageAPI.Add(MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC", desc);
 
-				StaunchSkill.activationState = new SerializableEntityStateType(typeof(States.Staunch));
-				StaunchSkill.activationStateMachineName = "Body";
-				Modules.States.RegisterState(typeof(States.Staunch));
+				ValorSkill.activationState = new SerializableEntityStateType(typeof(States.Valor));
+				ValorSkill.activationStateMachineName = "Body";
+				Modules.States.RegisterState(typeof(States.Valor));
 
-				StaunchSkill.baseMaxStock = 1;
-				StaunchSkill.rechargeStock = 1;
-				StaunchSkill.requiredStock = 1;
-				StaunchSkill.stockToConsume = 1;
-				StaunchSkill.fullRestockOnAssign = true;
+				ValorSkill.baseMaxStock = 1;
+				ValorSkill.rechargeStock = 1;
+				ValorSkill.requiredStock = 1;
+				ValorSkill.stockToConsume = 1;
+				ValorSkill.fullRestockOnAssign = true;
 
-				StaunchSkill.baseRechargeInterval = 30f;
-				StaunchSkill.beginSkillCooldownOnSkillEnd = false;
+				ValorSkill.baseRechargeInterval = 30f;
+				ValorSkill.beginSkillCooldownOnSkillEnd = false;
 
-				StaunchSkill.canceledFromSprinting = false;
-				StaunchSkill.cancelSprintingOnActivation = true;
-				StaunchSkill.forceSprintDuringState = false;
+				ValorSkill.canceledFromSprinting = false;
+				ValorSkill.cancelSprintingOnActivation = true;
+				ValorSkill.forceSprintDuringState = false;
 
-				StaunchSkill.interruptPriority = InterruptPriority.Skill;
-				StaunchSkill.isCombatSkill = false;
-				StaunchSkill.mustKeyPress = false;
+				ValorSkill.interruptPriority = InterruptPriority.Skill;
+				ValorSkill.isCombatSkill = false;
+				ValorSkill.mustKeyPress = false;
 
-				StaunchSkill.icon = null;
-				StaunchSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC";
-				StaunchSkill.skillNameToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME";
-				StaunchSkill.skillName = StaunchSkill.skillNameToken;
+				ValorSkill.icon = null;
+				ValorSkill.skillDescriptionToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_DESC";
+				ValorSkill.skillNameToken = MainPlugin.MODTOKEN + "SPECIAL_TAUNT_NAME";
+				ValorSkill.skillName = ValorSkill.skillNameToken;
 
-				Modules.Skills.RegisterSkill(StaunchSkill);
+				Modules.Skills.RegisterSkill(ValorSkill);
 			}
 		}
 		private static void UpdateLoadouts()
 		{
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Adding new Skills to BeetleGuardAllyBody.");
-			}
+			MainPlugin.ModLogger.LogInfo(LogName + " Changing skill loadout.");
 			Modules.Skills.WipeLoadout(BodyObject);
 			Modules.Skills.AddSkillToSlot(BodyObject, SlamSkill, SkillSlot.Primary);
 			Modules.Skills.AddSkillToSlot(BodyObject, SunderSkill, SkillSlot.Secondary);
-			if (MainPlugin.Config_AddUtility.Value)
+			if (Enable_Valor_Skill)
 			{
-				Modules.Skills.AddSkillToSlot(BodyObject, RecallSkill, SkillSlot.Utility);
-			}
-			if (MainPlugin.Config_AddSpecial.Value)
-			{
-				Modules.Skills.AddSkillToSlot(BodyObject, StaunchSkill, SkillSlot.Special);
+				Modules.Skills.AddSkillToSlot(BodyObject, ValorSkill, SkillSlot.Special);
 			}
 		}
 		private static void UpdateAI()
 		{
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Changing BaseAI and SkillDrivers.");
-			}
-			BaseAI = MasterObject.GetComponent<BaseAI>();
+			MainPlugin.ModLogger.LogInfo(LogName + " Changing BaseAI and SkillDrivers.");
 
+			BaseAI = MasterObject.GetComponent<BaseAI>();
 			BaseAI.neverRetaliateFriendlies = true;
 			BaseAI.fullVision = true;
 
@@ -317,7 +276,7 @@ namespace QueenGlandBuff.Changes
 				UnityEngine.Object.DestroyImmediate(obj);
 			}
 
-			if (MainPlugin.Config_AddSpecial.Value)
+			if (Enable_Valor_Skill)
 			{
 				AISkillDriver aiskillDriver1 = MasterObject.AddComponent<AISkillDriver>();
 				aiskillDriver1.customName = "BuffAlly";
@@ -329,7 +288,7 @@ namespace QueenGlandBuff.Changes
 				aiskillDriver1.buttonPressType = AISkillDriver.ButtonPressType.Hold;
 				aiskillDriver1.driverUpdateTimerOverride = 1f;
 				aiskillDriver1.ignoreNodeGraph = false;
-				aiskillDriver1.maxDistance = 40f;
+				aiskillDriver1.maxDistance = 30f;
 				aiskillDriver1.minDistance = 0f;
 				aiskillDriver1.maxTargetHealthFraction = float.PositiveInfinity;
 				aiskillDriver1.maxUserHealthFraction = float.PositiveInfinity;
@@ -424,7 +383,7 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver4.driverUpdateTimerOverride = 3f;
 			aiskillDriver4.ignoreNodeGraph = false;
 			aiskillDriver4.maxDistance = float.PositiveInfinity;
-			aiskillDriver4.minDistance = MainPlugin.Config_AI_MinRecallDist.Value;
+			aiskillDriver4.minDistance = 110f;
 			aiskillDriver4.maxTargetHealthFraction = float.PositiveInfinity;
 			aiskillDriver4.maxUserHealthFraction = float.PositiveInfinity;
 			aiskillDriver4.minTargetHealthFraction = float.NegativeInfinity;
@@ -442,16 +401,8 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver4.shouldFireEquipment = false;
 			aiskillDriver4.shouldSprint = true;
 			aiskillDriver4.requireSkillReady = false;
-			if (MainPlugin.Config_AddUtility.Value)
-            {
-				aiskillDriver4.skillSlot = SkillSlot.Utility;
-				aiskillDriver4.resetCurrentEnemyOnNextDriverSelection = true;
-			}
-			else
-            {
-				aiskillDriver4.skillSlot = SkillSlot.None;
-				aiskillDriver4.resetCurrentEnemyOnNextDriverSelection = false;
-			}
+			aiskillDriver4.skillSlot = SkillSlot.None;
+			aiskillDriver4.resetCurrentEnemyOnNextDriverSelection = false;
 
 			AISkillDriver aiskillDriver5 = MasterObject.AddComponent<AISkillDriver>();
 			aiskillDriver5.customName = "StrafeBecauseCooldowns";
@@ -468,8 +419,8 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver5.maxUserHealthFraction = float.PositiveInfinity;
 			aiskillDriver5.minTargetHealthFraction = float.NegativeInfinity;
 			aiskillDriver5.minUserHealthFraction = float.NegativeInfinity;
-			aiskillDriver5.moveInputScale = 1f;
-			aiskillDriver5.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+			aiskillDriver5.moveInputScale = -0.8f;
+			aiskillDriver5.movementType = AISkillDriver.MovementType.StrafeMovetarget;
 			aiskillDriver5.moveTargetType = AISkillDriver.TargetType.CurrentEnemy;
 			//aiskillDriver5.nextHighPriorityOverride =;
 			aiskillDriver5.noRepeat = false;
@@ -607,37 +558,6 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver9.shouldFireEquipment = false;
 			aiskillDriver9.shouldSprint = false;
 			aiskillDriver9.skillSlot = SkillSlot.None;
-		}
-
-		internal static void UpdateAILeash(CharacterMaster master)
-		{
-			if (master)
-			{
-				foreach (AISkillDriver driver in master.GetComponentsInChildren<AISkillDriver>())
-				{
-					if (driver.customName == "ReturnToOwnerLeash")
-					{
-						driver.minDistance = GetLeashDistance();
-						break;
-					}
-				}
-			}
-		}
-		internal static float GetLeashDistance()
-		{
-			Run run = Run.instance;
-			float distance = MainPlugin.Config_AI_MinRecallDist.Value;
-			if (run)
-			{
-				float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AI_RecallDistDiff.Value;
-				if (diff > 0f)
-				{
-					distance += diff;
-				}
-				distance = Mathf.Min(MainPlugin.Config_AI_MaxRecallDist.Value, distance);
-				distance = Mathf.Max(MainPlugin.Config_AI_MinRecallDist.Value, distance);
-			}
-			return distance;
 		}
 	}
 }

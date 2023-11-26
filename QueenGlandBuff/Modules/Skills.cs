@@ -13,10 +13,6 @@ namespace QueenGlandBuff.Modules
 		internal static List<SkillDef> skillDefs = new List<SkillDef>();
 		internal static void RegisterSkill(SkillDef skill)
         {
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Adding Skill: " + skill.skillNameToken);
-			}
 			skillDefs.Add(skill);
         }
 		internal static void AddSkillToSlot(GameObject prefab, SkillDef skill, SkillSlot slot)

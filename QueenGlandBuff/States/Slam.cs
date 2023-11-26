@@ -4,11 +4,42 @@ using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
 using RoR2.Projectile;
+using QueenGlandBuff.Changes;
 
 namespace QueenGlandBuff.States
 {
 	public class Slam : BaseSkillState
 	{
+		public static float baseDuration = 1.75f;
+		public static float soundtime = 3.5f;
+
+		public static float damageCoefficient = 4f;
+		public static float forceMagnitude = 16f;
+
+		public static float RockDamageCoefficient = 1.25f;
+		public static int RockCount = 3;
+		public static float RockSpeed = 25.0f;
+		private static float RockRotateOffset = 9f;
+
+		private OverlapAttack attack;
+
+		public static string initialAttackSoundString = EntityStates.BeetleGuardMonster.GroundSlam.initialAttackSoundString;
+		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.chargeEffectPrefab;
+		public static GameObject slamEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.slamEffectPrefab;
+		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.hitEffectPrefab;
+
+		private Animator modelAnimator;
+		private Transform modelTransform;
+
+		private bool hasAttacked;
+		private float duration;
+		private bool crit;
+
+		private GameObject leftHandChargeEffect;
+		private GameObject rightHandChargeEffect;
+
+		private ChildLocator modelChildLocator;
+		private Transform groundSlamIndicatorInstance;
 		private void EnableIndicator(Transform indicator)
 		{
 			if (indicator)
@@ -89,27 +120,7 @@ namespace QueenGlandBuff.States
 				}
 				if (isAuthority && modelTransform)
 				{
-					DisableIndicator(groundSlamIndicatorInstance);
-					EffectManager.SimpleMuzzleFlash(slamEffectPrefab, gameObject, "SlamZone", true);
-					Vector3 ShotAngle = transform.up;
-					Vector3 ShotPos = modelChildLocator.FindChild("GroundSlamIndicator").position;
-					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
-					{
-						float damage = projCount * projdamageCoefficient / 4f;
-						ProjectileManager.instance.FireProjectile(Changes.BeetleGuardAlly.Perfect_Slam_Proj, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, null, -1f);
-					}
-					else
-					{
-						ShotAngle = characterDirection.forward;
-						float baseangle = UnityEngine.Random.Range(0f, 360f);
-						for (int i = 0; i < projCount; i++)
-						{
-							Vector3 ShotAngleTemp = ShotAngle;
-							ShotAngleTemp = Quaternion.AngleAxis(baseangle + (360f / projCount * (i - projCount / 2f)), Vector3.up) * ShotAngle;
-							ShotAngleTemp.y = 7f;
-							ProjectileManager.instance.FireProjectile(projectile1Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, projSpeed);
-						}
-					}
+					FireProjectiles();
 				}
 				hasAttacked = true;
 				EntityState.Destroy(leftHandChargeEffect);
@@ -125,36 +136,41 @@ namespace QueenGlandBuff.States
 		{
 			return InterruptPriority.PrioritySkill;
 		}
-
-		public static float baseDuration = 1.75f;
-		public static float soundtime = 3.5f;
-
-		public static float damageCoefficient = 4f;
-		public static float forceMagnitude = 16f;
-
-		public static float projdamageCoefficient = 0.75f;
-		public static int projCount = 5;
-		public static float projSpeed = 30.0f;
-
-		private OverlapAttack attack;
-
-		public static string initialAttackSoundString = EntityStates.BeetleGuardMonster.GroundSlam.initialAttackSoundString;
-		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.chargeEffectPrefab;
-		public static GameObject slamEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.slamEffectPrefab;
-		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.GroundSlam.hitEffectPrefab;
-		public static GameObject projectile1Prefab = Changes.BeetleGuardAlly.SlamRockProjectile;
-
-		private Animator modelAnimator;
-		private Transform modelTransform;
-
-		private bool hasAttacked;
-		private float duration;
-		private bool crit;
-
-		private GameObject leftHandChargeEffect;
-		private GameObject rightHandChargeEffect;
-
-		private ChildLocator modelChildLocator;
-		private Transform groundSlamIndicatorInstance;
+		private void FireProjectiles()
+		{
+			DisableIndicator(groundSlamIndicatorInstance);
+			EffectManager.SimpleMuzzleFlash(slamEffectPrefab, gameObject, "SlamZone", true);
+			if (isAuthority)
+			{
+				if (BeetleGuardAlly.Elite_Skills)
+				{
+					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
+					{
+						Perfected_SpewRocks();
+						return;
+					}
+				}
+				SpewRocks();
+			}
+		}
+		//Overloading_Slam_RockProjectile
+		private void Perfected_SpewRocks()
+        {
+			float damage = RockCount * RockDamageCoefficient / 8f;
+			ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Perfected_Slam_RockProjectile, modelChildLocator.FindChild("GroundSlamIndicator").position, Quaternion.identity, gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, null, -1f);
+		}
+		private void SpewRocks()
+        {
+			Vector3 ShotPos = modelChildLocator.FindChild("GroundSlamIndicator").position;
+			Vector3 ShotAngle = characterDirection.forward;
+			float baseangle = UnityEngine.Random.Range(0f, 360f);
+			for (int i = 0; i < RockCount; i++)
+			{
+				Vector3 ShotAngleTemp = ShotAngle;
+				ShotAngleTemp = Quaternion.AngleAxis(baseangle + (360f / RockCount * (i - RockCount / 2f)), Vector3.up) * ShotAngle;
+				ShotAngleTemp.y = RockRotateOffset;
+				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Default_RockProjectile, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * RockDamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, RockSpeed);
+			}
+		}
 	}
 }

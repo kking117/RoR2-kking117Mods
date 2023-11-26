@@ -4,11 +4,44 @@ using EntityStates;
 using RoR2;
 using UnityEngine;
 using RoR2.Projectile;
+using QueenGlandBuff.Changes;
 
 namespace QueenGlandBuff.States
 {
 	public class Sunder : BaseSkillState
 	{
+		public static float baseDuration = 1.5f;
+		public static float soundtime = 3f;
+
+		public static float damageCoefficient = 4f;
+		public static float forceMagnitude = 16f;
+
+		public static float RockDamageCoefficient = 1.25f;
+		public static int RockCount = 3;
+		public static float RockSpeed = 55.0f;
+		public static float RockFanSpreadAngle = 2f;
+		public static float RockYLocOffset = 1f;
+		public static float RockYawAdd = 2f;
+		public static float RockYawOffset = -9f;
+
+		public static string initialAttackSoundString = EntityStates.BeetleGuardMonster.FireSunder.initialAttackSoundString;
+		//RoR2/Base/Mage/MageLightningboltBasic.prefab
+		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.chargeEffectPrefab;
+		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.hitEffectPrefab;
+
+		public static GameObject SunderProjectile = EntityStates.BeetleGuardMonster.FireSunder.projectilePrefab;
+
+		private UnityEngine.Animator modelAnimator;
+
+		private Transform modelTransform;
+
+		private bool hasAttacked;
+		private float duration;
+		private bool crit;
+
+		private GameObject rightHandChargeEffect;
+		private ChildLocator modelChildLocator;
+		private Transform handRTransform;
 		public override void OnEnter()
 		{
 			base.OnEnter();
@@ -39,6 +72,7 @@ namespace QueenGlandBuff.States
 					}
 				}
 			}
+			crit = characterBody.RollCrit();
 		}
 		public override void OnExit()
 		{
@@ -60,18 +94,7 @@ namespace QueenGlandBuff.States
 			{
 				if (isAuthority && modelTransform)
 				{
-					crit = characterBody.RollCrit();
-					Ray aimRay = GetAimRay();
-					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
-					{
-						ProjectileManager.instance.FireProjectile(projectile3Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
-						ShootShards();
-					}
-					else
-					{
-						ProjectileManager.instance.FireProjectile(projectile1Prefab, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
-						ShootRocks();
-					}
+					FireProjectiles();
 				}
 				hasAttacked = true;
 				EntityState.Destroy(rightHandChargeEffect);
@@ -86,23 +109,40 @@ namespace QueenGlandBuff.States
 		{
 			return InterruptPriority.PrioritySkill;
 		}
-		private void ShootShards()
+		private void FireProjectiles()
+        {
+			if (isAuthority)
+			{
+				Ray aimRay = GetAimRay();
+				aimRay.origin = handRTransform.position;
+				if (BeetleGuardAlly.Elite_Skills)
+				{
+					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
+					{
+						Perfected_FanRocks();
+						ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Perfected_Sunder_MainProjectile, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+						return;
+					}
+				}
+				ProjectileManager.instance.FireProjectile(SunderProjectile, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+				FanRocks();
+			}
+		}
+		private void Perfected_FanRocks()
 		{
-			Ray aimRay = GetAimRay();
-			Vector3 ShotAngle = aimRay.direction;
-			Vector3 ShotPos = handRTransform.position;
-			ShotPos.y += 1f;
-			ShotAngle.Normalize();
+			Ray baseaimRay = GetAimRay();
+			Ray finalaimRay = GetAimRay();
+			finalaimRay.origin = handRTransform.position;
+			finalaimRay.origin += new Vector3(0f, RockYLocOffset, 0f);
+			int ShardCount = 5;
+			float damage = RockCount * RockDamageCoefficient / (float)ShardCount / 10f;
+			float speed = RockSpeed * 1.25f;
 
-			float damage = projCount * projdmgCoefficient / 12f / 10f;
-			float speed = (projSpeed + projSpeedRng) * 1.25f;
-			float force = projectile1Prefab.GetComponent<ProjectileDamage>().force;
-
-			GameObject finaltarget = null;
+			GameObject homeTarget = null;
 			HurtBox hurtbox;
 			BullseyeSearch bullseyeSearch = new BullseyeSearch();
-			bullseyeSearch.searchOrigin = aimRay.origin;
-			bullseyeSearch.searchDirection = aimRay.direction;
+			bullseyeSearch.searchOrigin = baseaimRay.origin;
+			bullseyeSearch.searchDirection = baseaimRay.direction;
 			bullseyeSearch.maxDistanceFilter = 150f;
 			bullseyeSearch.maxAngleFilter = 10f;
 			bullseyeSearch.teamMaskFilter = TeamMask.allButNeutral;
@@ -112,132 +152,67 @@ namespace QueenGlandBuff.States
 			hurtbox = bullseyeSearch.GetResults().FirstOrDefault<HurtBox>();
 			if (hurtbox)
 			{
-				finaltarget = HurtBox.FindEntityObject(hurtbox);
-				ShotAngle = finaltarget.transform.position - ShotPos;
-				ShotAngle.Normalize();
+				homeTarget = HurtBox.FindEntityObject(hurtbox);
+				if (homeTarget)
+				{
+					finalaimRay.direction = hurtbox.transform.position - finalaimRay.origin;
+				}
 			}
-			Vector3 axis = Vector3.Cross(Vector3.up, ShotAngle);
-			for (int i = 0; i < 12; i++)
+			float spreadAngle = (ShardCount / 2f) + 0.5f;
+			for (int i = 0; i < ShardCount; i++)
 			{
-				Vector3 ShotAngleTemp = ShotAngle;
-				if (i != 0)
-				{
-					float x = UnityEngine.Random.Range(0, spreadangle);
-					if (finaltarget)
-					{
-						x = UnityEngine.Random.Range(0, spreadangle * 2.5f);
-					}
-					float z = UnityEngine.Random.Range(0f, 360f);
-					Vector3 vector = Quaternion.Euler(0f, 0f, z) * (Quaternion.Euler(x, 0f, 0f) * Vector3.forward);
-					float y = vector.y;
-					vector.y = 0f;
-					float angle = (Mathf.Atan2(vector.z, vector.x) * 57.29578f - 90f) * 1f;
-					float angle2 = Mathf.Atan2(y, vector.magnitude) * 57.29578f * 1f;
-					ShotAngleTemp = Quaternion.AngleAxis(angle, Vector3.up) * (Quaternion.AngleAxis(angle2, axis) * ShotAngleTemp);
-				}
-				ShotAngleTemp.Normalize();
-				if (ShotAngleTemp.y < -0.125f)
-				{
-					ShotAngleTemp.y = -0.125f;
-				}
-				ProjectileManager.instance.FireProjectile(projectile4Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * damage, 1f, crit, DamageColorIndex.Default, finaltarget, speed);
+				spreadAngle -= 1f;
+				Vector3 direction = Util.ApplySpread(finalaimRay.direction, 0f, 0f, 1f, 1f, spreadAngle * RockFanSpreadAngle, 0f);
+				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Perfected_Sunder_RockProjectile, finalaimRay.origin, Util.QuaternionSafeLookRotation(direction), gameObject, damageStat * damage, forceMagnitude, crit, DamageColorIndex.Default, homeTarget, speed);
 			}
 		}
-		private void ShootRocks()
-		{
-			Ray aimRay = GetAimRay();
-			Vector3 ShotAngle = aimRay.direction;
-			Vector3 ShotPos = handRTransform.position;
-			ShotPos.y += 1f;
-			ShotAngle.Normalize();
+		private void FanRocks()
+        {
+			Ray baseaimRay = GetAimRay();
+			Ray finalaimRay = GetAimRay();
 
-			if (!characterBody.isPlayerControlled)
+			finalaimRay.origin = handRTransform.position;
+			finalaimRay.origin += new Vector3(0f, RockYLocOffset, 0f);
+
+			GameObject homeTarget = null;
+			HurtBox hurtbox;
+			BullseyeSearch bullseyeSearch = new BullseyeSearch();
+			bullseyeSearch.searchOrigin = baseaimRay.origin;
+			bullseyeSearch.searchDirection = baseaimRay.direction;
+			bullseyeSearch.maxDistanceFilter = 90f;
+			bullseyeSearch.maxAngleFilter = 10f;
+			bullseyeSearch.teamMaskFilter = TeamMask.allButNeutral;
+			bullseyeSearch.teamMaskFilter.RemoveTeam(characterBody.teamComponent.teamIndex);
+			bullseyeSearch.sortMode = BullseyeSearch.SortMode.Distance;
+			bullseyeSearch.RefreshCandidates();
+			hurtbox = bullseyeSearch.GetResults().FirstOrDefault<HurtBox>();
+			if (hurtbox)
 			{
-				GameObject finaltarget = null;
-				HurtBox hurtbox;
-				BullseyeSearch bullseyeSearch = new BullseyeSearch();
-				bullseyeSearch.searchOrigin = aimRay.origin;
-				bullseyeSearch.searchDirection = aimRay.direction;
-				bullseyeSearch.maxDistanceFilter = 100f;
-				bullseyeSearch.maxAngleFilter = 10f;
-				bullseyeSearch.teamMaskFilter = TeamMask.allButNeutral;
-				bullseyeSearch.teamMaskFilter.RemoveTeam(characterBody.teamComponent.teamIndex);
-				bullseyeSearch.sortMode = BullseyeSearch.SortMode.Distance;
-				bullseyeSearch.RefreshCandidates();
-				hurtbox = bullseyeSearch.GetResults().FirstOrDefault<HurtBox>();
-				if (hurtbox)
-				{
-					finaltarget = HurtBox.FindEntityObject(hurtbox);
-					ShotAngle = finaltarget.transform.position - ShotPos;
-					ShotAngle.Normalize();
+				homeTarget = HurtBox.FindEntityObject(hurtbox);
+				if (homeTarget)
+                {
+					finalaimRay.direction = hurtbox.transform.position - finalaimRay.origin;
+					finalaimRay.direction.Normalize();
 				}
 			}
-			else
+			float yawBonus = 0f;
+			if (finalaimRay.direction.y < 0.93f || finalaimRay.direction.y > 0.0f)
 			{
-				ShotAngle = (aimRay.origin + aimRay.direction * 100f) - ShotPos;
-				ShotAngle.Normalize();
+				yawBonus = RockYawOffset;
 			}
-			ShotAngle.y += 0.2f;
-			ShotAngle.Normalize();
-			int spreadcount = projCount - 1;
-			Vector3 axis = Vector3.Cross(Vector3.up, ShotAngle);
-			float baseangle = UnityEngine.Random.Range(0f, 360f);
-			for (int i = 0; i < projCount; i++)
+			float spreadAngle = (RockCount / 2f) + 0.5f;
+			for (int i = 0; i < RockCount; i++)
 			{
-				Vector3 ShotAngleTemp = ShotAngle;
-				if (i != 0)
+				spreadAngle -= 1f;
+				float yawAngle = spreadAngle;
+				if (yawAngle < 0f)
 				{
-					float x = spreadangle;
-					float z = (i - 1) * (360f / spreadcount);
-					z += baseangle;
-					Vector3 vector = Quaternion.Euler(0f, 0f, z) * (Quaternion.Euler(x, 0f, 0f) * Vector3.forward);
-					float y = vector.y;
-					vector.y = 0f;
-					float angle = (Mathf.Atan2(vector.z, vector.x) * 57.29578f - 90f) * 1f;
-					float angle2 = Mathf.Atan2(y, vector.magnitude) * 57.29578f * 1f;
-					ShotAngleTemp = Quaternion.AngleAxis(angle, Vector3.up) * (Quaternion.AngleAxis(angle2, axis) * ShotAngleTemp);
+					yawAngle *= -1f;
 				}
-				ShotAngleTemp.Normalize();
-				if (ShotAngleTemp.y < -0.125f)
-				{
-					ShotAngleTemp.y = -0.125f;
-				}
-				ProjectileManager.instance.FireProjectile(projectile2Prefab, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * projdmgCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, projSpeed + UnityEngine.Random.Range(0.0f, projSpeedRng));
+				yawAngle *= RockYawAdd;
+				Vector3 direction = Util.ApplySpread(finalaimRay.direction, 0f, 0f, 1f, 1f, spreadAngle * RockFanSpreadAngle, yawBonus + yawAngle);
+				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Default_RockProjectile, finalaimRay.origin, Util.QuaternionSafeLookRotation(direction), gameObject, damageStat * RockDamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, RockSpeed);
 			}
 		}
-
-		public static float baseDuration = 1.5f;
-		public static float soundtime = 3f;
-
-		public static float damageCoefficient = 4f;
-		public static float forceMagnitude = 16f;
-
-		public static float projdmgCoefficient = 0.75f;
-		public static int projCount = 5;
-		public static float projSpeed = 50.0f;
-		public static float projSpeedRng = 5.0f;
-		public static float spreadangle = 3f;
-
-		public static string initialAttackSoundString = EntityStates.BeetleGuardMonster.FireSunder.initialAttackSoundString;
-
-		public static GameObject chargeEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.chargeEffectPrefab;
-		public static GameObject hitEffectPrefab = EntityStates.BeetleGuardMonster.FireSunder.hitEffectPrefab;
-
-		public static GameObject projectile1Prefab = EntityStates.BeetleGuardMonster.FireSunder.projectilePrefab;
-		public static GameObject projectile2Prefab = Changes.BeetleGuardAlly.SlamRockProjectile;
-		public static GameObject projectile3Prefab = Changes.BeetleGuardAlly.Perfect_Sunder_MainProj;
-		public static GameObject projectile4Prefab = Changes.BeetleGuardAlly.Perfect_Sunder_SecProj;
-
-		private UnityEngine.Animator modelAnimator;
-
-		private Transform modelTransform;
-
-		private bool hasAttacked;
-		private float duration;
-		private bool crit;
-
-		private GameObject rightHandChargeEffect;
-		private ChildLocator modelChildLocator;
-		private Transform handRTransform;
 	}
 }

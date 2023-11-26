@@ -10,19 +10,23 @@ namespace QueenGlandBuff.Changes
 {
     public class QueensGland
     {
+		private static string LogName = "(QueensGland)";
+		public static bool Enable = true;
 		public static List<EquipmentDef> StageEliteEquipmentDefs = new List<EquipmentDef>();
-		public static EquipmentIndex Gland_DefaultAffix_Var;
-		private static int BaseDamage = 20;
-		private static int StackDamage = 20;
-		private static int BaseHealth = 10;
-		private static int StackHealth = 10;
-		private static int MaxSummons = 1;
-		private static float RespawnTime = 30f;
+		public static EquipmentIndex DefaultAffixIndex = EquipmentIndex.None;
+		internal static int BaseDamage = 20;
+		internal static int StackDamage = 20;
+		internal static int BaseHealth = 10;
+		internal static int StackHealth = 10;
+		internal static int MaxSummons = 1;
+		internal static float RespawnTime = 30f;
+		internal static int AffixMode = 1;
+		internal static string DefaultAffixName = "EliteFireEquipment";
 		internal static void Begin()
         {
-			SetupConfigValues();
+			ClampConfig();
 			UpdateItemDescription();
-			if (MainPlugin.Config_QueensGland_SpawnAffix.Value != 0)
+			if (AffixMode != 0)
 			{
 				Stage.onServerStageBegin += ServerStageBegin;
 			}
@@ -31,24 +35,23 @@ namespace QueenGlandBuff.Changes
 			BeetleGland_Override();
 		}
 
-		private static void SetupConfigValues()
+		private static void ClampConfig()
 		{
-			BaseDamage = MainPlugin.Config_QueensGland_BaseDamage.Value;
-			StackDamage = MainPlugin.Config_QueensGland_StackDamage.Value;
-			BaseHealth = MainPlugin.Config_QueensGland_BaseHealth.Value;
-			StackHealth = MainPlugin.Config_QueensGland_StackHealth.Value;
-			MaxSummons = MainPlugin.Config_QueensGland_MaxSummons.Value;
-			RespawnTime = MainPlugin.Config_QueensGland_RespawnTime.Value;
+			BaseDamage = Math.Max(0, BaseDamage);
+			StackDamage = Math.Max(0, StackDamage);
+			BaseHealth = Math.Max(0, BaseHealth);
+			StackHealth = Math.Max(0, StackHealth);
+			MaxSummons = Math.Max(1, MaxSummons);
+			RespawnTime = Math.Max(0f, RespawnTime);
+			AffixMode = Math.Max(0, AffixMode);
+			AffixMode = Math.Min(2, AffixMode);
 		}
 		private static void UpdateItemDescription()
 		{
-			if (MainPlugin.Config_Debug.Value)
-			{
-				MainPlugin.ModLogger.LogInfo("Changing Queen's Gland descriptions.");
-			}
+			MainPlugin.ModLogger.LogInfo(LogName + " Changing item description.");
 			string pickup = "Recruit ";
 			string desc = "<style=cIsUtility>Summon ";
-			if (MainPlugin.Config_QueensGland_SpawnAffix.Value == 1)
+			if (AffixMode == 1)
 			{
 				pickup += "an Elite Beetle Guard.";
 				desc += "an Elite Beetle Guard</style>";
@@ -103,39 +106,42 @@ namespace QueenGlandBuff.Changes
 			{
 				return;
 			}
-			Gland_DefaultAffix_Var = EquipmentCatalog.FindEquipmentIndex(MainPlugin.Config_QueensGland_DefaultAffix.Value);
-			if (Gland_DefaultAffix_Var != EquipmentIndex.None)
+			DefaultAffixIndex = EquipmentCatalog.FindEquipmentIndex(DefaultAffixName);
+			if (DefaultAffixIndex != EquipmentIndex.None)
 			{
-				if (Run.instance.IsEquipmentExpansionLocked(Gland_DefaultAffix_Var))
+				if (Run.instance.IsEquipmentExpansionLocked(DefaultAffixIndex))
 				{
-					Gland_DefaultAffix_Var = EquipmentIndex.None;
+					DefaultAffixIndex = EquipmentIndex.None;
 				}
 			}
 			StageEliteEquipmentDefs.Clear();
 			CombatDirector.EliteTierDef[] DirectorElite = EliteAPI.GetCombatDirectorEliteTiers();
-			bool IsMoon = Stage.instance.sceneDef.cachedName.Contains("moon");
-			bool IsHonor = RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly);
-			bool IsLoop = Run.instance.loopClearCount > 0;
+			if (DirectorElite.Length > 0)
+			{
+				bool IsMoon = Stage.instance.sceneDef.cachedName.Contains("moon");
+				bool IsHonor = RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.EliteOnly);
+				bool IsLoop = Run.instance.loopClearCount > 0;
 
-			SpawnCard.EliteRules eliterules = SpawnCard.EliteRules.Default;
-			if (IsHonor)
-			{
-				eliterules = SpawnCard.EliteRules.ArtifactOnly;
-			}
-			if (IsMoon)
-			{
-				eliterules = SpawnCard.EliteRules.Lunar;
-			}
-
-			for (int i = 0; i < DirectorElite.Length; i++)
-			{
-				if (DirectorElite[i].isAvailable.Invoke(eliterules))
+				SpawnCard.EliteRules eliteRules = SpawnCard.EliteRules.Default;
+				if (IsHonor)
 				{
-					for (int z = 0; z < DirectorElite[i].eliteTypes.GetLength(0); z++)
+					eliteRules = SpawnCard.EliteRules.ArtifactOnly;
+				}
+				if (IsMoon)
+				{
+					eliteRules = SpawnCard.EliteRules.Lunar;
+				}
+
+				for (int i = 0; i < DirectorElite.Length; i++)
+				{
+					if (DirectorElite[i].isAvailable.Invoke(eliteRules))
 					{
-						if (DirectorElite[i].eliteTypes[z])
+						for (int z = 0; z < DirectorElite[i].eliteTypes.GetLength(0); z++)
 						{
-							StageEliteEquipmentDefs.Add(DirectorElite[i].eliteTypes[z].eliteEquipmentDef);
+							if (DirectorElite[i].eliteTypes[z])
+							{
+								StageEliteEquipmentDefs.Add(DirectorElite[i].eliteTypes[z].eliteEquipmentDef);
+							}
 						}
 					}
 				}
@@ -198,8 +204,14 @@ namespace QueenGlandBuff.Changes
 										{
 											inv.ResetItem(RoR2Content.Items.BoostDamage);
 											inv.ResetItem(RoR2Content.Items.BoostHp);
+											inv.ResetItem(RoR2Content.Items.MinionLeash);
 											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
 											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
+											inv.GiveItem(RoR2Content.Items.MinionLeash);
+											if (MainPlugin.RiskyMod_Loaded)
+                                            {
+												RiskyMod_MarkAlly(deployableMaster, inv);
+											}
 										}
 									}
 								}
@@ -207,6 +219,14 @@ namespace QueenGlandBuff.Changes
 						}
 					}
 				}
+			}
+		}
+		private static void RiskyMod_MarkAlly(CharacterMaster master, Inventory inventory)
+        {
+			inventory.ResetItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
+			if (master.teamIndex == TeamIndex.Player)
+			{
+				inventory.GiveItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
 			}
 		}
 		private static void BeetleGland_Override()
@@ -279,7 +299,6 @@ namespace QueenGlandBuff.Changes
 						spawnBody.teamComponent.teamIndex = owner.teamIndex;
 					}
 					Helpers.GiveRandomEliteAffix(spawnMaster);
-					BeetleGuardAlly.UpdateAILeash(spawnMaster);
 					deployable.onUndeploy.AddListener(new UnityEngine.Events.UnityAction(spawnMaster.TrueKill));
 					owner.AddDeployable(deployable, DeployableSlot.BeetleGuardAlly);
 					UpdateBeetleGuardStacks(owner);
