@@ -7,11 +7,11 @@ The goal of this mod is to buff Beetle Guards spawned by the Queen's Gland so th
 The biggest issue with Beetle Guards is their inability to fight an aerial enemy, to counter this its attacks now launch projectiles.
 These extra projectiles also make Beetle Guards deal a lot of extra damage so their damage has been reduced to compensate.
 
-<a href="https://imgur.com/wWG1E1P"><img src="https://i.imgur.com/wWG1E1P.png" title="source: imgur.com" /></a>
+<a href="https://imgur.com/Xo7FHBV"><img src="https://imgur.com/Xo7FHBV.png" title="source: imgur.com" /></a>
 
 For its Slam skill it fires out 3 projectiles evenly upwards. This is mostly for crowds and flying enemies that are just out of range.
 
-<a href="https://imgur.com/beAFC77"><img src="https://i.imgur.com/beAFC77.png" title="source: imgur.com" /></a>
+<a href="https://imgur.com/3pUPCpN"><img src="https://imgur.com/3pUPCpN.png" title="source: imgur.com" /></a>
 
 Its Sunder skill now fires 3 projectiles in the direction the Guard is aiming. This allows them to hit flying enemies.
 
