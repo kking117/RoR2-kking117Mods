@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 using RoR2;
 using UnityEngine;
 using R2API;
@@ -13,51 +12,67 @@ namespace WarBannerBuff.ItemChanges
 {
     public class WarBanner
     {
-        private static float NextRecover = 1f;
-        private static BuffDef ModdedBuff = RoR2Content.Buffs.Warbanner;
-        public static void Begin()
+		public static float OverlapDistanceMult;
+		public static BuffDef ModdedBuff = RoR2Content.Buffs.Warbanner;
+		public static GameObject BannerWard = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/WardOnLevel/WarbannerWard.prefab").WaitForCompletion();
+		public static GameObject BuffVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/WardOnLevel/WarbannerBuffEffect.prefab").WaitForCompletion();
+		private static string BannerWard_RefName = "(Clone)";
+		private static float NextRecover = 1f;
+		public static void Begin()
         {
+			ClampConfig();
 			CreateBuff();
 			UpdateText();
 			Hooks();
         }
+		private static void ClampConfig()
+        {
+			MainPlugin.Merge_FuseMult = Math.Max(0f, MainPlugin.Merge_MinOverlap);
+			MainPlugin.Merge_FuseMult = Math.Min(1f, MainPlugin.Merge_MinOverlap);
+			OverlapDistanceMult = 1f - MainPlugin.Merge_FuseMult;
+		}
 		private static void CreateBuff()
         {
 			ModdedBuff = Modules.Buffs.AddNewBuff("WarBanner(Modded)", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/WardOnLevel/bdWarbanner.asset").WaitForCompletion().iconSprite, Color.yellow, false, false, false);
-			LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard").GetComponent<BuffWard>().buffDef = ModdedBuff;
+			BannerWard.GetComponent<BuffWard>().buffDef = ModdedBuff;
 			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
+			BannerWard_RefName = BannerWard.name + BannerWard_RefName;
 		}
 		private static void Hooks()
         {
-			if (MainPlugin.RecoveryTick.Value > 0f)
+			if (MainPlugin.RecoveryTick > 0f)
 			{
 				On.RoR2.Run.Start += Run_Start;
 				On.RoR2.Run.FixedUpdate += Run_FixedUpdate;
 				On.RoR2.HealthComponent.FixedUpdate += HealthComponent_FixedUpdate;
 			}
 			RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsHook;
-			if (MainPlugin.BossBanner.Value > 0f)
+			if (MainPlugin.BossBanner > 0f)
 			{
 				On.EntityStates.Missions.BrotherEncounter.Phase1.OnEnter += Phase1_OnEnter;
 				On.EntityStates.Missions.BrotherEncounter.Phase2.OnEnter += Phase2_OnEnter;
 				On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += Phase3_OnEnter;
 			}
-			if (MainPlugin.PillarBanner.Value > 0f)
+			if (MainPlugin.PillarBanner > 0f)
             {
 				On.EntityStates.Missions.Moon.MoonBatteryActive.OnEnter += MoonBatteryActive_OnEnter;
 			}
-			if (MainPlugin.VoidBanner.Value > 0f)
+			if (MainPlugin.VoidBanner > 0f)
 			{
 				On.EntityStates.Missions.Arena.NullWard.Active.OnEnter += NullWardActive_OnEnter;
 			}
-			if (MainPlugin.DeepVoidBanner.Value > 0f)
+			if (MainPlugin.DeepVoidBanner > 0f)
 			{
 				On.EntityStates.DeepVoidPortalBattery.BaseDeepVoidPortalBatteryState.OnEnter += DeepVoidPortal_OnEnter;
 			}
-			if(MainPlugin.FocusBanner.Value > 0f)
+			if(MainPlugin.FocusBanner > 0f)
             {
 				On.RoR2.InfiniteTowerRun.OnSafeWardActivated += InfiniteTowerRun_OnSafeWardActivated;
 			}
+			if(MainPlugin.Merge_Enable)
+            {
+				On.RoR2.BuffWard.Start += BuffWard_Start;
+            }
 		}
 		private static void UpdateText()
 		{
@@ -65,32 +80,32 @@ namespace WarBannerBuff.ItemChanges
 			string desc = "On <style=cIsUtility>level up</style> or starting the <style=cIsUtility>Teleporter event</style>, drop a banner that strengthens all allies within <style=cIsUtility>16m</style> <style=cStack>(+8m per stack)</style>. Grants";
 			List<string> pickuplist = new List<string>();
 			List<string> desclist = new List<string>();
-			if (MainPlugin.RegenBonus.Value > 0.0f)
+			if (MainPlugin.RegenBonus > 0.0f)
 			{
 				pickuplist.Add(" regen");
 				desclist.Add(" <style=cIsHealing>regen</style>");
 			}
-			if (MainPlugin.DamageBonus.Value > 0.0f)
+			if (MainPlugin.DamageBonus > 0.0f)
 			{
 				pickuplist.Add(" damage");
 				desclist.Add(" <style=cIsDamage>damage</style>");
 			}
-			if (MainPlugin.CritBonus.Value > 0.0f)
+			if (MainPlugin.CritBonus > 0.0f)
 			{
 				pickuplist.Add(" crit chance");
 				desclist.Add(" <style=cIsDamage>crit chance</style>");
 			}
-			if (MainPlugin.AttackBonus.Value > 0.0f)
+			if (MainPlugin.AttackBonus > 0.0f)
 			{
 				pickuplist.Add(" attack speed");
 				desclist.Add(" <style=cIsDamage>attack speed</style>");
 			}
-			if (MainPlugin.MoveBonus.Value > 0.0f)
+			if (MainPlugin.MoveBonus > 0.0f)
 			{
 				pickuplist.Add(" movement speed");
 				desclist.Add(" <style=cIsUtility>movement speed</style>");
 			}
-			if (MainPlugin.ArmorBonus.Value > 0.0f)
+			if (MainPlugin.ArmorBonus > 0.0f)
 			{
 				pickuplist.Add(" armor");
 				desclist.Add(" <style=cIsHealing>armor</style>");
@@ -120,19 +135,12 @@ namespace WarBannerBuff.ItemChanges
 			if (sender.HasBuff(ModdedBuff))
 			{
 				float levelBonus = sender.level - 1f;
-				args.critAdd += MainPlugin.CritBonus.Value;
-				args.armorAdd += MainPlugin.ArmorBonus.Value;
-				args.baseDamageAdd += MainPlugin.DamageBonus.Value * (1 + (levelBonus * 0.2f));
-				if(MainPlugin.UseBaseAttackSpeed.Value)
-                {
-					args.baseAttackSpeedAdd += MainPlugin.AttackBonus.Value;
-				}
-				else
-                {
-					args.attackSpeedMultAdd += MainPlugin.AttackBonus.Value;
-				}
-				args.moveSpeedMultAdd += MainPlugin.MoveBonus.Value;
-				args.baseRegenAdd += MainPlugin.RegenBonus.Value * (1 + (levelBonus * 0.2f));
+				args.critAdd += MainPlugin.CritBonus;
+				args.armorAdd += MainPlugin.ArmorBonus;
+				args.baseDamageAdd += MainPlugin.DamageBonus * (1 + (levelBonus * 0.2f));
+				args.attackSpeedMultAdd += MainPlugin.AttackBonus;
+				args.moveSpeedMultAdd += MainPlugin.MoveBonus;
+				args.baseRegenAdd += MainPlugin.RegenBonus * (1 + (levelBonus * 0.2f));
 			}
 		}
 		private static void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
@@ -143,11 +151,11 @@ namespace WarBannerBuff.ItemChanges
 		private static void Run_FixedUpdate(On.RoR2.Run.orig_FixedUpdate orig, RoR2.Run self)
 		{
 			orig(self);
-			if (MainPlugin.RecoveryTick.Value > 0.0f)
+			if (MainPlugin.RecoveryTick > 0.0f)
 			{
 				if (NextRecover <= 0f)
 				{
-					NextRecover += MainPlugin.RecoveryTick.Value;
+					NextRecover += MainPlugin.RecoveryTick;
 				}
 				NextRecover -= Time.fixedDeltaTime;
 			}
@@ -180,12 +188,12 @@ namespace WarBannerBuff.ItemChanges
 			float healing = 0.0f;
 			if (self.body)
 			{
-				healing = self.fullHealth * MainPlugin.HealBase.Value;
+				healing = self.fullHealth * MainPlugin.HealBase;
 				float levelBonus = self.body.level - 1.0f;
-				healing += MainPlugin.HealLevel.Value * levelBonus;
-				if (healing < MainPlugin.HealMin.Value)
+				healing += MainPlugin.HealLevel * levelBonus;
+				if (healing < MainPlugin.HealMin)
 				{
-					healing = MainPlugin.HealMin.Value;
+					healing = MainPlugin.HealMin;
 				}
 			}
 			return healing;
@@ -195,12 +203,12 @@ namespace WarBannerBuff.ItemChanges
 			float healing = 0.0f;
 			if (self.body)
 			{
-				healing = self.fullShield * MainPlugin.RechargeBase.Value;
+				healing = self.fullShield * MainPlugin.RechargeBase;
 				float levelBonus = self.body.level - 1.0f;
-				healing += MainPlugin.RechargeLevel.Value * levelBonus;
-				if (healing < MainPlugin.RechargeMin.Value)
+				healing += MainPlugin.RechargeLevel * levelBonus;
+				if (healing < MainPlugin.RechargeMin)
 				{
-					healing = MainPlugin.RechargeMin.Value;
+					healing = MainPlugin.RechargeMin;
 				}
 			}
 			return healing;
@@ -208,37 +216,42 @@ namespace WarBannerBuff.ItemChanges
 		private static void Phase1_OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner);
 		}
 		private static void Phase2_OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase2.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase2 self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner);
 		}
 		private static void Phase3_OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase3.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase3 self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.BossBanner);
 		}
 		private static void MoonBatteryActive_OnEnter(On.EntityStates.Missions.Moon.MoonBatteryActive.orig_OnEnter orig, EntityStates.Missions.Moon.MoonBatteryActive self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.PillarBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.PillarBanner);
 		}
 		private static void NullWardActive_OnEnter(On.EntityStates.Missions.Arena.NullWard.Active.orig_OnEnter orig, EntityStates.Missions.Arena.NullWard.Active self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.VoidBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.VoidBanner);
 		}
 		private static void DeepVoidPortal_OnEnter(On.EntityStates.DeepVoidPortalBattery.BaseDeepVoidPortalBatteryState.orig_OnEnter orig, EntityStates.DeepVoidPortalBattery.BaseDeepVoidPortalBatteryState self)
 		{
 			orig(self);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.DeepVoidBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.DeepVoidBanner);
 		}
 		private static void InfiniteTowerRun_OnSafeWardActivated(On.RoR2.InfiniteTowerRun.orig_OnSafeWardActivated orig, InfiniteTowerRun self, InfiniteTowerSafeWardController safeWard)
 		{
 			orig(self, safeWard);
-			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.FocusBanner.Value);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.FocusBanner);
+		}
+		private static void BuffWard_Start(On.RoR2.BuffWard.orig_Start orig, BuffWard self)
+		{
+			orig(self);
+			TryMergeWithWard(self);
 		}
 		private static void SpawnTeamWarBanners(TeamIndex team, float sizemult)
 		{
@@ -260,7 +273,7 @@ namespace WarBannerBuff.ItemChanges
 									int itemCount = body.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
 									if (itemCount > 0)
 									{
-										GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/WarbannerWard"), teamlist[i].transform.position, Quaternion.identity);
+										GameObject gameObject = UnityEngine.Object.Instantiate(BannerWard, teamlist[i].transform.position, Quaternion.identity);
 										gameObject.GetComponent<TeamFilter>().teamIndex = team;
 										gameObject.GetComponent<BuffWard>().Networkradius = (8f + 8f * (float)itemCount) * sizemult;
 										NetworkServer.Spawn(gameObject);
@@ -272,6 +285,77 @@ namespace WarBannerBuff.ItemChanges
 				}
 			}
 		}
+		private static void TryMergeWithWard(BuffWard thisbuffWard)
+		{
+			if (NetworkServer.active)
+			{
+				if (thisbuffWard.gameObject.name == BannerWard_RefName && !thisbuffWard.expires)
+				{
+					TeamIndex teamIndex = thisbuffWard.teamFilter.teamIndex;
+					List<BuffWard> validWardList = new List<BuffWard>();
+					BuffWard largestWard = thisbuffWard;
+					foreach (BuffWard buffWard in UnityEngine.Object.FindObjectsOfType<BuffWard>())
+					{
+						if (buffWard != thisbuffWard && !buffWard.expires)
+						{
+							if (buffWard.name == thisbuffWard.name)
+							{
+								if (buffWard.invertTeamFilter == thisbuffWard.invertTeamFilter)
+								{
+									if (buffWard.teamFilter.teamIndex == teamIndex)
+									{
+										if (IsWardInRange(buffWard, thisbuffWard))
+										{
+											validWardList.Add(buffWard);
+											if (buffWard.radius > largestWard.radius)
+											{
+												largestWard = buffWard;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					MainPlugin.ModLogger.LogInfo("Found " + validWardList.Count + " other banners to merge with.");
+					if (validWardList.Count > 0)
+					{
+						float baseRadius = largestWard.radius;
+						float addRadius = 0f;
+						if (thisbuffWard != largestWard)
+						{
+							addRadius += thisbuffWard.radius;
+						}
+						foreach (BuffWard buffWard in validWardList)
+						{
+							if (buffWard != largestWard)
+							{
+								addRadius += buffWard.radius;
+							}
+							buffWard.expires = true;
+							UnityEngine.Object.Destroy(buffWard.gameObject);
+						}
+						thisbuffWard.radius = baseRadius + addRadius * MainPlugin.Merge_FuseMult;
+						TryMergeWithWard(thisbuffWard);
+					}
+				}
+			}
+		}
+		private static bool IsWardInRange(BuffWard target, BuffWard searcher)
+        {
+			float searcherRadius = searcher.radius * OverlapDistanceMult;
+			float targetRadius = target.radius * OverlapDistanceMult;
+			float distance = Vector3.Distance(target.gameObject.transform.position, searcher.gameObject.transform.position);
+			if (distance - targetRadius <= searcherRadius)
+            {
+				return true;
+            }
+			if (distance - searcherRadius <= targetRadius)
+			{
+				return true;
+			}
+			return false;
+        }
 		private static void CharacterBody_UpdateAllTemporaryVisualEffects(On.RoR2.CharacterBody.orig_UpdateAllTemporaryVisualEffects orig, CharacterBody self)
 		{
 			orig(self);
@@ -284,7 +368,7 @@ namespace WarBannerBuff.ItemChanges
 				}
 				if (fxcomponent.effect == null)
 				{
-					GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/TemporaryVisualEffects/WarbannerBuffEffect"), self.corePosition, Quaternion.identity);
+					GameObject gameObject = UnityEngine.Object.Instantiate(BuffVFX, self.corePosition, Quaternion.identity);
 					fxcomponent.effect = gameObject.GetComponent<TemporaryVisualEffect>();
 					fxcomponent.effect.parentTransform = self.coreTransform;
 					fxcomponent.effect.visualState = TemporaryVisualEffect.VisualState.Enter;
