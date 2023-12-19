@@ -18,6 +18,7 @@ namespace FlatItemBuff
 		public static string ConfigFolderPath { get => System.IO.Path.Combine(BepInEx.Paths.ConfigPath, MainPlugin.pluginInfo.Metadata.GUID); }
 
 		private const string Section_BisonSteak_Buff = "Bison Steak";
+		private const string Section_BisonSteak_Rework = "Bison Steak Rework";
 
 		private const string Section_TopazBrooch_Buff = "Topaz Brooch";
 
@@ -54,6 +55,8 @@ namespace FlatItemBuff
 
 		private const string Section_LaserScope_Buff = "Laser Scope";
 
+		private const string Section_SymbioticScorpion_Rework = "Symbiotic Scorpion Rework";
+
 		private const string Section_Planula_Buff = "Planula";
 		private const string Section_Planula_Rework = "Planula Rework";
 
@@ -78,7 +81,8 @@ namespace FlatItemBuff
 		private const string Desc_EnableBuff = "Enables changes for this item.";
 		private const string Desc_EnableRework = "Enables the rework for this item. Has priority over the the normal changes.";
 
-		private const string Section_Bugs = "Bug Fixes";
+		private const string Section_General_Bugs = "Bug Fixes";
+		private const string Section_General_Mechanics = "Mechanics";
 
 		public static void Setup()
         {
@@ -106,6 +110,7 @@ namespace FlatItemBuff
 			Read_BensRaincoat();
 			Read_HappiestMask();
 			Read_LaserScope();
+			Read_SymbioticScorpion();
 			//Boss
 			Read_Planula();
 			Read_TitanicKnurl();
@@ -122,15 +127,22 @@ namespace FlatItemBuff
 		private static void Read_General()
         {
 			//Section_Bugs
-			GeneralChanges.FixExpiredPings = GeneralConfig.Bind(Section_Bugs, "Fix Expired Pings", false, "Fixes a bug with expired pings blocking new ones. Recommended if using the Death Mark rework.").Value;
+			GeneralChanges.FixExpiredPings = GeneralConfig.Bind(Section_General_Bugs, "Fix Expired Pings", false, "Fixes a bug with expired pings blocking new ones. Recommended if using the Death Mark rework.").Value;
+			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier, recommended and specifically catered for Aegis changes.").Value;
 		}
 		private static void Read_BisonSteak()
         {
 			BisonSteak.Enable = ItemConfig.Bind(Section_BisonSteak_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			BisonSteak.BaseHP = ItemConfig.Bind(Section_BisonSteak_Buff, "Base HP", 20f, "Health each stack gives.").Value;
-			BisonSteak.LevelHP = ItemConfig.Bind(Section_BisonSteak_Buff, "Level HP", 2f, "Health each stack gives per level.").Value;
-			BisonSteak.BaseDuration = ItemConfig.Bind(Section_BisonSteak_Buff, "Base Regen Duration", 3f, "Duration of the regen buff at a single stack.").Value;
-			BisonSteak.StackDuration = ItemConfig.Bind(Section_BisonSteak_Buff, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
+			BisonSteak.BaseHP = ItemConfig.Bind(Section_BisonSteak_Buff, "Base HP", 10f, "Health each stack gives.").Value;
+			BisonSteak.LevelHP = ItemConfig.Bind(Section_BisonSteak_Buff, "Level HP", 3f, "Health each stack gives per level.").Value;
+
+			BisonSteak_Rework.Enable = ItemConfig.Bind(Section_BisonSteak_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			BisonSteak_Rework.BaseRegen = ItemConfig.Bind(Section_BisonSteak_Rework, "Base Regen", 1f, "Health regen at a single stack. (Scales with level)").Value;
+			BisonSteak_Rework.StackRegen = ItemConfig.Bind(Section_BisonSteak_Rework, "Stack Regen", 0f, "Health regen for each additional stack. (Scales with level)").Value;
+			BisonSteak_Rework.BaseDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Base Regen Duration", 3f, "Duration of the regen buff at a single stack.").Value;
+			BisonSteak_Rework.StackDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
+			BisonSteak_Rework.ExtendDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
+			BisonSteak_Rework.NerfFakeKill = ItemConfig.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
 		}
 		private static void Read_TopazBrooch()
         {
@@ -140,15 +152,14 @@ namespace FlatItemBuff
 			TopazBrooch.BaseCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Base Percent Barrier", 0.005f, "Percent amount of barrier given at a single stack.").Value;
 			TopazBrooch.StackCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Stack Percent Barrier", 0.005f, "Percent amount of barrier given for each additional stack.").Value;
 		}
-
 		private static void Read_RollOfPennies()
         {
 			RollOfPennies_Rework.Enable = ItemConfig.Bind(Section_RollOfPennies_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			RollOfPennies_Rework.BaseGold = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Gold", 5f, "Gold amount given at a single stack.").Value;
+			RollOfPennies_Rework.BaseGold = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Gold", 3f, "Gold amount given at a single stack.").Value;
 			RollOfPennies_Rework.StackGold = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Gold", 0f, "Gold amount given for each additional stack.").Value;
 			RollOfPennies_Rework.BaseArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Armor", 5f, "Armor given at a single stack.").Value;
-			RollOfPennies_Rework.StackArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor", 0f, "Armor given for each additional stack.").Value;
-			RollOfPennies_Rework.BaseDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 1f, "Duration given to the armor at a single stack.").Value;
+			RollOfPennies_Rework.StackArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor", 1f, "Armor given for each additional stack.").Value;
+			RollOfPennies_Rework.BaseDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 2f, "Duration given to the armor at a single stack.").Value;
 			RollOfPennies_Rework.StackDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 1f, "Duration given to the armor for each additional stack.").Value;
 			RollOfPennies_Rework.GoldDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Gold Armor Duration", 0.5f, "Multiplier for the gold's value when calculating the extra duration.").Value;
 		}
@@ -173,7 +184,7 @@ namespace FlatItemBuff
 		private static void Read_LeptonDaisy()
         {
 			LeptonDaisy.Enable = ItemConfig.Bind(Section_LeptonDaisy_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			LeptonDaisy.BaseHeal = ItemConfig.Bind(Section_LeptonDaisy_Buff, "Base Healing", 0.15f, "Healing at a single stack.").Value;
+			LeptonDaisy.BaseHeal = ItemConfig.Bind(Section_LeptonDaisy_Buff, "Base Healing", 0.1f, "Healing at a single stack.").Value;
 			LeptonDaisy.StackHeal = ItemConfig.Bind(Section_LeptonDaisy_Buff, "Stack Healing", 0.1f, "Healing for each additional stack.").Value;
 			LeptonDaisy.CapHeal = ItemConfig.Bind(Section_LeptonDaisy_Buff, "Capped Healing", 2f, "Hyperbolic healing limit. (Set to 0 or less to disable.)").Value;
 			LeptonDaisy.Cooldown = ItemConfig.Bind(Section_LeptonDaisy_Buff, "Cooldown", 10f, "Cooldown of the healing nova.").Value;
@@ -223,23 +234,23 @@ namespace FlatItemBuff
         {
 			WaxQuail.Enable = ItemConfig.Bind(Section_WaxQuail_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			WaxQuail.BaseHori = ItemConfig.Bind(Section_WaxQuail_Buff, "Base Horizontal Boost", 12f, "Horizontal force at a single stack.").Value;
-			WaxQuail.StackHori = ItemConfig.Bind(Section_WaxQuail_Buff, "Stack Horizontal Boost", 6f, "Horizontal force for each additional stack.").Value;
-			WaxQuail.CapHori = ItemConfig.Bind(Section_WaxQuail_Buff, "Capped Horizontal Boost", 240f, "Hyperbolic cap to horizontal force. (Set to 0 or less to disable.)").Value;
+			WaxQuail.StackHori = ItemConfig.Bind(Section_WaxQuail_Buff, "Stack Horizontal Boost", 8f, "Horizontal force for each additional stack.").Value;
+			WaxQuail.CapHori = ItemConfig.Bind(Section_WaxQuail_Buff, "Capped Horizontal Boost", 120f, "Hyperbolic cap to horizontal force. (Set to 0 or less to disable.)").Value;
 			WaxQuail.BaseVert = ItemConfig.Bind(Section_WaxQuail_Buff, "Base Vertical Boost", 0.2f, "Vertical force at a single stack.").Value;
 			WaxQuail.StackVert = ItemConfig.Bind(Section_WaxQuail_Buff, "Stack Vertical", 0f, "Vertical force for each additional stack.").Value;
 			WaxQuail.CapVert = ItemConfig.Bind(Section_WaxQuail_Buff, "Capped Vertical Boost", 0f, "Hyperbolic cap to vertical force. (Set to 0 or less to disable.)").Value;
-			WaxQuail.BaseAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Base Air Speed", 0.14f, "Airborne movement speed at a single stack.").Value;
-			WaxQuail.StackAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Stack Air Speed", 0.07f, "Airborne movement speed for each additional stack.").Value;
-			WaxQuail.CapAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Capped Air Speed", 2.8f, "Hyperbolic cap to airborne movement speed. (Set to 0 or less to disable.)").Value;
+			WaxQuail.BaseAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Base Air Speed", 0.12f, "Airborne movement speed at a single stack.").Value;
+			WaxQuail.StackAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Stack Air Speed", 0.08f, "Airborne movement speed for each additional stack.").Value;
+			WaxQuail.CapAirSpeed = ItemConfig.Bind(Section_WaxQuail_Buff, "Capped Air Speed", 1.2f, "Hyperbolic cap to airborne movement speed. (Set to 0 or less to disable.)").Value;
 		}
-
 		private static void Read_Stealthkit()
         {
 			Stealthkit.Enable = ItemConfig.Bind(Section_Stealthkit_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			Stealthkit.BaseRecharge = ItemConfig.Bind(Section_Stealthkit_Buff, "Base Cooldown", 30f, "Cooldown between uses.").Value;
 			Stealthkit.StackRecharge = ItemConfig.Bind(Section_Stealthkit_Buff, "Stack Cooldown", 0.5f, "Cooldown rate for each additional stack.").Value;
 			Stealthkit.BuffDuration = ItemConfig.Bind(Section_Stealthkit_Buff, "Buff Duration", 5f, "Duration of the Stealth buff.").Value;
-			Stealthkit.GraceDuration = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Duration", 0.5f, "How long to force Combat and Danger cancels upon activation.").Value;
+			Stealthkit.Stealth_MoveSpeed = ItemConfig.Bind(Section_Stealthkit_Buff, "Stealth Movement Speed", 0.4f, "How much Movement Speed is given from the Stealth buff.").Value;
+			Stealthkit.Stealth_ArmorPerBuff = ItemConfig.Bind(Section_Stealthkit_Buff, "Stealth Armor", 20f, "How much Armor to give per stack of the Stealth buff.").Value;
 			Stealthkit.CancelCombat = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Combat", true, "Puts you in 'Out of Combat' upon activation.").Value;
 			Stealthkit.CancelDanger = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Danger", true, "Puts you in 'Out of Danger' upon activation.").Value;
 			Stealthkit.CleanseDoT = ItemConfig.Bind(Section_Stealthkit_Buff, "Clean DoTs", true, "Removes damage over time effects upon activation.").Value;
@@ -247,22 +258,24 @@ namespace FlatItemBuff
 		private static void Read_HuntersHarpoon()
         {
 			HuntersHarpoon.Enable = ItemConfig.Bind(Section_HuntersHarpoon_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			HuntersHarpoon.BaseDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Base Duration", 1.5f, "Buff duration at a single stack.").Value;
-			HuntersHarpoon.StackDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Stack Duration", 0.75f, "Extra buff duration for each additional stack.").Value;
-			HuntersHarpoon.MovementSpeed = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Movement Speed Bonus", 0.25f, "Movement speed each stack of the buff gives.").Value;
-			HuntersHarpoon.CooldownRate = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Rate Bonus", 0.25f, "Cooldown rate each stack of the buff gives.").Value;
-			HuntersHarpoon.CoolPrimary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Primary", true, "Cooldown rate affects Primary skills?").Value;
-			HuntersHarpoon.CoolSecondary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Secondary", true, "Cooldown rate affects Secondary skills?").Value;
-			HuntersHarpoon.CoolUtility = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Utility", false, "Cooldown rate affects Utility skills?").Value;
-			HuntersHarpoon.CoolSpecial = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Special", false, "Cooldown rate affects Special skills?").Value;
+			HuntersHarpoon.BaseDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Base Duration", 1f, "Buff duration at a single stack.").Value;
+			HuntersHarpoon.StackDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Stack Duration", 1f, "Extra buff duration for each additional stack.").Value;
+			HuntersHarpoon.MovementSpeed = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Movement Speed Bonus", 1.25f, "Movement speed each stack of the buff gives.").Value;
+			HuntersHarpoon.ExtendDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Extend Duration", true, "Adds duration to the buff with each kill instead of refreshing it.").Value;
+			HuntersHarpoon.BaseCooldownReduction = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Reduction", 1f, "Cooldown reduction on kill.").Value;
+			HuntersHarpoon.CoolPrimary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Primary", false, "Cooldown reduction affects Primary skills?").Value;
+			HuntersHarpoon.CoolSecondary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Secondary", true, "Cooldown reduction affects Secondary skills?").Value;
+			HuntersHarpoon.CoolUtility = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Utility", false, "Cooldown reduction affects Utility skills?").Value;
+			HuntersHarpoon.CoolSpecial = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Special", false, "Cooldown reduction affects Special skills?").Value;
 		}
 		private static void Read_SquidPolyp()
         {
 			SquidPolyp.Enable = ItemConfig.Bind(Section_SquidPolyp_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			SquidPolyp.ApplyTar = ItemConfig.Bind(Section_SquidPolyp_Buff, "Apply Tar", true, "Makes Squid Turrets apply the Tar debuff with their attack.").Value;
-			SquidPolyp.RemoveDelay = ItemConfig.Bind(Section_SquidPolyp_Buff, "Inactive Removal", 30f, "Kills Squid Turrets if they've been inactive for this long in seconds.").Value;
-			SquidPolyp.StackDuration = ItemConfig.Bind(Section_SquidPolyp_Buff, "Stack Duration", 3, "Squid Turret duration per stack.").Value;
-			SquidPolyp.StackArmor = ItemConfig.Bind(Section_SquidPolyp_Buff, "Stack Armor", 10f, "Squid Turret armor per stack.").Value;
+			SquidPolyp.BaseDuration = ItemConfig.Bind(Section_SquidPolyp_Buff, "Base Duration", 25, "Squid Turret duration at a single stack.").Value;
+			SquidPolyp.StackDuration = ItemConfig.Bind(Section_SquidPolyp_Buff, "Stack Duration", 5, "Squid Turret duration for each additional stack.").Value;
+			SquidPolyp.StackHealth = ItemConfig.Bind(Section_SquidPolyp_Buff, "Stack Health", 2, "Extra Squid Turret health for each additional stack. (1 = +10%)").Value;
+			SquidPolyp.MaxTurrets = ItemConfig.Bind(Section_SquidPolyp_Buff, "Max Turrets", 8, "How many Squid Turrets each player can have, newer turrets will replace old ones. (Set to 0 for vanilla behavior.)").Value;
 		}
 		private static void Read_WarHorn()
         {
@@ -276,7 +289,10 @@ namespace FlatItemBuff
 		{
 			Aegis.Enable = ItemConfig.Bind(Section_Aegis_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			Aegis.AllowRegen = ItemConfig.Bind(Section_Aegis_Buff, "Count Regen", true, "Allows excess regen to be converted into barrier.").Value;
-			Aegis.Armor = ItemConfig.Bind(Section_Aegis_Buff, "Armor", 20f, "Armor each stack gives.").Value;
+			Aegis.BaseOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Base Overheal", 0.5f, "Conversion rate of overheal to barrier at single stack.").Value;
+			Aegis.StackOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Stack Overheal", 0.5f, "Conversion rate of overheal to barrier for each additional stack.").Value;
+			Aegis.BaseMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Base Max Barrier", 0.25f, "Increases maximum barrier by this much at single stack.").Value;
+			Aegis.StackMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Stack Max Barrier", 0.25f, "Increases maximum barrier by this much for each additional stack.").Value;
 		}
 		private static void Read_BensRaincoat()
         {
@@ -289,11 +305,11 @@ namespace FlatItemBuff
 		private static void Read_HappiestMask()
         {
 			HappiestMask_Rework.Enable = ItemConfig.Bind(Section_HappiestMask_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			HappiestMask_Rework.BaseDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Base Damage", 1f, "Damage increase for ghosts at a single stack.").Value;
-			HappiestMask_Rework.StackDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Stack Damage", 1f, "Damage increase for ghosts for each additional stack.").Value;
+			HappiestMask_Rework.BaseDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Base Damage", 2f, "Damage increase for ghosts at a single stack.").Value;
+			HappiestMask_Rework.StackDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Stack Damage", 1.5f, "Damage increase for ghosts for each additional stack.").Value;
 			HappiestMask_Rework.BaseMoveSpeed = ItemConfig.Bind(Section_HappiestMask_Rework, "Movement Speed", 0.45f, "Movement speed increase for ghosts.").Value;
 			HappiestMask_Rework.BaseDuration = ItemConfig.Bind(Section_HappiestMask_Rework, "Duration", 30, "How long in seconds the ghosts lasts before dying.").Value;
-			HappiestMask_Rework.BaseCooldown = ItemConfig.Bind(Section_HappiestMask_Rework, "Cooldown", 31, "How long in seconds until a new ghost is summoned.").Value;
+			HappiestMask_Rework.BaseCooldown = ItemConfig.Bind(Section_HappiestMask_Rework, "Cooldown", 3, "How long in seconds until a new ghost is summoned.").Value;
 			HappiestMask_Rework.OnKillOnDeath = ItemConfig.Bind(Section_HappiestMask_Rework, "On Kill On Death", true, "Credits the ghost's death as your kill.").Value;
 			HappiestMask_Rework.PassKillCredit = ItemConfig.Bind(Section_HappiestMask_Rework, "Kill Credit Owner", true, "Credits all kills the ghost scores as yours.").Value;
 		}
@@ -301,6 +317,17 @@ namespace FlatItemBuff
         {
 			LaserScope.Enable = ItemConfig.Bind(Section_LaserScope_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			LaserScope.BaseCrit = ItemConfig.Bind(Section_LaserScope_Buff, "Crit Chance", 5f, "Crit chance at a single stack.").Value;
+		}
+		private static void Read_SymbioticScorpion()
+        {
+			SymbioticScorpion_Rework.Enable = ItemConfig.Bind(Section_SymbioticScorpion_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			SymbioticScorpion_Rework.Slayer_BaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Base Damage", 1f, "Slayer DoT damage increase at a single stack.").Value;
+			SymbioticScorpion_Rework.Slayer_StackDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Stack Damage", 0f, "Slayer DoT damage increase for each additional stack.").Value;
+			SymbioticScorpion_Rework.SlayerDot_AffectTotalDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Affects Total Damage", false, "Makes the Slayer DoT affect the total damage for the purpose of proc items. (False = Vanilla)").Value;
+			SymbioticScorpion_Rework.Radius = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Radius", 13f, "The targetting radius for the Venom attack. (Set to 0 to disable the effect entirely.)").Value;
+			SymbioticScorpion_Rework.Cooldown = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Cooldown", 5f, "Cooldown between Venom attacks.").Value;
+			SymbioticScorpion_Rework.VenomBaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Base Damage", 8f, "Damage of the Venom at a single stack.").Value;
+			SymbioticScorpion_Rework.VenomStackDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Stack Damage", 8f, "Damage of the Venom for each additional stack.").Value;
 		}
 		private static void Read_Planula()
         {
@@ -319,8 +346,8 @@ namespace FlatItemBuff
 		private static void Read_TitanicKnurl()
         {
 			TitanicKnurl.Enable = ItemConfig.Bind(Section_TitanicKnurl_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			TitanicKnurl.BaseHP = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Base Health", 40f, "Health each stack gives.").Value;
-			TitanicKnurl.LevelHP = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Level Health", 4f, "Health each stack gives per level.").Value;
+			TitanicKnurl.BaseHP = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Base Health", 30f, "Health each stack gives.").Value;
+			TitanicKnurl.LevelHP = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Level Health", 9f, "Health each stack gives per level.").Value;
 			TitanicKnurl.BaseRegen = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Base Regen", 1.6f, "Health Regen each stack gives.").Value;
 			TitanicKnurl.LevelRegen = ItemConfig.Bind(Section_TitanicKnurl_Buff, "Level Regen", 0.32f, "Health Regen each stack gives per level.").Value;
 			
@@ -339,26 +366,26 @@ namespace FlatItemBuff
 			DefenseNucleus.Enable = ItemConfig.Bind(Section_DefenseNucleus_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			DefenseNucleus.BaseHealth = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackHealth = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Health", 10, "Extra health the construct gets for each additional stack.").Value;
-			DefenseNucleus.BaseAttack = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Attack Speed", 5, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
+			DefenseNucleus.BaseAttack = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackAttack = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Attack Speed", 0, "Extra attack speed the construct gets for each additional stack.").Value;
-			DefenseNucleus.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Damage", 5, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
-			DefenseNucleus.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Damage", 0, "Extra damage the construct gets for each additional stack.").Value;
+			DefenseNucleus.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
+			DefenseNucleus.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Damage", 5, "Extra damage the construct gets for each additional stack.").Value;
 			DefenseNucleus.Cooldown = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Cooldown", 1f, "Cooldown for summoning constructs.").Value;
 
 			DefenseNucleus_Rework.Enable = ItemConfig.Bind(Section_DefenseNucleus_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			DefenseNucleus_Rework.SummonCount = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 6 because I said so.)").Value;
 			DefenseNucleus_Rework.BaseHealth = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus_Rework.StackHealth = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Health", 10, "Extra health the construct gets for each additional stack.").Value;
-			DefenseNucleus_Rework.BaseAttack = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Attack Speed", 5, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
+			DefenseNucleus_Rework.BaseAttack = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus_Rework.StackAttack = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Attack Speed", 0, "Extra attack speed the construct gets for each additional stack.").Value;
-			DefenseNucleus_Rework.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Damage", 5, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
-			DefenseNucleus_Rework.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Damage", 0, "Extra damage the construct gets for each additional stack.").Value;
-			DefenseNucleus_Rework.ShieldBaseDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Base Duration", 3.5f, "Duration of the projectile shield at a single stack.").Value;
+			DefenseNucleus_Rework.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
+			DefenseNucleus_Rework.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Damage", 5, "Extra damage the construct gets for each additional stack.").Value;
+			DefenseNucleus_Rework.ShieldBaseDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Base Duration", 5f, "Duration of the projectile shield at a single stack.").Value;
 			DefenseNucleus_Rework.ShieldStackDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Stack Duration", 1f, "Duration of the projectile shield for each additional stack.").Value;
 
-			DefenseNucleus_Shared.TweakAI = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Better AI", true, "Gives 360 Degree vision and prevents retaliation against allies.").Value;
-			DefenseNucleus_Shared.ForceMechanical = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Is Mechanical", true, "Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.").Value;
-			DefenseNucleus_Shared.ExtraDisplays = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Modded Displays", true, "Adds Spare Drone Parts item displays to the Alpha Construct.").Value;
+			DefenseNucleus_Shared.TweakAI = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Better AI", false, "Gives 360 Degree vision and prevents retaliation against allies.").Value;
+			DefenseNucleus_Shared.ForceMechanical = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Is Mechanical", false, "Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.").Value;
+			DefenseNucleus_Shared.ExtraDisplays = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Modded Displays", false, "Adds Spare Drone Parts item displays to the Alpha Construct.").Value;
 		}
 		private static void Read_LigmaLenses()
         {
@@ -369,7 +396,6 @@ namespace FlatItemBuff
 			LigmaLenses.StackDamage = ItemConfig.Bind(Section_LigmaLenses_Buff, "Stack Damage", 0.0f, "Base damage for each additional stack.").Value;
 			LigmaLenses.UseTotalDamage = ItemConfig.Bind(Section_LigmaLenses_Buff, "Deal Total", false, "Deal Total Damage of the attack instead of the attacker's damage stat?").Value;
 		}
-
 		private static void Read_VoidsentFlame()
         {
 			VoidsentFlame.Enable = ItemConfig.Bind(Section_VoidsentFlame_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
@@ -379,7 +405,6 @@ namespace FlatItemBuff
 			VoidsentFlame.StackDamage = ItemConfig.Bind(Section_VoidsentFlame_Buff, "Stack Damage", 1.56f, "Blast damage for each additional stack.").Value;
 			VoidsentFlame.ProcRate = ItemConfig.Bind(Section_VoidsentFlame_Buff, "Proc Coefficient", 1f, "Blast proc coefficient.").Value;
 		}
-
 		private static void Read_NewlyHatchedZoea()
 		{
 			NewlyHatchedZoea_Rework.Enable = ItemConfig.Bind(Section_NewlyHatchedZoea_Rework, Label_EnableRework, false, Desc_EnableRework).Value;

@@ -3,6 +3,7 @@ using RoR2;
 using R2API;
 using MonoMod.Cil;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
@@ -14,7 +15,7 @@ namespace FlatItemBuff.Items
 		internal static float BaseChance = 0.5f;
 		internal static float StackChance = 0.5f;
 		internal static bool UseTotalDamage = false;
-		private static GameObject HitEffect = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/CritGlassesVoidExecuteEffect");
+		private static GameObject HitEffect;
 		public LigmaLenses()
 		{
 			if (!Enable)
@@ -23,17 +24,9 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo("Changing Lost Seer's Lenses");
 			ClampConfig();
+			UpdateVFX();
 			UpdateText();
 			Hooks();
-			//Remove the goofy nubme
-			if (HitEffect)
-			{
-				UnityEngine.Object.Destroy(HitEffect.transform.Find("FakeDamageNumbers").gameObject);
-			}
-			else
-            {
-				MainPlugin.ModLogger.LogInfo("Hit effect not found, expect errors.");
-			}
 		}
 		private void ClampConfig()
 		{
@@ -41,6 +34,19 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			BaseChance = Math.Max(0f, BaseChance);
 			StackChance = Math.Max(0f, StackChance);
+		}
+		private void UpdateVFX()
+        {
+			//Remove the goofy nubme
+			HitEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/CritGlassesVoid/CritGlassesVoidExecuteEffect.prefab").WaitForCompletion();
+			if (HitEffect)
+			{
+				UnityEngine.Object.Destroy(HitEffect.transform.Find("FakeDamageNumbers").gameObject);
+			}
+			else
+			{
+				MainPlugin.ModLogger.LogInfo("Hit effect not found, expect errors.");
+			}
 		}
 		private void UpdateText()
 		{
@@ -131,13 +137,20 @@ namespace FlatItemBuff.Items
 		private void IL_TakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "CritGlassesVoid")
-			);
-			ilcursor.GotoNext(
+			)
+			&&
+			ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.5f)
-			);
-			ilcursor.Next.Operand = 0f;
+			))
+			{
+				ilcursor.Next.Operand = 0f;
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Lost Seer's Lenses - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

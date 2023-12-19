@@ -8,10 +8,10 @@ namespace FlatItemBuff.Items
 	public class TitanicKnurl
 	{
 		internal static bool Enable = true;
-		internal static float BaseHP = 60f;
-		internal static float LevelHP = 6f;
-		internal static float BaseRegen = 2.4f;
-		internal static float LevelRegen = 0.48f;
+		internal static float BaseHP = 30f;
+		internal static float LevelHP = 9f;
+		internal static float BaseRegen = 1.6f;
+		internal static float LevelRegen = 0.32f;
 		public TitanicKnurl()
 		{
 			if (!Enable)
@@ -70,12 +70,18 @@ namespace FlatItemBuff.Items
 		private void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Knurl"),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount")
-			);
-			ilcursor.Index -= 2;
-			ilcursor.RemoveRange(5);
+			if(ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Knurl"),
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+			))
+			{
+				ilcursor.Index -= 2;
+				ilcursor.RemoveRange(5);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Titanic Knurl - Effect Override - IL Hook failed");
+			}
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{

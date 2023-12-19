@@ -175,12 +175,18 @@ namespace FlatItemBuff.Items
 			//Note: Using R2API's addlevel stat hook, does not increase the actual level but does give level up stats.
 			//For this reason we cannot use that and must use IL for this.
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Infusion")
-			);
-			ilcursor.Index -= 2;
-			ilcursor.RemoveRange(5);
-			ilcursor.GotoNext(
+			))
+            {
+				ilcursor.Index -= 2;
+				ilcursor.RemoveRange(5);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Effect Override - IL Hook failed");
+			}
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdarg(0),
 				x => x.MatchLdarg(0),
 				x => x.MatchCallOrCallvirt<CharacterBody>("get_level"),
@@ -188,15 +194,21 @@ namespace FlatItemBuff.Items
 				x => x.MatchConvR4(),
 				x => x.MatchAdd(),
 				x => x.MatchCallOrCallvirt<CharacterBody>("set_level")
-			);
-			ilcursor.Index += 5;
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+			))
 			{
-				float levelBonus = GetInfusionLevel(self);
-				return levelBonus;
-			});
-			ilcursor.Emit(OpCodes.Add);
+				ilcursor.Index += 5;
+				ilcursor.Emit(OpCodes.Ldarg_0);
+				ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+				{
+					float levelBonus = GetInfusionLevel(self);
+					return levelBonus;
+				});
+				ilcursor.Emit(OpCodes.Add);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Level Increase Effect - IL Hook failed");
+			}
 		}
 	}
 }

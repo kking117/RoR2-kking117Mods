@@ -6,20 +6,25 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine.AddressableAssets;
 using UnityEngine;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
 	public class HuntersHarpoon
 	{
-		public static BuffDef HarpoonBuff = DLC1Content.Buffs.KillMoveSpeed;
+		public static BuffDef ReduceCooldownBuff;
+		public static BuffDef HarpoonBuff;
 		private static Color BuffColor = new Color(0.717f, 0.545f, 0.952f, 1f);
 		private static bool DoesCool = true;
+		private static bool SingleCool = true;
+		public static GameObject BoostVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MoveSpeedOnKill/MoveSpeedOnKillActivate.prefab").WaitForCompletion();
 
 		internal static bool Enable = true;
-		internal static float BaseDuration = 1.5f;
-		internal static float StackDuration = 0.75f;
-		internal static float MovementSpeed = 0.2f;
-		internal static float CooldownRate = 0.2f;
+		internal static float BaseDuration = 1f;
+		internal static float StackDuration = 1f;
+		internal static float MovementSpeed = 1.25f;
+		internal static float BaseCooldownReduction = 1f;
+		internal static bool ExtendDuration = true;
 		internal static bool CoolPrimary = true;
 		internal static bool CoolSecondary = true;
 		internal static bool CoolUtility = false;
@@ -41,86 +46,138 @@ namespace FlatItemBuff.Items
 			BaseDuration = Math.Max(0f, BaseDuration);
 			StackDuration = Math.Max(0f, StackDuration);
 			MovementSpeed = Math.Max(0f, MovementSpeed);
-			CooldownRate = Math.Max(0f, CooldownRate);
+			BaseCooldownReduction = Math.Max(0f, BaseCooldownReduction);
 			if (!CoolPrimary && !CoolSecondary && !CoolUtility && !CoolSpecial)
 			{
+				
+			}
+			int total = 0;
+			if (CoolPrimary)
+            {
+				total++;
+            }
+			if (CoolSecondary)
+			{
+				total++;
+			}
+			if (CoolUtility)
+			{
+				total++;
+			}
+			if (CoolSpecial)
+			{
+				total++;
+			}
+			if (total < 1)
+			{
 				DoesCool = false;
+			}
+			if (total > 1)
+            {
+				SingleCool = false;
 			}
 		}
 		private void CreateBuff()
 		{
-			HarpoonBuff = Modules.Buffs.AddNewBuff("HunterBoost", Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/MoveSpeedOnKill/bdKillMoveSpeed.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false);
+			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/MoveSpeedOnKill/bdKillMoveSpeed.asset").WaitForCompletion();
+			HarpoonBuff = Modules.Buffs.AddNewBuff("HunterBoost", refBuff.iconSprite, BuffColor, false, false, false);
+			ReduceCooldownBuff = Modules.Buffs.AddNewBuff("HunterSkillReduction", refBuff.iconSprite, BuffColor, true, false, false);
 		}
 		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickupSpeed = "";
-			string descSpeed = "";
-			if (MovementSpeed > 0f)
-            {
-				pickupSpeed = " movement speed";
-				descSpeed = string.Format(" <style=cIsUtility>movement speed</style> by <style=cIsUtility>{0}%</style>", MovementSpeed * 500);
-			}
-			string pickupCooldown = "";
-			string descCooldown = "";
+			string cooldown_pickup = "";
+			string speed_pickup = "";
+			string cooldown_description = "";
+			string speed_description = "";
+			string duration_description = "";
+			string extend_description = "";
 			if (DoesCool)
-            {
-				if (MovementSpeed > 0f)
-                {
-					pickupCooldown += " and";
-					descCooldown += " and";
-				}
-				
+			{
 				if (!CoolPrimary || !CoolSecondary || !CoolUtility || !CoolSpecial)
-                {
+				{
+					cooldown_pickup = " reduces";
+					cooldown_description = " <style=cIsUtility>reduces";
 					List<string> skillStrings = new List<string>();
-					List<string> skillStringsPik = new List<string>();
 					if (CoolPrimary)
 					{
-						skillStringsPik.Add(" primary");
-						skillStrings.Add(" <style=cIsUtility>Primary</style>");
+						skillStrings.Add(" Primary");
 					}
 					if (CoolSecondary)
 					{
-						skillStringsPik.Add(" secondary");
-						skillStrings.Add(" <style=cIsUtility>Secondary</style>");
+						skillStrings.Add(" Secondary");
 					}
 					if (CoolUtility)
 					{
-						skillStringsPik.Add(" utility");
-						skillStrings.Add(" <style=cIsUtility>Utility</style>");
+						skillStrings.Add(" Utility");
 					}
 					if (CoolSpecial)
 					{
-						skillStringsPik.Add(" special");
-						skillStrings.Add(" <style=cIsUtility>Special</style>");
+						skillStrings.Add(" Special");
 					}
-					for(int i = 0; i<skillStrings.Count; i++)
-                    {
+					
+					for (int i = 0; i < skillStrings.Count; i++)
+					{
 						if (i > 0)
-                        {
-							
+						{
 							if (i < skillStrings.Count - 1)
-                            {
-								pickupCooldown += ",";
-								descCooldown += ",";
+							{
+								cooldown_pickup += ",";
+								cooldown_description += ",";
 							}
 							else
-                            {
-								pickupCooldown += " and";
-								descCooldown += " and";
+							{
+								cooldown_pickup += " and";
+								cooldown_description += " and";
 							}
-                        }
-						pickupCooldown += skillStringsPik[i];
-						descCooldown += skillStrings[i];
-
+						}
+						cooldown_pickup += skillStrings[i];
+						cooldown_description += skillStrings[i];
+					}
+					if (SingleCool)
+                    {
+						cooldown_pickup += " skill cooldown";
+						cooldown_description += string.Format(" skill cooldown</style> by <style=cIsUtility>{0}s</style>", BaseCooldownReduction);
+					}
+					else
+                    {
+						cooldown_pickup += " skill cooldowns";
+						cooldown_description += string.Format(" skill cooldowns</style> by <style=cIsUtility>{0}s</style>", BaseCooldownReduction);
 					}
 				}
-				pickupCooldown += " skill cooldown rate";
-				descCooldown += string.Format(" <style=cIsUtility>skill cooldown rate</style> by <style=cIsUtility>{0}%</style>", CooldownRate * 500);
+				else
+                {
+					cooldown_pickup = " reduces all skill cooldowns";
+					cooldown_description = string.Format(" <style=cIsUtility>reduces all skill cooldowns</style> by <style=cIsUtility>{0}s</style>", BaseCooldownReduction);
+				}
 			}
-			string pickup = string.Format("Killing an enemy gives a burst of{0}{1}.", pickupSpeed, pickupCooldown);
-			string desc = string.Format("Killing an enemy increases{0}{1}. Fades over <style=cIsUtility>{2}</style> <style=cStack>(+{3} per stack)</style> seconds.", descSpeed, descCooldown, BaseDuration, StackDuration);
+			if (MovementSpeed > 0f)
+            {
+				if (DoesCool)
+                {
+					speed_pickup = " and";
+					speed_description = " and";
+				}
+				speed_pickup += " grants a temporary burst of movement speed";
+				speed_description += string.Format(" increases <style=cIsUtility>movement speed</style> by <style=cIsUtility>{0}%</style>", MovementSpeed * 100f);
+			}
+			if (BaseDuration > 0f)
+			{
+				if (StackDuration > 0f)
+				{
+					duration_description += string.Format(" for <style=cIsUtility>{0}s <style=cStack>(+{1}s per stack)</style></style>", BaseDuration, StackDuration);
+				}
+				else
+				{
+					duration_description += string.Format(" for <style=cIsUtility>{0}s</style>", BaseDuration);
+				}
+			}
+			if (ExtendDuration)
+            {
+				extend_description = " <style=cIsUtility>Consecutive kills increase the duration</style>.";
+			}
+			string pickup = string.Format("Killing an enemy{0}{1}.", cooldown_pickup, speed_pickup);
+			string desc = string.Format("Killing an enemy{0}{1}{2}.{3}", cooldown_description, speed_description, duration_description, extend_description);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_MOVESPEEDONKILL_DESC", desc);
 		}
@@ -133,88 +190,90 @@ namespace FlatItemBuff.Items
             {
 				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			}
-			if(CooldownRate != 0f && DoesCool)
-            {
-				On.RoR2.CharacterBody.FixedUpdate += CharacterBody_FixedUpdate;
-            }
 		}
-		private void CharacterBody_FixedUpdate(On.RoR2.CharacterBody.orig_FixedUpdate orig, CharacterBody self)
-		{
-			orig(self);
-			if (self)
-			{
-				int buffCount = self.GetBuffCount(HarpoonBuff.buffIndex);
-				if (buffCount > 0)
-				{
-					SkillLocator skillLocator = self.skillLocator;
-					if (skillLocator)
-					{
-						float cooldown = Time.fixedDeltaTime * (buffCount * CooldownRate);
-						if (CoolPrimary)
-						{
-							GenericSkill primary = skillLocator.primary;
-							if (primary)
-							{
-								primary.RunRecharge(cooldown);
-							}
-						}
-						if (CoolSecondary)
-						{
-							GenericSkill secondary = skillLocator.secondary;
-							if (secondary)
-							{
-								secondary.RunRecharge(cooldown);
-							}
-						}
-						if (CoolUtility)
-						{
-							GenericSkill utility = skillLocator.utility;
-							if (utility)
-							{
-								utility.RunRecharge(cooldown);
-							}
-						}
-						if (CoolSpecial)
-						{
-							GenericSkill special = skillLocator.special;
-							if (special)
-							{
-								special.RunRecharge(cooldown);
-							}
-						}
-					}
-				}
-			}
-        }
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			int buffCount = sender.GetBuffCount(HarpoonBuff.buffIndex);
-			if (buffCount > 0)
+			if (sender.HasBuff(HarpoonBuff))
 			{
-				args.moveSpeedMultAdd += buffCount * MovementSpeed;
+				args.moveSpeedMultAdd += MovementSpeed;
+			}
+			if (sender.HasBuff(ReduceCooldownBuff))
+            {
+				ReduceCooldowns(sender);
+			}
+		}
+		private void ReduceCooldowns(CharacterBody body)
+        {
+			int buffcount = body.GetBuffCount(ReduceCooldownBuff);
+			body.SetBuffCount(ReduceCooldownBuff.buffIndex, 0);
+			if (!DoesCool)
+            {
+				return;
+            }
+			SkillLocator skillLocator = body.skillLocator;
+			if (skillLocator)
+			{
+				
+				float cooldown = BaseCooldownReduction * buffcount;
+				if (CoolPrimary)
+				{
+					GenericSkill primary = skillLocator.primary;
+					if (primary)
+					{
+						primary.RunRecharge(cooldown);
+					}
+				}
+				if (CoolSecondary)
+				{
+					GenericSkill secondary = skillLocator.secondary;
+					if (secondary)
+					{
+						secondary.RunRecharge(cooldown);
+					}
+				}
+				if (CoolUtility)
+				{
+					GenericSkill utility = skillLocator.utility;
+					if (utility)
+					{
+						utility.RunRecharge(cooldown);
+					}
+				}
+				if (CoolSpecial)
+				{
+					GenericSkill special = skillLocator.special;
+					if (special)
+					{
+						special.RunRecharge(cooldown);
+					}
+				}
 			}
 		}
 		private void GlobalKillEvent(DamageReport damageReport)
 		{
-			CharacterBody attacker = damageReport.attackerBody;
-			if (attacker.inventory)
+			CharacterBody attackerBody = damageReport.attackerBody;
+			if (attackerBody.inventory)
 			{
-				int itemCount = attacker.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
+				int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
 				if (itemCount > 0)
 				{
-					float duration = BaseDuration;
-					duration += (itemCount - 1) * StackDuration;
+					itemCount = Math.Max(0, itemCount - 1);
+					float duration = BaseDuration + (itemCount * StackDuration);
 					if (duration > 0f)
 					{
-						attacker.ClearTimedBuffs(HarpoonBuff.buffIndex);
-						for (int i = 0; i < 5; i++)
-						{
-							attacker.AddTimedBuff(HarpoonBuff.buffIndex, duration * (i + 1) / 5);
+						if (ExtendDuration)
+                        {
+							Helpers.AddOrExtendBuff(attackerBody, HarpoonBuff, duration);
 						}
+						else
+                        {
+							attackerBody.AddTimedBuff(HarpoonBuff, duration);
+                        }
+						
 						EffectData effectData = new EffectData();
-						effectData.origin = attacker.corePosition;
-						effectData.rotation = attacker.transform.rotation;
-						CharacterMotor characterMotor = attacker.characterMotor;
+						effectData.origin = attackerBody.corePosition;
+						effectData.rotation = attackerBody.transform.rotation;
+						CharacterMotor characterMotor = attackerBody.characterMotor;
 						if (characterMotor)
 						{
 							Vector3 moveDirection = characterMotor.moveDirection;
@@ -223,7 +282,11 @@ namespace FlatItemBuff.Items
 								effectData.rotation = Util.QuaternionSafeLookRotation(moveDirection);
 							}
 						}
-						EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/MoveSpeedOnKillActivate"), effectData, true);
+						EffectManager.SpawnEffect(BoostVFX, effectData, true);
+					}
+					if (DoesCool)
+                    {
+						attackerBody.AddBuff(ReduceCooldownBuff);
 					}
 				}
 			}
@@ -231,15 +294,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "MoveSpeedOnKill"),
 				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
-			);
-			if(ilcursor.Index > 0)
-            {
+			))
+			{
 				ilcursor.Index += 2;
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
 				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Hunter's Harpoon - Effect Override - IL Hook failed");
 			}
 		}
 	}

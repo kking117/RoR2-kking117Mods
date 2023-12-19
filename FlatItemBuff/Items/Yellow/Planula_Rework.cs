@@ -18,16 +18,17 @@ namespace FlatItemBuff.Items
 		internal static float Duration = 5f;
 		internal static float Radius = 15f;
 
-		internal static GameObject BurnEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
+		internal static GameObject BurnEffect;
 		public Planula_Rework()
 		{
 			if (!Enable)
-            {
+			{
 				new Planula();
 				return;
-            }
+			}
 			MainPlugin.ModLogger.LogInfo("Changing Planula");
 			ClampConfig();
+			UpdateVFX();
 			UpdateItemDef();
 			UpdateText();
 			Hooks();
@@ -38,6 +39,10 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			Duration = Math.Max(0f, Duration);
 			Radius = Math.Max(0f, Radius);
+		}
+		private void UpdateVFX()
+		{
+			BurnEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
 		}
 		private void UpdateItemDef()
 		{
@@ -85,12 +90,18 @@ namespace FlatItemBuff.Items
 		private void IL_HealthTakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => x.MatchLdfld("RoR2.HealthComponent/ItemCounts", nameof(RoR2.HealthComponent.itemCounts.parentEgg))
-			);
-			ilcursor.Index += 1;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdfld(typeof(HealthComponent.ItemCounts), "parentEgg")
+			))
+			{
+				ilcursor.Index += 1;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Planula Rework - Effect Override - IL Hook failed");
+			}
 		}
 		internal static float GetTotalDamage(int itemCount)
         {

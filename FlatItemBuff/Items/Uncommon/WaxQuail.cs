@@ -1,7 +1,6 @@
 ﻿using System;
 using RoR2;
 using R2API;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using EntityStates;
@@ -15,7 +14,7 @@ namespace FlatItemBuff.Items
 		internal static float StackHori = 8f;
 		internal static float ActualBaseHori = 0.12f;
 		internal static float ActualStackHori = 0.08f;
-		internal static float CapHori = 100f;
+		internal static float CapHori = 120f;
 
 		internal static float BaseVert = 0.3f;
 		internal static float StackVert = 0f;
@@ -27,7 +26,7 @@ namespace FlatItemBuff.Items
 		internal static float StackAirSpeed = 0.08f;
 		internal static float ActualBaseAirSpeed = 0.12f;
 		internal static float ActualStackAirSpeed = 0.08f;
-		internal static float CapAirSpeed = 1f;
+		internal static float CapAirSpeed = 1.2f;
 		public WaxQuail()
 		{
 			if (!Enable)

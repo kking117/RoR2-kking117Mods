@@ -36,15 +36,8 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			if (BaseHeal > 0f)
-			{
-				SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
-				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
-			}
-			else
-			{
-				IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_ModOldFunction);
-			}
+			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -62,29 +55,19 @@ namespace FlatItemBuff.Items
 		}
 		private void IL_RemoveOldFunction(ILContext il)
 		{
-			//Stop the old code
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
-		}
-		private void IL_ModOldFunction(ILContext il)
-		{
-			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 20),
-				x => ILPatternMatchingExt.MatchLdloc(x, 19),
-				x => ILPatternMatchingExt.MatchConvR4(x)
-			);
-			ilcursor.Index += 2;
-			ilcursor.Remove();
-			ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
+			))
 			{
-				return itemCount * ProcHeal;
-			});
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Leeching Seed - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

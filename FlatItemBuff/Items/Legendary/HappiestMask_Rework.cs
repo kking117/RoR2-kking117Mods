@@ -17,11 +17,11 @@ namespace FlatItemBuff.Items
 		public static DeployableSlot Ghost_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Ghost_DeployableLimit;
 		internal static bool Enable = false;
-		internal static float BaseDamage = 1.0f;
-		internal static float StackDamage = 1.0f;
+		internal static float BaseDamage = 2.0f;
+		internal static float StackDamage = 1.5f;
 		internal static float BaseMoveSpeed = 0.45f;
 		internal static int BaseDuration = 30;
-		internal static int BaseCooldown = 31;
+		internal static int BaseCooldown = 3;
 		internal static bool OnKillOnDeath = true;
 		internal static bool PassKillCredit = true;
 		public HappiestMask_Rework()
@@ -222,13 +222,19 @@ namespace FlatItemBuff.Items
 		private void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "GhostOnKill"),
 				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			))
+            {
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Happiest Mask Rework - Effect Override - IL Hook failed");
+			}
 		}
 
 		private CharacterMaster GetGhostOwner(CharacterMaster master)

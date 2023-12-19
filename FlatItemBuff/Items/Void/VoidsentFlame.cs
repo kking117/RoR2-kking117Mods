@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using FlatItemBuff.Components;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
@@ -23,6 +28,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo("Changing Voidsent Flame");
 			ClampConfig();
+			UpdateItemDef();
 			UpdateText();
 			Hooks();
 		}
@@ -32,6 +38,17 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			BaseRadius = Math.Max(0f, BaseRadius);
 			StackRadius = Math.Max(0f, StackRadius);
+			ProcRate = Math.Max(0f, ProcRate);
+		}
+		private void UpdateItemDef()
+		{
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/ExplodeOnDeathVoid/ExplodeOnDeathVoid.asset").WaitForCompletion();
+			if (itemDef)
+			{
+				List<ItemTag> itemtags = itemDef.tags.ToList();
+				itemtags.Add(ItemTag.CannotCopy);
+				itemDef.tags = itemtags.ToArray();
+			}
 		}
 		private void UpdateText()
 		{
@@ -60,100 +77,81 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			//Remove max health condition
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 4),
-				x => ILPatternMatchingExt.MatchLdarg(x, 0)
-			);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 4),
-				x => ILPatternMatchingExt.MatchLdarg(x, 0)
-			);
-			if (ilcursor.Index > 0)
-            {
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(4),
+				x => x.MatchLdarg(0)
+			)
+			&&
+			ilcursor.TryGotoNext(
+				x => x.MatchLdloc(4),
+				x => x.MatchLdarg(0)
+			))
+			{
 				ilcursor.Next.OpCode = OpCodes.Ldc_I4_1;
 				ilcursor.Index += 1;
 				ilcursor.RemoveRange(2);
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
 			}
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 20)
-			);
-			//Add new condition
-			if (ilcursor.Index > 0)
+			else
 			{
-				ilcursor.Remove();
-				ilcursor.Emit(OpCodes.Ldloc, 20);
-				ilcursor.Emit(OpCodes.Ldarg_0);
-				ilcursor.Emit(OpCodes.Ldloc_1);
-				ilcursor.EmitDelegate<Func<int, HealthComponent, CharacterBody, int>>((itemCount, self, attackerBody) =>
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Voidsent Flame - Proc Condition - IL Hook failed");
+			}
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(0),
+				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
+				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
+				x => x.MatchCallvirt(typeof(Inventory), "GetItemCount"),
+				x => x.MatchStloc(20)
+			))
+			{
+				//Add new condition
+				ilcursor.RemoveRange(4);
+				ilcursor.Emit(OpCodes.Ldarg, 0);
+				ilcursor.Emit(OpCodes.Ldarg, 1);
+				ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, int>>((self, damageInfo) =>
 				{
-					if (self.body != attackerBody)
+					VoidsentTracker tracker = self.GetComponent<VoidsentTracker>();
+					if (!tracker)
 					{
-						VoidsentTracker tracker = self.GetComponent<VoidsentTracker>();
-						if (!tracker)
+						tracker = self.gameObject.AddComponent<VoidsentTracker>();
+					}
+					CharacterBody victimBody = self.body;
+					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+					if (tracker.RegisterAttacker(attackerBody.master))
+					{
+						int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.ExplodeOnDeathVoid);
+						if (itemCount > 0f)
 						{
-							tracker = self.gameObject.AddComponent<VoidsentTracker>();
-						}
-						if (tracker.RegisterAttacker(attackerBody.master))
-						{
-							if (itemCount > 0)
-							{
-								MinionOwnership ownership = attackerBody.master.minionOwnership;
-								if (ownership)
-								{
-									CharacterMaster owner = Utils.Helpers.GetOwner(ownership);
-									if (owner && owner != attackerBody.master)
-									{
-										if(!tracker.RegisterAttacker(owner))
-                                        {
-											return 0;
-                                        }
-									}
-								}
-								return 1;
-							}
+							TeamIndex teamIndex = attackerBody.teamComponent.teamIndex;
+							itemCount = Math.Max(0, itemCount - 1);
+							Vector3 corePosition = Util.GetCorePosition(victimBody);
+							float damage = BaseDamage + (StackDamage * itemCount);
+							damage *= attackerBody.damage;
+							float radius = BaseRadius + (StackRadius * itemCount);
+
+							GameObject blastPrefab = UnityEngine.Object.Instantiate<GameObject>(HealthComponent.AssetReferences.explodeOnDeathVoidExplosionPrefab, corePosition, Quaternion.identity);
+							DelayBlast delayBlast = blastPrefab.GetComponent<DelayBlast>();
+							delayBlast.position = corePosition;
+							delayBlast.baseDamage = damage;
+							delayBlast.procCoefficient = ProcRate;
+							delayBlast.baseForce = 1000f;
+							delayBlast.radius = radius;
+							delayBlast.attacker = damageInfo.attacker;
+							delayBlast.inflictor = null;
+							delayBlast.crit = Util.CheckRoll(attackerBody.crit, attackerBody.master);
+							delayBlast.maxTimer = 0.2f;
+							delayBlast.damageColorIndex = DamageColorIndex.Void;
+							delayBlast.falloffModel = BlastAttack.FalloffModel.SweetSpot;
+							delayBlast.GetComponent<TeamFilter>().teamIndex = teamIndex;
+							NetworkServer.Spawn(blastPrefab);
 						}
 					}
 					return 0;
 				});
 			}
-			//Damage
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdcR4(x, 2.6f)
-			);
-			ilcursor.Next.Operand = BaseDamage;
-			ilcursor.Index++;
-			ilcursor.Next.Operand = 0f;
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdcR4(x, 0.6f)
-			);
-			ilcursor.Next.Operand = StackDamage;
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchMul(x),
-				x => ILPatternMatchingExt.MatchStloc(x, 22)
-			);
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Add);
-			//Proc Coefficient, ripped from RiskyMod
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchStfld<DelayBlast>(x, "position")
-			);
-			ilcursor.Index--;
-			ilcursor.EmitDelegate<Func<DelayBlast, DelayBlast>>((delayblast) =>
+			else
 			{
-				delayblast.procCoefficient = ProcRate;
-				return delayblast;
-			});
-			//Radius
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdcR4(x, 12f),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 2.4f)
-			);
-			if (ilcursor.Index > 0)
-			{
-				ilcursor.Next.Operand = BaseRadius;
-				ilcursor.Index++;
-				ilcursor.Next.Operand = StackRadius;
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Voidsent Flame - Effect Override - IL Hook failed");
 			}
 		}
 	}

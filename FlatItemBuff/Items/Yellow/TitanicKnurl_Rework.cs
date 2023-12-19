@@ -93,12 +93,18 @@ namespace FlatItemBuff.Items
 		private void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Items", "Knurl"),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<Inventory>(x, "GetItemCount")
-			);
-			ilcursor.Index -= 2;
-			ilcursor.RemoveRange(5);
+			if(ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Knurl"),
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+			))
+			{
+				ilcursor.Index -= 2;
+				ilcursor.RemoveRange(5);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Titanic Knurl Rework - Effect Override - IL Hook failed");
+			}
 		}
 
 		internal static float GetFistDamage(int itemCount)

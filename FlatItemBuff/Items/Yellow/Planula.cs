@@ -94,29 +94,35 @@ namespace FlatItemBuff.Items
 		private void IL_HealthTakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => x.MatchLdfld("RoR2.HealthComponent/ItemCounts", nameof(RoR2.HealthComponent.itemCounts.parentEgg)),
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdfld(typeof(HealthComponent.ItemCounts), "parentEgg"),
 				x => x.MatchConvR4(),
 				x => x.MatchLdcR4(15f),
 				x => x.MatchMul()
-			);
-			ilcursor.Index -= 1;
-			ilcursor.RemoveRange(5);
-			ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+			))
 			{
-				int itemCount = self.itemCounts.parentEgg - 1;
-				float healing = 0f;
-				if (BaseFlatHeal > 0f)
-                {
-					healing += BaseFlatHeal + (StackFlatHeal * itemCount);
-                }
-				if (BaseMaxHeal > 0f)
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(5);
+				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
 				{
-					float percentHeal = BaseMaxHeal + (StackMaxHeal * itemCount);
-					healing += percentHeal * self.fullCombinedHealth;
-				}
-				return healing;
-			});
+					int itemCount = self.itemCounts.parentEgg - 1;
+					float healing = 0f;
+					if (BaseFlatHeal > 0f)
+					{
+						healing += BaseFlatHeal + (StackFlatHeal * itemCount);
+					}
+					if (BaseMaxHeal > 0f)
+					{
+						float percentHeal = BaseMaxHeal + (StackMaxHeal * itemCount);
+						healing += percentHeal * self.fullCombinedHealth;
+					}
+					return healing;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Planula - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

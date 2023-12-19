@@ -81,94 +81,89 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
-			On.RoR2.UI.PingIndicator.RebuildPing += RebuildPing;
 			if (BaseCooldown > 0)
             {
 				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
+				On.RoR2.PingerController.RebuildPing += ControllerRebuildPing_Cooldown;
+			}
+			else
+            {
+				On.RoR2.PingerController.RebuildPing += ControllerRebuildPing;
 			}
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
 			self.AddItemBehavior<Behaviors.DeathMark_Rework>(self.inventory.GetItemCount(RoR2Content.Items.DeathMark));
 		}
-		private void RebuildPing(On.RoR2.UI.PingIndicator.orig_RebuildPing orig, RoR2.UI.PingIndicator self)
+		private void ControllerRebuildPing_Cooldown(On.RoR2.PingerController.orig_RebuildPing orig, PingerController self, PingerController.PingInfo pingInfo)
 		{
-			orig(self);
-			if (self.pingType == PingIndicator.PingType.Enemy)
+			orig(self, pingInfo);
+			if (pingInfo.targetGameObject)
 			{
-				CharacterMaster pingMaster = self.pingOwner.GetComponent<CharacterMaster>();
-				if (pingMaster)
+				CharacterMaster pingMaster = self.gameObject.GetComponent<CharacterMaster>();
+				CharacterBody targetBody = pingInfo.targetGameObject.GetComponent<CharacterBody>();
+				if (pingMaster && targetBody)
 				{
-					CharacterBody targetBody = self.pingTarget.GetComponent<CharacterBody>();
-					if (targetBody)
-                    {
-						if (BaseCooldown > 0)
-                        {
-							TryDeathMarkTargetCooldown(pingMaster, targetBody);
-						}
-						else
-                        {
-							TryDeathMarkTarget(pingMaster, targetBody);
-						}
-					}
-				}
-			}
-		}
-
-		private void TryDeathMarkTarget(CharacterMaster attackerMaster, CharacterBody targetBody)
-        {
-			int itemCount = attackerMaster.inventory.GetItemCount(RoR2Content.Items.DeathMark);
-			CharacterBody attackerBody = attackerMaster.GetBody();
-			if (itemCount > 0 && targetBody && attackerBody)
-            {
-				if (attackerBody.healthComponent.alive)
-				{
-					TeamComponent targetTeam = targetBody.teamComponent;
-					TeamComponent attackerTeam = attackerBody.teamComponent;
-					if (attackerTeam && targetTeam)
+					int itemCount = pingMaster.inventory.GetItemCount(RoR2Content.Items.DeathMark);
+					CharacterBody pingBody = pingMaster.GetBody();
+					if (itemCount > 0 && pingBody)
 					{
-
-						if (attackerTeam.teamIndex != targetTeam.teamIndex)
+						if (pingBody.HasBuff(DeathMarkReadyBuff) && pingBody.healthComponent.alive)
 						{
-							itemCount = Math.Max(0, itemCount - 1);
-							float duration = BaseDuration + (StackDuration * itemCount);
-							targetBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, duration);
-						}
-					}
-				}
-            }
-		}
-		private void TryDeathMarkTargetCooldown(CharacterMaster attackerMaster, CharacterBody targetBody)
-		{
-			int itemCount = attackerMaster.inventory.GetItemCount(RoR2Content.Items.DeathMark);
-			CharacterBody attackerBody = attackerMaster.GetBody();
-			if (itemCount > 0 && targetBody && attackerBody)
-			{
-				if (attackerBody.HasBuff(DeathMarkReadyBuff))
-				{
-					if (attackerBody.healthComponent.alive)
-					{
-						TeamComponent targetTeam = targetBody.teamComponent;
-						TeamComponent attackerTeam = attackerBody.teamComponent;
-						if (attackerTeam && targetTeam)
-						{
-							if (attackerTeam.teamIndex != targetTeam.teamIndex)
+							TeamComponent targetTeam = targetBody.teamComponent;
+							TeamComponent attackerTeam = pingBody.teamComponent;
+							if (attackerTeam && targetTeam)
 							{
-								itemCount = Math.Max(0, itemCount - 1);
-								float duration = BaseDuration + (StackDuration * itemCount);
-								targetBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, duration);
-								int i = 1;
-								while (i <= BaseCooldown)
+								if (attackerTeam.teamIndex != targetTeam.teamIndex)
 								{
-									attackerBody.AddTimedBuff(DeathMarkCooldownBuff, i);
-									i++;
+									targetBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, GetDeathMarkDuration(itemCount));
+									int i = 1;
+									while (i <= BaseCooldown)
+									{
+										pingBody.AddTimedBuff(DeathMarkCooldownBuff, i);
+										i++;
+									}
+									pingBody.RemoveBuff(DeathMarkReadyBuff);
 								}
-								attackerBody.RemoveBuff(DeathMarkReadyBuff);
 							}
 						}
 					}
 				}
 			}
+		}
+		private void ControllerRebuildPing(On.RoR2.PingerController.orig_RebuildPing orig, PingerController self, PingerController.PingInfo pingInfo)
+		{
+			orig(self, pingInfo);
+			if (pingInfo.targetGameObject)
+			{
+				CharacterMaster pingMaster = self.gameObject.GetComponent<CharacterMaster>();
+				CharacterBody targetBody = pingInfo.targetGameObject.GetComponent<CharacterBody>();
+				if (pingMaster && targetBody)
+				{
+					int itemCount = pingMaster.inventory.GetItemCount(RoR2Content.Items.DeathMark);
+					CharacterBody pingBody = pingMaster.GetBody();
+					if (itemCount > 0 && pingBody)
+					{
+						if (pingBody.healthComponent.alive)
+						{
+							TeamComponent targetTeam = targetBody.teamComponent;
+							TeamComponent attackerTeam = pingBody.teamComponent;
+							if (attackerTeam && targetTeam)
+							{
+								if (attackerTeam.teamIndex != targetTeam.teamIndex)
+								{
+									targetBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, GetDeathMarkDuration(itemCount));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		private float GetDeathMarkDuration(int itemCount)
+        {
+			itemCount = Math.Max(0, itemCount - 1);
+			return BaseDuration + (StackDuration * itemCount);
 		}
 		private void IL_TakeDamage(ILContext il)
 		{
@@ -193,12 +188,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnHitEnemy(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "DeathMark")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			))
+			{
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Death Mark - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

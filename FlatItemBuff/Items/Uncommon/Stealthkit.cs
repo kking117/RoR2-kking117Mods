@@ -8,12 +8,16 @@ namespace FlatItemBuff.Items
 {
 	public class Stealthkit
 	{
-		public static BuffDef StealthBuff = RoR2Content.Buffs.Cloak;
+		public static BuffDef StealthBuff;
+		private static Color StealthBuff_Color = new Color(0.266f, 0.368f, 0.713f, 1f);
 		internal static bool Enable = true;
+
+		internal static float BuffDuration = 5.0f;
 		internal static float BaseRecharge = 30.0f;
 		internal static float StackRecharge = 0.5f;
-		internal static float BuffDuration = 5.0f;
-		internal static float GraceDuration = 1.0f;
+		
+		internal static float Stealth_MoveSpeed = 0.4f;
+		internal static float Stealth_ArmorPerBuff = 20f;
 		internal static bool CancelCombat = true;
 		internal static bool CancelDanger = true;
 		internal static bool CleanseDoT = true;
@@ -24,40 +28,47 @@ namespace FlatItemBuff.Items
 				return;
             }
 			MainPlugin.ModLogger.LogInfo("Changing Old War Stealthkit");
+			ClampConfig();
 			CreateBuffs();
 			Hooks();
 			UpdateText();
+		}
+		private void ClampConfig()
+		{
+			BuffDuration = Math.Max(0f, BuffDuration);
+			BaseRecharge = Math.Max(0f, BaseRecharge);
+			StackRecharge = Math.Max(0f, StackRecharge);
+			Stealth_MoveSpeed = Math.Max(0f, Stealth_MoveSpeed);
+			Stealth_ArmorPerBuff = Math.Max(0f, Stealth_ArmorPerBuff);
 		}
 		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "Become stealthed at low health.";
 			string desc = "";
-			desc += "Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style>, gaining <style=cIsUtility>40% movement speed</style>";
-			if (CancelCombat || CancelDanger)
+			string desc_stealth = " While <style=cIsUtility>stealthed</style> gain <style=cIsUtility>invisibility</style>";
+			if (Stealth_MoveSpeed > 0f || Stealth_ArmorPerBuff > 0f)
 			{
-				desc += ", <style=cIsUtility>invisibility</style> and forces you out of";
-				bool DoAnAnd = false;
-				if(CancelCombat)
-                {
-					desc += " <style=cIsDamage>combat</style>";
-					DoAnAnd = true;
-				}
-				if (CancelDanger)
+				if (Stealth_MoveSpeed > 0f)
 				{
-					if(DoAnAnd)
+					if (Stealth_ArmorPerBuff > 0f)
                     {
-						desc += " and";
+						desc_stealth += string.Format(", <style=cIsUtility>{0}% movement speed</style>", Stealth_MoveSpeed * 100f);
 					}
-					desc += " <style=cIsHealing>danger</style>";
+					else
+                    {
+						desc_stealth += string.Format(" and <style=cIsUtility>{0}% movement speed</style>", Stealth_MoveSpeed * 100f);
+					}
 				}
-				desc += ".";
+				if (Stealth_ArmorPerBuff > 0f)
+				{
+					desc_stealth += string.Format(" and <style=cIsHealing>{0} fading armor</style>", Stealth_ArmorPerBuff * 5f);
+				}
+				desc_stealth += ".";
 			}
-			else
-            {
-				desc += "and <style=cIsUtility>invisibility</style>.";
-			}
-			desc += string.Format(" Lasts <style=cIsUtility>{0}s</style> and recharges every <style=cIsUtility>{1} seconds</style> <style=cStack>(-{2}% per stack)</style>.", BuffDuration, BaseRecharge, StackRecharge * 100);
+			string desc_cooldown = string.Format(" Recharges every <style=cIsUtility>{0} seconds</style> <style=cStack>(-{1}% per stack)</style>.", BaseRecharge, StackRecharge * 100);
+
+			desc = string.Format("Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style> for <style=cIsUtility>{0}s</style>.{1}{2}", BuffDuration, desc_stealth, desc_cooldown);
 			LanguageAPI.Add("ITEM_PHASING_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_PHASING_DESC", desc);
 		}
@@ -66,25 +77,18 @@ namespace FlatItemBuff.Items
 			Stealthkit_Override();
 			On.RoR2.CharacterBody.GetVisibilityLevel_TeamIndex += CharacterBody_GetVisibility;
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
-			if (CancelDanger || CancelCombat)
+			if (CancelCombat)
 			{
-				if (GraceDuration > 0.0f)
-				{
-					if (CancelCombat)
-					{
-						On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
-					}
-					if (CancelDanger)
-					{
-						On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
-					}
-					On.RoR2.CharacterBody.OnBuffFinalStackLost += CharacterBody_OnBuffFinalStackLost;
-				}
+				On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
+			}
+			if (CancelDanger)
+			{
+				On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
 			}
 		}
 		private void CreateBuffs()
         {
-			StealthBuff = Modules.Buffs.AddNewBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, new Color(0.266f, 0.368f, 0.713f, 1f), false, false, false);
+			StealthBuff = Modules.Buffs.AddNewBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, StealthBuff_Color, true, false, false);
 		}
 		private void Stealthkit_Override()
         {
@@ -103,7 +107,10 @@ namespace FlatItemBuff.Items
 						float cooldown = BaseRecharge / (1 + (StackRecharge * (self.stack - 1)));
 						if (self.rechargeStopwatch >= cooldown)
 						{
-							body.AddTimedBuff(StealthBuff.buffIndex, BuffDuration);
+							for (int i = 0; i < 5; i++)
+							{
+								body.AddTimedBuff(StealthBuff.buffIndex, BuffDuration * (i + 1) / 5);
+							}
 							EffectManager.SpawnEffect(self.effectPrefab, new EffectData
 							{
 								origin = self.transform.position,
@@ -115,28 +122,15 @@ namespace FlatItemBuff.Items
 							{
 								Util.CleanseBody(self.body, false, false, false, true, true, false);
 							}
-							if (CancelCombat || CancelDanger)
+							if (CancelCombat)
 							{
-								if (CancelCombat)
-								{
-									self.body.outOfCombat = true;
-									self.body.outOfCombatStopwatch = float.PositiveInfinity;
-								}
-								if (CancelDanger)
-								{
-									self.body.outOfDanger = true;
-									self.body.outOfDangerStopwatch = float.PositiveInfinity;
-								}
-
-								if (GraceDuration > 0.0f)
-								{
-									Components.CancelBuffer comp = self.body.GetComponent<Components.CancelBuffer>();
-									if (!comp)
-									{
-										comp = self.body.gameObject.AddComponent<Components.CancelBuffer>();
-									}
-									comp.duration = GraceDuration;
-								}
+								self.body.outOfCombat = true;
+								self.body.outOfCombatStopwatch = float.PositiveInfinity;
+							}
+							if (CancelDanger)
+							{
+								self.body.outOfDanger = true;
+								self.body.outOfDangerStopwatch = float.PositiveInfinity;
 							}
 						}
 					}
@@ -159,7 +153,7 @@ namespace FlatItemBuff.Items
 		private void CharacterBody_OnTakeDamageServer(On.RoR2.CharacterBody.orig_OnTakeDamageServer orig, CharacterBody self, DamageReport damageReport)
 		{
 			orig(self, damageReport);
-			if (HasBuffer(self))
+			if (HasStealthBuffer(self))
 			{
 				self.outOfDanger = true;
 				self.outOfDangerStopwatch = float.PositiveInfinity;
@@ -168,37 +162,25 @@ namespace FlatItemBuff.Items
 		private void CharacterBody_OnSkillActivated(On.RoR2.CharacterBody.orig_OnSkillActivated orig, CharacterBody self, GenericSkill skill)
 		{
 			orig(self, skill);
-			if (HasBuffer(self))
+			if (HasStealthBuffer(self))
 			{
 				self.outOfCombat = true;
 				self.outOfCombatStopwatch = float.PositiveInfinity;
 			}
 		}
-		private void CharacterBody_OnBuffFinalStackLost(On.RoR2.CharacterBody.orig_OnBuffFinalStackLost orig, CharacterBody self, BuffDef buffDef)
-		{
-			orig(self, buffDef);
-			if (buffDef == StealthBuff)
-			{
-				if (HasBuffer(self))
-				{
-					Components.CancelBuffer comp = self.GetComponent<Components.CancelBuffer>();
-					if (comp)
-					{
-						comp.duration = -1.0f;
-					}
-				}
-			}
-		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			if (sender.HasBuff(StealthBuff))
+			int buffcount = sender.GetBuffCount(StealthBuff);
+			if (buffcount > 0)
 			{
-				args.moveSpeedMultAdd += 0.4f;
+				args.moveSpeedMultAdd += Stealth_MoveSpeed;
+				args.armorAdd = Stealth_ArmorPerBuff * buffcount;
 			}
 		}
-		private bool HasBuffer(CharacterBody body)
+		private bool HasStealthBuffer(CharacterBody body)
 		{
-			return body.GetComponent<Components.CancelBuffer>();
+			int buffcount = body.GetBuffCount(StealthBuff);
+			return buffcount > 4;
 		}
 	}
 }

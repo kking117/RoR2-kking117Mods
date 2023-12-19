@@ -1,10 +1,6 @@
 ﻿using System;
 using BepInEx;
-using BepInEx.Configuration;
 using RoR2;
-using UnityEngine;
-using BepInEx.Bootstrap;
-using System.Security;
 using System.Security.Permissions;
 
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -17,13 +13,15 @@ namespace FlatItemBuff
 	[BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.dot", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.deployable", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.orb", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.damagetype", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.19.0";
+		public const string MODVERSION = "1.20.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -42,7 +40,7 @@ namespace FlatItemBuff
         {
 			new GeneralChanges();
 			//Common
-			new Items.BisonSteak();
+			new Items.BisonSteak_Rework();
 			new Items.TopazBrooch();
 			new Items.RollOfPennies_Rework();
 			//Uncommon
@@ -62,6 +60,7 @@ namespace FlatItemBuff
 			new Items.BensRaincoat();
 			new Items.HappiestMask_Rework();
 			new Items.LaserScope();
+			new Items.SymbioticScorpion_Rework();
 			//Boss
 			new Items.DefenseNucleus_Rework();
 			new Items.Planula_Rework();

@@ -33,13 +33,19 @@ namespace FlatItemBuff.Items
         private static void IL_OnCharacterDeath(ILContext il)
         {
             ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 17),
-                x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Items", "MinorConstructOnKill")
-            );
-            ilcursor.Index += 3;
-            ilcursor.Emit(OpCodes.Ldc_I4_0);
-            ilcursor.Emit(OpCodes.Mul);
+            if (ilcursor.TryGotoNext(
+                x => x.MatchLdloc(17),
+                x => x.MatchLdsfld(typeof(DLC1Content.Items), "MinorConstructOnKill")
+            ))
+            {
+                ilcursor.Index += 3;
+                ilcursor.Emit(OpCodes.Ldc_I4_0);
+                ilcursor.Emit(OpCodes.Mul);
+            }
+            else
+            {
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Defense Nucleus Shared - Effect Override - IL Hook failed");
+            }
         }
         public static void ExtraChanges()
         {
@@ -174,7 +180,7 @@ namespace FlatItemBuff.Items
                             int killCount = (ownerMaster.GetDeployableCount(DeployableSlot.MinorConstructOnKill) + 1) - ownerMaster.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
                             if (killCount > 0)
                             {
-                                Helpers.KillDeployables(ownerbody.master, DeployableSlot.MinorConstructOnKill, killCount);
+                                Helpers.KillDeployables(ownerMaster, DeployableSlot.MinorConstructOnKill, killCount);
                             }
                         }
                     }

@@ -14,11 +14,11 @@ namespace FlatItemBuff.Items
 		public static BuffDef PennyArmorBuff;
 		private static Color BuffColor = new Color(1f, 0.788f, 0.055f, 1f);
 		internal static bool Enable = true;
-		internal static float BaseGold = 5f;
+		internal static float BaseGold = 3f;
 		internal static float StackGold = 0f;
 		internal static float BaseArmor = 5f;
-		internal static float StackArmor = 0f;
-		internal static float BaseDuration = 1f;
+		internal static float StackArmor = 1f;
+		internal static float BaseDuration = 2f;
 		internal static float StackDuration = 1f;
 		internal static float GoldDuration = 0.5f;
 		public RollOfPennies_Rework()
@@ -188,12 +188,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnTakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdfld(typeof(HealthComponent.ItemCounts), "goldOnHurt")
-			);
-			ilcursor.Index += 1;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			))
+			{
+				ilcursor.Index += 1;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+            {
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Roll Of Pennies Rework - Effect Override - IL Hook failed");
+			}
 		}
 		private float GetGoldFromHit(int itemCount, float procRate)
 		{

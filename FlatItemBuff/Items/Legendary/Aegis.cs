@@ -1,15 +1,19 @@
 ﻿using System;
 using RoR2;
 using R2API;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
 namespace FlatItemBuff.Items
 {
 	public class Aegis
 	{
-		internal static bool Enable = true;
+		internal static bool Enable = false;
 		internal static bool AllowRegen = true;
-		internal static float Armor = 20f;
+		internal static float BaseOverheal = 0.5f;
+		internal static float StackOverheal = 0.5f;
+		internal static float BaseMaxBarrier = 0.25f;
+		internal static float StackMaxBarrier = 0.25f;
 		public Aegis()
 		{
 			if (!Enable)
@@ -18,55 +22,159 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo("Changing Aegis");
 			ClampConfig();
-			if (Armor != 0f)
-            {
-				UpdateText();
-			}
+			UpdateText();
 			Hooks();
 		}
 		private void ClampConfig()
 		{
-			Armor = Math.Max(0f, Armor);
+			BaseOverheal = Math.Max(0f, BaseOverheal);
+			StackOverheal = Math.Max(0f, StackOverheal);
+			BaseMaxBarrier = Math.Max(0f, BaseMaxBarrier);
+			StackMaxBarrier = Math.Max(0f, StackMaxBarrier);
 		}
 		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
-			string pickup = "Healing past full grants you a temporary barrier. Reduces damage taken.";
-			string desc = String.Format("Healing past full grants you a <style=cIsHealing>temporary barrier</style> for <style=cIsHealing>50% <style=cStack>(+50% per stack)</style></style> of the amount you <style=cIsHealing>healed</style>. <style=cIsHealing>Increases armor</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", Armor);
+			string pickup_overheal = "";
+			string pickup_maxbarrier = "";
+			string desc_overheal = "";
+			string desc_maxbarrier = "";
+			if (BaseOverheal > 0f || StackOverheal > 0f)
+            {
+				pickup_overheal = "Healing past full grants you a temporary barrier.";
+				if (StackOverheal > 0f)
+                {
+					desc_overheal = string.Format("Healing past full grants you <style=cIsHealing>barrier</style> equal to <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style></style> of the amount <style=cIsHealing>healed</style>.", BaseOverheal * 100f, StackOverheal * 100f);
+				}
+				else
+                {
+					desc_overheal = string.Format("Healing past full grants you <style=cIsHealing>barrier</style> equal to <style=cIsHealing>{0}%</style> of the amount <style=cIsHealing>healed</style>.", BaseOverheal * 100f);
+				}
+			}
+			if (BaseMaxBarrier > 0f || StackMaxBarrier > 0f)
+			{
+				if (BaseOverheal > 0f || StackOverheal > 0f)
+                {
+					pickup_maxbarrier = " ";
+					desc_maxbarrier = " ";
+				}
+				pickup_maxbarrier += "Increases maximum barrier.";
+				if (StackMaxBarrier > 0f)
+				{
+					desc_maxbarrier += string.Format("Increases <style=cIsHealing>maximum barrier</style> by <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style></style>.", BaseMaxBarrier * 100f, StackMaxBarrier * 100f);
+				}
+				else
+                {
+					desc_maxbarrier += string.Format("Increases <style=cIsHealing>maximum barrier</style> by <style=cIsHealing>{0}%</style>.", BaseMaxBarrier * 100f);
+				}
+			}
+			string pickup = pickup_overheal + pickup_maxbarrier;
+			string desc = desc_overheal + desc_maxbarrier;
 			LanguageAPI.Add("ITEM_BARRIERONOVERHEAL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_BARRIERONOVERHEAL_DESC", desc);
 		}
 		private void Hooks()
 		{
-			if (AllowRegen)
-			{
-				MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-				IL.RoR2.HealthComponent.Heal += new ILContext.Manipulator(IL_Heal);
-			}
-			if(Armor != 0f)
-            {
-				SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
-			}
+			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			IL.RoR2.HealthComponent.Heal += new ILContext.Manipulator(IL_Heal);
+			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
+			IL.RoR2.HealthComponent.GetHealthBarValues += new ILContext.Manipulator(IL_GetHealthBarValues);
 		}
-		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
+		private void IL_RecalculateStats(ILContext il)
 		{
-			int itemCount = inventory.GetItemCount(RoR2Content.Items.BarrierOnOverHeal);
-			if (itemCount > 0)
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdarg(0),
+				x => x.MatchCall(typeof(CharacterBody), "get_maxHealth"),
+				x => x.MatchLdarg(0),
+				x => x.MatchCall(typeof(CharacterBody), "get_maxShield"),
+				x => x.MatchAdd(),
+				x => x.MatchCall(typeof(CharacterBody), "set_maxBarrier")
+            ))
+            {
+				ilcursor.Index += 2;
+				ilcursor.RemoveRange(4);
+				ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+				{
+					float fullHealth = self.maxHealth + self.maxShield;
+					if (self.inventory)
+					{
+						int itemCount = self.inventory.GetItemCount(RoR2Content.Items.BarrierOnOverHeal);
+						if (itemCount > 0)
+						{
+							itemCount = Math.Max(0, itemCount - 1);
+							return fullHealth * (1f + BaseMaxBarrier + StackMaxBarrier * itemCount);
+						}
+					}
+					return fullHealth;
+				});
+			}
+			else
+            {
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Max Barrier - IL Hook failed");
+            }
+		}
+		private void IL_GetHealthBarValues(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdfld(typeof(HealthComponent), "barrier"),
+				x => x.MatchLdloc(1),
+				x => x.MatchMul()
+			))
 			{
-				args.armorAdd += itemCount * Armor;
+				ilcursor.Index += 1;
+				ilcursor.RemoveRange(3);
+				ilcursor.Emit(OpCodes.Ldloc, 0);
+				ilcursor.EmitDelegate<Func<HealthComponent, float, float>>((self, curse) =>
+				{
+					float result = (1f - curse) / self.fullBarrier;
+					return result * self.barrier;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Barrier Health Bar Visual Fix - IL Hook failed");
 			}
 		}
 		private void IL_Heal(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 2),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 0.0f)
-			);
-			if(ilcursor.Index > 0)
+			if (AllowRegen)
+			{
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdloc(2),
+					x => x.MatchLdcR4(0.0f)
+				))
+                {
+					ilcursor.Index += 3;
+					ilcursor.RemoveRange(2);
+				}
+				else
+                {
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Overheal from regen - IL Hook failed");
+				}
+			}
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(2),
+				x => x.MatchLdarg(0),
+				x => x.MatchLdflda(typeof(HealthComponent), "itemCounts"),
+				x => x.MatchLdfld(typeof(HealthComponent.ItemCounts), "barrierOnOverHeal")
+			))
             {
-				ilcursor.Index += 3;
-				ilcursor.RemoveRange(2);
+				ilcursor.Index += 2;
+				ilcursor.RemoveRange(5);
+				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+				{
+					int itemCount = Math.Max(1, self.itemCounts.barrierOnOverHeal -1);
+					return BaseOverheal + (itemCount * StackOverheal);
+				});
+			}
+            else
+            {
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Overheal conversion rate - IL Hook failed");
 			}
 		}
 	}

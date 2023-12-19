@@ -1,3 +1,104 @@
+**1.20.0**
+
+```
+- Added basic error handling for IL changes, be warned if something does break it'll be much less obvious now, but should be easier to debug.
+
+- General Config:
+- Added "Tweak Barrier Decay" configuration, adjusts base barrier decay to use Max Health+Shield instead of Max Barrier, this is primarily for Aegis changes.
+
+- Bison Steak:
+- Changed "Base HP" default configuration. (20 -> 10)
+- Changed "Level HP" default configuration. (2 -> 3)
+- Default values have been changed to scale the same as player health.
+- Removed "Base Regen Duration" configuration.
+- Removed "Stack Regen Duration" configuration.
+
+- Added a rework for Bison Steak that's based on its Fresh Meat version.
+
+- Roll of Pennies Rework
+- Changed "Base Gold" default configuration. (5 -> 3)
+- Changed "Stack Armor" default configuration. (0 -> 1)
+- Changed "Base Armor Duration" default configuration. (1 -> 2)
+
+- Hunter's Harpoon:
+- Buff doesn't have a fading effect, is now a full buff for the entire duration.
+- Buff doesn't increase skill cooldown rate, instead it reduces skill cooldown by a flat amount of seconds on kill.
+- Changed "Base Duration" default configuration. (1.5 -> 1)
+- Changed "Stack Duration" default configuration. (0.75 -> 1)
+- Changed "Movement Speed Bonus" default configuration. (0.25 -> 1.25)
+- Changed "Cooldown Primary" default configuration. (true -> false)
+- Removed "Cooldown Rate Bonus" configuration.
+- Added "Cooldown Reduction" configuration. Default: (1)
+- Added "Extend Duration" configuration. Default: (true)
+
+- Lepton Daisy:
+- Changed "Base Healing" default configuration. (0.15 -> 0.1)
+
+- Old War Stealthkit:
+- Stealth is now given as 5 stacks that expire one after another, similar to Hunter's Harpoon.
+- Combat and Danger cancels are now only applied while you have 5 stacks of Stealth or more.
+- Removed configuration "Cancel Duration" as a result of the above changes.
+- Added configuration "Stealth Movement Speed", controls the movement speed bonus from being Stealthed. Default: (0.4)
+- Added configuration "Stealth Armor", controls how much armor each stack of Stealth gives. Default: (20)
+
+- Squid Polyp:
+- Squid Turret base damage increased from 4 to 5, matching drone damage scaling.
+- The knockback on Squid Turret shots now scales down with attack speed, should stop them from pushing everything away at higher stacks.
+- Added "Stack Health" configuration, controls how much extra health Squid Turrets get per stack. Default: (2)
+- Added "Base Duration" configuration, controls the duration of Squid Turrets at a single stack. Default: (25)
+- Changed "Stack Duration" default configuration. (3 -> 5)
+- Added "Max Turrets" configuration, controls how many Squid Turrets each player can have, newer turrets will replace old ones. Default: (8)
+- Removed "Inactive Removal" configuration, the above configuration is designed to replace its functionality.
+- Removed "Stack Armor" configuration.
+
+- Aegis:
+- No longer increases armor, instead increases maximum barrier similar to its RoRR's version.
+- Added "Base Overheal" and "Stack Overheal" configurations, controls how much barrier to get from overhealing. Default: (0.5)
+- Added "Base Max Barrier" and "Stack Max Barrier" configurations, controls the maximum barrier increase. Default: (0.25)
+
+- Happiest Mask Rework:
+- Changed "Base Damage" default configuration. (1 -> 2)
+- Changed "Stack Damage" default configuration. (1 -> 1.5)
+- Changed "Cooldown" default configuration. (31 -> 3)
+- Cooldown now starts the moment a minion slot is available instead of after spawning a ghost.
+
+- Added a rework for Symbiotic Scorpion.
+
+- Defense Nucleus and Defense Nucleus Rework:
+- Changed "Base Attack Speed" default configuration. (5 -> 3)
+- Changed "Base Damage" default configuration. (5 -> 0)
+- Changed "Stack Damage" default configuration. (0 -> 5)
+- Changed "Shield Base Duration" default configuration. (3.5 -> 5)
+
+- Titanic Knurl:
+- Changed "Base HP" default configuration. (40 -> 30)
+- Changed "Level HP" default configuration. (4 -> 9)
+- Default values have been changed to scale the same as player health.
+
+- Voidsent Flame:
+- Has been given the "CannotCopy" item tag for simplicity.
+```
+
+**1.19.2**
+
+```
+- Death Mark Rework:
+- The Death Mark is applied in an earlier hook to (hopefully) prevent the item breaking in some mod setups.
+```
+
+**1.19.1**
+
+```
+- Wax Quail:
+- Fixed the default config values being incorrect.
+
+- Happiest Mask Rework:
+- Fixed the ghost not spawning.
+
+- Defense Nucleus:
+- Fixed the shared changes configurations still being defaulted to on.
+```
+
 **1.19.0**
 
 <details><summary>Notes</summary>I'm unable to bug test multiplayer at this time since RoR2's dedicated server wasn't updated. Be sure to check your configs after this update. Also made some changes to Ignition Tank rework as I wanted to keep the item away from being luck based.</details>

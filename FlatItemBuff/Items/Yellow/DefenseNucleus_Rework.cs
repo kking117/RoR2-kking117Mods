@@ -15,14 +15,14 @@ namespace FlatItemBuff.Items
     class DefenseNucleus_Rework
     {
         internal static bool Enable = false;
-        internal static float ShieldBaseDuration = 3.5f;
+        internal static float ShieldBaseDuration = 5f;
         internal static float ShieldStackDuration = 1f;
         internal static int BaseHealth = 10;
         internal static int StackHealth = 10;
-        internal static int BaseAttack = 5;
+        internal static int BaseAttack = 3;
         internal static int StackAttack = 0;
-        internal static int BaseDamage = 5;
-        internal static int StackDamage = 0;
+        internal static int BaseDamage = 0;
+        internal static int StackDamage = 5;
         internal static int SummonCount = 3;
         public DefenseNucleus_Rework()
         {

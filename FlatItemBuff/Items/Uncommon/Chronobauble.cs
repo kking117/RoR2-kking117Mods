@@ -10,7 +10,7 @@ namespace FlatItemBuff.Items
 {
 	public class Chronobauble
 	{
-		public static BuffDef ChronoDebuff = RoR2Content.Buffs.Slow60;
+		public static BuffDef ChronoDebuff;
 		private static Color BuffColor = new Color(0.678f, 0.612f, 0.412f, 1f);
 		internal static bool Enable = false;
 		internal static float SlowDown = 0.6f;
@@ -128,12 +128,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnHitEnemy(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "SlowOnHit")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			))
+            {
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Chronobauble - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

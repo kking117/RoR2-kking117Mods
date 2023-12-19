@@ -4,12 +4,56 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using RoR2;
+using R2API;
 using UnityEngine;
 
 namespace FlatItemBuff.Utils
 {
     internal class Helpers
     {
+		public static bool InflictorHasModdedDamageType(GameObject inflictor, DamageAPI.ModdedDamageType moddedDamageType)
+		{
+			if (inflictor)
+			{
+				DamageAPI.ModdedDamageTypeHolderComponent moddedDamageTypeHolder = inflictor.GetComponent<DamageAPI.ModdedDamageTypeHolderComponent>();
+				if (moddedDamageTypeHolder)
+				{
+					return moddedDamageTypeHolder.Has(moddedDamageType);
+				}
+			}
+			return false;
+		}
+		public static void AddOrExtendBuff(CharacterBody body, BuffDef buffDef, float duration)
+		{
+			BuffIndex buffIndex = buffDef.buffIndex;
+			for (int i = 0; i < body.timedBuffs.Count; i++)
+			{
+				if (body.timedBuffs[i].buffIndex == buffIndex)
+				{
+					duration += body.timedBuffs[i].timer;
+					break;
+				}
+			}
+			body.ClearTimedBuffs(buffIndex);
+			body.AddTimedBuff(buffDef, duration);
+		}
+		public static void Add_ExtendBuffDuration(CharacterBody body, BuffDef buffDef, float addDuration)
+		{
+			BuffIndex buffIndex = buffDef.buffIndex;
+			List<float> BuffDuration = new List<float>();
+			for (int i = 0; i < body.timedBuffs.Count; i++)
+			{
+				if (body.timedBuffs[i].buffIndex == buffIndex)
+				{
+					BuffDuration.Add(body.timedBuffs[i].timer + addDuration);
+				}
+			}
+			body.ClearTimedBuffs(buffIndex);
+			for (int i = 0; i < BuffDuration.Count; i++)
+			{
+				body.AddTimedBuff(buffDef, BuffDuration[i]);
+			}
+		}
 		public static float GetBuffDuration(CharacterBody body, BuffDef buffDef)
         {
 			List<CharacterBody.TimedBuff> buffList = body.timedBuffs;
@@ -41,7 +85,7 @@ namespace FlatItemBuff.Utils
 			}
 			return returnmaster;
 		}
-		public static  CharacterMaster GetTrueOwner(MinionOwnership minionowner)
+		public static CharacterMaster GetTrueOwner(MinionOwnership minionowner)
 		{
 			CharacterMaster returnmaster = minionowner.ownerMaster;
 			if (returnmaster)

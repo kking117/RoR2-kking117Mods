@@ -68,28 +68,34 @@ namespace FlatItemBuff.Items
 		private void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdcR4(x, 15),
-				x => ILPatternMatchingExt.MatchLdloc(x, 49),
-				x => ILPatternMatchingExt.MatchConvR4(x),
-				x => ILPatternMatchingExt.MatchMul(x)
-			);
-			ilcursor.RemoveRange(4);
-			ilcursor.Emit(OpCodes.Ldarg_1);
-			ilcursor.Emit(OpCodes.Ldloc, 49);
-			ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdcR4(15),
+				x => x.MatchLdloc(49),
+				x => x.MatchConvR4(),
+				x => x.MatchMul()
+			))
 			{
-				itemCount--;
-				float basebarrier = BaseFlatBarrier;
-				float stackbarrier = StackFlatBarrier;
-				if (dr.attackerBody.healthComponent)
+				ilcursor.RemoveRange(4);
+				ilcursor.Emit(OpCodes.Ldarg_1);
+				ilcursor.Emit(OpCodes.Ldloc, 49);
+				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
 				{
-					basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * BaseCentBarrier;
-					stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * StackCentBarrier;
-				}
-				stackbarrier *= itemCount;
-				return basebarrier + stackbarrier;
-			});
+					itemCount--;
+					float basebarrier = BaseFlatBarrier;
+					float stackbarrier = StackFlatBarrier;
+					if (dr.attackerBody.healthComponent)
+					{
+						basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * BaseCentBarrier;
+						stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * StackCentBarrier;
+					}
+					stackbarrier *= itemCount;
+					return basebarrier + stackbarrier;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Topaz Brooch - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

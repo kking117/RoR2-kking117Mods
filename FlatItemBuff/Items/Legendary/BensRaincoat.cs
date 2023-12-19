@@ -65,73 +65,95 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (GraceTime > 0f)
 			{
-				ilcursor.GotoNext(
-						x => ILPatternMatchingExt.MatchLdloc(x, 0),
-						x => ILPatternMatchingExt.MatchLdfld(x, typeof(RoR2.Items.ImmuneToDebuffBehavior), "isProtected")
-					);
-				ilcursor.RemoveRange(2);
-				ilcursor.Emit(OpCodes.Ldarg_0);
-				ilcursor.EmitDelegate<Func<CharacterBody, bool>>((body) =>
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdloc(0),
+					x => x.MatchLdfld(typeof(RoR2.Items.ImmuneToDebuffBehavior), "isProtected")
+				))
 				{
-					Components.RaincoatBuffer raincoatBuffer = body.GetComponent<Components.RaincoatBuffer>();
-					if (!raincoatBuffer)
-                    {
-						raincoatBuffer = body.gameObject.AddComponent<Components.RaincoatBuffer>();
-					}
-					return raincoatBuffer.IsActive();
-				});
-				MainPlugin.ModLogger.LogInfo("Grace Time Boolean Done");
+					ilcursor.RemoveRange(2);
+					ilcursor.Emit(OpCodes.Ldarg_0);
+					ilcursor.EmitDelegate<Func<CharacterBody, bool>>((body) =>
+					{
+						Components.RaincoatBuffer raincoatBuffer = body.GetComponent<Components.RaincoatBuffer>();
+						if (!raincoatBuffer)
+						{
+							raincoatBuffer = body.gameObject.AddComponent<Components.RaincoatBuffer>();
+						}
+						return raincoatBuffer.IsActive();
+					});
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Grace Time 1 - IL Hook failed");
+				}
 			}
 
-			ilcursor.GotoNext(
-					x => ILPatternMatchingExt.MatchLdarg(x, 0),
-					x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Buffs", "ImmuneToDebuffReady"),
-					x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "HasBuff")
-				);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdarg(x, 0),
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Buffs", "ImmuneToDebuffReady"),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "HasBuff")
-			);
-
-			ilcursor.Index++;
-			ilcursor.RemoveRange(2);
-			ilcursor.EmitDelegate<Func<CharacterBody, bool>>((body) =>
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdsfld(typeof(DLC1Content.Buffs), "ImmuneToDebuffReady"),
+				x => x.MatchCallOrCallvirt<CharacterBody>("HasBuff")
+			)
+			&&
+			ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdsfld(typeof(DLC1Content.Buffs), "ImmuneToDebuffReady"),
+				x => x.MatchCallOrCallvirt<CharacterBody>("HasBuff")
+			))
+            {
+				ilcursor.Index++;
+				ilcursor.RemoveRange(2);
+				ilcursor.EmitDelegate<Func<CharacterBody, bool>>((body) =>
+				{
+					return body.HasBuff(DLC1Content.Buffs.ImmuneToDebuffCooldown);
+				});
+			}
+			else
 			{
-				return body.HasBuff(DLC1Content.Buffs.ImmuneToDebuffCooldown);
-			});
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Cooldown Behavior Fix - IL Hook failed");
+			}
 			if (Cooldown >= 0f)
 			{
-				ilcursor.GotoNext(
-					x => ILPatternMatchingExt.MatchLdarg(x, 0),
-					x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.DLC1Content/Buffs", "ImmuneToDebuffCooldown"),
-					x => ILPatternMatchingExt.MatchLdcR4(x, 5),
-					x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "AddTimedBuff")
-				);
-				ilcursor.Index += 2;
-				ilcursor.Next.Operand = Cooldown;
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdarg(0),
+					x => x.MatchLdsfld(typeof(DLC1Content.Buffs), "ImmuneToDebuffCooldown"),
+					x => x.MatchLdcR4(5),
+					x => x.MatchCallOrCallvirt<CharacterBody>("AddTimedBuff")
+				))
+                {
+					ilcursor.Index += 2;
+					ilcursor.Next.Operand = Cooldown;
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Cooldown Override - IL Hook failed");
+				}
 			}
 
 			if (GraceTime > 0f)
 			{
-				ilcursor.GotoNext(
-						x => ILPatternMatchingExt.MatchLdloc(x, 0),
-						x => ILPatternMatchingExt.MatchLdcI4(x, 1)
-					);
-				ilcursor.Index++;
-				ilcursor.RemoveRange(3);
-				ilcursor.EmitDelegate<Func<RoR2.Items.ImmuneToDebuffBehavior, bool>>((itemBehavior) =>
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdloc(0),
+					x => x.MatchLdcI4(1)
+				))
 				{
-					CharacterBody body = itemBehavior.body;
-					Components.RaincoatBuffer raincoatBuffer = body.GetComponent<Components.RaincoatBuffer>();
-					if (!raincoatBuffer)
+					ilcursor.Index++;
+					ilcursor.RemoveRange(3);
+					ilcursor.EmitDelegate<Func<RoR2.Items.ImmuneToDebuffBehavior, bool>>((itemBehavior) =>
 					{
-						raincoatBuffer = body.gameObject.AddComponent<Components.RaincoatBuffer>();
-					}
-					raincoatBuffer.Refresh();
-					return true;
-				});
-				MainPlugin.ModLogger.LogInfo("Apply Grace Time Done");
+						CharacterBody body = itemBehavior.body;
+						Components.RaincoatBuffer raincoatBuffer = body.GetComponent<Components.RaincoatBuffer>();
+						if (!raincoatBuffer)
+						{
+							raincoatBuffer = body.gameObject.AddComponent<Components.RaincoatBuffer>();
+						}
+						raincoatBuffer.Refresh();
+						return true;
+					});
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Grace Time 2 - IL Hook failed");
+				}
 			}
 		}
 	}

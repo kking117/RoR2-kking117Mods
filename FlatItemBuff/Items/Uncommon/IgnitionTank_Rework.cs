@@ -22,7 +22,7 @@ namespace FlatItemBuff.Items
 		internal static bool BlastInheritDamageType = false;
 		internal static bool BlastRollCrit = false;
 
-		private static GameObject BlastEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
+		private static GameObject BlastEffect;
 		public IgnitionTank_Rework()
 		{
 			if (!Enable)
@@ -31,6 +31,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo("Changing Ignition Tank");
 			ClampConfig();
+			UpdateVFX();
 			UpdateText();
 			Hooks();
 		}
@@ -45,6 +46,10 @@ namespace FlatItemBuff.Items
 			BlastStackDamage = Math.Max(0f, BlastStackDamage);
 			BlastBaseRadius = Math.Max(0f, BlastBaseRadius);
 			BlastStackRadius = Math.Max(0f, BlastStackRadius);
+		}
+		private void UpdateVFX()
+        {
+			BlastEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
 		}
 		private void UpdateText()
 		{
@@ -72,14 +77,14 @@ namespace FlatItemBuff.Items
 
 			if (BlastTicks > 0)
             {
-				blastPickup += "Status damage causes explosions.";
+				blastPickup += "Damage over time causes explosions.";
 				if (BlastTicks > 1)
                 {
-					blastCondition += string.Format("Dealing <style=cIsUtility>status damage</style> <style=cIsDamage>{0}</style> times causes", BlastTicks);
+					blastCondition += string.Format("Every <style=cIsDamage>{0} hits</style> of damage over time causes", BlastTicks);
 				}
 				else
                 {
-					blastCondition += string.Format("Dealing <style=cIsUtility>status damage</style> causes");
+					blastCondition += string.Format("Damage over time causes");
 				}
 
 				blastRadius = string.Format(" an <style=cIsDamage>explosion</style> in a <style=cIsDamage>{0}m</style>", BlastBaseRadius);
@@ -121,7 +126,6 @@ namespace FlatItemBuff.Items
 			CharacterBody attackerBody = damageReport.attackerBody;
 			float procRate = damageReport.damageInfo.procCoefficient;
 			bool isDot = damageReport.dotType != DotController.DotIndex.None;
-
 			if (attackerBody && victimBody)
 			{
 				Inventory inventory = damageReport.attackerBody.inventory;
@@ -148,22 +152,22 @@ namespace FlatItemBuff.Items
 						{
 							if (TickUpExplosion(attackerBody, damageReport.dotType))
                             {
-								DoTankExplosion(attackerBody, victimBody, itemCount, damageReport);
+								DoTankExplosion(attackerBody, victimBody, itemCount, damageReport.damageInfo);
 							}
 						}
 					}
 				}
 			}
 		}
-		private void DoTankExplosion(CharacterBody attackerBody, CharacterBody victimBody, int itemCount, DamageReport damageReport)
+		private void DoTankExplosion(CharacterBody attackerBody, CharacterBody victimBody, int itemCount, DamageInfo damageInfo)
         {
 			itemCount = Math.Max(0, itemCount - 1);
 			float blastDamage = BlastBaseDamage + (BlastStackDamage * itemCount);
-			float blastRadius = BlastBaseRadius + (BlastStackRadius * itemCount);
-			blastDamage = Util.OnHitProcDamage(damageReport.damageInfo.damage, attackerBody.damage, blastDamage);
+			float blastRadius = BlastBaseRadius + (BlastStackRadius * itemCount) + victimBody.radius;
+			blastDamage = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, blastDamage);
 			if (blastDamage > 0f)
 			{
-				bool isCrit = damageReport.damageInfo.crit;
+				bool isCrit = damageInfo.crit;
 				if (BlastRollCrit && !isCrit)
 				{
 					isCrit = Util.CheckRoll(attackerBody.crit, attackerBody.master);
@@ -188,8 +192,8 @@ namespace FlatItemBuff.Items
 					delayBlast.explosionEffect = BlastEffect;
 					if (BlastInheritDamageType)
 					{
-						delayBlast.damageType = damageReport.damageInfo.damageType;
-						delayBlast.damageColorIndex = damageReport.damageInfo.damageColorIndex;
+						delayBlast.damageType = damageInfo.damageType;
+						delayBlast.damageColorIndex = damageInfo.damageColorIndex;
 					}
 					else
 					{
@@ -209,12 +213,12 @@ namespace FlatItemBuff.Items
         {
 			if (BlastTicks > 1)
 			{
-				Components.IgnitionTankTicks comp = body.GetComponent<Components.IgnitionTankTicks>();
+				Components.IgnitionTankTicker comp = body.GetComponent<Components.IgnitionTankTicker>();
 				if (!comp)
 				{
-					comp = body.gameObject.AddComponent<Components.IgnitionTankTicks>();
+					comp = body.gameObject.AddComponent<Components.IgnitionTankTicker>();
 				}
-				return comp.TickUpDoT(dotIndex);
+				return comp.TickUp();
 			}
 			return true;
 		}

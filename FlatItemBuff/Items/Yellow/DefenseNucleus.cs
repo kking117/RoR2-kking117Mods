@@ -16,10 +16,10 @@ namespace FlatItemBuff.Items
         internal static float Cooldown = 1f;
         internal static int BaseHealth = 10;
         internal static int StackHealth = 10;
-        internal static int BaseAttack = 5;
+        internal static int BaseAttack = 3;
         internal static int StackAttack = 0;
-        internal static int BaseDamage = 5;
-        internal static int StackDamage = 0;
+        internal static int BaseDamage = 0;
+        internal static int StackDamage = 5;
         public DefenseNucleus()
         {
             if (!Enable)

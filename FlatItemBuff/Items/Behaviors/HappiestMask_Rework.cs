@@ -9,59 +9,30 @@ namespace FlatItemBuff.Items.Behaviors
 	public class HappiestMask_Rework : CharacterBody.ItemBehavior
 	{
 		private DeployableSlot deploySlot = Items.HappiestMask_Rework.Ghost_DeployableSlot;
-		private float updateTimer = 1f;
 		private float summonTimer = 1f;
-		private const float updateDelayTime = 1f;
-		private const float MinSummonDistance = 6f;
-		private const float MaxSummonDistance = 18f;
+		private const float MinSummonDistance = 10f;
+		private const float MaxSummonDistance = 20f;
 		private void FixedUpdate()
 		{
 			if (!body)
 			{
 				return;
 			}
-			updateTimer -= Time.fixedDeltaTime;
-			if (summonTimer > 0f)
-            {
-				summonTimer -= Time.fixedDeltaTime;
-			}
-			if (updateTimer <= 0f)
-			{
-				updateTimer += updateDelayTime;
-				UpdateGhosts();
-			}
+			UpdateGhosts();
 		}
 		private void UpdateGhosts()
 		{
 			CharacterMaster owner = body.master;
-			int maxGhosts = owner.GetDeployableCount(deploySlot);
-			if (owner.deployablesList != null)
-			{
-				for (int i = 0; i < owner.deployablesList.Count; i++)
-				{
-					if (owner.deployablesList[i].slot == deploySlot)
-					{
-						Deployable deploy = owner.deployablesList[i].deployable;
-						if (deploy)
-						{
-							CharacterMaster master = deploy.GetComponent<CharacterMaster>();
-							if (master)
-							{
-								maxGhosts--;
-								if (maxGhosts < 0)
-								{
-									master.TrueKill();
-								}
-							}
-						}
-					}
-				}
-			}
-			if (maxGhosts > 0)
-			{
+			int maxGhosts = owner.GetDeployableSameSlotLimit(deploySlot);
+			if (owner.GetDeployableCount(deploySlot) < owner.GetDeployableSameSlotLimit(deploySlot))
+            {
 				if (summonTimer <= 0f)
 				{
 					CreateGhost(owner);
+				}
+				else
+				{
+					summonTimer -= Time.fixedDeltaTime;
 				}
 			}
 		}
@@ -98,8 +69,11 @@ namespace FlatItemBuff.Items.Behaviors
 			directorSpawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(directorSpawnRequest.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult result)
 			{
 				summonTimer += Items.HappiestMask_Rework.BaseCooldown;
+				if (!result.success)
+				{
+					return;
+				}
 				CharacterMaster summonMaster = result.spawnedInstance.GetComponent<CharacterMaster>();
-
 				Deployable deployable = result.spawnedInstance.AddComponent<Deployable>();
 				ownerMaster.AddDeployable(deployable, deploySlot);
 				deployable.onUndeploy = (deployable.onUndeploy ?? new UnityEvent());

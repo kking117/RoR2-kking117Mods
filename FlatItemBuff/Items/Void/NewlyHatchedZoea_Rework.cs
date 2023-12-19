@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RoR2;
 using R2API;
-using MonoMod.Cil;
 using UnityEngine;
-using UnityEngine.Networking;
 using RoR2.Projectile;
 using UnityEngine.AddressableAssets;
 
@@ -14,9 +10,8 @@ namespace FlatItemBuff.Items
 {
 	public class NewlyHatchedZoea_Rework
 	{
-		public static GameObject VoidMissileProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MissileVoid/MissileVoidProjectile.prefab").WaitForCompletion();
-
-		public static BuffDef VoidMissileStockBuff = RoR2Content.Buffs.MercExpose;
+		public static GameObject VoidMissileProjectile;
+		public static BuffDef VoidMissileStockBuff;
 		private static Color BuffColor = new Color(0.682f, 0.415f, 0.725f, 1f);
 
 		internal static bool Enable = false;
@@ -62,7 +57,6 @@ namespace FlatItemBuff.Items
 			if (CanCorrupt)
             {
 				corruptsAll = string.Format(" <style=cIsVoid>Corrupts all {0}</style>.", CorruptText);
-				//corruptsAll = string.Format(" <style=cIsVoid>Corrupts all </style>{0}<style=cIsVoid></style>.", CorruptText);
 			}
 			string pickup = string.Format("Activating your Special skill also unleashes a missile swarm. Recharges over time.{0}", corruptsAll);
 
@@ -97,7 +91,6 @@ namespace FlatItemBuff.Items
 		private void CreateProjectiles()
         {
 			VoidMissileProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MissileVoid/MissileVoidProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "VoidMissile");
-			ProjectileDamage projDmg = VoidMissileProjectile.GetComponent<ProjectileDamage>();
 			ProjectileController projController = VoidMissileProjectile.GetComponent<ProjectileController>();
 			MissileController projMissile = VoidMissileProjectile.GetComponent<MissileController>();
 			projMissile.deathTimer = 10f; //Originally 3.5f

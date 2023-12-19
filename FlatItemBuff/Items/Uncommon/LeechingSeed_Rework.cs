@@ -181,13 +181,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnHitEnemy(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
+			))
+			{
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Leeching Seed Rework - Effect Override - IL Hook failed");
+			}
 		}
 	}
 }

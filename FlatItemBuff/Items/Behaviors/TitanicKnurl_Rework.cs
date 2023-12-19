@@ -13,7 +13,6 @@ namespace FlatItemBuff.Items.Behaviors
 		private float nextAttack;
 		private float targetRadius = Items.TitanicKnurl_Rework.TargetRadius;
 		private int targetMode = Items.TitanicKnurl_Rework.TargetMode;
-
 		private void Awake()
         {
 			nextAttack = Items.TitanicKnurl_Rework.GetFistCooldown(stack);
