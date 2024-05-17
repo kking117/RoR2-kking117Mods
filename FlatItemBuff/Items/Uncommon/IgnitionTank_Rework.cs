@@ -15,6 +15,7 @@ namespace FlatItemBuff.Items
 		internal static float BurnDuration = 3f;
 
 		internal static int BlastTicks = 10;
+		internal static int HalfBlastTicks = 5;
 		internal static float BlastBaseDamage = 3f;
 		internal static float BlastStackDamage = 2f;
 		internal static float BlastBaseRadius = 12f;
@@ -42,6 +43,10 @@ namespace FlatItemBuff.Items
 			BurnDuration = Math.Max(0, BurnDuration);
 
 			BlastTicks = Math.Max(0, BlastTicks);
+			if (BlastTicks > 0)
+            {
+				HalfBlastTicks = Math.Max(0, BlastTicks / 2);
+			}
 			BlastBaseDamage = Math.Max(0f, BlastBaseDamage);
 			BlastStackDamage = Math.Max(0f, BlastStackDamage);
 			BlastBaseRadius = Math.Max(0f, BlastBaseRadius);
@@ -150,7 +155,7 @@ namespace FlatItemBuff.Items
 						}
 						if (isDot)
 						{
-							if (TickUpExplosion(attackerBody, damageReport.dotType))
+							if (TickUpExplosion(victimBody, attackerBody))
                             {
 								DoTankExplosion(attackerBody, victimBody, itemCount, damageReport.damageInfo);
 							}
@@ -209,16 +214,24 @@ namespace FlatItemBuff.Items
 			}
 		}
 
-		private bool TickUpExplosion(CharacterBody body, DotController.DotIndex dotIndex)
+		private bool TickUpExplosion(CharacterBody victimBody, CharacterBody attackerBody)
         {
 			if (BlastTicks > 1)
 			{
-				Components.IgnitionTankTicker comp = body.GetComponent<Components.IgnitionTankTicker>();
+				/*Components.IgnitionTankTicker comp = body.GetComponent<Components.IgnitionTankTicker>();
 				if (!comp)
 				{
 					comp = body.gameObject.AddComponent<Components.IgnitionTankTicker>();
 				}
-				return comp.TickUp();
+				return comp.TickUp();*/
+
+
+				Components.IgnitionTankTracker comp = victimBody.GetComponent<Components.IgnitionTankTracker>();
+				if (!comp)
+				{
+					comp = victimBody.gameObject.AddComponent<Components.IgnitionTankTracker>();
+				}
+				return comp.TickUp(attackerBody.master);
 			}
 			return true;
 		}

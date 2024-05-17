@@ -17,6 +17,7 @@ namespace FlatItemBuff.Items
         internal static bool Enable = false;
         internal static float ShieldBaseDuration = 5f;
         internal static float ShieldStackDuration = 1f;
+        internal static float SummonCooldown = 7f;
         internal static int BaseHealth = 10;
         internal static int StackHealth = 10;
         internal static int BaseAttack = 3;
@@ -64,71 +65,77 @@ namespace FlatItemBuff.Items
         private void UpdateText()
         {
             MainPlugin.ModLogger.LogInfo("Updating item text");
-            string pickup = string.Format("Launch additional defensive measures on equipment activation.");
-            string desc = string.Format("Activating your equipment deploys ");
+            string deployDesc = string.Format("Activating your equipment");
+            string shieldDesc = "";
+            string summonDesc = "";
+
             if (ShieldBaseDuration > 0f)
             {
-                desc += string.Format("a <style=cIsUtility>projectile shield for <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> seconds</style>.", ShieldBaseDuration, ShieldStackDuration);
+                if (ShieldStackDuration > 0f)
+                {
+                    shieldDesc += string.Format(" generates a <style=cIsUtility>projectile shield</style> for <style=cIsUtility>{0}s</style> <style=cStack>(+{1}s per stack)</style>.", ShieldBaseDuration, ShieldStackDuration);
+                }
+                else
+                {
+                    shieldDesc += string.Format(" generates a <style=cIsUtility>projectile shield</style> for <style=cIsUtility>{0}s</style>.", ShieldBaseDuration);
+                }
             }
             if (SummonCount > 0)
             {
-                string stats = "";
-                List<string> statList = new List<string>();
-                if (BaseHealth > 0 || StackHealth > 0)
-                {
-                    stats = string.Format("<style=cIsHealing>{0}%", (10 + BaseHealth) * 10f);
-                    if (StackHealth > 0)
-                    {
-                        stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackHealth * 10f);
-                    }
-                    stats += " health</style>";
-                    statList.Add(stats);
-                }
-                if (BaseDamage > 0 || BaseDamage > 0)
-                {
-                    stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseDamage) * 10f);
-                    if (StackDamage > 0)
-                    {
-                        stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 10f);
-                    }
-                    stats += " damage</style>";
-                    statList.Add(stats);
-                }
-                if (BaseAttack > 0 || StackAttack > 0)
-                {
-                    stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseAttack) * 10f);
-                    if (StackAttack > 0)
-                    {
-                        stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackAttack * 10f);
-                    }
-                    stats += " attack speed</style>";
-                    statList.Add(stats);
-                }
-                stats = "";
-                for (int i = 0; i < statList.Count; i++)
-                {
-                    if (i == statList.Count - 1)
-                    {
-                        stats += " and ";
-                    }
-                    else if (i > 0)
-                    {
-                        stats += ", ";
-                    }
-                    stats += statList[i];
-                }
-                if (stats.Length > 0)
-                {
-                    stats = " with " + stats;
-                }
                 if (ShieldBaseDuration > 0f)
                 {
-                    desc += " It also deploys ";
+                    summonDesc += string.Format(" Additionally you deploy <style=cIsUtility>{0}</style> <style=cIsDamage>Alpha Constructs</style>", SummonCount);
                 }
-                desc += string.Format("<style=cIsUtility>{0}</style> <style=cIsDamage>Alpha Constructs</style>{1}.", SummonCount, stats);
+                else
+                {
+                    summonDesc += string.Format(" deploys <style=cIsUtility>{0}</style> <style=cIsDamage>Alpha Constructs</style>", SummonCount);
+                }
+                if (StackHealth > 0 || StackAttack > 0 || StackDamage > 0)
+                {
+                    string stats = "";
+                    List<string> statList = new List<string>();
+
+                    if (StackHealth > 0)
+                    {
+                        stats = string.Format(" <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style>", (10 + BaseHealth) * 10, StackHealth * 10);
+                        statList.Add(stats);
+                    }
+                    if (StackAttack > 0)
+                    {
+                        stats = string.Format(" <style=cIsDamage>{0}% <style=cStack>(+{1}% per stack)</style> attack speed</style>", (10 + BaseAttack) * 10, StackAttack * 10);
+                        statList.Add(stats);
+                    }
+                    if (StackDamage > 0)
+                    {
+                        stats = string.Format(" <style=cIsDamage>{0}% <style=cStack>(+{1}% per stack)</style> damage</style>", (10 + BaseDamage) * 10, StackDamage * 10);
+                        statList.Add(stats);
+                    }
+                    stats = " with";
+                    for (int i = 0; i < statList.Count; i++)
+                    {
+                        if (i == statList.Count - 1)
+                        {
+                            stats += " and";
+                        }
+                        else if (i > 0)
+                        {
+                            stats += ",";
+                        }
+                        stats += statList[i];
+                    }
+                    summonDesc += stats + ".";
+                }
+                else
+                {
+                    summonDesc += string.Format(".");
+                }
             }
-            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
-            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
+
+            string pickupText = string.Format("Launch additional defensive measures on equipment activation.");
+            string descriptionText = string.Format("{0}{1}{2}", deployDesc, shieldDesc, summonDesc);
+
+            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickupText);
+            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", descriptionText);
         }
         private void Hooks()
         {
@@ -143,9 +150,10 @@ namespace FlatItemBuff.Items
             {
                 return;
             }
-            if (self.characterBody)
+            CharacterBody body = self.characterBody;
+            if (body)
             {
-                CharacterMaster master = self.characterBody.master;
+                CharacterMaster master = body.master;
                 if (master)
                 {
                     int itemCount = master.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
@@ -153,20 +161,22 @@ namespace FlatItemBuff.Items
                     {
                         if (SummonCount > 0)
                         {
-                            DefenseNucleusSummonCooldown comp = self.characterBody.GetComponent<DefenseNucleusSummonCooldown>();
+                            Construct_CooldownManager comp = master.GetComponent<Construct_CooldownManager>();
                             if (!comp)
                             {
+                                comp = master.gameObject.AddComponent<Construct_CooldownManager>();
+                                comp.duration = SummonCooldown;
+                                comp.maxSummons = SummonCount;
                                 int summonCount = master.GetDeployableSameSlotLimit(DeployableSlot.MinorConstructOnKill);
                                 DeployConstructs(master, summonCount);
-                                comp = self.characterBody.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
                             }
                         }
                         if (ShieldBaseDuration > 0f)
                         {
-                            DefenseNucleusShield comp = self.characterBody.GetComponent<DefenseNucleusShield>();
+                            DefenseNucleusShield comp = body.GetComponent<DefenseNucleusShield>();
                             if (!comp)
                             {
-                                comp = self.characterBody.gameObject.AddComponent<DefenseNucleusShield>();
+                                comp = body.gameObject.AddComponent<DefenseNucleusShield>();
                             }
                             comp.duration = ShieldBaseDuration + (ShieldStackDuration * (itemCount - 1));
                         }

@@ -69,8 +69,8 @@ namespace FlatItemBuff.Items
 			string desc = "";
 			if(BaseDoTHeal > 0f)
             {
-				pickup += string.Format("Dealing status damage heals you.");
-				desc += string.Format("Dealing status damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{1} per stack)</style> health</style>.", BaseDoTHeal, StackDoTHeal);
+				pickup += string.Format("Dealing damage over time heals you.");
+				desc += string.Format("Dealing damage over time <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{1} per stack)</style> health</style>.", BaseDoTHeal, StackDoTHeal);
 			}
 			if(LeechChance > 0f)
             {

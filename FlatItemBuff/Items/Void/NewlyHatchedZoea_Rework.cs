@@ -81,11 +81,11 @@ namespace FlatItemBuff.Items
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 			if (CanCorrupt)
 			{
-				On.RoR2.ItemCatalog.SetItemRelationships += ItemCatalog_SetItemRelationships;
+				On.RoR2.Items.ContagiousItemManager.Init += ContagiousItemManager_Init;
 			}
 			else
-            {
-				On.RoR2.ItemCatalog.SetItemRelationships += ItemCatalog_SetItemRelationships_Remove;
+			{
+				On.RoR2.Items.ContagiousItemManager.Init += ContagiousItemManager_Init_Remove;
 			}
 		}
 		private void CreateProjectiles()
@@ -114,7 +114,101 @@ namespace FlatItemBuff.Items
 			return BaseStock + (StackStock * (itemCount - 1));
 		}
 
-		internal static void ItemCatalog_SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] relationshipProvider)
+		private static void Setup_CustomItemRelationships()
+        {
+			List<ItemDef> corruptList = new List<ItemDef>();
+			string[] items = CorruptList.Split(' ');
+			for (int i = 0; i < items.Length; i++)
+			{
+				ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
+				if (itemIndex > ItemIndex.None)
+				{
+					ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+					if (itemDef)
+					{
+						corruptList.Add(itemDef);
+					}
+				}
+			}
+
+			if (corruptList.Count > 0)
+            {
+				List<ItemDef.Pair> newList = new List<ItemDef.Pair>();
+				foreach (ItemDef.Pair oldPair in ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem])
+				{
+					if (oldPair.itemDef2 != DLC1Content.Items.VoidMegaCrabItem)
+					{
+						newList.Add(oldPair);
+					}
+				}
+				for (int i = 0; i < corruptList.Count; i++)
+				{
+					ItemDef.Pair newItem = new ItemDef.Pair
+					{
+						itemDef1 = corruptList[i],
+						itemDef2 = DLC1Content.Items.VoidMegaCrabItem
+					};
+					newList.Add(newItem);
+				}
+				ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem] = newList.ToArray();
+			}
+		}
+		internal static void ContagiousItemManager_Init(On.RoR2.Items.ContagiousItemManager.orig_Init orig)
+		{
+			List<ItemDef> corruptList = new List<ItemDef>();
+			string[] items = CorruptList.Split(' ');
+			for (int i = 0; i < items.Length; i++)
+			{
+				ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
+				if (itemIndex > ItemIndex.None)
+				{
+					ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+					if (itemDef)
+					{
+						corruptList.Add(itemDef);
+					}
+				}
+			}
+
+			if (corruptList.Count > 0)
+			{
+				List<ItemDef.Pair> newList = new List<ItemDef.Pair>();
+				foreach (ItemDef.Pair oldPair in ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem])
+				{
+					if (oldPair.itemDef2 != DLC1Content.Items.VoidMegaCrabItem)
+					{
+						newList.Add(oldPair);
+					}
+				}
+				for (int i = 0; i < corruptList.Count; i++)
+				{
+					ItemDef.Pair newItem = new ItemDef.Pair
+					{
+						itemDef1 = corruptList[i],
+						itemDef2 = DLC1Content.Items.VoidMegaCrabItem
+					};
+					newList.Add(newItem);
+				}
+				ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem] = newList.ToArray();
+			}
+			orig();
+        }
+		internal static void ContagiousItemManager_Init_Remove(On.RoR2.Items.ContagiousItemManager.orig_Init orig)
+		{
+			List<ItemDef.Pair> newList = new List<ItemDef.Pair>();
+			foreach (ItemDef.Pair oldPair in ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem])
+			{
+				if (oldPair.itemDef2 != DLC1Content.Items.VoidMegaCrabItem)
+				{
+					newList.Add(oldPair);
+				}
+			}
+			ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem] = newList.ToArray();
+			orig();
+		}
+
+		//Old code for setting item relationships, keeping it here just in case
+		/*internal static void ItemCatalog_SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] relationshipProvider)
 		{
 			List<ItemDef> corruptList = new List<ItemDef>();
 			string[] items = CorruptList.Split(' ');
@@ -162,6 +256,7 @@ namespace FlatItemBuff.Items
 						itemDef2 = DLC1Content.Items.VoidMegaCrabItem
 					};
 				}
+				
 				newProvider.Add(newItemRelationship);
 
 				orig(newProvider.ToArray());
@@ -191,6 +286,6 @@ namespace FlatItemBuff.Items
 				newProvider.Add(itemRelation);
 			}
 			orig(newProvider.ToArray());
-		}
+		}*/
 	}
 }

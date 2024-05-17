@@ -370,7 +370,6 @@ namespace FlatItemBuff
 			DefenseNucleus.StackAttack = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Attack Speed", 0, "Extra attack speed the construct gets for each additional stack.").Value;
 			DefenseNucleus.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Damage", 5, "Extra damage the construct gets for each additional stack.").Value;
-			DefenseNucleus.Cooldown = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Cooldown", 1f, "Cooldown for summoning constructs.").Value;
 
 			DefenseNucleus_Rework.Enable = ItemConfig.Bind(Section_DefenseNucleus_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			DefenseNucleus_Rework.SummonCount = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 6 because I said so.)").Value;
@@ -381,7 +380,7 @@ namespace FlatItemBuff
 			DefenseNucleus_Rework.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus_Rework.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Damage", 5, "Extra damage the construct gets for each additional stack.").Value;
 			DefenseNucleus_Rework.ShieldBaseDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Base Duration", 5f, "Duration of the projectile shield at a single stack.").Value;
-			DefenseNucleus_Rework.ShieldStackDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Stack Duration", 1f, "Duration of the projectile shield for each additional stack.").Value;
+			DefenseNucleus_Rework.ShieldStackDuration = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Shield Stack Duration", 2f, "Duration of the projectile shield for each additional stack.").Value;
 
 			DefenseNucleus_Shared.TweakAI = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Better AI", false, "Gives 360 Degree vision and prevents retaliation against allies.").Value;
 			DefenseNucleus_Shared.ForceMechanical = ItemConfig.Bind(Section_DefenseNucleus_Shared, "Is Mechanical", false, "Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.").Value;

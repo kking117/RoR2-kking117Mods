@@ -51,7 +51,7 @@ namespace FlatItemBuff.Items
 			string stackCool = "";
 			if (StackCooldown != 0f)
             {
-				stackCool = string.Format(" <style=cStack>(+{0}% cooldown rate per stack)</style>", StackCooldown * 100f);
+				stackCool = string.Format(" <style=cStack>(-{0}% per stack)</style>", StackCooldown * 100f);
 			}
 			string targetText;
 			if (TargetMode == 0)

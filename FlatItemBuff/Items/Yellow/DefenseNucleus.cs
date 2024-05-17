@@ -13,7 +13,9 @@ namespace FlatItemBuff.Items
     class DefenseNucleus
     {
         internal static bool Enable = true;
-        internal static float Cooldown = 1f;
+        internal static int MaxSummons = 4;
+        internal static float SummonCooldown = 1f;
+        internal static float SummonFullCooldown = 6f;
         internal static int BaseHealth = 10;
         internal static int StackHealth = 10;
         internal static int BaseAttack = 3;
@@ -44,59 +46,50 @@ namespace FlatItemBuff.Items
         private void UpdateText()
         {
             MainPlugin.ModLogger.LogInfo("Updating item text");
-            string stats = "";
-            List<string> statList = new List<string>();
-            if (BaseHealth > 0 || StackHealth > 0)
+            string deployDesc = string.Format("Activating your equipment");
+            string statDesc = "";
+
+            if (StackHealth > 0 || StackAttack > 0 || StackDamage > 0)
             {
-                stats = string.Format("<style=cIsHealing>{0}%", (10 + BaseHealth) * 10f);
+                string stats = "";
+                List<string> statList = new List<string>();
+
                 if (StackHealth > 0)
                 {
-                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackHealth * 10f);
+                    stats = string.Format(" <style=cIsHealing>{0}% <style=cStack>(+{1}% per stack)</style> health</style>", (10 + BaseHealth) * 10, StackHealth * 10);
+                    statList.Add(stats);
                 }
-                stats += " health</style>";
-                statList.Add(stats);
-            }
-            if (BaseDamage > 0 || BaseDamage > 0)
-            {
-                stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseDamage) * 10f);
-                if (StackDamage > 0)
-                {
-                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackDamage * 10f);
-                }
-                stats += " damage</style>";
-                statList.Add(stats);
-            }
-            if (BaseAttack > 0 || StackAttack > 0)
-            {
-                stats = string.Format("<style=cIsDamage>{0}%", (10 + BaseAttack) * 10f);
                 if (StackAttack > 0)
                 {
-                    stats += string.Format(" <style=cStack>(+{0}% per stack)</style>", StackAttack * 10f);
+                    stats = string.Format(" <style=cIsDamage>{0}% <style=cStack>(+{1}% per stack)</style> attack speed</style>", (10 + BaseAttack) * 10, StackAttack * 10);
+                    statList.Add(stats);
                 }
-                stats += " attack speed</style>";
-                statList.Add(stats);
-            }
-            stats = "";
-            for (int i = 0; i < statList.Count; i++)
-            {
-                if (i == statList.Count - 1)
+                if (StackDamage > 0)
                 {
-                    stats += " and ";
+                    stats = string.Format(" <style=cIsDamage>{0}% <style=cStack>(+{1}% per stack)</style> damage</style>", (10 + BaseDamage) * 10, StackDamage * 10);
+                    statList.Add(stats);
                 }
-                else if (i > 0)
+                stats = " with";
+                for (int i = 0; i < statList.Count; i++)
                 {
-                    stats += ", ";
+                    if (i == statList.Count - 1)
+                    {
+                        stats += " and";
+                    }
+                    else if (i > 0)
+                    {
+                        stats += ",";
+                    }
+                    stats += statList[i];
                 }
-                stats += statList[i];
+                statDesc += stats;
             }
-            if (stats.Length > 0)
-            {
-                stats = " with " + stats;
-            }
-            string pickup = string.Format("Summon an Alpha Construct on kill.");
-            string desc = string.Format("On kill spawn an <style=cIsDamage>Alpha Construct</style>{0}. Limited to <style=cIsUtility>4</style>.", stats);
-            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickup);
-            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", desc);
+
+            string pickupText = string.Format("Summon an Alpha Construct on kill.");
+            string descriptionText = string.Format("On kill spawn an <style=cIsDamage>Alpha Construct</style>{0}. Limited to <style=cIsUtility>4</style>.", statDesc);
+
+            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_PICKUP", pickupText);
+            LanguageAPI.Add("ITEM_MINORCONSTRUCTONKILL_DESC", descriptionText);
         }
         private void Hooks()
         {
@@ -107,26 +100,24 @@ namespace FlatItemBuff.Items
         }
         private void GlobalKillEvent(DamageReport damageReport)
         {
-            CharacterMaster deployer = damageReport.attackerMaster;
-            if (damageReport.victimBody && deployer)
+            CharacterMaster attackerMaster = damageReport.attackerMaster;
+            if (damageReport.victimBody && attackerMaster)
             {
-                if (deployer.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
+                if (attackerMaster.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
                 {
-                    CharacterMaster owner = Helpers.GetOwner(deployer.minionOwnership);
-                    if (owner && owner.GetBody())
+                    Construct_CooldownManager comp = attackerMaster.GetComponent<Construct_CooldownManager>();
+                    if (!comp)
                     {
-                        deployer = owner;
-                    }
-                    if (Cooldown > 0f)
-                    {
-                        DefenseNucleusSummonCooldown comp = deployer.GetComponent<DefenseNucleusSummonCooldown>();
-                        if (!comp)
+                        comp = attackerMaster.gameObject.AddComponent<Construct_CooldownManager>();
+                        comp.duration = SummonCooldown;
+                        comp.maxSummons = 4;
+                        if (attackerMaster.GetDeployableCount(DeployableSlot.MinorConstructOnKill) + 1 >= MaxSummons)
                         {
-                            comp = deployer.gameObject.AddComponent<DefenseNucleusSummonCooldown>();
-                            comp.duration = Cooldown;
+                            comp.duration += SummonFullCooldown;
                         }
+                        DeployConstructFromCorpse(attackerMaster, damageReport.victimBody);
                     }
-                    DeployConstructFromCorpse(deployer, damageReport.victimBody);
+                    
                 }
             }
         }

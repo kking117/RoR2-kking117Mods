@@ -1,3 +1,36 @@
+**1.20.2**
+
+```
+- Newly Hatched Zoea Rework:
+- Changed when in the code corruption changes are made to better prevent other mods ignoring changes made.
+
+- Leeching Seed Rework:
+- Changed the description to state "Damage over time" instead of "Status damage" for consistency.
+
+- Defense Nucleus:
+- Removed "Cooldown" configuration, pretty sure it wasn't being used in the first place.
+- The cooldown for summoning Constructs is now 0.5s but goes up to 7s if it suspects you'll cap out.
+
+- Defense Nucleus Rework:
+- Changed "Shield Stack Duration" default configuration. (1 -> 2)
+
+- Updated dependancies.
+```
+
+**1.20.1**
+
+```
+- Ignition Tank Rework:
+- Hits are now tracked per enemy.
+
+- Defense Nucleus:
+- Improved in-game description slightly.
+
+- Defense Nucleus Rework:
+- Fixed the shield not deploying.
+- Improved in-game description slightly.
+```
+
 **1.20.0**
 
 ```

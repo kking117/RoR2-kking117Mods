@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RoR2;
+﻿using RoR2;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace FlatItemBuff.Components
 {
@@ -14,11 +10,20 @@ namespace FlatItemBuff.Components
         private void Awake()
         {
             CharacterBody body = GetComponent<CharacterBody>();
+            if (!body)
+            {
+                Destroy(this);
+            }
             shieldObject = Instantiate<GameObject>(Items.DefenseNucleus_Shared.ShieldPrefab).GetComponent<NetworkedBodyAttachment>();
-            TeamComponent teamComp = shieldObject.gameObject.GetComponent<TeamComponent>();
-            teamComp.teamIndex = body.teamComponent.teamIndex;
-            shieldObject.AttachToGameObjectAndSpawn(body.gameObject, null);
-            duration = Items.DefenseNucleus_Rework.ShieldBaseDuration;
+            if (shieldObject)
+            {
+                shieldObject.AttachToGameObjectAndSpawn(body.gameObject, null);
+                duration = Items.DefenseNucleus_Rework.ShieldBaseDuration;
+            }
+            else
+            {
+                Destroy(this);
+            }
         }
 
         private void FixedUpdate()
