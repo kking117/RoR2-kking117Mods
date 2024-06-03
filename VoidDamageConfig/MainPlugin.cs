@@ -13,7 +13,7 @@ namespace VoidDamageConfig
         public const string MODUID = "com.kking117.VoidDamageConfig";
         public const string MODNAME = "VoidDamageConfig";
         public const string MODTOKEN = "KKING117_VOIDDAMAGECONFIG_";
-        public const string MODVERSION = "1.0.0";
+        public const string MODVERSION = "1.0.1";
         public const string LOGNAME = "[VoidDamageConfig] ";
 
         internal static BepInEx.Logging.ManualLogSource ModLogger;

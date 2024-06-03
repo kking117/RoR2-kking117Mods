@@ -39,8 +39,9 @@ namespace VoidDamageConfig
 			EffectA.VoidDamage_OverrideDamage_Raw = MainConfig.Bind(Section_VoidKill, "Override Suicide Divider", "MiniVoidRaidCrabBodyBase, 25, MiniVoidRaidCrabBodyPhase1, 25, MiniVoidRaidCrabBodyPhase2, 25, MiniVoidRaidCrabBodyPhase3, 25", "List of character bodies that get their Void damage divided when attempting to force kill a target.").Value;
 
 			EffectA.Minion_AllowPlayer = MainConfig.Bind(Section_Minion, "Allow Player", false, "Allow minions currently being controlled by a player to pass as a minion.").Value;
-			EffectA.Minion_BodyWhiteList_Raw = MainConfig.Bind(Section_Minion, "Body Whitelist", "TitanGoldBody", "List of bodies that will always count as minions for the purpose of this mod.").Value;
+			EffectA.Minion_BodyWhiteList_Raw = MainConfig.Bind(Section_Minion, "Body Whitelist", "TitanGoldBody", "List of bodies that will always count as minions for the purpose of this mod. (Has priority over Blacklists)").Value;
 			EffectA.Minion_BodyBlackList_Raw = MainConfig.Bind(Section_Minion, "Body Blacklist", "EngiTurretBody, EngiWalkerTurretBody", "List of bodies that will never count as minions for the purpose of this mod.").Value;
+			EffectA.Minion_ItemWhiteList_Raw = MainConfig.Bind(Section_Minion, "Item Whitelist", "", "List of items that will make characters always count as minions for the purpose of this mod. (Has priority over Blacklists)").Value;
 			EffectA.Minion_ItemBlackList_Raw = MainConfig.Bind(Section_Minion, "Item Blacklist", "", "List of items that will make characters never count as minions for the purpose of this mod.").Value;
 		}
 	}

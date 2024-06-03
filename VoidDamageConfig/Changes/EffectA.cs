@@ -33,6 +33,8 @@ namespace VoidDamageConfig.Changes
 		internal static bool[] Minion_BodyWhiteList;
 		internal static string Minion_BodyBlackList_Raw;
 		internal static bool[] Minion_BodyBlackList;
+		internal static string Minion_ItemWhiteList_Raw;
+		internal static List<ItemIndex> Minion_ItemWhiteList;
 		internal static string Minion_ItemBlackList_Raw;
 		internal static List<ItemIndex> Minion_ItemBlackList;
 		public EffectA()
@@ -119,6 +121,26 @@ namespace VoidDamageConfig.Changes
 			if (!useFilter)
 			{
 				Minion_BodyBlackList = null;
+			}
+
+			useFilter = false;
+			Minion_ItemWhiteList = new List<ItemIndex>();
+			listData = Minion_ItemWhiteList_Raw.Split(',');
+			for (int i = 0; i < listData.Length; i++)
+			{
+				ItemIndex itemIndex = ItemCatalog.FindItemIndex(listData[i].Trim());
+				if (itemIndex > ItemIndex.None)
+				{
+					if (!Minion_ItemWhiteList.Contains(itemIndex))
+					{
+						Minion_ItemWhiteList.Add(itemIndex);
+						useFilter = true;
+					}
+				}
+			}
+			if (!useFilter)
+			{
+				Minion_ItemBlackList = null;
 			}
 
 			useFilter = false;
@@ -310,6 +332,14 @@ namespace VoidDamageConfig.Changes
 					return true;
 				}
 			}
+			if (Minion_ItemWhiteList != null)
+			{
+				Inventory inventory = master.inventory;
+				if (PassItem_WhiteList(inventory))
+				{
+					return true;
+				}
+			}
 			if (Minion_BodyBlackList != null)
             {
 				if (Minion_BodyBlackList[bodyIndex])
@@ -320,7 +350,7 @@ namespace VoidDamageConfig.Changes
 			if (Minion_ItemBlackList != null)
             {
 				Inventory inventory = master.inventory;
-				if (PassItemFilter(inventory))
+				if (PassItem_BlackList(inventory))
                 {
 					return false;
 				}
@@ -338,7 +368,18 @@ namespace VoidDamageConfig.Changes
 			}
 			return true;
         }
-		private bool PassItemFilter(Inventory inventory)
+		private bool PassItem_WhiteList(Inventory inventory)
+		{
+			for (int i = 0; i < Minion_ItemWhiteList.Count; i++)
+			{
+				if (inventory.GetItemCount(Minion_ItemWhiteList.ElementAt(i)) > 0)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		private bool PassItem_BlackList(Inventory inventory)
         {
 			for(int i = 0; i< Minion_ItemBlackList.Count; i++)
             {
