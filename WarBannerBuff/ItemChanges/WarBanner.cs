@@ -18,27 +18,37 @@ namespace WarBannerBuff.ItemChanges
 		public static GameObject BuffVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/WardOnLevel/WarbannerBuffEffect.prefab").WaitForCompletion();
 		private static string BannerWard_RefName = "(Clone)";
 		private static float NextRecover = 1f;
-		public static void Begin()
+		public static BuffDef GreaterBannerBuff;
+		public WarBanner()
         {
 			ClampConfig();
 			CreateBuff();
 			UpdateText();
 			Hooks();
         }
-		private static void ClampConfig()
+		private void ClampConfig()
         {
 			MainPlugin.Merge_FuseMult = Math.Max(0f, MainPlugin.Merge_MinOverlap);
 			MainPlugin.Merge_FuseMult = Math.Min(1f, MainPlugin.Merge_MinOverlap);
 			OverlapDistanceMult = 1f - MainPlugin.Merge_FuseMult;
+			MainPlugin.Merge_FuseMult = Math.Min(1f, MainPlugin.Merge_MinOverlap);
+
+			MainPlugin.DamageBonus = Math.Max(0f, MainPlugin.DamageBonus);
+			MainPlugin.AttackBonus = Math.Max(0f, MainPlugin.AttackBonus);
+			MainPlugin.CritBonus = Math.Max(0f, MainPlugin.CritBonus);
+			MainPlugin.ArmorBonus = Math.Max(0f, MainPlugin.ArmorBonus);
+			MainPlugin.RegenBonus = Math.Max(0f, MainPlugin.RegenBonus);
+			MainPlugin.MoveBonus = Math.Max(0f, MainPlugin.MoveBonus);
 		}
-		private static void CreateBuff()
+		private void CreateBuff()
         {
 			ModdedBuff = Modules.Buffs.AddNewBuff("WarBanner(Modded)", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/WardOnLevel/bdWarbanner.asset").WaitForCompletion().iconSprite, Color.yellow, false, false, false);
 			BannerWard.GetComponent<BuffWard>().buffDef = ModdedBuff;
 			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
 			BannerWard_RefName = BannerWard.name + BannerWard_RefName;
+			GreaterBannerBuff = ModdedBuff;
 		}
-		private static void Hooks()
+		private void Hooks()
         {
 			if (MainPlugin.RecoveryTick > 0f)
 			{
@@ -77,38 +87,38 @@ namespace WarBannerBuff.ItemChanges
 		private static void UpdateText()
 		{
 			string pickup = "Drop a Warbanner on level up or starting the Teleporter event. Grants allies";
-			string desc = "On <style=cIsUtility>level up</style> or starting the <style=cIsUtility>Teleporter event</style>, drop a banner that strengthens all allies within <style=cIsUtility>16m</style> <style=cStack>(+8m per stack)</style>. Grants";
+			string desc = "On <style=cIsUtility>level up</style> or starting the <style=cIsUtility>Teleporter event</style>, drop a banner that strengthens all allies within <style=cIsUtility>16m</style> <style=cStack>(+8m per stack)</style>.\n\nThe banner grants:";
 			List<string> pickuplist = new List<string>();
 			List<string> desclist = new List<string>();
-			if (MainPlugin.RegenBonus > 0.0f)
-			{
-				pickuplist.Add(" regen");
-				desclist.Add(" <style=cIsHealing>regen</style>");
-			}
 			if (MainPlugin.DamageBonus > 0.0f)
 			{
 				pickuplist.Add(" damage");
-				desclist.Add(" <style=cIsDamage>damage</style>");
-			}
-			if (MainPlugin.CritBonus > 0.0f)
-			{
-				pickuplist.Add(" crit chance");
-				desclist.Add(" <style=cIsDamage>crit chance</style>");
+				desclist.Add(string.Format(" <style=cIsDamage>+{0}% damage</style>", MainPlugin.DamageBonus * 100f));
 			}
 			if (MainPlugin.AttackBonus > 0.0f)
 			{
 				pickuplist.Add(" attack speed");
-				desclist.Add(" <style=cIsDamage>attack speed</style>");
+				desclist.Add(string.Format(" <style=cIsDamage>+{0}% attack speed</style>", MainPlugin.AttackBonus * 100f));
 			}
-			if (MainPlugin.MoveBonus > 0.0f)
+			if (MainPlugin.CritBonus > 0.0f)
 			{
-				pickuplist.Add(" movement speed");
-				desclist.Add(" <style=cIsUtility>movement speed</style>");
+				pickuplist.Add(" crit chance");
+				desclist.Add(string.Format(" <style=cIsDamage>+{0}% crit chance</style>", MainPlugin.CritBonus));
 			}
 			if (MainPlugin.ArmorBonus > 0.0f)
 			{
 				pickuplist.Add(" armor");
-				desclist.Add(" <style=cIsHealing>armor</style>");
+				desclist.Add(string.Format(" <style=cIsHealing>+{0} armor</style>", MainPlugin.ArmorBonus));
+			}
+			if (MainPlugin.RegenBonus > 0.0f)
+			{
+				pickuplist.Add(" regen");
+				desclist.Add(string.Format(" <style=cIsHealing>+{0} base health regen</style>", MainPlugin.RegenBonus));
+			}
+			if (MainPlugin.MoveBonus > 0.0f)
+			{
+				pickuplist.Add(" movement speed");
+				desclist.Add(string.Format(" <style=cIsUtility>+{0}% movement speed</style>", MainPlugin.MoveBonus * 100f));
 			}
 			for (int i = 0; i < pickuplist.Count; i++)
 			{
@@ -130,25 +140,28 @@ namespace WarBannerBuff.ItemChanges
 			LanguageAPI.Add("ITEM_WARDONLEVEL_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_WARDONLEVEL_DESC", desc);
 		}
-		private static void RecalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+		private void RecalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
-			if (sender.HasBuff(ModdedBuff))
+			if (HasBannerBuff(sender))
 			{
-				float levelBonus = sender.level - 1f;
-				args.critAdd += MainPlugin.CritBonus;
-				args.armorAdd += MainPlugin.ArmorBonus;
-				args.baseDamageAdd += MainPlugin.DamageBonus * (1 + (levelBonus * 0.2f));
+				args.damageMultAdd += MainPlugin.DamageBonus;
 				args.attackSpeedMultAdd += MainPlugin.AttackBonus;
 				args.moveSpeedMultAdd += MainPlugin.MoveBonus;
-				args.baseRegenAdd += MainPlugin.RegenBonus * (1 + (levelBonus * 0.2f));
+				args.critAdd += MainPlugin.CritBonus;
+				args.armorAdd += MainPlugin.ArmorBonus;
+				if (MainPlugin.RegenBonus > 0f)
+                {
+					args.baseRegenAdd += MainPlugin.RegenBonus;
+					args.levelRegenAdd += MainPlugin.RegenBonus / 5f;
+				}
 			}
 		}
-		private static void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
+		private void Run_Start(On.RoR2.Run.orig_Start orig, Run self)
 		{
 			orig(self);
 			NextRecover = 1f;
 		}
-		private static void Run_FixedUpdate(On.RoR2.Run.orig_FixedUpdate orig, RoR2.Run self)
+		private void Run_FixedUpdate(On.RoR2.Run.orig_FixedUpdate orig, RoR2.Run self)
 		{
 			orig(self);
 			if (MainPlugin.RecoveryTick > 0.0f)
@@ -160,12 +173,12 @@ namespace WarBannerBuff.ItemChanges
 				NextRecover -= Time.fixedDeltaTime;
 			}
 		}
-		private static void HealthComponent_FixedUpdate(On.RoR2.HealthComponent.orig_FixedUpdate orig, HealthComponent self)
+		private void HealthComponent_FixedUpdate(On.RoR2.HealthComponent.orig_FixedUpdate orig, HealthComponent self)
 		{
 			orig(self);
 			if (self.body)
 			{
-				if (self.body.HasBuff(ModdedBuff))
+				if (HasBannerBuff(self.body))
 				{
 					if (NextRecover <= 0.0f)
 					{
@@ -317,7 +330,6 @@ namespace WarBannerBuff.ItemChanges
 							}
 						}
 					}
-					MainPlugin.ModLogger.LogInfo("Found " + validWardList.Count + " other banners to merge with.");
 					if (validWardList.Count > 0)
 					{
 						float baseRadius = largestWard.radius;
@@ -390,5 +402,14 @@ namespace WarBannerBuff.ItemChanges
 				}
 			}
 		}
+
+		private bool HasBannerBuff(CharacterBody body)
+        {
+			if (body.HasBuff(ModdedBuff) || body.HasBuff(GreaterBannerBuff))
+            {
+				return true;
+            }
+			return false;
+        }
 	}
 }

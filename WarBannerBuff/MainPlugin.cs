@@ -1,5 +1,7 @@
 ﻿using System;
 using BepInEx;
+using BepInEx.Bootstrap;
+using RoR2;
 
 using System.Security;
 using System.Security.Permissions;
@@ -17,9 +19,12 @@ namespace WarBannerBuff
 		public const string MODUID = "com.kking117.WarBannerBuff";
 		public const string MODNAME = "WarBannerBuff";
 		public const string MODTOKEN = "KKING117_WARBANNERBUFF_";
-		public const string MODVERSION = "5.1.0";
+		public const string MODVERSION = "5.2.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
+		public static PluginInfo pluginInfo;
+
+		internal static bool Starstorm_Loaded = false;
 
 		public static float RecoveryTick;
 
@@ -47,12 +52,37 @@ namespace WarBannerBuff
 		public static bool Merge_Enable;
 		public static float Merge_MinOverlap;
 		public static float Merge_FuseMult;
+
+		public static bool SS2_ShareWithGreaterBanner;
 		public void Awake()
 		{
 			ModLogger = this.Logger;
+			pluginInfo = Info;
+
 			ReadConfig();
-			ItemChanges.WarBanner.Begin();
+			new ItemChanges.WarBanner();
 			new Modules.ContentPacks().Initialize();
+			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
+		}
+		private void PostLoad()
+		{
+			LoadCompat();
+		}
+		private void LoadCompat()
+		{
+			if (SS2_ShareWithGreaterBanner)
+            {
+				Starstorm_Loaded = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.Starstorm2");
+				if (Starstorm_Loaded)
+				{
+					BuffIndex greaterBanner = BuffCatalog.FindBuffIndex("BuffGreaterBanner");
+					if (greaterBanner > BuffIndex.None)
+					{
+						ItemChanges.WarBanner.GreaterBannerBuff = BuffCatalog.GetBuffDef(greaterBanner);
+
+					}
+				}
+			}
 		}
 		public void ReadConfig()
 		{
@@ -68,8 +98,8 @@ namespace WarBannerBuff
 
 			AttackBonus = Config.Bind("Stat Bonuses", "Attack Speed Bonus", 0.3f, "Attack Speed bonus from Warbanners.").Value;
 			MoveBonus = Config.Bind("Stat Bonuses", "Move Speed Bonus", 0.3f, "Movement Speed bonus from Warbanners.").Value;
-			DamageBonus = Config.Bind("Stat Bonuses", "Damage Bonus", 2.0f, "Damage bonus from Warbanners. (Scales with level)").Value;
-			CritBonus = Config.Bind("Stat Bonuses", "Crit Bonus", 10.0f, "Crit bonus from Warbanners.").Value;
+			DamageBonus = Config.Bind("Stat Bonuses", "Damage Bonus", 0.2f, "Damage bonus from Warbanners.").Value;
+			CritBonus = Config.Bind("Stat Bonuses", "Crit Bonus", 0.0f, "Crit bonus from Warbanners.").Value;
 			ArmorBonus = Config.Bind("Stat Bonuses", "Armor Bonus", 0.0f, "Armor bonus from Warbanners.").Value;
 			RegenBonus = Config.Bind("Stat Bonuses", "Regen Bonus", 3.0f, "Regen bonus from Warbanners. (Scales with level)").Value;
 
@@ -82,6 +112,8 @@ namespace WarBannerBuff
 			Merge_Enable = Config.Bind("Banner Merging", "Enable", true, "Allow banner merging? (May cause stutters when banners are placed.)").Value;
 			Merge_MinOverlap = Config.Bind("Banner Merging", "Minimum Overlap", 0.25f, "Minimum amount of overlap that banners need to merge. Values closer to 0 makes the requirement less strict. (Accepts 0-1)").Value;
 			Merge_FuseMult = Config.Bind("Banner Merging", "Merge Multiplier", 0.5f, "How much radius to take from the smaller banners when merging.").Value;
+
+			SS2_ShareWithGreaterBanner = Config.Bind("Starstorm 2", "Count Greater Warbanner", false, "Makes the buff granted by the Greater Warbanner also count as the Warbanner buff.").Value;
 		}
 	}
 }

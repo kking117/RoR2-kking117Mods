@@ -1,3 +1,17 @@
+**5.2.0**
+
+````
+- Updated dependancies.
+
+- Logbook description gives more detailed information on the amount it increases each stat by.
+
+- "Damage Bonus" configuration is now a damage multiplier, not a base damage increase.
+- Changed "Damage Bonus" default value. (3 -> 0.2)
+- Changed "Crit Bonus" default value. (10 -> 0)
+
+- Added "Count Greater Warbanner" configuration, makes the Greater Warbanner from Starstorm 2 give the same stats as this mod's Warbanner plus what it already did.
+````
+
 **5.1.0**
 
 ````
