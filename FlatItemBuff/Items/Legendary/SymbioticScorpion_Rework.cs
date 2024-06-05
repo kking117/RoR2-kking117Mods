@@ -186,7 +186,7 @@ namespace FlatItemBuff.Items
 							if (damageInfo.attacker)
                             {
 								CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-								if(attackerBody.inventory)
+								if (attackerBody && attackerBody.inventory)
                                 {
 									int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
 									if (itemCount > 0)

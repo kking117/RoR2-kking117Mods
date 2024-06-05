@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using RoR2;
 using R2API;
@@ -7,6 +8,7 @@ using RoR2.Projectile;
 using FlatItemBuff.Components;
 using UnityEngine.Networking;
 using FlatItemBuff.Utils;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
@@ -31,6 +33,7 @@ namespace FlatItemBuff.Items
             MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
             ClampConfig();
             UpdateText();
+            UpdateItemDef();
             Hooks();
             DefenseNucleus_Shared.EnableChanges();
         }
@@ -42,6 +45,16 @@ namespace FlatItemBuff.Items
             StackAttack = Math.Max(0, StackAttack);
             BaseDamage = Math.Max(0, BaseDamage);
             StackDamage = Math.Max(0, StackDamage);
+        }
+        private void UpdateItemDef()
+        {
+            ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKill.asset").WaitForCompletion();
+            if (itemDef)
+            {
+                List<ItemTag> itemtags = itemDef.tags.ToList();
+                itemtags.Add(ItemTag.CannotCopy);
+                itemDef.tags = itemtags.ToArray();
+            }
         }
         private void UpdateText()
         {

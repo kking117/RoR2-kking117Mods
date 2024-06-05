@@ -1,3 +1,20 @@
+**1.20.4**
+
+```
+- Symbiotic Scorpion Rework:
+- Fixed an error caused by DoTs inflicted by non-character bodies.
+```
+
+**1.20.3**
+
+```
+- Defense Nucleus:
+- Item is not longer copied by Turrets.
+
+- Defense Nucleus Rework:
+- Item is not longer copied by Turrets.
+```
+
 **1.20.2**
 
 ```

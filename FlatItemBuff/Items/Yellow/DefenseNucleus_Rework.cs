@@ -58,6 +58,7 @@ namespace FlatItemBuff.Items
             {
                 List<ItemTag> itemtags = itemDef.tags.ToList();
                 itemtags.Add(ItemTag.EquipmentRelated);
+                itemtags.Add(ItemTag.CannotCopy);
                 itemtags.Remove(ItemTag.OnKillEffect);
                 itemDef.tags = itemtags.ToArray();
             }
