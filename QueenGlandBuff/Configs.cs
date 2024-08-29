@@ -11,7 +11,7 @@ namespace QueenGlandBuff
 		private const string Section_Queens_Gland = "Queens Gland";
         private const string Section_Primary_Skill = "Primary Skill - Slam";
         private const string Section_Secondary_Skill = "Secondary Skill - Sunder";
-        private const string Section_Special_Skill = "Special Skill - Staunch";
+        private const string Section_Special_Skill = "Special Skill - Valor";
 		private const string Section_Stats_Base = "Beetle Guard Ally Stats Base";
 		private const string Section_Stats_Level = "Beetle Guard Ally Stats Level";
 		private const string Section_Misc = "Misc";

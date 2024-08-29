@@ -208,10 +208,11 @@ namespace QueenGlandBuff.Changes
 											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
 											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
 											inv.GiveItem(RoR2Content.Items.MinionLeash);
-											if (MainPlugin.RiskyMod_Loaded)
+											//RiskyMod Compat Uncomment Later
+											/*if (MainPlugin.RiskyMod_Loaded)
                                             {
 												RiskyMod_MarkAlly(deployableMaster, inv);
-											}
+											}*/
 										}
 									}
 								}
@@ -221,6 +222,9 @@ namespace QueenGlandBuff.Changes
 				}
 			}
 		}
+
+		//RiskyMod Compat Uncomment Later
+		/*
 		private static void RiskyMod_MarkAlly(CharacterMaster master, Inventory inventory)
         {
 			inventory.ResetItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
@@ -228,7 +232,7 @@ namespace QueenGlandBuff.Changes
 			{
 				inventory.GiveItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
 			}
-		}
+		}*/
 		private static void BeetleGland_Override()
 		{
 			On.RoR2.Items.BeetleGlandBodyBehavior.FixedUpdate += (orig, self) =>

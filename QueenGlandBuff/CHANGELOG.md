@@ -1,3 +1,13 @@
+**1.5.0**
+
+```
+- Quick, dirty update for Seekers of the Storm.
+
+- Updated an outdated config category name.
+
+- RiskyMod ally support dropped, since it's not updated yet.
+```
+
 **1.4.0**
 
 ```

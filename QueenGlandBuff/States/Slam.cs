@@ -107,7 +107,13 @@ namespace QueenGlandBuff.States
 			EntityState.Destroy(rightHandChargeEffect);
 			DisableIndicator(groundSlamIndicatorInstance);
 		}
-		public override void FixedUpdate()
+
+		//TODO: Figure out why this is necessary
+        public override void PlayAnimation(string layerName, int animationStateHash)
+        {
+            //base.PlayAnimation(layerName, animationStateHash);
+        }
+        public override void FixedUpdate()
 		{
 			base.FixedUpdate();
 			if (modelAnimator && modelAnimator.GetFloat("GroundSlam.hitBoxActive") > 0.5f && !hasAttacked)
