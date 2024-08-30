@@ -20,7 +20,7 @@ namespace AgilePowerSaw
 	{
 		public const string MODUID = "com.kking117.AgilePowerSaw";
 		public const string MODNAME = "AgilePowerSaw";
-		public const string MODVERSION = "1.4.0";
+		public const string MODVERSION = "1.5.0";
 
 		internal static bool RiskOfOptions = false;
 
