@@ -19,7 +19,7 @@ namespace WarBannerBuff
 		public const string MODUID = "com.kking117.WarBannerBuff";
 		public const string MODNAME = "WarBannerBuff";
 		public const string MODTOKEN = "KKING117_WARBANNERBUFF_";
-		public const string MODVERSION = "5.2.0";
+		public const string MODVERSION = "5.3.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -48,6 +48,8 @@ namespace WarBannerBuff
 		public static float DeepVoidBanner;
 		public static float BossBanner;
 		public static float FocusBanner;
+		public static float MeridianBanner;
+		public static float HalcyonBanner;
 
 		public static bool Merge_Enable;
 		public static float Merge_MinOverlap;
@@ -66,11 +68,11 @@ namespace WarBannerBuff
 		}
 		private void PostLoad()
 		{
-			LoadCompat();
+			//LoadCompat();
 		}
 		private void LoadCompat()
 		{
-			if (SS2_ShareWithGreaterBanner)
+			/*if (SS2_ShareWithGreaterBanner)
             {
 				Starstorm_Loaded = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.Starstorm2");
 				if (Starstorm_Loaded)
@@ -79,10 +81,9 @@ namespace WarBannerBuff
 					if (greaterBanner > BuffIndex.None)
 					{
 						ItemChanges.WarBanner.GreaterBannerBuff = BuffCatalog.GetBuffDef(greaterBanner);
-
 					}
 				}
-			}
+			}*/
 		}
 		public void ReadConfig()
 		{
@@ -108,6 +109,9 @@ namespace WarBannerBuff
 			DeepVoidBanner = Config.Bind("Placement Events", "Deep Void Signal Banners", 0.75f, "Players equipped with Warbanners will place one down at the start of a Deep Void Signal event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			VoidBanner = Config.Bind("Placement Events", "Void Cell Banners", 0.5f, "Players equipped with Warbanners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			FocusBanner = Config.Bind("Placement Events", "Focus Banners", 1f, "Players equipped with Warbanners will place one down when activating the Focus in Simulacrum. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
+
+			MeridianBanner = Config.Bind("Placement Events", "Prime Meridian Banners", 1f, "Players equipped with Warbanners will place one down at the start of False Son's phases. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
+			HalcyonBanner = Config.Bind("Placement Events", "Halcyon Shrine Banners", 0.75f, "Players equipped with Warbanners will place one down when activating the Halcyon Shrine. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 
 			Merge_Enable = Config.Bind("Banner Merging", "Enable", true, "Allow banner merging? (May cause stutters when banners are placed.)").Value;
 			Merge_MinOverlap = Config.Bind("Banner Merging", "Minimum Overlap", 0.25f, "Minimum amount of overlap that banners need to merge. Values closer to 0 makes the requirement less strict. (Accepts 0-1)").Value;

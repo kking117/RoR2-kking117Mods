@@ -10,8 +10,8 @@ using WarBannerBuff.Components;
 
 namespace WarBannerBuff.ItemChanges
 {
-    public class WarBanner
-    {
+	public class WarBanner
+	{
 		public static float OverlapDistanceMult;
 		public static BuffDef ModdedBuff = RoR2Content.Buffs.Warbanner;
 		public static GameObject BannerWard = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/WardOnLevel/WarbannerWard.prefab").WaitForCompletion();
@@ -20,14 +20,14 @@ namespace WarBannerBuff.ItemChanges
 		private static float NextRecover = 1f;
 		public static BuffDef GreaterBannerBuff;
 		public WarBanner()
-        {
+		{
 			ClampConfig();
 			CreateBuff();
 			UpdateText();
 			Hooks();
-        }
+		}
 		private void ClampConfig()
-        {
+		{
 			MainPlugin.Merge_FuseMult = Math.Max(0f, MainPlugin.Merge_MinOverlap);
 			MainPlugin.Merge_FuseMult = Math.Min(1f, MainPlugin.Merge_MinOverlap);
 			OverlapDistanceMult = 1f - MainPlugin.Merge_FuseMult;
@@ -41,7 +41,7 @@ namespace WarBannerBuff.ItemChanges
 			MainPlugin.MoveBonus = Math.Max(0f, MainPlugin.MoveBonus);
 		}
 		private void CreateBuff()
-        {
+		{
 			ModdedBuff = Modules.Buffs.AddNewBuff("WarBanner(Modded)", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/WardOnLevel/bdWarbanner.asset").WaitForCompletion().iconSprite, Color.yellow, false, false, false);
 			BannerWard.GetComponent<BuffWard>().buffDef = ModdedBuff;
 			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
@@ -49,12 +49,12 @@ namespace WarBannerBuff.ItemChanges
 			GreaterBannerBuff = ModdedBuff;
 		}
 		private void Hooks()
-        {
+		{
 			if (MainPlugin.RecoveryTick > 0f)
 			{
 				On.RoR2.Run.Start += Run_Start;
 				On.RoR2.Run.FixedUpdate += Run_FixedUpdate;
-				On.RoR2.HealthComponent.FixedUpdate += HealthComponent_FixedUpdate;
+				On.RoR2.HealthComponent.ServerFixedUpdate += HealthComponent_FixedUpdate;
 			}
 			RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsHook;
 			if (MainPlugin.BossBanner > 0f)
@@ -64,7 +64,7 @@ namespace WarBannerBuff.ItemChanges
 				On.EntityStates.Missions.BrotherEncounter.Phase3.OnEnter += Phase3_OnEnter;
 			}
 			if (MainPlugin.PillarBanner > 0f)
-            {
+			{
 				On.EntityStates.Missions.Moon.MoonBatteryActive.OnEnter += MoonBatteryActive_OnEnter;
 			}
 			if (MainPlugin.VoidBanner > 0f)
@@ -75,14 +75,24 @@ namespace WarBannerBuff.ItemChanges
 			{
 				On.EntityStates.DeepVoidPortalBattery.BaseDeepVoidPortalBatteryState.OnEnter += DeepVoidPortal_OnEnter;
 			}
-			if(MainPlugin.FocusBanner > 0f)
-            {
+			if (MainPlugin.FocusBanner > 0f)
+			{
 				On.RoR2.InfiniteTowerRun.OnSafeWardActivated += InfiniteTowerRun_OnSafeWardActivated;
 			}
-			if(MainPlugin.Merge_Enable)
+			if (MainPlugin.HalcyonBanner > 0f)
             {
+				On.EntityStates.ShrineHalcyonite.ShrineHalcyoniteActivatedState.OnEnter += Halcyon_OnEnter;
+			}
+			if (MainPlugin.MeridianBanner > 0f)
+            {
+				On.RoR2.MeridianEventTriggerInteraction.Phase1.OnEnter += Meridian_Phase1;
+				On.RoR2.MeridianEventTriggerInteraction.Phase2.OnEnter += Meridian_Phase2;
+				On.RoR2.MeridianEventTriggerInteraction.Phase3.OnEnter += Meridian_Phase3;
+			}
+			if (MainPlugin.Merge_Enable)
+			{
 				On.RoR2.BuffWard.Start += BuffWard_Start;
-            }
+			}
 		}
 		private static void UpdateText()
 		{
@@ -150,7 +160,7 @@ namespace WarBannerBuff.ItemChanges
 				args.critAdd += MainPlugin.CritBonus;
 				args.armorAdd += MainPlugin.ArmorBonus;
 				if (MainPlugin.RegenBonus > 0f)
-                {
+				{
 					args.baseRegenAdd += MainPlugin.RegenBonus;
 					args.levelRegenAdd += MainPlugin.RegenBonus / 5f;
 				}
@@ -173,9 +183,9 @@ namespace WarBannerBuff.ItemChanges
 				NextRecover -= Time.fixedDeltaTime;
 			}
 		}
-		private void HealthComponent_FixedUpdate(On.RoR2.HealthComponent.orig_FixedUpdate orig, HealthComponent self)
+		private void HealthComponent_FixedUpdate(On.RoR2.HealthComponent.orig_ServerFixedUpdate orig, HealthComponent self, float deltaTime)
 		{
-			orig(self);
+			orig(self, deltaTime);
 			if (self.body)
 			{
 				if (HasBannerBuff(self.body))
@@ -225,6 +235,36 @@ namespace WarBannerBuff.ItemChanges
 				}
 			}
 			return healing;
+		}
+
+		private static void Halcyon_OnEnter(On.EntityStates.ShrineHalcyonite.ShrineHalcyoniteActivatedState.orig_OnEnter orig, EntityStates.ShrineHalcyonite.ShrineHalcyoniteActivatedState self)
+		{
+			orig(self);
+			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.HalcyonBanner);
+		}
+		private static void Meridian_Phase1(On.RoR2.MeridianEventTriggerInteraction.Phase1.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase1 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+            {
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.MeridianBanner);
+			}
+		}
+		private static void Meridian_Phase2(On.RoR2.MeridianEventTriggerInteraction.Phase2.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase2 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.MeridianBanner);
+			}
+		}
+		private static void Meridian_Phase3(On.RoR2.MeridianEventTriggerInteraction.Phase3.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase3 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.MeridianBanner);
+			}
 		}
 		private static void Phase1_OnEnter(On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
 		{

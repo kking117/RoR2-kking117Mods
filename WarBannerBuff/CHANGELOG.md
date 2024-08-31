@@ -1,3 +1,14 @@
+**5.3.0**
+
+````
+- Updated for Seekers of the Storm.
+
+- Added support for the Halcyon Shrine.
+- Added support for the Prime Meridian boss fight.
+
+- Disabled Starstorm 2 compat until it gets updated.
+````
+
 **5.2.0**
 
 ````
