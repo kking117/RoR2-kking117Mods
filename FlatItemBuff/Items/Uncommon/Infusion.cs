@@ -125,6 +125,26 @@ namespace FlatItemBuff.Items
 						levelBonus = Math.Min(samples, maxCap) / levelCost;
 					}
 				}
+
+				int levelFlat = (int)Math.Floor(levelBonus);
+				Components.InfusionTracker comp = body.GetComponent<Components.InfusionTracker>();
+				if (!comp)
+				{
+					comp = body.gameObject.AddComponent<Components.InfusionTracker>();
+				}
+				else
+                {
+					comp.negateLevelBonus = false;
+				}
+				if (levelFlat > comp.recordLevel)
+				{
+					comp.recordLevel = levelFlat;
+				}
+				else if (levelFlat != comp.lastLevel)
+                {
+					comp.negateLevelBonus = true;
+				}
+				comp.lastLevel = levelFlat;
 			}
 			return levelBonus;
         }
@@ -198,6 +218,8 @@ namespace FlatItemBuff.Items
 			{
 				ilcursor.Index += 5;
 				ilcursor.Emit(OpCodes.Ldarg_0);
+
+
 				ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
 				{
 					float levelBonus = GetInfusionLevel(self);
@@ -208,6 +230,36 @@ namespace FlatItemBuff.Items
 			else
 			{
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Level Increase Effect - IL Hook failed");
+			}
+
+			//Prevents on level up abuse
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdloc(0),
+				x => x.MatchLdarg(0),
+				x => x.MatchCallOrCallvirt<CharacterBody>("get_level")
+			))
+			{
+				ilcursor.Index += 4;
+				ilcursor.Emit(OpCodes.Ldarg, 0);
+				ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+				{
+					Components.InfusionTracker comp = self.GetComponent<Components.InfusionTracker>();
+					if (comp)
+					{
+						if (comp.negateLevelBonus)
+						{
+							comp.negateLevelBonus = false;
+							return 0f;
+						}
+					}
+					return 1f;
+				});
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Level Up Safety - IL Hook failed");
 			}
 		}
 	}

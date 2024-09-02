@@ -17,8 +17,8 @@ namespace FlatItemBuff.Items
 		public static DeployableSlot Ghost_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Ghost_DeployableLimit;
 		internal static bool Enable = false;
-		internal static float BaseDamage = 2.0f;
-		internal static float StackDamage = 1.5f;
+		internal static float BaseDamage = 2f;
+		internal static float StackDamage = 2f;
 		internal static float BaseMoveSpeed = 0.45f;
 		internal static int BaseDuration = 30;
 		internal static int BaseCooldown = 3;
@@ -85,7 +85,7 @@ namespace FlatItemBuff.Items
 				ItemTag.CannotDuplicate,
 				ItemTag.AIBlacklist
 			};
-			Modules.Items.AddNewItem(GhostCloneIdentifier);
+			Utils.ContentManager.AddItem(GhostCloneIdentifier);
 		}
 		private void UpdateText()
 		{

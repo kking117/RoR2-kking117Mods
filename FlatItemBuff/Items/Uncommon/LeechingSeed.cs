@@ -37,7 +37,7 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
-			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
+			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{

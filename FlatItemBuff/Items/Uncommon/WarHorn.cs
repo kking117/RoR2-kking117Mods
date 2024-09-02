@@ -58,32 +58,34 @@ namespace FlatItemBuff.Items
 		private void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Buffs", "Energized"),
-				x => ILPatternMatchingExt.MatchCallOrCallvirt<CharacterBody>(x, "HasBuff")
-			);
-			if (ilcursor.Index > 0)
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Buffs), "Energized"),
+				x => x.MatchCallOrCallvirt(typeof(CharacterBody), "HasBuff")
+			))
 			{
 				ilcursor.Index += 4;
 				ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldarg_0);
 				ilcursor.EmitDelegate<Func<CharacterBody, float>>((body) =>
 				{
-					int itemCount = Math.Max(0, body.inventory.GetItemCount(RoR2Content.Items.EnergizedOnEquipmentUse)-1);
+					int itemCount = Math.Max(0, body.inventory.GetItemCount(RoR2Content.Items.EnergizedOnEquipmentUse) - 1);
 					return BaseAttack + (itemCount * StackAttack);
 				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": War Horn - Stat Override - IL Hook failed");
 			}
 		}
 		private void IL_OnEquipmentExecuted(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, "RoR2.RoR2Content/Buffs", "Energized"),
-				x => ILPatternMatchingExt.MatchLdcI4(x, 8),
-				x => ILPatternMatchingExt.MatchLdcI4(x, 4)
-			);
-			if(ilcursor.Index > 0)
-            {
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Buffs), "Energized"),
+				x => x.MatchLdcI4(8),
+				x => x.MatchLdcI4(4)
+			))
+			{
 				ilcursor.Index += 1;
 				ilcursor.RemoveRange(8);
 				ilcursor.Emit(OpCodes.Ldloc_1);
@@ -91,6 +93,10 @@ namespace FlatItemBuff.Items
 				{
 					return BaseDuration + (StackDuration * (itemCount - 1));
 				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": War Horn - Activation Override - IL Hook failed");
 			}
 		}
 	}

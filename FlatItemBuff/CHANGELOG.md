@@ -1,3 +1,24 @@
+**1.21.0**
+
+```
+- Updated to work with Seekers of the Storm, still needs more thorough testing.
+- Fully uses R2API ContentManagement instead of partially.
+
+- Roll of Pennies Rework:
+- Changed "Stack Armor" default configuration. (1 -> 0)
+- Changed "Stack Armor Duration" default configuration. (1 -> 2)
+
+- Added changes for Antler Shield.
+
+- Added changes for Knockback Fin.
+
+- Infusion Rework:
+- Added checks to prevent gaining level up effects from spawning in with or losing stacks of the item.
+
+- Happiest Mask Rework:
+- Changed "Stack Damage" default configuration. (1.5 -> 2)
+```
+
 **1.20.4**
 
 ```
@@ -65,7 +86,7 @@
 
 - Added a rework for Bison Steak that's based on its Fresh Meat version.
 
-- Roll of Pennies Rework
+- Roll of Pennies Rework:
 - Changed "Base Gold" default configuration. (5 -> 3)
 - Changed "Stack Armor" default configuration. (0 -> 1)
 - Changed "Base Armor Duration" default configuration. (1 -> 2)

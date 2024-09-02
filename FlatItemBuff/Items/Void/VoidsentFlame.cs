@@ -71,7 +71,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 		}
 		private void IL_TakeDamage(ILContext il)
 		{
@@ -101,7 +101,7 @@ namespace FlatItemBuff.Items
 				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
 				x => x.MatchCallvirt(typeof(Inventory), "GetItemCount"),
-				x => x.MatchStloc(20)
+				x => x.MatchStloc(23)
 			))
 			{
 				//Add new condition

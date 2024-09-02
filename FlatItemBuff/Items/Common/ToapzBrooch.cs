@@ -70,14 +70,14 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(15),
-				x => x.MatchLdloc(49),
+				x => x.MatchLdloc(53),
 				x => x.MatchConvR4(),
 				x => x.MatchMul()
 			))
 			{
 				ilcursor.RemoveRange(4);
 				ilcursor.Emit(OpCodes.Ldarg_1);
-				ilcursor.Emit(OpCodes.Ldloc, 49);
+				ilcursor.Emit(OpCodes.Ldloc, 53);
 				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
 				{
 					itemCount--;

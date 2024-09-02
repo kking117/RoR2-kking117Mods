@@ -80,8 +80,8 @@ namespace FlatItemBuff.Items
 		private void CreateBuff()
 		{
 			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/MoveSpeedOnKill/bdKillMoveSpeed.asset").WaitForCompletion();
-			HarpoonBuff = Modules.Buffs.AddNewBuff("HunterBoost", refBuff.iconSprite, BuffColor, false, false, false);
-			ReduceCooldownBuff = Modules.Buffs.AddNewBuff("HunterSkillReduction", refBuff.iconSprite, BuffColor, true, false, false);
+			HarpoonBuff = Utils.ContentManager.AddBuff("HunterBoost", refBuff.iconSprite, BuffColor, false, false, false);
+			ReduceCooldownBuff = Utils.ContentManager.AddBuff("HunterSkillReduction", refBuff.iconSprite, BuffColor, true, false, false);
 		}
 		private void UpdateText()
 		{

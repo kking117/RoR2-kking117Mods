@@ -84,7 +84,7 @@ namespace FlatItemBuff.Items
 			ProjectileController projController = StoneFistProjectile.GetComponent<ProjectileController>();
 			projController.procCoefficient = ProcRate;
 			projDmg.damageType = DamageType.Stun1s;
-			Modules.Projectiles.AddProjectile(StoneFistProjectile);
+			Utils.ContentManager.AddProjectile(StoneFistProjectile);
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{

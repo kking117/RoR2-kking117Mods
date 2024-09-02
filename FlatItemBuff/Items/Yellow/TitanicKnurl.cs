@@ -38,7 +38,7 @@ namespace FlatItemBuff.Items
 			if(BaseHP > 0f)
             {
 				pickup = string.Format("Boosts health");
-				desc = string.Format("<style=cIsHealing>Increase maximum health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>", BaseHP);
+				desc = string.Format("<style=cIsHealing>Increase base health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>", BaseHP);
 				if (BaseRegen <= 0f)
                 {
 					pickup += string.Format(".");

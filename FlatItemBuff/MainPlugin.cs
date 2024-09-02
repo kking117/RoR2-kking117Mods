@@ -21,7 +21,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.20.4";
+		public const string MODVERSION = "1.21.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -33,14 +33,14 @@ namespace FlatItemBuff
 			EnableChanges();
 			SharedHooks.Setup();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad_GameModeCatalog));
-			ModLogger.LogInfo("Initializing ContentPack.");
-			new Modules.ContentPacks().Initialize();
 		}
 		private void EnableChanges()
         {
 			new GeneralChanges();
 			//Common
+			new Items.AntlerShield();
 			new Items.BisonSteak_Rework();
+			new Items.KnockbackFin();
 			new Items.TopazBrooch();
 			new Items.RollOfPennies_Rework();
 			//Uncommon

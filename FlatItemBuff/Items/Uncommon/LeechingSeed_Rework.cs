@@ -52,7 +52,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			LeechBuff = Modules.Buffs.AddNewBuff("Leech", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Bandit2/bdSuperBleed.asset").WaitForCompletion().iconSprite, BuffColor, false, false, false);
+			LeechBuff = Utils.ContentManager.AddBuff("Leech", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Bandit2/bdSuperBleed.asset").WaitForCompletion().iconSprite, BuffColor, false, false, false);
 			LeechDotDef = new DotController.DotDef
 			{
 				associatedBuff = LeechBuff,
@@ -93,7 +93,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
+			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)

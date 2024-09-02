@@ -81,7 +81,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 			SharedHooks.Handle_GlobalHitEvent_Actions += GlobalEventManager_HitEnemy;
 		}
 		private void GlobalEventManager_HitEnemy(CharacterBody victimBody, CharacterBody attackerBody, DamageInfo damageInfo)

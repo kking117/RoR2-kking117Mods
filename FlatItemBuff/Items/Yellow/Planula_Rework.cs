@@ -80,7 +80,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_HealthTakeDamage);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_HealthTakeDamage);
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
 		private void OnInventoryChanged(CharacterBody self)

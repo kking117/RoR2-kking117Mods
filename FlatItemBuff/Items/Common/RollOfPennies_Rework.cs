@@ -17,9 +17,9 @@ namespace FlatItemBuff.Items
 		internal static float BaseGold = 3f;
 		internal static float StackGold = 0f;
 		internal static float BaseArmor = 5f;
-		internal static float StackArmor = 1f;
+		internal static float StackArmor = 0f;
 		internal static float BaseDuration = 2f;
-		internal static float StackDuration = 1f;
+		internal static float StackDuration = 2f;
 		internal static float GoldDuration = 0.5f;
 		public RollOfPennies_Rework()
 		{
@@ -49,7 +49,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			PennyArmorBuff = Modules.Buffs.AddNewBuff("Penny Armor", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Grandparent/bdOverheat.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false);
+			PennyArmorBuff = Utils.ContentManager.AddBuff("Penny Armor", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Grandparent/bdOverheat.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false);
 		}
 		private void UpdateText()
 		{
@@ -111,7 +111,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_OnTakeDamage);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
 			if (BaseArmor > 0f || StackArmor > 0f)
             {
 				On.RoR2.Stats.StatManager.OnGoldCollected += OnGoldCollected;

@@ -53,7 +53,7 @@ namespace FlatItemBuff.Items
 		private void CreateBuff()
 		{
 			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/PermanentDebuffOnHit/bdPermanentDebuff.asset").WaitForCompletion();
-			VenomBuff = Modules.Buffs.AddNewBuff("Venom", refBuff.iconSprite, BuffColor, true, false, false);
+			VenomBuff = Utils.ContentManager.AddBuff("Venom", refBuff.iconSprite, BuffColor, true, false, false);
 			VenomDotDef = new DotController.DotDef
 			{
 				associatedBuff = VenomBuff,
@@ -74,7 +74,7 @@ namespace FlatItemBuff.Items
 			projDmg.damageType = 0;
 			DamageAPI.ModdedDamageTypeHolderComponent moddedDamageHolder = MonsterVenomProjectile.AddComponent<DamageAPI.ModdedDamageTypeHolderComponent>();
 			moddedDamageHolder.Add(ScorpionVenomOnHit);
-			Modules.Projectiles.AddProjectile(MonsterVenomProjectile);
+			Utils.ContentManager.AddProjectile(MonsterVenomProjectile);
 			OrbAPI.AddOrb(typeof(Orbs.ScorpionOrb));
 		}
 		private void UpdateText()
@@ -123,12 +123,11 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_OnTakeDamage);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
 			if (Radius > 0f)
 			{
 				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 			}
-
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 		}
 		private void OnInventoryChanged(CharacterBody self)
@@ -172,13 +171,13 @@ namespace FlatItemBuff.Items
 				if (ilcursor.TryGotoNext(
 					x => x.MatchLdarg(1),
 					x => x.MatchLdfld(typeof(DamageInfo), "damage"),
-					x => x.MatchStloc(6)
+					x => x.MatchStloc(7)
 				))
 				{
 					ilcursor.Index += 3;
 					ilcursor.Emit(OpCodes.Ldarg, 0);
 					ilcursor.Emit(OpCodes.Ldarg, 1);
-					ilcursor.Emit(OpCodes.Ldloc, 6);
+					ilcursor.Emit(OpCodes.Ldloc, 7);
 					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, damage) =>
 					{
 						if (damageInfo.dotIndex != DotController.DotIndex.None)
@@ -208,7 +207,7 @@ namespace FlatItemBuff.Items
 						}
 						return damage;
 					});
-					ilcursor.Emit(OpCodes.Stloc, 6);
+					ilcursor.Emit(OpCodes.Stloc, 7);
 				}
 				else
 				{

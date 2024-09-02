@@ -39,8 +39,8 @@ namespace FlatItemBuff.Items
 			BuffDef deathMarkDef = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/DeathMark/bdDeathMark.asset").WaitForCompletion();
 			if (BaseCooldown > 0)
 			{
-				DeathMarkReadyBuff = Modules.Buffs.AddNewBuff("Death Mark Ready", deathMarkDef.iconSprite, BuffColorR, false, false, false);
-				DeathMarkCooldownBuff = Modules.Buffs.AddNewBuff("Death Mark Cooldown", deathMarkDef.iconSprite, BuffColorC, true, false, true);
+				DeathMarkReadyBuff = Utils.ContentManager.AddBuff("Death Mark Ready", deathMarkDef.iconSprite, BuffColorR, false, false, false);
+				DeathMarkCooldownBuff = Utils.ContentManager.AddBuff("Death Mark Cooldown", deathMarkDef.iconSprite, BuffColorC, true, false, true);
 			}
 			if (AllowMarkStacking)
 			{
@@ -79,8 +79,8 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
-			IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
+			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
+			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 			if (BaseCooldown > 0)
             {
 				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
@@ -172,7 +172,7 @@ namespace FlatItemBuff.Items
 				x => ILPatternMatchingExt.MatchLdsfld(x, typeof(RoR2Content.Buffs), "DeathMark")
 			);
 			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 6),
+				x => ILPatternMatchingExt.MatchLdloc(x, 7),
 				x => ILPatternMatchingExt.MatchLdcR4(x, 1.5f),
 				x => ILPatternMatchingExt.MatchMul(x)
 			);

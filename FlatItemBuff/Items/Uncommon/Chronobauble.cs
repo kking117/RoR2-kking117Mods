@@ -38,7 +38,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			ChronoDebuff = Modules.Buffs.AddNewBuff("ChronoDebuff", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/SlowOnHit/bdSlow60.asset").WaitForCompletion().iconSprite, BuffColor, false, true, false);
+			ChronoDebuff = Utils.ContentManager.AddBuff("ChronoDebuff", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/SlowOnHit/bdSlow60.asset").WaitForCompletion().iconSprite, BuffColor, false, true, false);
 		}
 		private void UpdateText()
 		{
@@ -74,7 +74,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.GlobalEventManager.OnHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
+			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;

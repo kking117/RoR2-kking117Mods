@@ -17,8 +17,12 @@ namespace FlatItemBuff
 		public static ConfigFile ArtifactConfig;
 		public static string ConfigFolderPath { get => System.IO.Path.Combine(BepInEx.Paths.ConfigPath, MainPlugin.pluginInfo.Metadata.GUID); }
 
+		private const string Section_AntlerShield_Buff = "Antler Shield";
+
 		private const string Section_BisonSteak_Buff = "Bison Steak";
 		private const string Section_BisonSteak_Rework = "Bison Steak Rework";
+
+		private const string Section_KnockbackFin_Buff = "Knockback Fin";
 
 		private const string Section_TopazBrooch_Buff = "Topaz Brooch";
 
@@ -90,7 +94,9 @@ namespace FlatItemBuff
 			ItemConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items.cfg"), true);
 			ArtifactConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Artifacts.cfg"), true);
 			//Common
+			Read_AntlerShield();
 			Read_BisonSteak();
+			Read_KnockbackFin();
 			Read_TopazBrooch();
 			Read_RollOfPennies();
 			//Uncommon
@@ -130,6 +136,13 @@ namespace FlatItemBuff
 			GeneralChanges.FixExpiredPings = GeneralConfig.Bind(Section_General_Bugs, "Fix Expired Pings", false, "Fixes a bug with expired pings blocking new ones. Recommended if using the Death Mark rework.").Value;
 			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier, recommended and specifically catered for Aegis changes.").Value;
 		}
+
+		private static void Read_AntlerShield()
+        {
+			AntlerShield.Enable = ItemConfig.Bind(Section_AntlerShield_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			AntlerShield.StackArmor = ItemConfig.Bind(Section_AntlerShield_Buff, "Stack Armor", 7.5f, "Armor each stack gives.").Value;
+			AntlerShield.StackSpeed = ItemConfig.Bind(Section_AntlerShield_Buff, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
+		}
 		private static void Read_BisonSteak()
         {
 			BisonSteak.Enable = ItemConfig.Bind(Section_BisonSteak_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
@@ -143,6 +156,27 @@ namespace FlatItemBuff
 			BisonSteak_Rework.StackDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
 			BisonSteak_Rework.ExtendDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
 			BisonSteak_Rework.NerfFakeKill = ItemConfig.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
+		}
+
+		private static void Read_KnockbackFin()
+		{
+			KnockbackFin.Enable = ItemConfig.Bind(Section_KnockbackFin_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			KnockbackFin.BaseForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Force", 20.0f, "Vertical force at a single stack.").Value;
+			KnockbackFin.StackForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Force", 2.0f, "Vertical force for each additional stack.").Value;
+			KnockbackFin.BackForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
+			KnockbackFin.BaseDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Damage", 1f, "Impact damage at a single stack.").Value;
+			KnockbackFin.StackDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Damage", 0.1f, "Impact damage for each additional stack.").Value;
+			KnockbackFin.MaxDistDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Distance Damage", 10f, "Maximum damage multiplier that can be achieved through fall distance.").Value;
+			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact.").Value;
+			KnockbackFin.DoStun = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
+			KnockbackFin.T1Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Small Force Mult", 1f, "Force multiplier for smaller targets.").Value;
+			KnockbackFin.T2Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Medium Force Mult", 1f, "Force multiplier for larger targets.").Value;
+			KnockbackFin.T3Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Large Force Mult", 1f, "Force multiplier for massive targets.").Value;
+			KnockbackFin.ChampionMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
+			KnockbackFin.BossMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
+			KnockbackFin.MaxForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
+			KnockbackFin.Cooldown = ItemConfig.Bind(Section_KnockbackFin_Buff, "Cooldown", 5f, "The cooldown between knockbacks.").Value;
+			KnockbackFin.ProcRate = ItemConfig.Bind(Section_KnockbackFin_Buff, "Proc Coefficient", 0f, "Impact proc coefficient. (It can proc itself)").Value;
 		}
 		private static void Read_TopazBrooch()
         {
@@ -306,7 +340,7 @@ namespace FlatItemBuff
         {
 			HappiestMask_Rework.Enable = ItemConfig.Bind(Section_HappiestMask_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			HappiestMask_Rework.BaseDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Base Damage", 2f, "Damage increase for ghosts at a single stack.").Value;
-			HappiestMask_Rework.StackDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Stack Damage", 1.5f, "Damage increase for ghosts for each additional stack.").Value;
+			HappiestMask_Rework.StackDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Stack Damage", 2f, "Damage increase for ghosts for each additional stack.").Value;
 			HappiestMask_Rework.BaseMoveSpeed = ItemConfig.Bind(Section_HappiestMask_Rework, "Movement Speed", 0.45f, "Movement speed increase for ghosts.").Value;
 			HappiestMask_Rework.BaseDuration = ItemConfig.Bind(Section_HappiestMask_Rework, "Duration", 30, "How long in seconds the ghosts lasts before dying.").Value;
 			HappiestMask_Rework.BaseCooldown = ItemConfig.Bind(Section_HappiestMask_Rework, "Cooldown", 3, "How long in seconds until a new ghost is summoned.").Value;
