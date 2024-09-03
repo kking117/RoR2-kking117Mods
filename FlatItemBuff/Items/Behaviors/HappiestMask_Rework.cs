@@ -24,7 +24,7 @@ namespace FlatItemBuff.Items.Behaviors
 		{
 			CharacterMaster owner = body.master;
 			int maxGhosts = owner.GetDeployableSameSlotLimit(deploySlot);
-			if (owner.GetDeployableCount(deploySlot) < owner.GetDeployableSameSlotLimit(deploySlot))
+			if (owner.GetDeployableCount(deploySlot) < maxGhosts)
             {
 				if (summonTimer <= 0f)
 				{

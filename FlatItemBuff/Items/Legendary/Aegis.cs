@@ -10,10 +10,10 @@ namespace FlatItemBuff.Items
 	{
 		internal static bool Enable = false;
 		internal static bool AllowRegen = true;
-		internal static float BaseOverheal = 0.5f;
-		internal static float StackOverheal = 0.5f;
-		internal static float BaseMaxBarrier = 0.25f;
-		internal static float StackMaxBarrier = 0.25f;
+		internal static float BaseOverheal = 1f;
+		internal static float StackOverheal = 0f;
+		internal static float BaseMaxBarrier = 1f;
+		internal static float StackMaxBarrier = 1f;
 		public Aegis()
 		{
 			if (!Enable)

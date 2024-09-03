@@ -160,19 +160,38 @@ namespace FlatItemBuff.Items
 		}
 		private bool CanProcFromInteraction(IInteractable interactable, GameObject interactableObject)
         {
-			//DnSpy makes the interaction section almost unreadable for me
-			//So I just used TheMysticSword-MysticsRisky2Utils for reference.
+			//InteractableIsPermittedForSpawn(MonoBehaviour interactableAsMonoBehaviour) from ILSpy
 			MonoBehaviour monoBehaviour = (MonoBehaviour)interactable;
-			if (!monoBehaviour.GetComponent<GenericPickupController>() && !monoBehaviour.GetComponent<VehicleSeat>() && !monoBehaviour.GetComponent<NetworkUIPromptController>())
+			if (!monoBehaviour)
+            {
+				return false;
+            }
+			InteractionProcFilter procfilter = interactableObject.GetComponent<InteractionProcFilter>();
+			if (procfilter)
 			{
-				InteractionProcFilter procfilter = interactableObject.GetComponent<InteractionProcFilter>();
-				if (procfilter)
+				return procfilter.shouldAllowOnInteractionBeginProc;
+			}
+			if (monoBehaviour.GetComponent<DelusionChestController>())
+            {
+				if (monoBehaviour.GetComponent<PickupPickerController>().enabled)
 				{
-					return procfilter.shouldAllowOnInteractionBeginProc;
+					return false;
 				}
 				return true;
 			}
-			return false;
+			if (monoBehaviour.GetComponent<GenericPickupController>())
+            {
+				return false;
+            }
+			if (monoBehaviour.GetComponent<VehicleSeat>())
+			{
+				return false;
+			}
+			if (monoBehaviour.GetComponent<NetworkUIPromptController>())
+			{
+				return false;
+			}
+			return true;
 		}
 		private void IL_InteractBegin(ILContext il)
 		{

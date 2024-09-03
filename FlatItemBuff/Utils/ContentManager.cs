@@ -8,7 +8,7 @@ namespace FlatItemBuff.Utils
 {
     public static class ContentManager
     {
-        internal static BuffDef AddBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown)
+        internal static BuffDef AddBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown, bool isHidden = false, bool ignoreGrowthNectar = false)
         {
             BuffDef buffDef = ScriptableObject.CreateInstance<BuffDef>();
             buffDef.name = buffName + " (FlatItemBuff)";
@@ -18,6 +18,8 @@ namespace FlatItemBuff.Utils
             buffDef.eliteDef = null;
             buffDef.iconSprite = buffIcon;
             buffDef.isCooldown = isCooldown;
+            buffDef.isHidden = isHidden;
+            buffDef.ignoreGrowthNectar = ignoreGrowthNectar;
             (buffDef as ScriptableObject).name = buffDef.name;
 
             R2API.ContentAddition.AddBuffDef(buffDef);

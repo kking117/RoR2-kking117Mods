@@ -17,7 +17,7 @@ namespace FlatItemBuff
 		public static ConfigFile ArtifactConfig;
 		public static string ConfigFolderPath { get => System.IO.Path.Combine(BepInEx.Paths.ConfigPath, MainPlugin.pluginInfo.Metadata.GUID); }
 
-		private const string Section_AntlerShield_Buff = "Antler Shield";
+		private const string Section_AntlerShield_Rework = "Antler Shield Rework";
 
 		private const string Section_BisonSteak_Buff = "Bison Steak";
 		private const string Section_BisonSteak_Rework = "Bison Steak Rework";
@@ -45,9 +45,11 @@ namespace FlatItemBuff
 
 		private const string Section_HuntersHarpoon_Buff = "Hunters Harpoon";
 
+		private const string Section_SquidPolyp_Buff = "Squid Polyp";
+
 		private const string Section_Stealthkit_Buff = "Old War Stealthkit";
 
-		private const string Section_SquidPolyp_Buff = "Squid Polyp";
+		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter";
 
 		private const string Section_WaxQuail_Buff = "Wax Quail";
 
@@ -102,19 +104,20 @@ namespace FlatItemBuff
 			//Uncommon
 			Read_Chronobauble();
 			Read_DeathMark();
+			Read_HuntersHarpoon();
 			Read_IgnitionTank();
 			Read_Infusion();
 			Read_LeechingSeed();
 			Read_LeptonDaisy();
-			Read_Stealthkit();
-			Read_HuntersHarpoon();
 			Read_SquidPolyp();
+			Read_Stealthkit();
+			Read_UnstableTransmitter();
 			Read_WarHorn();
 			Read_WaxQuail();
 			//Legendary
 			Read_Aegis();
 			Read_BensRaincoat();
-			Read_HappiestMask();
+			Read_HappiestMask_Rework();
 			Read_LaserScope();
 			Read_SymbioticScorpion();
 			//Boss
@@ -139,9 +142,9 @@ namespace FlatItemBuff
 
 		private static void Read_AntlerShield()
         {
-			AntlerShield.Enable = ItemConfig.Bind(Section_AntlerShield_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			AntlerShield.StackArmor = ItemConfig.Bind(Section_AntlerShield_Buff, "Stack Armor", 7.5f, "Armor each stack gives.").Value;
-			AntlerShield.StackSpeed = ItemConfig.Bind(Section_AntlerShield_Buff, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
+			AntlerShield_Rework.Enable = ItemConfig.Bind(Section_AntlerShield_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			AntlerShield_Rework.StackArmor = ItemConfig.Bind(Section_AntlerShield_Rework, "Stack Armor", 7.5f, "Armor each stack gives.").Value;
+			AntlerShield_Rework.StackSpeed = ItemConfig.Bind(Section_AntlerShield_Rework, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
 		}
 		private static void Read_BisonSteak()
         {
@@ -164,19 +167,18 @@ namespace FlatItemBuff
 			KnockbackFin.BaseForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Force", 20.0f, "Vertical force at a single stack.").Value;
 			KnockbackFin.StackForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Force", 2.0f, "Vertical force for each additional stack.").Value;
 			KnockbackFin.BackForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
+			KnockbackFin.ChampionMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
+			KnockbackFin.BossMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
+			KnockbackFin.FlyingMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Flying Force Mult", 1f, "Force multiplier against flying targets.").Value;
+			KnockbackFin.MaxForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
+			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact.").Value;
 			KnockbackFin.BaseDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Damage", 1f, "Impact damage at a single stack.").Value;
 			KnockbackFin.StackDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Damage", 0.1f, "Impact damage for each additional stack.").Value;
 			KnockbackFin.MaxDistDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Distance Damage", 10f, "Maximum damage multiplier that can be achieved through fall distance.").Value;
-			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact.").Value;
-			KnockbackFin.DoStun = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
-			KnockbackFin.T1Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Small Force Mult", 1f, "Force multiplier for smaller targets.").Value;
-			KnockbackFin.T2Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Medium Force Mult", 1f, "Force multiplier for larger targets.").Value;
-			KnockbackFin.T3Mult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Large Force Mult", 1f, "Force multiplier for massive targets.").Value;
-			KnockbackFin.ChampionMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
-			KnockbackFin.BossMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
-			KnockbackFin.MaxForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
-			KnockbackFin.Cooldown = ItemConfig.Bind(Section_KnockbackFin_Buff, "Cooldown", 5f, "The cooldown between knockbacks.").Value;
 			KnockbackFin.ProcRate = ItemConfig.Bind(Section_KnockbackFin_Buff, "Proc Coefficient", 0f, "Impact proc coefficient. (It can proc itself)").Value;
+			KnockbackFin.DoStun = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
+			KnockbackFin.CreditFall = ItemConfig.Bind(Section_KnockbackFin_Buff, "Add Fall Damage", false, "Adds the fall damage the target should've taken to the impact.").Value;
+			KnockbackFin.Cooldown = ItemConfig.Bind(Section_KnockbackFin_Buff, "Cooldown", 5, "The cooldown between knockbacks.").Value;
 		}
 		private static void Read_TopazBrooch()
         {
@@ -192,9 +194,9 @@ namespace FlatItemBuff
 			RollOfPennies_Rework.BaseGold = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Gold", 3f, "Gold amount given at a single stack.").Value;
 			RollOfPennies_Rework.StackGold = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Gold", 0f, "Gold amount given for each additional stack.").Value;
 			RollOfPennies_Rework.BaseArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Armor", 5f, "Armor given at a single stack.").Value;
-			RollOfPennies_Rework.StackArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor", 1f, "Armor given for each additional stack.").Value;
+			RollOfPennies_Rework.StackArmor = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor", 0f, "Armor given for each additional stack.").Value;
 			RollOfPennies_Rework.BaseDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 2f, "Duration given to the armor at a single stack.").Value;
-			RollOfPennies_Rework.StackDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 1f, "Duration given to the armor for each additional stack.").Value;
+			RollOfPennies_Rework.StackDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 2f, "Duration given to the armor for each additional stack.").Value;
 			RollOfPennies_Rework.GoldDuration = ItemConfig.Bind(Section_RollOfPennies_Rework, "Gold Armor Duration", 0.5f, "Multiplier for the gold's value when calculating the extra duration.").Value;
 		}
 		private static void Read_Chronobauble()
@@ -289,12 +291,24 @@ namespace FlatItemBuff
 			Stealthkit.CancelDanger = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Danger", true, "Puts you in 'Out of Danger' upon activation.").Value;
 			Stealthkit.CleanseDoT = ItemConfig.Bind(Section_Stealthkit_Buff, "Clean DoTs", true, "Removes damage over time effects upon activation.").Value;
 		}
+		private static void Read_UnstableTransmitter()
+        {
+			UnstableTransmitter_Rework.Enable = ItemConfig.Bind(Section_UnstableTransmitter_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			UnstableTransmitter_Rework.BaseCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Cooldown", 30f, "Cooldown between activations.").Value;
+			UnstableTransmitter_Rework.AllyStackCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Ally Cooldown", 0.5f, "Cooldown reduction per ally owned.").Value;
+			UnstableTransmitter_Rework.CapCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Cap Cooldown", 2f, "The lowest the cooldown can go.").Value;
+			UnstableTransmitter_Rework.BaseDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Damage", 3.5f, "Damage at a single stack.").Value;
+			UnstableTransmitter_Rework.StackDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Damage", 2.8f, "Damage for each additional stack.").Value;
+			UnstableTransmitter_Rework.BaseRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Radius", 15f, "Blast radius at a single stack.").Value;
+			UnstableTransmitter_Rework.StackRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Radius", 0f, "Blast radius for each additional stack.").Value;
+			UnstableTransmitter_Rework.TeleImmobile = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Teleport Immobile", true, "Allows immobile allies to be targeted for teleportation.").Value;
+		}
 		private static void Read_HuntersHarpoon()
         {
 			HuntersHarpoon.Enable = ItemConfig.Bind(Section_HuntersHarpoon_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			HuntersHarpoon.BaseDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Base Duration", 1f, "Buff duration at a single stack.").Value;
 			HuntersHarpoon.StackDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Stack Duration", 1f, "Extra buff duration for each additional stack.").Value;
-			HuntersHarpoon.MovementSpeed = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Movement Speed Bonus", 1.25f, "Movement speed each stack of the buff gives.").Value;
+			HuntersHarpoon.MovementSpeed = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Movement Speed Bonus", 1.25f, "Movement speed given from the buff.").Value;
 			HuntersHarpoon.ExtendDuration = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Extend Duration", true, "Adds duration to the buff with each kill instead of refreshing it.").Value;
 			HuntersHarpoon.BaseCooldownReduction = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Reduction", 1f, "Cooldown reduction on kill.").Value;
 			HuntersHarpoon.CoolPrimary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Primary", false, "Cooldown reduction affects Primary skills?").Value;
@@ -336,7 +350,7 @@ namespace FlatItemBuff
 			BensRaincoat.Cooldown = ItemConfig.Bind(Section_BensRaincoat_Buff, "Cooldown", 7f, "Time in seconds it takes to restock debuff blocks. (Anything less than 0 will skip this change.)").Value;
 			BensRaincoat.GraceTime = ItemConfig.Bind(Section_BensRaincoat_Buff, "Debuff Grace Time", 0.25f, "Time in seconds after consuming a block that further debuffs are negated for free.").Value;
 		}
-		private static void Read_HappiestMask()
+		private static void Read_HappiestMask_Rework()
         {
 			HappiestMask_Rework.Enable = ItemConfig.Bind(Section_HappiestMask_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			HappiestMask_Rework.BaseDamage = ItemConfig.Bind(Section_HappiestMask_Rework, "Base Damage", 2f, "Damage increase for ghosts at a single stack.").Value;

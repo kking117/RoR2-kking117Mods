@@ -21,7 +21,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.21.0";
+		public const string MODVERSION = "1.22.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -38,7 +38,7 @@ namespace FlatItemBuff
         {
 			new GeneralChanges();
 			//Common
-			new Items.AntlerShield();
+			new Items.AntlerShield_Rework();
 			new Items.BisonSteak_Rework();
 			new Items.KnockbackFin();
 			new Items.TopazBrooch();
@@ -50,6 +50,7 @@ namespace FlatItemBuff
 			new Items.IgnitionTank_Rework();
 			new Items.Infusion();
 			new Items.LeechingSeed_Rework();
+			new Items.UnstableTransmitter_Rework();
 			new Items.LeptonDaisy();
 			new Items.Stealthkit();
 			new Items.SquidPolyp();

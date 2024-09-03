@@ -9,19 +9,30 @@ namespace FlatItemBuff.Components
 	public class FinImpactRigid: MonoBehaviour
 	{
 		private CharacterBody victimBody;
+		private Rigidbody victimRigid;
 		private HealthComponent hpComp;
 		public CharacterBody attackerBody;
 		public float enforceDuration = 1f;
-		private Vector3 launchPos = new Vector3(0f, 0f, 0f);
+		private float lastSpeed = 0f;
 
 		public int itemCount = 0;
+		public bool impactNext = false;
+		public float storedFallDamage = 0f;
+		public Vector3 impactPos = new Vector3(0f, 0f, 0f);
 		private void Awake()
 		{
 			victimBody = GetComponent<CharacterBody>();
 			if (victimBody)
 			{
 				hpComp = victimBody.GetComponent<HealthComponent>();
-				launchPos = victimBody.transform.position;
+				victimRigid = victimBody.GetComponent<Rigidbody>();
+			}
+		}
+		private void OnDestroy()
+		{
+			if (victimBody)
+			{
+				StartCooldown();
 			}
 		}
 		private void FixedUpdate()
@@ -36,81 +47,101 @@ namespace FlatItemBuff.Components
 				Destroy(this);
 				return;
 			}
+			if (impactNext)
+			{
+				OnImpact();
+				return;
+			}
+			else
+			{
+				lastSpeed = victimRigid.velocity.magnitude;
+			}
 			if (enforceDuration < 0f)
-            {
+			{
 				float resistance = Mathf.Max(victimBody.moveSpeed, victimBody.baseMoveSpeed);
 				float magnitude = victimBody.rigidbody.velocity.magnitude;
 				if (magnitude < resistance)
 				{
-					victimBody.RemoveBuff(DLC2Content.Buffs.KnockUpHitEnemies);
-					victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, KnockbackFin.Cooldown-1f);
 					Destroy(this);
+					return;
 				}
 			}
 			else
-            {
+			{
 				enforceDuration -= Time.fixedDeltaTime;
 			}
 		}
-		internal void Detonate(Vector3 impactPos)
+		private void OnImpact()
+		{
+			Detonate();
+			Destroy(this);
+		}
+		private void StartCooldown()
+		{
+			victimBody.RemoveBuff(KnockbackFin.knockMidBuff);
+			for (int i = KnockbackFin.Cooldown; i > 0; i--)
+			{
+				victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, i);
+			}
+		}
+		internal void Detonate()
         {
-			victimBody.RemoveBuff(DLC2Content.Buffs.KnockUpHitEnemies);
-			victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, KnockbackFin.Cooldown);
-			float distance = Vector3.Distance(launchPos, impactPos);
 			if (attackerBody)
-            {
+			{
 				float blastDamage = attackerBody.damage * KnockbackFin.GetImpactDamage(itemCount);
 				float blastRadius = KnockbackFin.GetImpactRadius(itemCount);
 				if (blastDamage > 0f)
 				{
-					float distDmg = Mathf.Max(0f, distance);
-					distDmg = Mathf.InverseLerp(0f, 120f, distDmg);
-					//blastRadius *= Mathf.Lerp(0.5f, 5f, distDmg);
-					blastDamage *= Mathf.Lerp(1f, KnockbackFin.MaxDistDamage, distDmg);
-
+					float resistance = Mathf.Max(victimBody.moveSpeed, victimBody.baseMoveSpeed);
 					bool isCrit = Util.CheckRoll(attackerBody.crit, attackerBody.master);
-					Vector3 blastPosition = impactPos;
-					GameObject blastVFX = UnityEngine.Object.Instantiate<GameObject>(LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/GenericDelayBlast"), blastPosition, Quaternion.identity);
-					blastVFX.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
-					DelayBlast delayBlast = blastVFX.GetComponent<DelayBlast>();
-					if (delayBlast)
+					float velDmg = Mathf.Max(0f, lastSpeed);
+					velDmg = Mathf.InverseLerp(resistance, 120f, velDmg);
+					blastDamage *= Mathf.Lerp(1f, KnockbackFin.MaxDistDamage, velDmg);
+					if (isCrit)
 					{
-						delayBlast.position = blastPosition;
-						delayBlast.radius = blastRadius;
-						delayBlast.baseDamage = blastDamage;
-						delayBlast.baseForce = 0f;
-						delayBlast.procCoefficient = KnockbackFin.ProcRate;
-						delayBlast.crit = isCrit;
-						delayBlast.falloffModel = BlastAttack.FalloffModel.SweetSpot;
-						delayBlast.maxTimer = 0f;
-						delayBlast.attacker = attackerBody.gameObject;
-						delayBlast.inflictor = null;
-						delayBlast.teamFilter.teamIndex = attackerBody.teamComponent.teamIndex;
-						delayBlast.explosionEffect = KnockbackFin.ImpactEffect;
-						delayBlast.damageType = DamageType.Generic;
-						delayBlast.damageColorIndex = DamageColorIndex.Item;
-						TeamFilter teamFilter = blastVFX.GetComponent<TeamFilter>();
-						if (teamFilter)
+						blastDamage += storedFallDamage / victimBody.critMultiplier;
+					}
+					else
+					{
+						blastDamage += storedFallDamage;
+					}
+
+
+					Vector3 blastPosition = victimBody.footPosition;
+					BlastAttack blastAttack = new BlastAttack();
+					if (KnockbackFin.DoStun)
+					{
+						SetStateOnHurt comp = victimBody.GetComponent<SetStateOnHurt>();
+						if (comp)
 						{
-							teamFilter.teamIndex = attackerBody.teamComponent.teamIndex;
-						}
-						if (KnockbackFin.DoStun)
-						{
-							SetStateOnHurt comp = victimBody.GetComponent<SetStateOnHurt>();
-							if (comp)
+							if (comp.canBeStunned)
 							{
-								if (comp.canBeStunned)
-								{
-									comp.SetStun(1f);
-								}
+								comp.SetStun(1f);
 							}
 						}
-						EffectManager.SimpleSoundEffect(EntityStates.Croco.BaseLeap.landingSound.index, victimBody.footPosition, true);
-						NetworkServer.Spawn(blastVFX);
 					}
+					blastAttack.position = blastPosition;
+					blastAttack.radius = blastRadius;
+					blastAttack.baseDamage = blastDamage;
+					blastAttack.baseForce = 0f;
+					blastAttack.procCoefficient = KnockbackFin.ProcRate;
+					blastAttack.crit = isCrit;
+					blastAttack.falloffModel = BlastAttack.FalloffModel.SweetSpot;
+					blastAttack.attacker = attackerBody.gameObject;
+					blastAttack.inflictor = null;
+					blastAttack.teamIndex = TeamComponent.GetObjectTeam(attackerBody.gameObject);
+					blastAttack.damageType = DamageType.Generic;
+					blastAttack.damageColorIndex = DamageColorIndex.Item;
+					blastAttack.Fire();
+					EffectManager.SpawnEffect(KnockbackFin.ImpactEffect, new EffectData
+					{
+						origin = blastPosition,
+						rotation = Util.QuaternionSafeLookRotation(victimBody.transform.forward),
+						scale = blastRadius
+					}, true);
+					EffectManager.SimpleSoundEffect(EntityStates.Croco.BaseLeap.landingSound.index, victimBody.footPosition, true);
 				}
 			}
-			Destroy(this);
 		}
 	}
 }

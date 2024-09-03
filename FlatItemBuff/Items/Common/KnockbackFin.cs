@@ -16,20 +16,21 @@ namespace FlatItemBuff.Items
 		internal static float BaseForce = 20f;
 		internal static float StackForce = 2f;
 		internal static float BackForce = 0.5f;
-		internal static float T1Mult = 1f;
-		internal static float T2Mult = 5f;
-		internal static float T3Mult = 10f;
 		internal static float ChampionMult = 0.5f;
 		internal static float BossMult = 1f;
+		internal static float FlyingMult = 1f;
 		internal static float MaxForce = 200f;
+		internal static float BaseRadius = 12f;
 		internal static float BaseDamage = 1f;
+		internal static float ProcRate = 0f;
 		internal static float StackDamage = 0.1f;
 		internal static float MaxDistDamage = 10f;
-		internal static float BaseRadius = 12f;
-		internal static float Cooldown = 5f;
-		internal static float ProcRate = 0f;
 		internal static bool DoStun = true;
+		internal static bool CreditFall = false;
+		internal static int Cooldown = 5;
+		
 		private static BuffDef knockBackBuff;
+		public static BuffDef knockMidBuff;
 
 		internal static GameObject ImpactEffect;
 		public KnockbackFin()
@@ -55,16 +56,13 @@ namespace FlatItemBuff.Items
 			StackForce = Math.Max(0f, StackForce);
 			BackForce = Math.Max(0f, BackForce);
 			MaxDistDamage = Math.Max(1f, MaxDistDamage);
-			T1Mult = Math.Max(0f, T1Mult);
-			T2Mult = Math.Max(0f, T2Mult);
-			T3Mult = Math.Max(0f, T3Mult);
 			ChampionMult = Math.Max(0f, ChampionMult);
 			BossMult = Math.Max(0f, BossMult);
 			MaxForce = Math.Max(1f, MaxForce);
 			BaseDamage = Math.Max(0f, BaseDamage);
 			StackDamage = Math.Max(0f, StackDamage);
 			BaseRadius = Math.Max(0f, BaseRadius);
-			Cooldown = Math.Max(0f, Cooldown);
+			Cooldown = Math.Max(0, Cooldown);
 			ProcRate = Math.Max(0f, ProcRate);
 		}
 		private void UpdateText()
@@ -103,7 +101,7 @@ namespace FlatItemBuff.Items
 				}
 				if (MaxDistDamage > 1f)
                 {
-					desc += string.Format(" that scales up with <style=cIsDamage>fall distance</style>.");
+					desc += string.Format(" that scales with <style=cIsDamage>velocity</style>.");
 				}
 				else
                 {
@@ -133,6 +131,10 @@ namespace FlatItemBuff.Items
 			knockBackBuff.isHidden = false;
 			knockBackBuff.iconSprite = weakDef.iconSprite;
 			knockBackBuff.buffColor = new Color(0.95f, 0.35f, 0.9f);
+			knockBackBuff.isDebuff = false;
+			knockBackBuff.canStack = true;
+			knockMidBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC2/Items/KnockBackHitEnemies/bdKnockUpHitEnemies.asset").WaitForCompletion();
+			knockMidBuff = Utils.ContentManager.AddBuff("Knockback Hang", weakDef.iconSprite, knockBackBuff.buffColor, false, true, false);
 		}
 		private void Hooks()
 		{
@@ -140,6 +142,11 @@ namespace FlatItemBuff.Items
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			On.RoR2.RigidbodyMotor.OnCollisionEnter += RigidBody_OnImpact;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			if (CreditFall)
+			{
+				On.RoR2.HealthComponent.TakeDamageProcess += OnTakeDamage;
+				IL.RoR2.RigidbodyMotor.OnCollisionEnter += new ILContext.Manipulator(IL_OnCollisionEnter);
+			}
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -154,25 +161,26 @@ namespace FlatItemBuff.Items
 					if (itemCount > 0)
 					{
 						itemCount = Math.Max(0, itemCount);
-						if (!victimBody.HasBuff(DLC2Content.Buffs.KnockUpHitEnemies))
+						if (!victimBody.HasBuff(DLC2Content.Buffs.KnockUpHitEnemies) && !victimBody.HasBuff(knockMidBuff))
 						{
 							CharacterMotor victimMotor = victimBody.GetComponent<CharacterMotor>();
 							Rigidbody victimRigid = victimBody.GetComponent<Rigidbody>();
 							if (victimMotor)
 							{
-								float itemForce = Math.Min(BaseForce + (itemCount * StackForce), MaxForce);
-
-								float vertForce = T1Mult;
-								float pushForce = BackForce;
+								float vfxScale = 1f;
 								switch (victimBody.hullClassification)
 								{
 									case HullClassification.Golem:
-										vertForce = T2Mult;
+										vfxScale = 2f;
 										break;
 									case HullClassification.BeetleQueen:
-										vertForce = T3Mult;
+										vfxScale = 3f;
 										break;
 								}
+
+								float itemForce = Math.Min(BaseForce + (itemCount * StackForce), MaxForce);
+								float vertForce = 1f;
+								float pushForce = BackForce;
 
 								if (victimBody.isChampion)
                                 {
@@ -191,7 +199,7 @@ namespace FlatItemBuff.Items
 									EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.knockbackFinEffect, new EffectData
 									{
 										origin = victimBody.gameObject.transform.position,
-										scale = itemForce / 20f
+										scale = Math.Min(10f, vfxScale + (itemForce / 50f))
 									}, true);
 
 									Ray aimRay = attackerBody.inputBank.GetAimRay();
@@ -202,12 +210,16 @@ namespace FlatItemBuff.Items
 
 									if (!victimMotor.isGrounded)
 									{
+										if (victimBody.isFlying)
+										{
+											vertForce *= FlyingMult;
+										}
 										vertForce *= -1f;
 									}
 
 									Util.PlaySound("Play_item_proc_knockBackHitEnemies", attackerBody.gameObject);
 
-									victimBody.AddBuff(DLC2Content.Buffs.KnockUpHitEnemies);
+									victimBody.AddBuff(knockMidBuff);
 
 									victimMotor.ApplyForce(vertForce * vertVector, false, false);
 									victimMotor.ApplyForce(pushForce * aimRay.direction, false, false);
@@ -221,71 +233,79 @@ namespace FlatItemBuff.Items
 										}
 										comp.itemCount = itemCount;
 										comp.attackerBody = attackerBody;
+										comp.impactNext = false;
+										comp.storedFallDamage = 0f;
 									}
 								}
 							}
 							else if (victimRigid)
                             {
-								float itemForce = Math.Min(BaseForce + (itemCount * StackForce), MaxForce);
-
-								float vertForce = T1Mult;
-								float pushForce = BackForce;
-								switch (victimBody.hullClassification)
-								{
-									case HullClassification.Golem:
-										vertForce = T2Mult;
-										break;
-									case HullClassification.BeetleQueen:
-										vertForce = T3Mult;
-										break;
-								}
-
-								if (victimBody.isChampion)
-								{
-									vertForce *= ChampionMult;
-								}
-
-								if (victimBody.isBoss)
-								{
-									vertForce *= BossMult;
-								}
-
-								vertForce *= itemForce;
-
-								if (vertForce != 0f)
+								RigidbodyMotor victimRigidMotor = victimRigid.GetComponent<RigidbodyMotor>();
+								if (victimRigidMotor)
                                 {
-									EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.knockbackFinEffect, new EffectData
+									float vfxScale = 1f;
+									switch (victimBody.hullClassification)
 									{
-										origin = victimBody.gameObject.transform.position,
-										scale = itemForce / 20f
-									}, true);
-
-									Ray aimRay = attackerBody.inputBank.GetAimRay();
-									Vector3 vertVector = new Vector3(0f, 1f, 0f);
-
-									vertForce *= victimRigid.mass;
-									pushForce *= vertForce;
-									vertForce *= -1f;
-
-									Util.PlaySound("Play_item_proc_knockBackHitEnemies", attackerBody.gameObject);
-
-									victimBody.AddBuff(DLC2Content.Buffs.KnockUpHitEnemies);
-
-									victimRigid.AddForce(vertForce * vertVector, ForceMode.Impulse);
-									victimRigid.AddForce(pushForce * aimRay.direction, ForceMode.Impulse);
-
-									if (BaseRadius > 0f)
-									{
-										Components.FinImpactRigid comp = victimBody.GetComponent<Components.FinImpactRigid>();
-										if (!comp)
-										{
-											comp = victimBody.gameObject.AddComponent<Components.FinImpactRigid>();
-										}
-										comp.itemCount = itemCount;
-										comp.attackerBody = attackerBody;
-										comp.enforceDuration = 0.5f + (itemForce * 0.01f);
+										case HullClassification.Golem:
+											vfxScale = 2f;
+											break;
+										case HullClassification.BeetleQueen:
+											vfxScale = 3f;
+											break;
 									}
-								}	
+
+									float itemForce = Math.Min(BaseForce + (itemCount * StackForce), MaxForce);
+									float vertForce = 1f;
+									float pushForce = BackForce;
+
+									if (victimBody.isChampion)
+									{
+										vertForce *= ChampionMult;
+									}
+
+									if (victimBody.isBoss)
+									{
+										vertForce *= BossMult;
+									}
+
+									vertForce *= itemForce * FlyingMult;
+
+									if (vertForce != 0f)
+									{
+										EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.knockbackFinEffect, new EffectData
+										{
+											origin = victimBody.gameObject.transform.position,
+											scale = Math.Min(10f, vfxScale + (itemForce / 50f))
+										}, true);
+
+										Ray aimRay = attackerBody.inputBank.GetAimRay();
+										Vector3 vertVector = new Vector3(0f, 1f, 0f);
+
+										vertForce *= victimRigid.mass;
+										pushForce *= vertForce;
+										vertForce *= -1f;
+
+										Util.PlaySound("Play_item_proc_knockBackHitEnemies", attackerBody.gameObject);
+
+										victimBody.AddBuff(knockMidBuff);
+
+										victimRigid.AddForce(vertForce * vertVector, ForceMode.Impulse);
+										victimRigid.AddForce(pushForce * aimRay.direction, ForceMode.Impulse);
+
+										if (BaseRadius > 0f)
+										{
+											Components.FinImpactRigid comp = victimBody.GetComponent<Components.FinImpactRigid>();
+											if (!comp)
+											{
+												comp = victimBody.gameObject.AddComponent<Components.FinImpactRigid>();
+											}
+											comp.itemCount = itemCount;
+											comp.attackerBody = attackerBody;
+											comp.impactNext = false;
+											comp.enforceDuration = 0.5f + (itemForce * 0.01f);
+										}
+									}
+								}
 							}
 						}
 					}
@@ -293,22 +313,58 @@ namespace FlatItemBuff.Items
 			}
 		}
 
-		private void RigidBody_OnImpact (On.RoR2.RigidbodyMotor.orig_OnCollisionEnter orig, RigidbodyMotor self, Collision collision)
+		private void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
+		{
+			if ((damageInfo.damageType & DamageType.FallDamage) != DamageType.Generic)
+            {
+				Components.FinImpact compA = self.body.GetComponent<Components.FinImpact>();
+				if (compA)
+				{
+					compA.storedFallDamage = damageInfo.damage;
+					damageInfo.rejected = true;
+				}
+				else
+                {
+					Components.FinImpactRigid compB = self.body.GetComponent<Components.FinImpactRigid>();
+					if (compB)
+					{
+						compB.storedFallDamage = damageInfo.damage;
+						damageInfo.rejected = true;
+					}
+				}
+			}
+			orig(self, damageInfo);
+        }
+		private void RigidBody_OnImpact(On.RoR2.RigidbodyMotor.orig_OnCollisionEnter orig, RigidbodyMotor self, Collision collision)
         {
-			if(collision.gameObject.layer == LayerIndex.world.intVal)
+			if(validCollision(collision))
             {
 				float resistance = Mathf.Max(self.characterBody.moveSpeed, self.characterBody.baseMoveSpeed) * 2f;
 				float magnitude = collision.relativeVelocity.magnitude;
-				if (magnitude >= resistance)
-                {
-					Components.FinImpactRigid comp = self.characterBody.GetComponent<Components.FinImpactRigid>();
-					if (comp)
+				Components.FinImpactRigid comp = self.characterBody.GetComponent<Components.FinImpactRigid>();
+				if (comp)
+				{
+					if (magnitude >= resistance)
 					{
-						comp.Detonate(collision.contacts[0].point);
+						comp.impactNext = true;
+						comp.impactPos = collision.contacts[0].point;
 					}
 				}
 			}
 			orig(self, collision);
+        }
+
+		private bool validCollision(Collision collision)
+        {
+			if (collision.gameObject.layer == LayerIndex.world.intVal)
+            {
+				return true;
+            }
+			if (collision.gameObject.layer == LayerIndex.playerBody.intVal)
+			{
+				return true;
+			}
+			return false;
         }
 
 		internal static float GetImpactDamage(int itemCount)
@@ -334,7 +390,31 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Knockback Fin IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Knockback Fin - Effect Override - IL Hook failed");
+			}
+		}
+
+		private void IL_OnCollisionEnter(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(4),
+				x => x.MatchLdcR4(0f),
+				x => x.MatchStfld(typeof(DamageInfo), "procCoefficient")
+			))
+			{
+				ilcursor.Index += 1;
+				ilcursor.Remove();
+				ilcursor.Emit(OpCodes.Ldloc, 4);
+				ilcursor.EmitDelegate<Func<DamageInfo, float>>((damageInfo) =>
+				{
+					damageInfo.damageType = DamageType.FallDamage;
+					return 0f;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Knockback Fin - Fall Damage Hook - IL Hook failed");
 			}
 		}
 	}

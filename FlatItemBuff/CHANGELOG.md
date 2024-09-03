@@ -1,3 +1,34 @@
+**1.22.0**
+
+```
+- Antler Shield Rework:
+- Properly marked as a rework in the config.
+
+- Knockback Fin:
+- Damage now scales from the target's velocity so it makes more sense with higher stacks against airborne targets.
+- Now counts as a debuff only while launched, the cooldown afterwards is not a debuff.
+- Added an experimental option that moves all the target's fall damage to the impact damage, added configuration "Add Fall Damage" to enable this behaviour.
+
+- Added a rework for Unstable Transmitter.
+
+- Squid Polyp:
+- Fixed Squids not spawning from interacting with Chests, has been broken since Devotion Update.
+
+- Aegis:
+- Changed "Base Overheal" default configuration. (0.5 -> 1)
+- Changed "Stack Overheal" default configuration. (0.5 -> 0)
+- Changed "Base Max Barrier" default configuration. (0.25 -> 1)
+- Changed "Stack Max Barrier" default configuration. (0.25 -> 1)
+```
+
+**1.21.1**
+
+```
+- Knockback Fin:
+- Added "Flying Force Mult" configuration, a knockback multiplier against flying enemies.
+- Removed "Small Force Mult", "Medium Force Mult" and "Large Force Mult" configurations as I misunderstood how the original effect was coded.
+```
+
 **1.21.0**
 
 ```
