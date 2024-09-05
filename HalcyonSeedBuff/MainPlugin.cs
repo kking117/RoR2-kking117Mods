@@ -18,7 +18,7 @@ namespace HalcyonSeedBuff
 		public const string MODUID = "com.kking117.HalcyonSeedBuff";
 		public const string MODNAME = "HalcyonSeedBuff";
 		public const string MODTOKEN = "KKING117_HALCYONSEEDBUFF_";
-		public const string MODVERSION = "1.1.0";
+		public const string MODVERSION = "1.1.1";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 
@@ -33,6 +33,7 @@ namespace HalcyonSeedBuff
 
 		public static bool FalseSon_PlayerLoyal = true;
 		public static bool FalseSon_BossLoyal = true;
+		public static string FalseSon_BodyList = "FalseSonBody, FalseSonBossBody, FalseSonBossBodyLunarShard, FalseSonBossBodyBrokenLunarShard";
 		public void Awake()
 		{
 			ModLogger = this.Logger;
@@ -49,8 +50,9 @@ namespace HalcyonSeedBuff
 			ChannelOn_MoonPhase = Config.Bind("Channel", "Spawn Against Mithrix", 2, "Attempt to channel Aurelionite on this phase during the Mithrix fight. (0-4) (0 = Don't spawn, 4 = Vanilla)").Value;
 			ChannelOn_MeridianPhase = Config.Bind("Channel", "Spawn Against False Son", 3, "Attempt to channel Aurelionite on this phase during the False Son fight. (0-3) (0 = Don't spawn, 3 = Vanilla)").Value;
 			
-			FalseSon_PlayerLoyal = Config.Bind("False Son", "Loyal to Playable False Son", true, "If Aurelionite is channeled and someone is playing as False Son then Aurelionite will be forced onto their team instead. (Has priority over 'Loyal to NPC False Son'.)").Value;
-			FalseSon_BossLoyal = Config.Bind("False Son", "Loyal to NPC False Son", true, "If Aurelionite is channeled and the False Son Boss exists then Aurelionite will be forced onto their team instead.").Value;
+			FalseSon_PlayerLoyal = Config.Bind("False Son", "Loyal to Playable False Son", true, "If Aurelionite is channeled and a False Son Player exists then Aurelionite will be forced onto their team instead. (Has priority over 'Loyal to NPC False Son'.)").Value;
+			FalseSon_BossLoyal = Config.Bind("False Son", "Loyal to NPC False Son", true, "If Aurelionite is channeled and a False Son NPC exists then Aurelionite will be forced onto their team instead.").Value;
+			FalseSon_BodyList = Config.Bind("False Son", "Body List", "FalseSonBody, FalseSonBossBody, FalseSonBossBodyLunarShard, FalseSonBossBodyBrokenLunarShard", "List of bodies that count as False Son.").Value;
 		}
 	}
 }

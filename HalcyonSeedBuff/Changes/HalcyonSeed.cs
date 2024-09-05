@@ -16,11 +16,12 @@ namespace HalcyonSeedBuff.Changes
 	{
 		private static float SummonTimer = -1f;
 		private static float DisbandTimer = -1f;
-		private static float ValidateTimer = -1f;
+		private static float BodyRadiusMult = 8f;
+		private static Vector3 BodyOffset = new Vector3(1f, 0f, 0f);
 		private static Vector3 MoonPosition = new Vector3(-87.4f, 491.95f, -2.54f);
 		private static Vector3 MeridianPosition = new Vector3(92.7f, 152.4f, -143.5f);
 		private static Vector3 SpawnLocation;
-		private static MasterCatalog.MasterIndex VoidRaidCrabIndex = MasterCatalog.MasterIndex.none;
+		private static List<MasterCatalog.MasterIndex> VoidlingIndices = new List<MasterCatalog.MasterIndex>();
 		private static MasterCatalog.MasterIndex MithrixIndex = MasterCatalog.MasterIndex.none;
 		private static List<BodyIndex> FalseSonBodies = new List<BodyIndex>();
 		private static List<MasterCatalog.MasterIndex> FalseSonIndices = new List<MasterCatalog.MasterIndex>();
@@ -55,6 +56,7 @@ namespace HalcyonSeedBuff.Changes
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GoldTitanManager.TryStartChannelingTitansServer += new ILContext.Manipulator(IL_TrySpawnTitan);
+			On.RoR2.GoldTitanManager.OnBossGroupStartServer += GoldTitanManager_OnBossGroupStartServer;
 			if (MainPlugin.ChannelOn_Focus)
 			{
 				//Simulacrum spawning
@@ -62,18 +64,8 @@ namespace HalcyonSeedBuff.Changes
 				On.RoR2.InfiniteTowerRun.MoveSafeWard += InfiniteTowerRun_MoveSafeWard;
 				On.RoR2.InfiniteTowerRun.OnWaveAllEnemiesDefeatedServer += InfiniteTowerRun_OnWaveFinish;
 			}
-			if (MainPlugin.ChannelOn_VoidRaid)
-			{
-				//Spawn Aurelionite on Voidling phase transition
-				On.RoR2.VoidRaidGauntletController.CallRpcActivateDonut += VoidRaidGauntlet_CallRpcActivateDonut;
-				//First Voidling spawn
-				//TODO: Figure out a better/foolproof way to get the first Voidling that spawns.
-				On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
-			}
 			if (MainPlugin.ChannelOn_MoonPhase != 4)
 			{
-				//Prevents Aurelionite from spawning as usual after Mithrix steals your items.
-				On.RoR2.GoldTitanManager.OnBossGroupStartServer += GoldTitanManager_OnBossGroupStartServer;
 				//This is so we can spawn Aurelionite during these phases.
 				switch (MainPlugin.ChannelOn_MoonPhase)
 				{
@@ -109,52 +101,59 @@ namespace HalcyonSeedBuff.Changes
 				//Make it possible to steal the Halcyon Seed.
 				EditTags();
 				//Make the game channel Aurelionite after stealing items.
-				On.EntityStates.BrotherMonster.SpellChannelExitState.OnEnter += OnItemSteal_End;
-				//Validate Aurelionite spawns after giving the Halcyon Seed back.
-				On.RoR2.ItemStealController.StolenInventoryInfo.TakeItemFromLendee += (orig, self, item, stacks) =>
-				{
-					if (item == RoR2Content.Items.TitanGoldDuringTP.itemIndex)
-					{
-						ValidateTimer = 0.1f;
-					}
-					return orig(self, item, stacks);
-				};
+				On.EntityStates.BrotherMonster.SpellChannelEnterState.OnEnter += OnItemSteal_Enter;
+				On.EntityStates.BrotherMonster.SpellChannelExitState.OnExit += OnItemSteal_End;
 			}
-			//This is to kill Aurelionite before the item steal phase.
-			On.EntityStates.Missions.BrotherEncounter.Phase4.OnEnter += Moon_Phase4;
+			else
+            {
+				//Channel Aurelionite on Phase 4 unless it can be stolen
+				if (MainPlugin.ChannelOn_MoonPhase == 4)
+                {
+					On.EntityStates.Missions.BrotherEncounter.Phase4.OnEnter += Moon_Phase4;
+				}
+			}
 			//This is to kill Aurelionite after the Moon boss is finished.
 			On.EntityStates.Missions.BrotherEncounter.EncounterFinished.OnEnter += OnEncounterFinish;
-			//This is for spawning Aurelionite with a delay + some other related stuff
+			//Spawn Timing
 			On.RoR2.Run.FixedUpdate += Run_FixedUpdate;
-			//Clear timers
 			On.RoR2.Run.BeginStage += Run_BeginStage;
-			//Get the masterindex for Voidling and Mithrix
+			//Recording Indexes for important Characters
 			On.RoR2.MasterCatalog.Init += MasterCatalog_Init;
 			//Override team and power
-			On.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += CalcTitantPowerAndTeam;
+			On.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += CalcTitanPowerAndTeam;
 		}
 		private static void MasterCatalog_Init(On.RoR2.MasterCatalog.orig_Init orig)
 		{
 			orig();
 			MithrixIndex = MasterCatalog.FindMasterIndex("BrotherHurtMaster");
-			VoidRaidCrabIndex = MasterCatalog.FindMasterIndex("MiniVoidRaidCrabMasterPhase1");
 
-			FalseSonIndices.Add(MasterCatalog.FindMasterIndex("FalseSonMonsterMaster"));
+			VoidlingIndices.Add(MasterCatalog.FindMasterIndex("MiniVoidRaidCrabMasterPhase1"));
+			VoidlingIndices.Add(MasterCatalog.FindMasterIndex("MiniVoidRaidCrabMasterPhase2"));
+			VoidlingIndices.Add(MasterCatalog.FindMasterIndex("MiniVoidRaidCrabMasterPhase3"));
+
 			FalseSonIndices.Add(MasterCatalog.FindMasterIndex("FalseSonBossMaster"));
 			FalseSonIndices.Add(MasterCatalog.FindMasterIndex("FalseSonBossLunarShardMaster"));
 			FalseSonIndices.Add(MasterCatalog.FindMasterIndex("FalseSonBossLunarShardBrokenMaster"));
 
-			FalseSonBodies.Add(BodyCatalog.FindBodyIndex("FalseSonBody"));
-			FalseSonBodies.Add(BodyCatalog.FindBodyIndex("FalseSonBossBody"));
-			FalseSonBodies.Add(BodyCatalog.FindBodyIndex("FalseSonBossBodyLunarShard"));
-			FalseSonBodies.Add(BodyCatalog.FindBodyIndex("FalseSonBossBodyBrokenLunarShard"));
+			string[] bodyNames = MainPlugin.FalseSon_BodyList.Split(',');
+			for (int i = 0; i < bodyNames.Length; i++)
+			{
+				BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyNames[i].Trim());
+				if (bodyIndex > BodyIndex.None)
+				{
+					FalseSonBodies.Add(bodyIndex);
+				}
+				else
+                {
+					UnityEngine.Debug.LogWarning(MainPlugin.MODNAME + ": Could not find body '" + bodyNames[i] + "'");
+				}
+			}
 		}
 		private static void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
 		{
 			orig(self);
 			SummonTimer = -1f;
 			DisbandTimer = -1f;
-			ValidateTimer = -1f;
 		}
 		private static void Run_FixedUpdate(On.RoR2.Run.orig_FixedUpdate orig, Run self)
 		{
@@ -163,7 +162,6 @@ namespace HalcyonSeedBuff.Changes
 			{
 				if (DisbandTimer > 0f)
 				{
-					SummonTimer = 0f;
 					DisbandTimer -= Time.fixedDeltaTime;
 					if (DisbandTimer <= 0f)
 					{
@@ -181,45 +179,48 @@ namespace HalcyonSeedBuff.Changes
 						}
 					}
 				}
-				
-				if (ValidateTimer > 0f)
-				{
-					ValidateTimer -= Time.fixedDeltaTime;
-					if (ValidateTimer <= 0f)
-					{
-						KillInvalidTitans();
-					}
-				}
 			}
 		}
 
-		private static void CalcTitantPowerAndTeam(On.RoR2.GoldTitanManager.orig_CalcTitanPowerAndBestTeam orig, out int returnItemCount, out TeamIndex returnTeamIndex)
+		private static void CalcTitanPowerAndTeam(On.RoR2.GoldTitanManager.orig_CalcTitanPowerAndBestTeam orig, out int returnItemCount, out TeamIndex returnTeamIndex)
 		{
+			GoldTitanManager.isFalseSonBossLunarShardBrokenMaster = false;
 			bool countFalseSon = false;
 			if (MainPlugin.FalseSon_PlayerLoyal || MainPlugin.FalseSon_BossLoyal)
             {
 				countFalseSon = true;
 			}
 			int bestItemCount = 0;
-			TeamIndex itemTeam = TeamIndex.Neutral;
+			TeamIndex itemTeam = TeamIndex.Player;
 			TeamIndex playerTeam = TeamIndex.Neutral;
 			TeamIndex bossTeam = TeamIndex.Neutral;
 			int playerSon = 0;
 			int bossSon = 0;
-			for (int iTeam = 0; iTeam < (int)TeamIndex.Count; iTeam += 1)
+			for (TeamIndex iTeam = TeamIndex.Neutral; iTeam < TeamIndex.Count; iTeam ++)
 			{
-				int itemCountTemp = Util.GetItemCountForTeam((TeamIndex)iTeam, GoldTitanManager.goldTitanItemIndex, true, true);
-				if (itemCountTemp > bestItemCount)
-				{
-					bestItemCount = itemCountTemp;
-					itemTeam = (TeamIndex)iTeam;
+				int itemCountTemp = Util.GetItemCountForTeam(iTeam, GoldTitanManager.goldTitanItemIndex, true, true);
+				if (itemTeam == TeamIndex.Player)
+                {
+					if (itemCountTemp >= bestItemCount)
+					{
+						bestItemCount = itemCountTemp;
+						itemTeam = iTeam;
+					}
 				}
-
+				else
+                {
+					if (itemCountTemp > bestItemCount)
+					{
+						bestItemCount = itemCountTemp;
+						itemTeam = iTeam;
+					}
+				}
+				
 				if (countFalseSon)
 				{
 					int playerSonTemp = 0;
 					int bossSonTemp = 0;
-					foreach (TeamComponent comp in TeamComponent.GetTeamMembers((TeamIndex)iTeam))
+					foreach (TeamComponent comp in TeamComponent.GetTeamMembers(iTeam))
 					{
 						CharacterBody ibody = comp.body;
 						if (ibody)
@@ -241,15 +242,26 @@ namespace HalcyonSeedBuff.Changes
 							}
 						}
 					}
+					if (iTeam == TeamIndex.Player)
+                    {
+						if (playerSonTemp > 0)
+						{
+							playerSonTemp += 1;
+						}
+						if (bossSonTemp > 0)
+						{
+							bossSonTemp += 1;
+						}
+					}
 					if (playerSonTemp > playerSon)
 					{
 						playerSon = playerSonTemp;
-						playerTeam = (TeamIndex)iTeam;
+						playerTeam = iTeam;
 					}
 					if (bossSonTemp > bossSon)
 					{
 						bossSon = bossSonTemp;
-						bossTeam = (TeamIndex)iTeam;
+						bossTeam = iTeam;
 					}
 					//MainPlugin.ModLogger.LogInfo("Found " + (playerSonTemp + bossSonTemp) + " False Sons on team " + (TeamIndex)iTeam);
 				}
@@ -268,7 +280,6 @@ namespace HalcyonSeedBuff.Changes
 					itemTeam = playerTeam;
 				}
 			}
-			GoldTitanManager.isFalseSonBossLunarShardBrokenMaster = false;
 			if (bestItemCount > 0)
 			{
 				if (itemTeam != TeamIndex.Player)
@@ -284,26 +295,6 @@ namespace HalcyonSeedBuff.Changes
 			//MainPlugin.ModLogger.LogInfo("Item Amount = " + bestItemCount);
 			returnItemCount = bestItemCount;
 			returnTeamIndex = itemTeam;
-		}
-		private static void KillInvalidTitans()
-		{
-			List<CharacterMaster> titans = GoldTitanManager.currentTitans;
-			for (TeamIndex team = (TeamIndex)0; team < TeamIndex.Count; team++)
-			{
-				if (Util.GetItemCountForTeam(team, RoR2Content.Items.TitanGoldDuringTP.itemIndex, true, true) < 1)
-				{
-					for (int i = 0; i < GoldTitanManager.currentTitans.Count; i++)
-					{
-						if (GoldTitanManager.currentTitans[i] && GoldTitanManager.currentTitans[i].GetBody())
-						{
-							if (GoldTitanManager.currentTitans[i].teamIndex == team)
-							{
-								GoldTitanManager.currentTitans[i].TrueKill();
-							}
-						}
-					}
-				}
-			}
 		}
 		private static void GoldTitanManager_OnBossGroupStartServer(On.RoR2.GoldTitanManager.orig_OnBossGroupStartServer orig, BossGroup self)
 		{
@@ -322,41 +313,24 @@ namespace HalcyonSeedBuff.Changes
 					isFalseSon = true;
 					break;
 				}
-			}
-			if (!IsMithrix && !isFalseSon)
-			{
-				orig(self);
-			}
-		}
-
-		private static void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
-		{
-			orig(self);
-			if (NetworkServer.active)
-			{
-				if (self.isBoss && self.teamIndex == TeamIndex.Void)
-				{
-					if(self.masterIndex == VoidRaidCrabIndex)
+				//Channel Aurelionite if Voidling spawns in a boss group while VoidRaidGauntletController exists.
+				if (MainPlugin.ChannelOn_VoidRaid)
+                {
+					VoidRaidGauntletController VoidRaidGauntlet = VoidRaidGauntletController.instance;
+					if (VoidRaidGauntlet)
                     {
-						VoidRaidGauntletController VoidRaidGauntlet = VoidRaidGauntletController.instance;
-						if (VoidRaidGauntlet)
+						if (VoidlingIndices.Count > 0 && VoidlingIndices.Contains(characterMaster.masterIndex))
 						{
-							SummonTimer = 9f;
-							SpawnLocation = VoidRaidGauntlet.initialDonut.crabPosition.position;
+							DisbandTimer = 1f;
+							SummonTimer = 10f;
+							SpawnLocation = VoidRaidGauntlet.currentDonut.crabPosition.position;
 						}
 					}
 				}
 			}
-		}
-		private static void VoidRaidGauntlet_CallRpcActivateDonut(On.RoR2.VoidRaidGauntletController.orig_CallRpcActivateDonut orig, VoidRaidGauntletController self, int donutIndex)
-		{
-			orig(self, donutIndex);
-			if (NetworkServer.active)
+			if (!IsMithrix && !isFalseSon)
 			{
-				//We have to summon Aurelionite in advanced because there's no way to check if a player has gone through a portal on the server-side.
-				DisbandTimer = 1f;
-				SummonTimer = 20f;
-				SpawnLocation = self.currentDonut.crabPosition.position + (Vector3.up * 10f);
+				orig(self);
 			}
 		}
 		private static void Moon_Phase1(On.EntityStates.Missions.BrotherEncounter.Phase1.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.Phase1 self)
@@ -373,7 +347,7 @@ namespace HalcyonSeedBuff.Changes
 			orig(self);
 			if (NetworkServer.active)
 			{
-				SummonTimer = 2f;
+				SummonTimer = 3f;
 				SpawnLocation = MoonPosition;
 			}
 		}
@@ -391,16 +365,27 @@ namespace HalcyonSeedBuff.Changes
 			orig(self);
 			if (NetworkServer.active)
 			{
-				DisbandTimer = 3f;
+				SummonTimer = 10f;
+				SpawnLocation = MoonPosition;
 			}
 		}
-		private static void OnItemSteal_End(On.EntityStates.BrotherMonster.SpellChannelExitState.orig_OnEnter orig, EntityStates.BrotherMonster.SpellChannelExitState self)
+		private static void OnItemSteal_Enter(On.EntityStates.BrotherMonster.SpellChannelEnterState.orig_OnEnter orig, EntityStates.BrotherMonster.SpellChannelEnterState self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				GoldTitanManager.KillTitansInList(GoldTitanManager.currentTitans);
+				DisbandTimer = -1f;
+				SummonTimer = -1f;
+			}
+		}
+		private static void OnItemSteal_End(On.EntityStates.BrotherMonster.SpellChannelExitState.orig_OnExit orig, EntityStates.BrotherMonster.SpellChannelExitState self)
 		{
 			orig(self);
 			if (NetworkServer.active)
 			{
 				SummonTimer = 1f;
-				SpawnLocation = self.characterBody.footPosition;
+				SpawnLocation = self.characterBody.footPosition + ((self.characterBody.radius + BodyRadiusMult) * BodyOffset);
 			}
 		}
 		private static void OnEncounterFinish(On.EntityStates.Missions.BrotherEncounter.EncounterFinished.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.EncounterFinished self)
@@ -409,6 +394,7 @@ namespace HalcyonSeedBuff.Changes
 			if (NetworkServer.active)
 			{
 				DisbandTimer = 3f;
+				SummonTimer = -1f;
 			}
 		}
 		private static void Meridian_Phase1(On.RoR2.MeridianEventTriggerInteraction.Phase1.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase1 self)
@@ -444,7 +430,8 @@ namespace HalcyonSeedBuff.Changes
 			orig(self);
 			if (NetworkServer.active)
 			{
-				DisbandTimer = 2f;
+				DisbandTimer = 0.1f;
+				SummonTimer = -1f;
 			}
 		}
 		private static void InfiniteTowerRun_OnSafeWardActivated(On.RoR2.InfiniteTowerRun.orig_OnSafeWardActivated orig, InfiniteTowerRun self, InfiniteTowerSafeWardController safeWard)
@@ -476,6 +463,7 @@ namespace HalcyonSeedBuff.Changes
 			if (NetworkServer.active)
 			{
 				DisbandTimer = 3f;
+				SummonTimer = -1f;
 			}
 		}
 		private static void IL_TrySpawnTitan(ILContext il)
@@ -488,15 +476,11 @@ namespace HalcyonSeedBuff.Changes
 				x => x.MatchLdcI4(1)
 			))
 			{
+				//Finds: directorSpawnRequest.teamIndexOverride = new TeamIndex?(TeamIndex.Player);
+				//Then replaces the equals with the teamIndex variable the function created before.
 				ilcursor.Index += 3;
 				ilcursor.Remove();
-				ilcursor.EmitDelegate<Func<TeamIndex>>(() =>
-				{
-					TeamIndex team;
-					int itemCount;
-					GoldTitanManager.CalcTitanPowerAndBestTeam(out itemCount, out team);
-					return team;
-				});
+				ilcursor.Emit(OpCodes.Ldloc, 2);
 			}
 			else
 			{

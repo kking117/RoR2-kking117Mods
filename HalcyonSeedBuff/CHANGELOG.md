@@ -1,7 +1,15 @@
+**1.1.1**
+
+```
+- Added "Body List" configuration, controls the list of bodies that count as False Son when determining Aurelionite's team.
+- Changed how channeling is handled on the Voidling fight to be significantly less jank.
+- Changed how channeling is handled for Mithrix.
+```
+
 **1.1.0**
 
 ```
-- Update for Seekers of the Storm.
+- Updated for Seekers of the Storm.
 - Removed "Team Selection Fix" for my own sanity, it now behaves as if it was enabled.
 - Added "Loyal to NPC False Son" configuration, forces channeled Aurelionite onto the team with the highest amount of npc False Sons.
 - Added "Loyal to Playable False Son" configuration, forces channeled Aurelionite onto the team with the highest amount of player controlled False Sons.
