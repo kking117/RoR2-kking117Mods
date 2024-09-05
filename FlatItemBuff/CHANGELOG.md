@@ -1,3 +1,18 @@
+**1.22.1**
+
+```
+- Knockback Fin:
+- Specificed in the config description of "Base Radius" that it disables the Impact damage when set to 0.
+- Fixed the knockback only working once when the Impact damage was disabled.
+
+- Unstable Transmitter Rework:
+- Allies now get 1s of invincibility upon teleporting.
+- Added configurations "Teleport Radius" and "Telefrag Radius" to control the range of ally teleports.
+- Added configuration "Ally Owns Damage", allows the explosion to be owned by the ally that teleported instead of the item holder.
+- Added configuration "Proc Coefficient", controls the Proc Coefficient of the blast.
+- Added configuration "Proc Bands", controls if the blast can proc bands or not.
+```
+
 **1.22.0**
 
 ```

@@ -14,7 +14,6 @@ namespace FlatItemBuff.Items.Behaviors
 		//forces a new target onto the ai every 3 seconds if a target is within close range
 		private float updateTimer = 1f;
 		private const float updateDelayTime = 3f;
-		private const float AggroRadius = 12f;
 		private void FixedUpdate()
 		{
 			if (!body)
@@ -37,13 +36,32 @@ namespace FlatItemBuff.Items.Behaviors
 			BaseAI baseAI = body.master.gameObject.GetComponent<BaseAI>();
 			if (baseAI)
             {
-				HurtBox hurtBox = baseAI.FindEnemyHurtBox(body.radius + AggroRadius, true, true);
+				float searchdist = (body.radius + 4f) * 3f;
+				if (!HasValidTarget(baseAI.currentEnemy.gameObject))
+                {
+					searchdist *= 2f;
+				}
+				HurtBox hurtBox = baseAI.FindEnemyHurtBox(searchdist, true, true);
 				if (hurtBox && hurtBox.healthComponent)
 				{
 					baseAI.currentEnemy.gameObject = hurtBox.healthComponent.gameObject;
 					baseAI.currentEnemy.bestHurtBox = hurtBox;
 				}
 			}
+		}
+
+		private bool HasValidTarget(GameObject target)
+        {
+			if (!target)
+            {
+				return false;
+            }
+			HealthComponent hpcomp = target.GetComponent<HealthComponent>();
+			if (!hpcomp || !hpcomp.alive)
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }

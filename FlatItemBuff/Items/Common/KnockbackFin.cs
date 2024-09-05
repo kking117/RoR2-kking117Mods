@@ -142,7 +142,7 @@ namespace FlatItemBuff.Items
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			On.RoR2.RigidbodyMotor.OnCollisionEnter += RigidBody_OnImpact;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
-			if (CreditFall)
+			if (BaseRadius > 0f && CreditFall)
 			{
 				On.RoR2.HealthComponent.TakeDamageProcess += OnTakeDamage;
 				IL.RoR2.RigidbodyMotor.OnCollisionEnter += new ILContext.Manipulator(IL_OnCollisionEnter);
@@ -224,18 +224,15 @@ namespace FlatItemBuff.Items
 									victimMotor.ApplyForce(vertForce * vertVector, false, false);
 									victimMotor.ApplyForce(pushForce * aimRay.direction, false, false);
 
-									if (BaseRadius > 0f)
+									Components.FinImpact comp = victimBody.GetComponent<Components.FinImpact>();
+									if (!comp)
 									{
-										Components.FinImpact comp = victimBody.GetComponent<Components.FinImpact>();
-										if (!comp)
-										{
-											comp = victimBody.gameObject.AddComponent<Components.FinImpact>();
-										}
-										comp.itemCount = itemCount;
-										comp.attackerBody = attackerBody;
-										comp.impactNext = false;
-										comp.storedFallDamage = 0f;
+										comp = victimBody.gameObject.AddComponent<Components.FinImpact>();
 									}
+									comp.itemCount = itemCount;
+									comp.attackerBody = attackerBody;
+									comp.impactNext = false;
+									comp.storedFallDamage = 0f;
 								}
 							}
 							else if (victimRigid)
@@ -292,18 +289,15 @@ namespace FlatItemBuff.Items
 										victimRigid.AddForce(vertForce * vertVector, ForceMode.Impulse);
 										victimRigid.AddForce(pushForce * aimRay.direction, ForceMode.Impulse);
 
-										if (BaseRadius > 0f)
+										Components.FinImpactRigid comp = victimBody.GetComponent<Components.FinImpactRigid>();
+										if (!comp)
 										{
-											Components.FinImpactRigid comp = victimBody.GetComponent<Components.FinImpactRigid>();
-											if (!comp)
-											{
-												comp = victimBody.gameObject.AddComponent<Components.FinImpactRigid>();
-											}
-											comp.itemCount = itemCount;
-											comp.attackerBody = attackerBody;
-											comp.impactNext = false;
-											comp.enforceDuration = 0.5f + (itemForce * 0.01f);
+											comp = victimBody.gameObject.AddComponent<Components.FinImpactRigid>();
 										}
+										comp.itemCount = itemCount;
+										comp.attackerBody = attackerBody;
+										comp.impactNext = false;
+										comp.enforceDuration = 0.5f + (itemForce * 0.01f);
 									}
 								}
 							}

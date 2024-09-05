@@ -73,7 +73,6 @@ namespace FlatItemBuff.Items.Behaviors
 				int allyCount = Math.Max(TeamComponent.GetTeamMembers(body.teamComponent.teamIndex).Count -1, 0);
 				delay /= 1f + (Items.UnstableTransmitter_Rework.AllyStackCooldown * allyCount);
 			}
-			//MainPlugin.ModLogger.LogInfo("Cooldown = " + delay);
             nextTeleport += Math.Max(Items.UnstableTransmitter_Rework.CapCooldown, delay);
 		}
 
@@ -98,7 +97,6 @@ namespace FlatItemBuff.Items.Behaviors
                     }
                 }
 			}
-			//MainPlugin.ModLogger.LogInfo("Total Targets Found = " + TeleBodies.Count);
 			if (TeleBodies.Count > 0)
             {
 				if (oldTeleIndex > TeleBodies.Count-1)
@@ -112,45 +110,49 @@ namespace FlatItemBuff.Items.Behaviors
 					bool foundPos = false;
 					Vector3 newPos = targetBody.corePosition;
 					bool mobile = IsMobile(targetBody);
-					BullseyeSearch search = new BullseyeSearch();
-					search.viewer = body;
-					search.teamMaskFilter = TeamMask.allButNeutral;
-					search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
-					search.sortMode = BullseyeSearch.SortMode.Distance;
-					search.minDistanceFilter = 5f;
-					search.maxDistanceFilter = 60f;
-					search.searchOrigin = body.inputBank.aimOrigin;
-					search.searchDirection = body.inputBank.aimDirection;
-					search.maxAngleFilter = 180f;
-					search.filterByLoS = false;
-					search.RefreshCandidates();
-					foreach (HurtBox target in search.GetResults())
-					{
-						HealthComponent hpcomp = target.healthComponent;
-						if (hpcomp.alive)
+					float maxHeight = 2f + GetBlastRadius() / 2f;
+					if (Items.UnstableTransmitter_Rework.TeleFragRadius > 0f)
+                    {
+						BullseyeSearch search = new BullseyeSearch();
+						search.viewer = body;
+						search.teamMaskFilter = TeamMask.allButNeutral;
+						search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
+						search.sortMode = BullseyeSearch.SortMode.Distance;
+						search.minDistanceFilter = body.radius + 2f;
+						search.maxDistanceFilter = Items.UnstableTransmitter_Rework.TeleFragRadius;
+						search.searchOrigin = body.inputBank.aimOrigin;
+						search.searchDirection = body.inputBank.aimDirection;
+						search.maxAngleFilter = 180f;
+						search.filterByLoS = false;
+						search.RefreshCandidates();
+						foreach (HurtBox target in search.GetResults())
 						{
-							if (hpcomp.body)
+							HealthComponent hpcomp = target.healthComponent;
+							if (hpcomp.alive)
 							{
-								if (!mobile)
+								if (hpcomp.body)
 								{
-									RaycastHit raycastHit;
-									Physics.Raycast(hpcomp.body.corePosition + immobileOffset, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
+									if (!mobile)
 									{
+										RaycastHit raycastHit;
+										Physics.Raycast(hpcomp.body.corePosition + immobileOffset, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
+										{
 										"World"
-									}));
-									float distance = Vector3.Distance(raycastHit.point, hpcomp.body.corePosition);
-									if (distance <= Items.UnstableTransmitter_Rework.BaseRadius)
+										}));
+										float distance = Vector3.Distance(raycastHit.point, hpcomp.body.corePosition);
+										if (distance < maxHeight)
+										{
+											newPos = raycastHit.point;
+											foundPos = true;
+											break;
+										}
+									}
+									else
 									{
-										newPos = raycastHit.point;
+										newPos = hpcomp.body.corePosition;
 										foundPos = true;
 										break;
 									}
-								}
-								else
-								{
-									newPos = hpcomp.body.corePosition;
-									foundPos = true;
-									break;
 								}
 							}
 						}
@@ -165,8 +167,8 @@ namespace FlatItemBuff.Items.Behaviors
 						{
 							placementMode = DirectorPlacementRule.PlacementMode.Approximate,
 							position = body.corePosition,
-							minDistance = 10f,
-							maxDistance = 60f
+							minDistance = body.radius + 10f,
+							maxDistance = Items.UnstableTransmitter_Rework.TeleportRadius
 						}, RoR2Application.rng));
 						UnityEngine.Object.Destroy(spawnCard);
 						if (resultObject)
@@ -180,7 +182,7 @@ namespace FlatItemBuff.Items.Behaviors
 								"World"
 								}));
 								float distance = Vector3.Distance(raycastHit.point, resultObject.transform.position);
-								if (distance <= 60f)
+								if (distance < maxHeight)
 								{
 									newPos = raycastHit.point;
 									foundPos = true;
@@ -197,7 +199,7 @@ namespace FlatItemBuff.Items.Behaviors
                     {
 						if(!mobile)
                         {
-							newPos.y += 0.5f;
+							newPos.y += 0.4f;
 						}
 						TeleTarget(targetBody, newPos);
 					}
@@ -210,32 +212,43 @@ namespace FlatItemBuff.Items.Behaviors
 		}
 		private void TeleTarget(CharacterBody targetBody, Vector3 newPos)
         {
+			targetBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, 1f);
 			Vector3 corePosition = targetBody.corePosition;
 			EffectManager.SpawnEffect(CharacterBody.CommonAssets.teleportOnLowHealthVFX, new EffectData
 			{
 				origin = corePosition,
 				rotation = Quaternion.identity
 			}, true);
-
 			TeleportHelper.TeleportBody(targetBody, newPos);
 
-			float blastRadius = Items.UnstableTransmitter_Rework.BaseRadius;
+			CharacterBody attackerBody = body;
+			if (Items.UnstableTransmitter_Rework.AllyOwnsDamage)
+            {
+				attackerBody = targetBody;
+			}
+			ProcChainMask procChainMask = new ProcChainMask();
+			if (!Items.UnstableTransmitter_Rework.ProcBands)
+			{
+				procChainMask.AddProc(ProcType.Rings);
+			}
+
+			float blastRadius = GetBlastRadius();
 			float damageCoef = Items.UnstableTransmitter_Rework.BaseDamage + (Items.UnstableTransmitter_Rework.StackDamage * Math.Max(0, base.stack - 1));
 			new BlastAttack
 			{
-				attacker = base.gameObject,
-				baseDamage = body.damage * damageCoef,
+				attacker = attackerBody.gameObject,
+				baseDamage = attackerBody.damage * damageCoef,
 				baseForce = 2000f,
 				bonusForce = Vector3.zero,
 				attackerFiltering = AttackerFiltering.NeverHitSelf,
-				crit = body.RollCrit(),
+				crit = attackerBody.RollCrit(),
 				damageColorIndex = DamageColorIndex.Item,
 				damageType = DamageType.Generic,
 				falloffModel = BlastAttack.FalloffModel.SweetSpot,
-				inflictor = base.gameObject,
+				inflictor = attackerBody.gameObject,
 				position = newPos,
-				procChainMask = default(ProcChainMask),
-				procCoefficient = 1f,
+				procChainMask = procChainMask,
+				procCoefficient = Items.UnstableTransmitter_Rework.ProcRate,
 				radius = blastRadius,
 				losType = BlastAttack.LoSType.None,
 				teamIndex = body.teamComponent.teamIndex
@@ -243,10 +256,15 @@ namespace FlatItemBuff.Items.Behaviors
 			EffectManager.SpawnEffect(CharacterBody.CommonAssets.teleportOnLowHealthExplosion, new EffectData
 			{
 				origin = newPos,
-				scale = blastRadius * 1.25f,
+				scale = Math.Max(5f, blastRadius * 1.25f),
 				rotation = Quaternion.identity
 			}, true);
 			Util.PlaySound("Play_item_proc_teleportOnLowHealth", targetBody.gameObject);
+		}
+
+		private float GetBlastRadius()
+        {
+			return Items.UnstableTransmitter_Rework.BaseRadius + (Items.UnstableTransmitter_Rework.StackRadius * Math.Max(0, base.stack - 1));
 		}
 		private bool IsMobile(CharacterBody targetBody)
 		{
@@ -278,7 +296,7 @@ namespace FlatItemBuff.Items.Behaviors
 				CharacterMaster summonMaster = result.spawnedInstance.GetComponent<CharacterMaster>();
 				Deployable deployable = result.spawnedInstance.AddComponent<Deployable>();
 				body.master.AddDeployable(deployable, deploySlot);
-				deployable.onUndeploy = (deployable.onUndeploy ?? new UnityEvent());
+				deployable.onUndeploy = deployable.onUndeploy ?? new UnityEvent();
 				deployable.onUndeploy.AddListener(new UnityAction(summonMaster.TrueKill));
 				GameObject bodyObject = summonMaster.GetBodyObject();
 				if (bodyObject)

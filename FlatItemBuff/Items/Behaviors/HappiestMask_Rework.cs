@@ -76,7 +76,7 @@ namespace FlatItemBuff.Items.Behaviors
 				CharacterMaster summonMaster = result.spawnedInstance.GetComponent<CharacterMaster>();
 				Deployable deployable = result.spawnedInstance.AddComponent<Deployable>();
 				ownerMaster.AddDeployable(deployable, deploySlot);
-				deployable.onUndeploy = (deployable.onUndeploy ?? new UnityEvent());
+				deployable.onUndeploy = deployable.onUndeploy ?? new UnityEvent();
 				deployable.onUndeploy.AddListener(new UnityAction(summonMaster.TrueKill));
 				GameObject bodyObject = summonMaster.GetBodyObject();
 				if (bodyObject)

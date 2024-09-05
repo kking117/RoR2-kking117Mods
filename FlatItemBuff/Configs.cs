@@ -171,7 +171,7 @@ namespace FlatItemBuff
 			KnockbackFin.BossMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
 			KnockbackFin.FlyingMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Flying Force Mult", 1f, "Force multiplier against flying targets.").Value;
 			KnockbackFin.MaxForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
-			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact.").Value;
+			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact. (Set to 0 to completely disable the Impact and its damage.)").Value;
 			KnockbackFin.BaseDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Damage", 1f, "Impact damage at a single stack.").Value;
 			KnockbackFin.StackDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Damage", 0.1f, "Impact damage for each additional stack.").Value;
 			KnockbackFin.MaxDistDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Distance Damage", 10f, "Maximum damage multiplier that can be achieved through fall distance.").Value;
@@ -301,6 +301,11 @@ namespace FlatItemBuff
 			UnstableTransmitter_Rework.StackDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Damage", 2.8f, "Damage for each additional stack.").Value;
 			UnstableTransmitter_Rework.BaseRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Radius", 15f, "Blast radius at a single stack.").Value;
 			UnstableTransmitter_Rework.StackRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Radius", 0f, "Blast radius for each additional stack.").Value;
+			UnstableTransmitter_Rework.ProcRate = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Proc Coefficient", 1f, "The Proc Coefficient of the blast.").Value;
+			UnstableTransmitter_Rework.ProcBands = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Proc Bands", true, "Should the blast proc bands?").Value;
+			UnstableTransmitter_Rework.AllyOwnsDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Ally Owns Damage", false, "Should the ally own the explosion instead of the user?").Value;
+			UnstableTransmitter_Rework.TeleportRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Teleport Radius", 40f, "The maximum radius away from the user that allies can be teleported to.").Value;
+			UnstableTransmitter_Rework.TeleFragRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Telefrag Radius", 60f, "Enemies within this radius of the user can be purposely telefragged by allies. (Set to 0 or less to disable this behavior.)").Value;
 			UnstableTransmitter_Rework.TeleImmobile = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Teleport Immobile", true, "Allows immobile allies to be targeted for teleportation.").Value;
 		}
 		private static void Read_HuntersHarpoon()

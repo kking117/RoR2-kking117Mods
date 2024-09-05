@@ -75,7 +75,7 @@ namespace FlatItemBuff.Components
 		}
 		private void Detonate()
         {
-			if (attackerBody)
+			if (KnockbackFin.BaseRadius > 0f && attackerBody)
             {
 				float blastDamage = attackerBody.damage * KnockbackFin.GetImpactDamage(itemCount);
 				float blastRadius = KnockbackFin.GetImpactRadius(itemCount);

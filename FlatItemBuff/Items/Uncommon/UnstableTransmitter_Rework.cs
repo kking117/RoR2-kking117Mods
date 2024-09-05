@@ -23,6 +23,11 @@ namespace FlatItemBuff.Items
 		internal static float StackDamage = 2.8f;
 		internal static float BaseRadius = 15f;
 		internal static float StackRadius = 0f;
+		internal static float ProcRate = 1f;
+		internal static bool ProcBands = true;
+		internal static bool AllyOwnsDamage = false;
+		internal static float TeleportRadius = 40f;
+		internal static float TeleFragRadius = 60f;
 		internal static bool TeleImmobile = true;
 		public UnstableTransmitter_Rework()
 		{
@@ -46,6 +51,9 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			BaseRadius = Math.Max(0f, BaseRadius);
 			StackRadius = Math.Max(0f, StackRadius);
+			TeleportRadius = Math.Max(0f, TeleportRadius);
+			TeleFragRadius = Math.Max(0f, TeleFragRadius);
+			ProcRate = Math.Max(0f, ProcRate);
 		}
 		private void UpdateText()
 		{
