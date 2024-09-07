@@ -12,7 +12,7 @@ using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
-    class DefenseNucleus_Rework
+    public class DefenseNucleus_Rework
     {
         internal static bool Enable = false;
         internal static float ShieldBaseDuration = 5f;

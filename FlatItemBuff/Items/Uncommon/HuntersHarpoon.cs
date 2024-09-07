@@ -29,6 +29,7 @@ namespace FlatItemBuff.Items
 		internal static bool CoolSecondary = true;
 		internal static bool CoolUtility = false;
 		internal static bool CoolSpecial = false;
+		internal static bool Comp_AssistManager = true;
 		public HuntersHarpoon()
 		{
 			if (!Enable)
@@ -40,6 +41,18 @@ namespace FlatItemBuff.Items
 			UpdateText();
 			CreateBuff();
 			Hooks();
+			if (MainPlugin.AssistManager_Loaded)
+			{
+				ApplyAssistManager();
+			}
+		}
+		private void ApplyAssistManager()
+		{
+			AssistManager.VanillaTweaks.Harpoon.Instance.SetEnabled(false);
+			if (Comp_AssistManager)
+			{
+				AssistManager.AssistManager.HandleAssistInventoryActions += AssistManger_OnKill;
+			}
 		}
 		private void ClampConfig()
 		{
@@ -246,6 +259,50 @@ namespace FlatItemBuff.Items
 					{
 						special.RunRecharge(cooldown);
 					}
+				}
+			}
+		}
+		private void AssistManger_OnKill(AssistManager.AssistManager.Assist assist, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+		{
+			CharacterBody assistBody = assist.attackerBody;
+			if (assistBody == killerBody)
+			{
+				return;
+			}
+
+			int itemCount = assistInventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
+			if (itemCount > 0)
+			{
+				itemCount = Math.Max(0, itemCount - 1);
+				float duration = BaseDuration + (itemCount * StackDuration);
+				if (duration > 0f)
+				{
+					if (ExtendDuration)
+					{
+						Helpers.AddOrExtendBuff(assistBody, HarpoonBuff, duration);
+					}
+					else
+					{
+						assistBody.AddTimedBuff(HarpoonBuff, duration);
+					}
+
+					EffectData effectData = new EffectData();
+					effectData.origin = assistBody.corePosition;
+					effectData.rotation = assistBody.transform.rotation;
+					CharacterMotor characterMotor = assistBody.characterMotor;
+					if (characterMotor)
+					{
+						Vector3 moveDirection = characterMotor.moveDirection;
+						if (moveDirection != Vector3.zero)
+						{
+							effectData.rotation = Util.QuaternionSafeLookRotation(moveDirection);
+						}
+					}
+					EffectManager.SpawnEffect(BoostVFX, effectData, true);
+				}
+				if (DoesCool)
+				{
+					assistBody.AddBuff(ReduceCooldownBuff);
 				}
 			}
 		}

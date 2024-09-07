@@ -90,6 +90,9 @@ namespace FlatItemBuff
 		private const string Section_General_Bugs = "Bug Fixes";
 		private const string Section_General_Mechanics = "Mechanics";
 
+		private const string Label_AssistManager = "Enable Kill Assists";
+		private const string Desc_AssistManager = "Allows on kill effects from this item to work with AssistManager.";
+
 		public static void Setup()
         {
 			GeneralConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"General.cfg"), true);
@@ -159,6 +162,7 @@ namespace FlatItemBuff
 			BisonSteak_Rework.StackDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
 			BisonSteak_Rework.ExtendDuration = ItemConfig.Bind(Section_BisonSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
 			BisonSteak_Rework.NerfFakeKill = ItemConfig.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
+			BisonSteak_Rework.Comp_AssistManager = ItemConfig.Bind(Section_BisonSteak_Rework, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 
 		private static void Read_KnockbackFin()
@@ -169,24 +173,25 @@ namespace FlatItemBuff
 			KnockbackFin.BackForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
 			KnockbackFin.ChampionMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
 			KnockbackFin.BossMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
-			KnockbackFin.FlyingMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Flying Force Mult", 1f, "Force multiplier against flying targets.").Value;
+			KnockbackFin.FlyingMult = ItemConfig.Bind(Section_KnockbackFin_Buff, "Flying Force Mult", 1f, "Force multiplier for flying targets.").Value;
 			KnockbackFin.MaxForce = ItemConfig.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
 			KnockbackFin.BaseRadius = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact. (Set to 0 to completely disable the Impact and its damage.)").Value;
 			KnockbackFin.BaseDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Base Damage", 1f, "Impact damage at a single stack.").Value;
 			KnockbackFin.StackDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stack Damage", 0.1f, "Impact damage for each additional stack.").Value;
-			KnockbackFin.MaxDistDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Distance Damage", 10f, "Maximum damage multiplier that can be achieved through fall distance.").Value;
+			KnockbackFin.MaxDistDamage = ItemConfig.Bind(Section_KnockbackFin_Buff, "Velocity Damage", 10f, "Maximum damage multiplier that can be achieved through velocity.").Value;
 			KnockbackFin.ProcRate = ItemConfig.Bind(Section_KnockbackFin_Buff, "Proc Coefficient", 0f, "Impact proc coefficient. (It can proc itself)").Value;
 			KnockbackFin.DoStun = ItemConfig.Bind(Section_KnockbackFin_Buff, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
-			KnockbackFin.CreditFall = ItemConfig.Bind(Section_KnockbackFin_Buff, "Add Fall Damage", false, "Adds the fall damage the target should've taken to the impact.").Value;
+			KnockbackFin.CreditFall = ItemConfig.Bind(Section_KnockbackFin_Buff, "Credit Fall Damage", false, "Credits any fall damage the target takes to the inflictor of the knockback.").Value;
 			KnockbackFin.Cooldown = ItemConfig.Bind(Section_KnockbackFin_Buff, "Cooldown", 5, "The cooldown between knockbacks.").Value;
 		}
 		private static void Read_TopazBrooch()
         {
 			TopazBrooch.Enable = ItemConfig.Bind(Section_TopazBrooch_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			TopazBrooch.BaseFlatBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Base Flat Barrier", 15.0f, "Flat amount of barrier given at a single stack.").Value;
-			TopazBrooch.StackFlatBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Stack Flat Barrier", 15.0f, "Flat amount of barrier given for each additional stack.").Value;
-			TopazBrooch.BaseCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Base Percent Barrier", 0.005f, "Percent amount of barrier given at a single stack.").Value;
-			TopazBrooch.StackCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Stack Percent Barrier", 0.005f, "Percent amount of barrier given for each additional stack.").Value;
+			TopazBrooch.BaseFlatBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Base Flat Barrier", 8.0f, "Flat amount of barrier given at a single stack.").Value;
+			TopazBrooch.StackFlatBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Stack Flat Barrier", 0.0f, "Flat amount of barrier given for each additional stack.").Value;
+			TopazBrooch.BaseCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Base Percent Barrier", 0.02f, "Percent amount of barrier given at a single stack.").Value;
+			TopazBrooch.StackCentBarrier = ItemConfig.Bind(Section_TopazBrooch_Buff, "Stack Percent Barrier", 0.02f, "Percent amount of barrier given for each additional stack.").Value;
+			TopazBrooch.Comp_AssistManager = ItemConfig.Bind(Section_TopazBrooch_Buff, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 		private static void Read_RollOfPennies()
         {
@@ -249,12 +254,13 @@ namespace FlatItemBuff
 			Infusion.ChampionGain = ItemConfig.Bind(Section_Infusion_Buff, "Champion Value", 5, "Sample value of champion enemies. (Wandering Vagrant, Magma Worm, etc)").Value;
 			Infusion.EliteGainMult = ItemConfig.Bind(Section_Infusion_Buff, "Elite Multiplier", 3, "Sample value multiplier from elite enemies.").Value;
 			Infusion.BossGainMult = ItemConfig.Bind(Section_Infusion_Buff, "Boss Multiplier", 2, "Sample value multiplier from boss enemies.").Value;
+			Infusion.Comp_AssistManager = ItemConfig.Bind(Section_Infusion_Buff, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 		private static void Read_LeechingSeed()
         {
 			LeechingSeed.Enable = ItemConfig.Bind(Section_LeechingSeed_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			LeechingSeed.ProcHeal = ItemConfig.Bind(Section_LeechingSeed_Buff, "Proc Healing", 0.75f, "Healing amount that's affected by proc coefficient.").Value;
-			LeechingSeed.BaseHeal = ItemConfig.Bind(Section_LeechingSeed_Buff, "Base Healing", 0.75f, "Extra healing amount regardless of proc coefficient.").Value;
+			LeechingSeed.ProcHeal = ItemConfig.Bind(Section_LeechingSeed_Buff, "Proc Healing", 1f, "Healing amount that's affected by proc coefficient.").Value;
+			LeechingSeed.BaseHeal = ItemConfig.Bind(Section_LeechingSeed_Buff, "Base Healing", 1f, "Extra healing amount regardless of proc coefficient.").Value;
 
 			LeechingSeed_Rework.Enable = ItemConfig.Bind(Section_LeechingSeed_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			LeechingSeed_Rework.BaseDoTHeal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Base DoT Healing", 4f, "Healing amount given from damage over time ticks at a single stack.").Value;
@@ -320,6 +326,7 @@ namespace FlatItemBuff
 			HuntersHarpoon.CoolSecondary = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Secondary", true, "Cooldown reduction affects Secondary skills?").Value;
 			HuntersHarpoon.CoolUtility = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Utility", false, "Cooldown reduction affects Utility skills?").Value;
 			HuntersHarpoon.CoolSpecial = ItemConfig.Bind(Section_HuntersHarpoon_Buff, "Cooldown Special", false, "Cooldown reduction affects Special skills?").Value;
+			HuntersHarpoon.Comp_AssistManager = ItemConfig.Bind(Section_HuntersHarpoon_Buff, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 		private static void Read_SquidPolyp()
         {
@@ -423,6 +430,7 @@ namespace FlatItemBuff
 			DefenseNucleus.StackAttack = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Attack Speed", 0, "Extra attack speed the construct gets for each additional stack.").Value;
 			DefenseNucleus.BaseDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackDamage = ItemConfig.Bind(Section_DefenseNucleus_Buff, "Stack Damage", 5, "Extra damage the construct gets for each additional stack.").Value;
+			DefenseNucleus.Comp_AssistManager = ItemConfig.Bind(Section_DefenseNucleus_Buff, Label_AssistManager, false, Desc_AssistManager).Value;
 
 			DefenseNucleus_Rework.Enable = ItemConfig.Bind(Section_DefenseNucleus_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			DefenseNucleus_Rework.SummonCount = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 6 because I said so.)").Value;

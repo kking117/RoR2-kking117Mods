@@ -1,8 +1,37 @@
+**1.22.2**
+
+```
+- Added compatability with Moffein-AssistManager, the following changes are supported:
+- Bison Steak Rework
+- Topaz Brooch
+- Hunters Harpoon
+- Infusion
+- Defense Nucleus Buff (Disabled by default)
+
+- Bison Steak:
+- Item description now states that the health amount increases with level to avoid confusion.
+
+- Knockback Fin:
+- Renamed "Distance Damage" configuration to "Velocity Damage" to properly reflect what it does.
+- Removed "Add Fall Damage" configuration, replaced with "Credit Fall Damage", simply credits fall damage the target takes while launched instead of adding it to the impact.
+- This means "Credit Fall Damage" will work even while Impact damage is disabled.
+- Will no longer proc when hitting yourself.
+
+- Topaz Brooch:
+- Changed "Base Flat Barrier" default configuration. (15 -> 8)
+- Changed "Stack Flat Barrier" default configuration. (15 -> 0)
+- Changed "Base Percent Barrier" default configuration. (0.05 -> 0.02)
+- Changed "Stack Percent Barrier" default configuration. (0.05 -> 0.02)
+
+- Leeching Seed:
+- Changed "Proc Healing" and "Base Healing" default configurations. (0.75 -> 1)
+```
+
 **1.22.1**
 
 ```
 - Knockback Fin:
-- Specificed in the config description of "Base Radius" that it disables the Impact damage when set to 0.
+- specified in the config description of "Base Radius" that it disables the Impact damage when set to 0.
 - Fixed the knockback only working once when the Impact damage was disabled.
 
 - Unstable Transmitter Rework:

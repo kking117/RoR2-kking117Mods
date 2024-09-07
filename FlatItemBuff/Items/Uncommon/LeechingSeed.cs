@@ -9,8 +9,8 @@ namespace FlatItemBuff.Items
 	public class LeechingSeed
 	{
 		internal static bool Enable = true;
-		internal static float ProcHeal = 0.75f;
-		internal static float BaseHeal = 0.75f;
+		internal static float ProcHeal = 1f;
+		internal static float BaseHeal = 1f;
 		public LeechingSeed()
 		{
 			if (!Enable)

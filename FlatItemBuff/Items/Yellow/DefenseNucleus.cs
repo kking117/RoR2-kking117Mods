@@ -12,7 +12,7 @@ using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
-    class DefenseNucleus
+    public class DefenseNucleus
     {
         internal static bool Enable = true;
         internal static int MaxSummons = 4;
@@ -24,6 +24,7 @@ namespace FlatItemBuff.Items
         internal static int StackAttack = 0;
         internal static int BaseDamage = 0;
         internal static int StackDamage = 5;
+        internal static bool Comp_AssistManager = false;
         public DefenseNucleus()
         {
             if (!Enable)
@@ -35,7 +36,18 @@ namespace FlatItemBuff.Items
             UpdateText();
             UpdateItemDef();
             Hooks();
+            if (MainPlugin.AssistManager_Loaded)
+            {
+                ApplyAssistManager();
+            }
             DefenseNucleus_Shared.EnableChanges();
+        }
+        private void ApplyAssistManager()
+        {
+            if (Comp_AssistManager)
+            {
+                AssistManager.AssistManager.HandleAssistInventoryCompatibleActions += AssistManger_OnKill;
+            }
         }
         private void ClampConfig()
         {
@@ -111,6 +123,31 @@ namespace FlatItemBuff.Items
             SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
         }
+        private void AssistManger_OnKill(CharacterBody assistBody, CharacterBody victimBody, DamageType? damageType, HashSet<R2API.DamageAPI.ModdedDamageType> modDamageType, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+        {
+            if (assistBody == killerBody)
+            {
+                return;
+            }
+
+            int itemCount = assistInventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
+            if (itemCount > 0)
+            {
+                CharacterMaster assistMaster = assistBody.master;
+                Construct_CooldownManager comp = assistMaster.GetComponent<Construct_CooldownManager>();
+                if (!comp)
+                {
+                    comp = assistMaster.gameObject.AddComponent<Construct_CooldownManager>();
+                    comp.duration = SummonCooldown;
+                    comp.maxSummons = 4;
+                    if (assistMaster.GetDeployableCount(DeployableSlot.MinorConstructOnKill) + 1 >= MaxSummons)
+                    {
+                        comp.duration += SummonFullCooldown;
+                    }
+                    DeployConstructFromCorpse(assistMaster, victimBody);
+                }
+            }
+        }
         private void GlobalKillEvent(DamageReport damageReport)
         {
             CharacterMaster attackerMaster = damageReport.attackerMaster;
@@ -130,7 +167,6 @@ namespace FlatItemBuff.Items
                         }
                         DeployConstructFromCorpse(attackerMaster, damageReport.victimBody);
                     }
-                    
                 }
             }
         }

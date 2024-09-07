@@ -12,18 +12,30 @@ namespace FlatItemBuff.Components
 		private CharacterMotor victimMotor;
 		private HealthComponent hpComp;
 		public CharacterBody attackerBody;
-		private float lastSpeed = 0f;
-
 		public int itemCount = 0;
-		public bool impactNext = false;
-		public float storedFallDamage = 0f;
+
+		private float lastSpeed = 0f;
+		private float fallCreditGrace = 1f;
+		private bool HasImpact = false;
 		private void Awake()
 		{
+			Reset();
+		}
+		internal void Reset()
+		{
+			lastSpeed = 0f;
+			fallCreditGrace = 1f;
+			HasImpact = false;
+
 			victimBody = GetComponent<CharacterBody>();
 			if (victimBody)
-            {
+			{
 				hpComp = victimBody.GetComponent<HealthComponent>();
 				victimMotor = victimBody.GetComponent<CharacterMotor>();
+				if (victimMotor)
+                {
+					lastSpeed = victimMotor.velocity.magnitude;
+				}
 			}
 		}
 		private void OnDestroy()
@@ -45,36 +57,50 @@ namespace FlatItemBuff.Components
 				Destroy(this);
 				return;
 			}
-			if (impactNext)
-            {
-				OnImpact();
+			if (victimBody.HasBuff(KnockbackFin.knockMidBuff))
+			{
+				fallCreditGrace = 1f;
+				if (victimMotor.isGrounded)
+				{
+					OnImpact();
+				}
+				else
+				{
+					lastSpeed = victimMotor.velocity.magnitude;
+				}
 			}
-			else if (victimMotor.isGrounded)
-            {
-				impactNext = true;
-            }
 			else
             {
-				lastSpeed = victimMotor.velocity.magnitude;
+				fallCreditGrace -= Time.fixedDeltaTime;
+				if (fallCreditGrace <= 0f)
+                {
+					Destroy(this);
+				}
 			}
 		}
 
-		private void OnImpact()
+		internal void OnImpact()
         {
-			Detonate();
-			Destroy(this);
-		}
-
-		private void StartCooldown()
-        {
-			victimBody.RemoveBuff(KnockbackFin.knockMidBuff);
-			for(int i = KnockbackFin.Cooldown; i > 0; i--)
+			if (!HasImpact)
             {
-				victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, i);
+				StartCooldown();
+				Detonate();
+			}
+		}
+		private void StartCooldown()
+		{
+			victimBody.RemoveBuff(KnockbackFin.knockMidBuff);
+			if (!victimBody.HasBuff(DLC2Content.Buffs.KnockUpHitEnemies))
+			{
+				for (int i = KnockbackFin.Cooldown; i > 0; i--)
+				{
+					victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, i);
+				}
 			}
 		}
 		private void Detonate()
         {
+			HasImpact = true;
 			if (KnockbackFin.BaseRadius > 0f && attackerBody)
             {
 				float blastDamage = attackerBody.damage * KnockbackFin.GetImpactDamage(itemCount);
@@ -85,14 +111,6 @@ namespace FlatItemBuff.Components
 					float velDmg = Mathf.Max(0f, lastSpeed);
 					velDmg = Mathf.InverseLerp((victimBody.jumpPower + 20f) / 4f, 120f, velDmg);
 					blastDamage *= Mathf.Lerp(1f, KnockbackFin.MaxDistDamage, velDmg);
-					if (isCrit)
-                    {
-						blastDamage += storedFallDamage / victimBody.critMultiplier;
-					}
-					else
-                    {
-						blastDamage += storedFallDamage;
-					}
 					
 
 					Vector3 blastPosition = victimBody.footPosition;

@@ -198,7 +198,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Death Mark - Effect Override - IL Hook failed");
+				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": Death Mark - Effect Override - IL Hook failed");
 			}
 		}
 	}

@@ -19,6 +19,7 @@ namespace FlatItemBuff.Items
 		internal static int BossGainMult = 2;
 		internal static int EliteGainMult = 3;
 		internal static int ChampionGain = 5;
+		internal static bool Comp_AssistManager = true;
 		public Infusion()
 		{
 			if (!Enable)
@@ -30,6 +31,18 @@ namespace FlatItemBuff.Items
 			UpdateItemDef();
 			UpdateText();
 			Hooks();
+			if (MainPlugin.AssistManager_Loaded)
+			{
+				ApplyAssistManager();
+			}
+		}
+		private void ApplyAssistManager()
+		{
+			AssistManager.VanillaTweaks.Infusion.Instance.SetEnabled(false);
+			if (Comp_AssistManager)
+			{
+				AssistManager.AssistManager.HandleAssistInventoryActions += AssistManger_OnKill;
+			}
 		}
 		private void ClampConfig()
 		{
@@ -84,6 +97,22 @@ namespace FlatItemBuff.Items
 						self.inventory.infusionBonus = owner.inventory.infusionBonus;
 					}
 				}
+			}
+		}
+		private void AssistManger_OnKill(AssistManager.AssistManager.Assist assist, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+		{
+			CharacterBody assistBody = assist.attackerBody;
+			if (assistBody == killerBody)
+			{
+				return;
+			}
+
+			int itemCount = assistInventory.GetItemCount(RoR2Content.Items.Infusion);
+			if (itemCount > 0)
+			{
+				CharacterBody victimBody = assist.victimBody;
+				float value = GetInfusionValue(victimBody) * itemCount;
+				GiveInfusionOrb(assistBody, victimBody, (int)Math.Ceiling(value));
 			}
 		}
 		private void GlobalKillEvent(DamageReport damageReport)

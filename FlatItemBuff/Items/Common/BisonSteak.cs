@@ -35,7 +35,7 @@ namespace FlatItemBuff.Items
 			pickup += "Gain max health.";
 			if (LevelHP > 0f)
             {
-				desc += string.Format("Increases <style=cIsHealing>base health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>.", BaseHP);
+				desc += string.Format("Increases <style=cIsHealing>base health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>. <style=cStack>Health increases further with level</style>.", BaseHP);
 			}
 			else
             {

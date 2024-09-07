@@ -1,6 +1,7 @@
 ﻿using System;
 using BepInEx;
 using RoR2;
+using BepInEx.Bootstrap;
 using System.Security.Permissions;
 
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -15,21 +16,25 @@ namespace FlatItemBuff
 	[BepInDependency("com.bepis.r2api.deployable", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.orb", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.damagetype", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.Moffein.AssistManager", BepInDependency.DependencyFlags.SoftDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.22.1";
+		public const string MODVERSION = "1.22.2";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
+
+		internal static bool AssistManager_Loaded = false;
 		private void Awake()
 		{
 			ModLogger = this.Logger;
 			pluginInfo = Info;
 			Configs.Setup();
+			AssistManager_Loaded = Chainloader.PluginInfos.ContainsKey("com.Moffein.AssistManager");
 			EnableChanges();
 			SharedHooks.Setup();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad_GameModeCatalog));

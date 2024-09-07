@@ -19,6 +19,7 @@ namespace FlatItemBuff.Items
 		internal static float StackRegen = 0f;
 		internal static float BaseDuration = 3f;
 		internal static float StackDuration = 3f;
+		internal static bool Comp_AssistManager = true;
 		public BisonSteak_Rework()
 		{
 			if (!Enable)
@@ -32,8 +33,18 @@ namespace FlatItemBuff.Items
 			UpdateItemDef();
 			UpdateText();
 			Hooks();
+			if (MainPlugin.AssistManager_Loaded)
+			{
+				ApplyAssistManager();
+			}
 		}
-		
+		private void ApplyAssistManager()
+		{
+			if (Comp_AssistManager)
+			{
+				AssistManager.AssistManager.HandleAssistInventoryActions += AssistManger_OnKill;
+			}
+		}
 		private void ClampConfig()
 		{
 			BaseRegen = Math.Max(0f, BaseRegen);
@@ -139,6 +150,35 @@ namespace FlatItemBuff.Items
 					{
 						attackerBody.AddTimedBuff(FreshRegenBuff, duration);
 					}
+				}
+			}
+		}
+		private void AssistManger_OnKill(AssistManager.AssistManager.Assist assist, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+		{
+			CharacterBody assistBody = assist.attackerBody;
+			if (assistBody == killerBody)
+			{
+				return;
+			}
+
+			int itemCount = assistInventory.GetItemCount(RoR2Content.Items.FlatHealth);
+			if (itemCount > 0)
+			{
+				if (NerfFakeKill)
+				{
+					if (assist.victimBody && assist.victimBody.master)
+					{
+						Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
+					}
+				}
+				else
+				{
+					Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
+				}
+				float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
+				if (duration > 0f)
+				{
+					assistBody.AddTimedBuff(FreshRegenBuff, duration);
 				}
 			}
 		}

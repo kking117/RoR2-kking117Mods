@@ -9,10 +9,11 @@ namespace FlatItemBuff.Items
 	public class TopazBrooch
 	{
 		internal static bool Enable = true;
-		internal static float BaseFlatBarrier = 15.0f;
-		internal static float StackFlatBarrier = 15.0f;
-		internal static float BaseCentBarrier = 0.005f;
-		internal static float StackCentBarrier = 0.005f;
+		internal static float BaseFlatBarrier = 8.0f;
+		internal static float StackFlatBarrier = 0.0f;
+		internal static float BaseCentBarrier = 0.02f;
+		internal static float StackCentBarrier = 0.02f;
+		internal static bool Comp_AssistManager = true;
 		public TopazBrooch()
 		{
 			if (!Enable)
@@ -23,6 +24,18 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			UpdateText();
 			Hooks();
+			if (MainPlugin.AssistManager_Loaded)
+			{
+				ApplyAssistManager();
+			}
+		}
+		private void ApplyAssistManager()
+        {
+			AssistManager.VanillaTweaks.TopazBrooch.Instance.SetEnabled(false);
+			if (Comp_AssistManager)
+			{
+				AssistManager.AssistManager.HandleAssistInventoryActions += AssistManger_OnKill;
+			}
 		}
 		private void ClampConfig()
 		{
@@ -65,6 +78,31 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 		}
+		private void AssistManger_OnKill(AssistManager.AssistManager.Assist assist, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+		{
+			CharacterBody assistBody = assist.attackerBody;
+			if (assistBody == killerBody)
+			{
+				return;
+			}
+
+			HealthComponent hpComp = assistBody.healthComponent;
+			if (hpComp)
+            {
+				int itemCount = assistInventory.GetItemCount(RoR2Content.Items.BarrierOnKill);
+				if (itemCount > 0)
+				{
+					hpComp.AddBarrier(GetFlatBarrier(hpComp, itemCount));
+				}
+			}
+		}
+		private float GetFlatBarrier(HealthComponent hpComp, int itemCount)
+        {
+			itemCount = Math.Max(0, itemCount-1);
+			float amount = BaseFlatBarrier + (StackFlatBarrier * itemCount);
+			amount += hpComp.fullCombinedHealth * (BaseCentBarrier + (StackCentBarrier * itemCount));
+			return amount;
+        }
 		private void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
@@ -78,18 +116,9 @@ namespace FlatItemBuff.Items
 				ilcursor.RemoveRange(4);
 				ilcursor.Emit(OpCodes.Ldarg_1);
 				ilcursor.Emit(OpCodes.Ldloc, 53);
-				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((dr, itemCount) =>
+				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((damageReport, itemCount) =>
 				{
-					itemCount--;
-					float basebarrier = BaseFlatBarrier;
-					float stackbarrier = StackFlatBarrier;
-					if (dr.attackerBody.healthComponent)
-					{
-						basebarrier += dr.attackerBody.healthComponent.fullCombinedHealth * BaseCentBarrier;
-						stackbarrier += dr.attackerBody.healthComponent.fullCombinedHealth * StackCentBarrier;
-					}
-					stackbarrier *= itemCount;
-					return basebarrier + stackbarrier;
+					return GetFlatBarrier(damageReport.attackerBody.healthComponent, itemCount);
 				});
 			}
 			else
