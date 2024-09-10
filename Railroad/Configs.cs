@@ -71,7 +71,7 @@ namespace Railroad
 		}
 		private static void Read_StageConfig()
         {
-			Changes.Stages.Enable = StageConfig.Bind(Section_Enable, Label_Enable, false, "Allows all changes within this config to happen. Note that everything here affects this mod and has no actual effect on what the game considers as a loop.").Value;
+			Changes.Looping.Enable = LoopConfig.Bind(Section_Enable, Label_Enable, false, "Allows all changes within this config to happen. Note that everything here affects this mod and has no actual effect on what the game considers as a loop.").Value;
 
 			Changes.Looping.Loop_MinStageCount = LoopConfig.Bind(Section_Loop_Definition, "Min Stage Clears", 5, "The minimun number of stage clears to even consider that we've looped.").Value;
 			Changes.Looping.Loop_DejaVu = LoopConfig.Bind(Section_Loop_Definition, "Deja Vu Requirement", false, "Counts as looping once you've cleared the minimum amount of stages and are on a stage 1. (The same requirements for the Deja Vu achievement.)").Value;
