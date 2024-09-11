@@ -81,7 +81,7 @@ namespace Railroad.Changes
                 if (StageCountsForLoop(scene))
                 {
                     AreLooping = true;
-                    MainPlugin.ModLogger.LogDebug("Current stage counts as looping.");
+                    //MainPlugin.ModLogger.LogDebug("Current stage counts as looping.");
                 }
             }
             if (Loop_EnableHonor && AreLooping)

@@ -177,12 +177,15 @@ namespace Railroad.Changes
         private void ShrineRebirthController_Start(On.RoR2.ShrineRebirthController.orig_Start orig, ShrineRebirthController self)
         {
             orig(self);
-            self.helminthPortalISC = GetSpawnCardFromIndex(Meridian_Portal);
+            if (Meridian_Eclipse || !IsEclipse())
+            {
+                self.helminthPortalISC = GetSpawnCardFromIndex(Meridian_Portal);
+            }
         }
         private void LimboComplete(On.EntityStates.Missions.LunarScavengerEncounter.FadeOut.orig_OnEnter orig, EntityStates.Missions.LunarScavengerEncounter.FadeOut self)
         {
             orig(self);
-            if (!Limbo_Eclipse || !IsEclipse())
+            if (Limbo_Eclipse || !IsEclipse())
             {
                 Vector3 position = Limbo_Pos;
                 GameObject portal = TrySpawnPortal(Limbo_Portal, position, DirectorPlacementRule.PlacementMode.Approximate);
@@ -200,7 +203,7 @@ namespace Railroad.Changes
         private void Moon2Complete(On.EntityStates.Missions.BrotherEncounter.EncounterFinished.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.EncounterFinished self)
         {
             orig(self);
-            if (!Moon2_Eclipse || !IsEclipse())
+            if (Moon2_Eclipse || !IsEclipse())
             {
                 TrySpawnPortal(Moon2_Portal, Moon2_Pos, DirectorPlacementRule.PlacementMode.Direct);
                 if (Moon2_Reward)
@@ -215,7 +218,7 @@ namespace Railroad.Changes
             {
                 return;
             }
-            if (!VoidRaid_Eclipse || !IsEclipse())
+            if (VoidRaid_Eclipse || !IsEclipse())
             {
                 if (VoidRaid_VoidOutroPortal)
                 {
@@ -374,15 +377,15 @@ namespace Railroad.Changes
                 ilcursor.RemoveRange(2);
                 ilcursor.EmitDelegate<Func<DifficultyIndex>>(() =>
                 {
-                    if (!Meridian_Eclipse && IsEclipse())
+                    if (Meridian_Eclipse || IsEclipse())
                     {
-                        return Run.instance.selectedDifficulty;
+                        if (Meridian_AllowRebirth)
+                        {
+                            return DifficultyIndex.Invalid;
+                        }
+                        return (DifficultyIndex)99;
                     }
-                    if (Meridian_AllowRebirth)
-                    {
-                        return DifficultyIndex.Invalid;
-                    }
-                    return (DifficultyIndex)99;
+                    return Run.instance.selectedDifficulty;
                 });
             }
             else
