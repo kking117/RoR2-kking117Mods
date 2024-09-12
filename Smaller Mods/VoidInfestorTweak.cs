@@ -11,7 +11,7 @@ namespace VoidInfestorTweak
     {
         public const string MODUID = "com.kking117.VoidInfestorTweak";
         public const string MODNAME = "VoidInfestorTweak";
-        public const string MODVERSION = "1.2.1";
+        public const string MODVERSION = "1.2.2";
 		public void Awake()
         {
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_CharacterDeath);
@@ -19,23 +19,26 @@ namespace VoidInfestorTweak
 		private static void IL_CharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchStloc(x, 36),
-				x => ILPatternMatchingExt.MatchLdloc(x, 36)
-			);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdcI4(x, 4)
-			);
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldarg_1);
-			ilcursor.EmitDelegate<Func<DamageReport, TeamIndex>>((dr) =>
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdcI4(4),
+				x => x.MatchCallOrCallvirt<CharacterMaster>("set_teamIndex")
+			))
 			{
-				if (dr.victimBody)
+				ilcursor.Remove();
+				ilcursor.Emit(OpCodes.Ldarg_1);
+				ilcursor.EmitDelegate<Func<DamageReport, TeamIndex>>((dr) =>
 				{
-					return dr.victimTeamIndex;
-				}
-				return TeamIndex.Void;
-			});
+					if (dr.victimBody)
+					{
+						return dr.victimTeamIndex;
+					}
+					return TeamIndex.Void;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MODNAME + ": IL Hook failed");
+			}
 		}
 	}
 }
