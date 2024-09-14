@@ -27,6 +27,7 @@ namespace FlatItemBuff.Items
                 UpdateAI();
             }
             On.RoR2.Projectile.ProjectileSpawnMaster.SpawnMaster += Projectile_SpawnMaster;
+            On.RoR2.Projectile.ProjectileSpawnMaster.OnProjectileImpact += OnProjImpact;
             MainPlugin.ModLogger.LogInfo("Applying IL modifications");
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
@@ -163,6 +164,17 @@ namespace FlatItemBuff.Items
                 baseai.fullVision = true;
                 baseai.neverRetaliateFriendlies = true;
             }
+        }
+        private static void OnProjImpact(On.RoR2.Projectile.ProjectileSpawnMaster.orig_OnProjectileImpact orig, ProjectileSpawnMaster self, ProjectileImpactInfo impactInfo)
+        {
+            if (self.deployableSlot == DeployableSlot.MinorConstructOnKill)
+            {
+                if (impactInfo.collider.gameObject.layer != LayerIndex.world.intVal)
+                {
+                    return;
+                }
+            }
+            orig(self, impactInfo);
         }
         private static void Projectile_SpawnMaster(On.RoR2.Projectile.ProjectileSpawnMaster.orig_SpawnMaster orig, ProjectileSpawnMaster self)
         {

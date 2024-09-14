@@ -15,14 +15,14 @@ namespace FlatItemBuff.Items
 		public static DotController.DotDef LeechDotDef;
 		private static DotController.DotIndex LeechDotIndex;
 		internal static bool Enable = false;
-		internal static float BaseDoTHeal = 4f;
-		internal static float StackDoTHeal = 4f;
-		internal static float LeechChance = 0.25f;
-		internal static float LeechLifeSteal = 0.1f;
-		internal static float LeechMinLifeSteal = 1f;
-		internal static float LeechBaseDamage = 0.5f;
+		internal static float BaseDoTHeal = 1f;
+		internal static float StackDoTHeal = 1f;
+		internal static float LeechChance = 0.2f;
+		internal static float LeechLifeSteal = 1f;
+		internal static float LeechBaseDamage = 2.5f;
+		internal static float LeechStackDamage = 0f;
 		internal static float LeechBaseDuration = 5f;
-		internal static float LeechStackDuration = 0f;
+		internal static bool ScaleToTickRate = true;
 		public LeechingSeed_Rework()
 		{
 			if (!Enable)
@@ -45,10 +45,9 @@ namespace FlatItemBuff.Items
 			StackDoTHeal = Math.Max(0f, StackDoTHeal);
 			LeechChance = Math.Max(0f, LeechChance);
 			LeechLifeSteal = Math.Max(0f, LeechLifeSteal);
-			LeechMinLifeSteal = Math.Max(0f, LeechMinLifeSteal);
 			LeechBaseDamage = Math.Max(0f, LeechBaseDamage);
+			LeechStackDamage = Math.Max(0f, LeechStackDamage);
 			LeechBaseDuration = Math.Max(0f, LeechBaseDuration);
-			LeechStackDuration = Math.Max(0f, LeechStackDuration);
 		}
 		private void CreateBuff()
 		{
@@ -56,7 +55,7 @@ namespace FlatItemBuff.Items
 			LeechDotDef = new DotController.DotDef
 			{
 				associatedBuff = LeechBuff,
-				damageCoefficient = LeechBaseDamage / 4f,
+				damageCoefficient = LeechBaseDamage / LeechBaseDuration / 4f,
 				damageColorIndex = DamageColorIndex.Item,
 				interval = 0.25f
 			};
@@ -81,11 +80,11 @@ namespace FlatItemBuff.Items
                 }
 				pickup += "Chance to leech enemies on hit.";
 				string StackB = "";
-				if (LeechStackDuration != 0f)
+				if (LeechStackDamage != 0f)
 				{
-					StackB += string.Format(" <style=cStack>(+{0}% per stack)</style>", LeechBaseDamage * LeechStackDuration * 100f);
+					StackB += string.Format(" <style=cStack>(+{0}% per stack)</style>", LeechStackDamage * 100f);
 				}
-				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style>{2} base damage.", LeechChance, LeechBaseDamage * LeechBaseDuration * 100f, StackB);
+				desc += string.Format("<style=cIsDamage>{0}%</style> chance to <style=cIsHealing>Leech</style> an enemy for <style=cIsDamage>{1}%</style>{2} base damage.", LeechChance, LeechBaseDamage * 100f, StackB);
 			}
 			LanguageAPI.Add("ITEM_SEED_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);
@@ -105,12 +104,15 @@ namespace FlatItemBuff.Items
 				float procRate = damageReport.damageInfo.procCoefficient;
 				bool isDot = false;
 
-				float tickMult = 1f;
-				if (damageReport.dotType != DotController.DotIndex.None)
-				{
-					isDot = true;
-					DotController.DotDef dotDef = DotController.GetDotDef(damageReport.dotType);
-					tickMult = dotDef.interval;
+				float tickMult = 0.25f;
+				if (ScaleToTickRate)
+                {
+					if (damageReport.dotType != DotController.DotIndex.None)
+					{
+						isDot = true;
+						DotController.DotDef dotDef = DotController.GetDotDef(damageReport.dotType);
+						tickMult = dotDef.interval;
+					}
 				}
 
 				float totalHealing = 0f;
@@ -118,7 +120,7 @@ namespace FlatItemBuff.Items
 				{
 					if (damageReport.dotType != LeechDotIndex && damageReport.victimBody.HasBuff(LeechBuff))
 					{
-						totalHealing += LeechHealing(damageReport.damageDealt, procRate, isDot);
+						totalHealing += LeechHealing(damageReport.attackerBody.damage, damageReport.damageDealt);
 					}
 				}
 				Inventory inventory = attackerBody.inventory;
@@ -133,7 +135,7 @@ namespace FlatItemBuff.Items
 							{
 								if (Util.CheckRoll(procRate * LeechChance, damageReport.attackerMaster))
 								{
-									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, LeechDuration(itemCount) * procRate, 1f, 1);
+									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, GetLeechDuration(itemCount) * procRate, 1f, 1);
 								}
 							}
 						}
@@ -142,7 +144,7 @@ namespace FlatItemBuff.Items
 							if (isDot)
 							{
 
-								totalHealing += LeechDoTHealing(itemCount) * tickMult;
+								totalHealing += LeechDoTHealing(itemCount) * (tickMult / 0.25f);
 							}
 						}
 					}
@@ -154,29 +156,22 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
-		private float LeechHealing(float damage, float procRate, bool isDot = false)
+		private float LeechHealing(float baseDamage, float damageDealt)
         {
-			if (isDot)
-			{
-				if (procRate < 0.25f)
-				{
-					procRate = 0.25f;
-				}
-			}
-			float result = damage * LeechLifeSteal * procRate;
-			result /= Run.instance.difficultyCoefficient;
-			return Math.Max(LeechMinLifeSteal, result);
+			float result = damageDealt * LeechLifeSteal;
+			result /= baseDamage;
+			return Math.Max(1f, result);
 		}
 		private float LeechDoTHealing(float itemCount)
         {
 			itemCount = Math.Max(0, itemCount - 1);
 			return BaseDoTHeal + (StackDoTHeal * itemCount);
 		}
-
-		private float LeechDuration(int itemCount)
+		private float GetLeechDuration(int itemCount)
         {
 			itemCount = Math.Max(0, itemCount - 1);
-			return LeechBaseDuration + (LeechStackDuration * itemCount);
+			float damage = LeechBaseDamage + (LeechStackDamage * itemCount);
+			return (damage * LeechBaseDuration) / LeechBaseDamage;
 		}
 		private void IL_OnHitEnemy(ILContext il)
 		{

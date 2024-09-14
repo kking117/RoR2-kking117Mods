@@ -39,6 +39,12 @@ namespace FlatItemBuff.Orbs
 					healthComponent.TakeDamage(damageInfo);
 					GlobalEventManager.instance.OnHitEnemy(damageInfo, healthComponent.gameObject);
 					GlobalEventManager.instance.OnHitAll(damageInfo, healthComponent.gameObject);
+
+					EffectManager.SpawnEffect(HealthComponent.AssetReferences.permanentDebuffEffectPrefab, new EffectData
+					{
+						origin = this.target.transform.position,
+						scale = 1.25f
+					}, true);
 				}
 			}
 		}

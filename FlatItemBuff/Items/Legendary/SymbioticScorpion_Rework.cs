@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using RoR2;
 using RoR2.Projectile;
 using R2API;
@@ -16,15 +18,14 @@ namespace FlatItemBuff.Items
 		private static Color BuffColor = new Color(0.694f, 0.219f, 0.498f, 1f);
 		public static DotController.DotDef VenomDotDef;
 		private static DotController.DotIndex VenomDotIndex;
-		public static GameObject MonsterVenomProjectile;
 		public static GameObject OrbVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Croco/CrocoDiseaseOrbEffect.prefab").WaitForCompletion();
 		internal static bool Enable = false;
-		internal static float Slayer_BaseDamage = 1f;
+		internal static float Slayer_BaseDamage = 2f;
 		internal static float Slayer_StackDamage = 0f;
 		internal static bool SlayerDot_AffectTotalDamage = false;
 		internal static float Radius = 13f;
-		internal static float VenomBaseDamage = 8f;
-		internal static float VenomStackDamage = 8f;
+		internal static float VenomBaseDamage = 6f;
+		internal static float VenomStackDamage = 6f;
 		internal static float Cooldown = 5f;
 		internal static DamageAPI.ModdedDamageType ScorpionVenomOnHit;
 
@@ -36,8 +37,8 @@ namespace FlatItemBuff.Items
 			}
 			MainPlugin.ModLogger.LogInfo("Changing Symbiotic Scorpion");
 			ClampConfig();
+			UpdateItemDef();
 			CreateBuff();
-			CreateProjectiles();
 			UpdateText();
 			Hooks();
 		}
@@ -49,6 +50,17 @@ namespace FlatItemBuff.Items
 			VenomStackDamage = Math.Max(0f, VenomStackDamage);
 			Radius = Math.Max(0f, Radius);
 			Cooldown = Math.Max(0.5f, Cooldown);
+		}
+		private void UpdateItemDef()
+		{
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/PermanentDebuffOnHit/bdPermanentDebuff.asset").WaitForCompletion();
+			if (itemDef)
+			{
+				List<ItemTag> itemTags = itemDef.tags.ToList();
+				itemTags.Remove(ItemTag.AIBlacklist);
+				itemTags.Remove(ItemTag.BrotherBlacklist);
+				itemDef.tags = itemTags.ToArray();
+			}
 		}
 		private void CreateBuff()
 		{
@@ -63,18 +75,6 @@ namespace FlatItemBuff.Items
 			};
 			VenomDotIndex = DotAPI.RegisterDotDef(VenomDotDef);
 			ScorpionVenomOnHit = DamageAPI.ReserveDamageType();
-		}
-		private void CreateProjectiles()
-		{
-			MonsterVenomProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Croco/CrocoSpit.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "EnemyVenomSpit");
-			ProjectileDamage projDmg = MonsterVenomProjectile.GetComponent<ProjectileDamage>();
-			ProjectileController projController = MonsterVenomProjectile.GetComponent<ProjectileController>();
-			projController.procCoefficient = 0.25f;
-			projDmg.damageColorIndex = DamageColorIndex.Item;
-			projDmg.damageType = 0;
-			DamageAPI.ModdedDamageTypeHolderComponent moddedDamageHolder = MonsterVenomProjectile.AddComponent<DamageAPI.ModdedDamageTypeHolderComponent>();
-			moddedDamageHolder.Add(ScorpionVenomOnHit);
-			Utils.ContentManager.AddProjectile(MonsterVenomProjectile);
 			OrbAPI.AddOrb(typeof(Orbs.ScorpionOrb));
 		}
 		private void UpdateText()

@@ -48,8 +48,7 @@ namespace FlatItemBuff.Items
             StackAttack = Math.Max(0, StackAttack);
             BaseDamage = Math.Max(0, BaseDamage);
             StackDamage = Math.Max(0, StackDamage);
-            SummonCount = Math.Max(0, SummonCount);
-            SummonCount = Math.Min(6, SummonCount);
+            SummonCount = Math.Clamp(SummonCount, 0, 8);
         }
         private void UpdateItemDef()
         {
@@ -211,15 +210,15 @@ namespace FlatItemBuff.Items
             {
                 float baseAngle = UnityEngine.Random.Range(0, 360);
                 float rotAngle = 360.0f / summonCount;
+                Vector3 normalized = Vector3.ProjectOnPlane(body.transform.forward, Vector3.up).normalized;
+                Vector3 angledVector = Vector3.RotateTowards(Vector3.up, normalized, 0.45f, float.PositiveInfinity);
                 for (int i = 0; i < summonCount; i++)
                 {
-                    Vector3 forward = Quaternion.AngleAxis(baseAngle, Vector3.up) * Vector3.forward;
-                    Vector3 spawnOffset = forward + Vector3.up;
-                    forward = Quaternion.AngleAxis(baseAngle, Vector3.up) * Quaternion.AngleAxis(-80f, Vector3.right) * Vector3.forward;
+                    Vector3 forward = Quaternion.AngleAxis(baseAngle, Vector3.up) * angledVector;
                     FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
                     {
                         projectilePrefab = GlobalEventManager.CommonAssets.minorConstructOnKillProjectile,
-                        position = body.transform.position + spawnOffset,
+                        position = body.transform.position + forward,
                         rotation = Util.QuaternionSafeLookRotation(forward),
                         procChainMask = default(ProcChainMask),
                         target = body.gameObject,

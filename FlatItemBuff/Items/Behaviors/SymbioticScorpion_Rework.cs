@@ -46,11 +46,7 @@ namespace FlatItemBuff.Items.Behaviors
 		}
 		private bool TryEnvenom()
 		{
-			if (body.teamComponent.teamIndex == TeamIndex.Player)
-            {
-				return Player_EnvenomAttack();
-			}
-			return Monster_EnvenomAttack();
+			return Player_EnvenomAttack();
 		}
 		private bool Player_EnvenomAttack()
         {
@@ -88,63 +84,6 @@ namespace FlatItemBuff.Items.Behaviors
 				}
 			}
 			return didHit;
-		}
-		private bool Monster_EnvenomAttack()
-		{
-			bool didHit = false;
-			bool isCrit = body.RollCrit();
-			float damage = body.damage * 0.25f;
-			if (HasAValidTargetInView())
-            {
-				FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
-				{
-					projectilePrefab = Items.SymbioticScorpion_Rework.MonsterVenomProjectile,
-					position = body.aimOrigin,
-					rotation = Util.QuaternionSafeLookRotation(body.inputBank.aimDirection),
-					owner = body.gameObject,
-					damage = damage,
-					crit = isCrit,
-					force = 0f,
-					speedOverride = 30f,
-					useSpeedOverride = true
-				};
-				ProjectileManager.instance.FireProjectile(fireProjectileInfo);
-				didHit = true;
-			}
-			return didHit;
-		}
-		private bool HasAValidTargetInView()
-		{
-			TeamIndex teamIndex = body.teamComponent.teamIndex;
-			float viewRange = body.radius + Items.SymbioticScorpion_Rework.Radius;
-
-			BullseyeSearch search = new BullseyeSearch();
-			search.viewer = body;
-			search.teamMaskFilter = TeamMask.GetEnemyTeams(teamIndex);
-			search.teamMaskFilter.RemoveTeam(body.master.teamIndex);
-			search.sortMode = BullseyeSearch.SortMode.Distance;
-			search.minDistanceFilter = 0f;
-			search.maxDistanceFilter = viewRange;
-			search.searchOrigin = body.inputBank.aimOrigin;
-			search.searchDirection = body.inputBank.aimDirection;
-			search.maxAngleFilter = 90f;
-			search.filterByLoS = true;
-			search.filterByDistinctEntity = true;
-			search.RefreshCandidates();
-			HurtBox[] hurtBoxes = search.GetResults().ToArray();
-
-			for (int i = 0; i < hurtBoxes.Length; i++)
-			{
-				CharacterBody targetBody = hurtBoxes[i].healthComponent.body;
-				if (targetBody)
-				{
-					if (targetBody.master)
-					{
-						return true;
-					}
-				}
-			}
-			return false;
 		}
 	}
 }

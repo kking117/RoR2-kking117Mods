@@ -7,6 +7,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using KinematicCharacterController;
 
 namespace FlatItemBuff.Items
 {
@@ -141,6 +142,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			On.RoR2.RigidbodyMotor.OnCollisionEnter += RigidBody_OnImpact;
+			On.RoR2.CharacterMotor.OnGroundHit += CharacterMotor_OnImpact;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 			if (CreditFall)
 			{
@@ -237,6 +239,7 @@ namespace FlatItemBuff.Items
 										}
 										comp.itemCount = itemCount;
 										comp.attackerBody = attackerBody;
+										comp.enforceDuration = 0.5f + (itemForce * 0.01f);
 									}
 								}
 								else if (victimRigid)
@@ -344,6 +347,15 @@ namespace FlatItemBuff.Items
 				return compB.attackerBody;
 			}
 			return null;
+		}
+		private void CharacterMotor_OnImpact(On.RoR2.CharacterMotor.orig_OnGroundHit orig, CharacterMotor self, Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
+        {
+			orig(self, hitCollider, hitNormal, hitPoint, ref hitStabilityReport);
+			Components.FinImpact comp = self.GetComponent<Components.FinImpact>();
+			if (comp)
+			{
+				comp.OnImpact();
+			}
 		}
 		private void RigidBody_OnImpact(On.RoR2.RigidbodyMotor.orig_OnCollisionEnter orig, RigidbodyMotor self, Collision collision)
         {

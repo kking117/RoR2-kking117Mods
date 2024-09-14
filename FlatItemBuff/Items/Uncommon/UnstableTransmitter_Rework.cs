@@ -21,7 +21,7 @@ namespace FlatItemBuff.Items
 		internal static float CapCooldown = 2f;
 		internal static float BaseDamage = 3.5f;
 		internal static float StackDamage = 2.8f;
-		internal static float BaseRadius = 15f;
+		internal static float BaseRadius = 16f;
 		internal static float StackRadius = 0f;
 		internal static float ProcRate = 1f;
 		internal static bool ProcBands = true;

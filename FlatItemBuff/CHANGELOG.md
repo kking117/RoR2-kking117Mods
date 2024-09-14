@@ -1,3 +1,57 @@
+**1.22.4**
+
+<details><summary>Notes</summary>Death Mark Rework has been changed completely and the fix to expired pings has been moved to a seperate mod. Most changes made are balancing related with a focus on being more consistent with the game, doing all this as the idea of the mod being complete is within sight, but still a while away.</details>
+
+```
+- Knockback Fin:
+- Fixed certain flying enemies not going on cooldown once they have stable velocity, such as Flying Pests and Alloy Vultures.
+- Made velocity based damage more consistent and the damage cap much more realistic to achieve.
+
+- Deathmark Rework:
+- Scrapped since the ping system can be quite frustrating at times.
+- Changed to be closer to how Deathmark works but less binary and can be tweaked to work better with modded setups.
+- Is now classed as a buff instead of a rework.
+
+- Ignition Tank Rework:
+- Added a configuration to make the proc requirement chance based like it was originally. (Default: 0, Originally: 10)
+
+- Leeching Seed Rework:
+- Added a configuration to make the healing from DoTs scale with the tick rate of said DoT. (It was doing this already by default)
+- Changed "Base DoT Healing" default configuration. (4 -> 1)
+- Changed "Stack DoT Healing" default configuration. (4 -> 1)
+- ^ A tick rate of 4 is used as the baseline for DoT scaling so the healing amount is unchanged with these values.
+- Changed "Leech Base Damage" default configuration. (0.5 -> 2.5) (Unchanged technically)
+- Replaced "Leech Stack Duration" with "Leech Stack Damage" configuration.
+- ^ This is done to be consistent with how other items increase their DoT damage.
+- Healing from the Leech debuff is now scaled from the attacker's damage stat rather than with time.
+- Changed "Leech Life Steal" default configuration. (0.1 -> 1)
+- Removed "Leech Minimum Life Steal", now always in effect at a value of 1.
+
+- Unstable Transmitter Rework:
+- Changed "Cap Cooldown" default configuration. (2 -> 1) (I thought this would be annoying to hear constantly but it's not.)
+- Changed "Base Radius" default configuration. (15 -> 16)
+
+- Symbiotic Scorpion Rework:
+- Changed "Slayer DoT Base Damage" default configuration. (1 -> 2)
+- ^ Originally at 1 for balance reasons, but decided to set it to 2 so it's consistent with actual Slayer damage.
+- Changed "Venom Base Damage" default configuration. (8 -> 6)
+- Changed "Venom Stack Damage" default configuration. (8 -> 6)
+- Removed Monster specific interaction, is now AI Blacklisted by default.
+
+- Titanic Knurl Rework:
+- Changed "Stack Cooldown" default configuration. (0.15 -> 0.25)
+```
+
+**1.22.3**
+
+```
+- Defense Nucleus Shared:
+- Summon projectiles will only impact against the world now.
+
+- Defense Nucleus Rework:
+- Configuration "Summon Count" is now capped at 8 instead of 6 because I said so.
+```
+
 **1.22.2**
 
 ```
@@ -20,8 +74,8 @@
 - Topaz Brooch:
 - Changed "Base Flat Barrier" default configuration. (15 -> 8)
 - Changed "Stack Flat Barrier" default configuration. (15 -> 0)
-- Changed "Base Percent Barrier" default configuration. (0.05 -> 0.02)
-- Changed "Stack Percent Barrier" default configuration. (0.05 -> 0.02)
+- Changed "Base Percent Barrier" default configuration. (0.005 -> 0.02)
+- Changed "Stack Percent Barrier" default configuration. (0.005 -> 0.02)
 
 - Leeching Seed:
 - Changed "Proc Healing" and "Base Healing" default configurations. (0.75 -> 1)

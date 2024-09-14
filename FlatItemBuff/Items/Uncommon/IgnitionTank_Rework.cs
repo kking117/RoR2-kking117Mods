@@ -14,6 +14,7 @@ namespace FlatItemBuff.Items
 		internal static float BurnBaseDamage = 0.8f;
 		internal static float BurnDuration = 3f;
 
+		internal static float BlastChance = 0f;
 		internal static int BlastTicks = 10;
 		internal static int HalfBlastTicks = 5;
 		internal static float BlastBaseDamage = 3f;
@@ -79,20 +80,12 @@ namespace FlatItemBuff.Items
 					blastCondition += " ";
 				}
 			}
-
-			if (BlastTicks > 0)
+			if (BlastChance > 0f)
             {
 				blastPickup += "Damage over time causes explosions.";
-				if (BlastTicks > 1)
-                {
-					blastCondition += string.Format("Every <style=cIsDamage>{0} hits</style> of damage over time causes", BlastTicks);
-				}
-				else
-                {
-					blastCondition += string.Format("Damage over time causes");
-				}
+				blastCondition += string.Format("Damage over time has a <style=cIsDamage>{0}%</style> chance to", BlastChance);
 
-				blastRadius = string.Format(" an <style=cIsDamage>explosion</style> in a <style=cIsDamage>{0}m</style>", BlastBaseRadius);
+				blastRadius = string.Format(" <style=cIsDamage>explode</style> in a <style=cIsDamage>{0}m</style>", BlastBaseRadius);
 				if (BlastStackRadius > 0f)
 				{
 					blastRadius += string.Format(" <style=cStack>(+{0}m per stack)</style>", BlastStackRadius);
@@ -106,7 +99,35 @@ namespace FlatItemBuff.Items
 				}
 				blastDamage += " TOTAL damage";
 			}
+			else
+            {
+				if (BlastTicks > 0)
+				{
+					blastPickup += "Damage over time causes explosions.";
+					if (BlastTicks > 1)
+					{
+						blastCondition += string.Format("Every <style=cIsDamage>{0} hits</style> of damage over time causes", BlastTicks);
+					}
+					else
+					{
+						blastCondition += string.Format("Damage over time causes");
+					}
 
+					blastRadius = string.Format(" an <style=cIsDamage>explosion</style> in a <style=cIsDamage>{0}m</style>", BlastBaseRadius);
+					if (BlastStackRadius > 0f)
+					{
+						blastRadius += string.Format(" <style=cStack>(+{0}m per stack)</style>", BlastStackRadius);
+					}
+					blastRadius += " radius";
+
+					blastDamage = string.Format(" for <style=cIsDamage>{0}%</style>", BlastBaseDamage * 100f);
+					if (BlastStackDamage > 0f)
+					{
+						blastDamage += string.Format(" <style=cStack>(+{0}% per stack)</style>", BlastStackDamage * 100f);
+					}
+					blastDamage += " TOTAL damage";
+				}
+			}
 			blastDesc += string.Format("{0}{1}{2}.", blastCondition, blastRadius, blastDamage);
 
 			string pickupText = string.Format("{0}{1}", burnPickup, blastPickup);
@@ -117,7 +138,14 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			if (BlastChance > 0f)
+            {
+				SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent_Chance;
+			}
+			else
+            {
+				SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			}
 			On.RoR2.StrengthenBurnUtils.CheckDotForUpgrade += CheckBurnUpgrade;
 		}
 		private void CheckBurnUpgrade(On.RoR2.StrengthenBurnUtils.orig_CheckDotForUpgrade orig, Inventory inventory, ref InflictDotInfo dotInfo)
@@ -125,6 +153,47 @@ namespace FlatItemBuff.Items
 			//this should only be used by mods that upgrade a dot using ignition tank so this should be fine to mute like this
 			return;
         }
+		private void GlobalDamageEvent_Chance(DamageReport damageReport)
+		{
+			CharacterBody victimBody = damageReport.victimBody;
+			CharacterBody attackerBody = damageReport.attackerBody;
+			float procRate = damageReport.damageInfo.procCoefficient;
+			bool isDot = damageReport.dotType != DotController.DotIndex.None;
+			if (attackerBody && victimBody)
+			{
+				Inventory inventory = damageReport.attackerBody.inventory;
+				if (inventory)
+				{
+					int itemCount = inventory.GetItemCount(DLC1Content.Items.StrengthenBurn);
+					if (itemCount > 0)
+					{
+						
+						if (BurnChance > 0f && Util.CheckRoll(procRate * BurnChance, damageReport.attackerMaster))
+						{
+							float baseDamage = attackerBody.damage * BurnDuration * 0.5f;
+							float dmgMult = 1f + BurnBaseDamage;
+							InflictDotInfo inflictDotInfo = new InflictDotInfo
+							{
+								victimObject = damageReport.victim.gameObject,
+								attackerObject = damageReport.attacker,
+								totalDamage = baseDamage * dmgMult,
+								dotIndex = DotController.DotIndex.Burn,
+								damageMultiplier = dmgMult
+							};
+							DotController.InflictDot(ref inflictDotInfo);
+						}
+						if (isDot)
+						{
+							float baseChance = Math.Max(1f, procRate);
+							if (Util.CheckRoll(baseChance * BlastChance, damageReport.attackerMaster))
+							{
+								DoTankExplosion(attackerBody, victimBody, itemCount, damageReport.damageInfo);
+							}
+						}
+					}
+				}
+			}
+		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
 			CharacterBody victimBody = damageReport.victimBody;
@@ -218,14 +287,6 @@ namespace FlatItemBuff.Items
         {
 			if (BlastTicks > 1)
 			{
-				/*Components.IgnitionTankTicker comp = body.GetComponent<Components.IgnitionTankTicker>();
-				if (!comp)
-				{
-					comp = body.gameObject.AddComponent<Components.IgnitionTankTicker>();
-				}
-				return comp.TickUp();*/
-
-
 				Components.IgnitionTankTracker comp = victimBody.GetComponent<Components.IgnitionTankTracker>();
 				if (!comp)
 				{

@@ -139,7 +139,6 @@ namespace FlatItemBuff
 		private static void Read_General()
         {
 			//Section_Bugs
-			GeneralChanges.FixExpiredPings = GeneralConfig.Bind(Section_General_Bugs, "Fix Expired Pings", false, "Fixes a bug with expired pings blocking new ones. Recommended if using the Death Mark rework.").Value;
 			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier, recommended and specifically catered for Aegis changes.").Value;
 		}
 
@@ -214,13 +213,12 @@ namespace FlatItemBuff
 		}
 		private static void Read_DeathMark()
 		{
-			DeathMark_Rework.Enable = ItemConfig.Bind(Section_DeathMark_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			DeathMark_Rework.BaseDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Base Duration", 6f, "Duration of the Death Mark at a single stack.").Value;
-			DeathMark_Rework.StackDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Stack Duration", 3f, "Duration of the Death Mark for each additional stack.").Value;
-			DeathMark_Rework.BaseCooldown = ItemConfig.Bind(Section_DeathMark_Rework, "Cooldown", 0, "Cooldown between uses. (Whole numbers only)").Value;
-			DeathMark_Rework.MarkBaseBonus = ItemConfig.Bind(Section_DeathMark_Rework, "Base Damage Bonus", 0.5f, "Damage bonus against Death Marked targets.").Value;
-			DeathMark_Rework.MarkStackBonus = ItemConfig.Bind(Section_DeathMark_Rework, "Stack Damage Bonus", 0.2f, "Damage bonus against Death Marked targets for each additional stack of the debuff.").Value;
-			DeathMark_Rework.AllowMarkStacking = ItemConfig.Bind(Section_DeathMark_Rework, "Allow Stacking", false, "Allows for multiple stacks of Death Mark on a target.").Value;
+			DeathMark.Enable = ItemConfig.Bind(Section_DeathMark_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+
+			DeathMark.BaseDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Base Duration", 7f, "Duration of the Death Mark at a single stack.").Value;
+			DeathMark.StackDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Stack Duration", 7f, "Duration of the Death Mark for each additional stack.").Value;
+			DeathMark.DamagePerDebuff = ItemConfig.Bind(Section_DeathMark_Rework, "Damage Per Debuff", 0.1f, "Damage take per debuff.").Value;
+			DeathMark.MaxDebuffs = ItemConfig.Bind(Section_DeathMark_Rework, "Max Debuffs", 5, "The max amount of debuff that can increase damage.").Value;
 		}
 		private static void Read_LeptonDaisy()
         {
@@ -238,6 +236,7 @@ namespace FlatItemBuff
 			IgnitionTank_Rework.BurnDuration = ItemConfig.Bind(Section_IgnitionTank_Rework, "Burn Duration", 3f, "How long in seconds Burn lasts for.").Value;
 
 			IgnitionTank_Rework.BlastTicks = ItemConfig.Bind(Section_IgnitionTank_Rework, "Explode Ticks", 10, "Explodes after X instances of damage over time.").Value;
+			IgnitionTank_Rework.BlastChance = ItemConfig.Bind(Section_IgnitionTank_Rework, "Explode Chance", 0.0f, "Chance of damage over time to cause explosions. (Overrides Explode Ticks)").Value;
 			IgnitionTank_Rework.BlastBaseDamage = ItemConfig.Bind(Section_IgnitionTank_Rework, "Explosion Base Damage", 3f, "Damage the explosion deals at a single stack.").Value;
 			IgnitionTank_Rework.BlastStackDamage = ItemConfig.Bind(Section_IgnitionTank_Rework, "Explosion Stack Damage", 2f, "Extra damage the explosion deals for each additional stack.").Value;
 			IgnitionTank_Rework.BlastBaseRadius = ItemConfig.Bind(Section_IgnitionTank_Rework, "Explosion Base Radius", 12f, "Radius of the the explosion at a single stack.").Value;
@@ -263,14 +262,15 @@ namespace FlatItemBuff
 			LeechingSeed.BaseHeal = ItemConfig.Bind(Section_LeechingSeed_Buff, "Base Healing", 1f, "Extra healing amount regardless of proc coefficient.").Value;
 
 			LeechingSeed_Rework.Enable = ItemConfig.Bind(Section_LeechingSeed_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			LeechingSeed_Rework.BaseDoTHeal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Base DoT Healing", 4f, "Healing amount given from damage over time ticks at a single stack.").Value;
-			LeechingSeed_Rework.StackDoTHeal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Stack DoT Healing", 4f, "Healing amount given from damage over time for each additional stack.").Value;
+			LeechingSeed_Rework.BaseDoTHeal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Base DoT Healing", 1f, "Healing amount given from damage over time ticks at a single stack.").Value;
+			LeechingSeed_Rework.StackDoTHeal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Stack DoT Healing", 1f, "Healing amount given from damage over time for each additional stack.").Value;
+			LeechingSeed_Rework.ScaleToTickRate = ItemConfig.Bind(Section_LeechingSeed_Rework, "Scale To Tick Rate", true, "Healing amount scales with how often the damager over time ticks, slower tick rates give more healing.").Value;
 			LeechingSeed_Rework.LeechChance = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Chance", 20f, "Chance of applying the Leech debuff.").Value;
-			LeechingSeed_Rework.LeechLifeSteal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Life Steal", 0.1f, "Percent of damage received as healing when damaging a target with Leech.").Value;
-			LeechingSeed_Rework.LeechMinLifeSteal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Minimum Life Steal", 1f, "Minimum amount of healing received when damaging a target with Leech.").Value;
-			LeechingSeed_Rework.LeechBaseDamage = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Damage", 0.5f, "Damage dealt per second from Leech.").Value;
-			LeechingSeed_Rework.LeechBaseDuration = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Duration", 5f, "How long Leech is applied for at a single stack.").Value;
-			LeechingSeed_Rework.LeechStackDuration = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Stack Duration", 0f, "How much longer Leech is applied for each additional stack.").Value;
+			LeechingSeed_Rework.LeechLifeSteal = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Life Steal", 1f, "Percent of damage received as healing when damaging a target with Leech. (Gets scaled by the attacker's damage stat.)").Value;
+			LeechingSeed_Rework.LeechBaseDamage = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Damage", 2.5f, "Damage of the Leech at a single stack.").Value;
+			LeechingSeed_Rework.LeechStackDamage = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Stack Damage", 0f, "Damage of the Leech for each additional stack.").Value;
+			LeechingSeed_Rework.LeechBaseDuration = ItemConfig.Bind(Section_LeechingSeed_Rework, "Leech Base Duration", 5f, "Duration of the Leech debuff.").Value;
+			
 		}
 		private static void Read_WaxQuail()
         {
@@ -302,10 +302,10 @@ namespace FlatItemBuff
 			UnstableTransmitter_Rework.Enable = ItemConfig.Bind(Section_UnstableTransmitter_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			UnstableTransmitter_Rework.BaseCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Cooldown", 30f, "Cooldown between activations.").Value;
 			UnstableTransmitter_Rework.AllyStackCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Ally Cooldown", 0.5f, "Cooldown reduction per ally owned.").Value;
-			UnstableTransmitter_Rework.CapCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Cap Cooldown", 2f, "The lowest the cooldown can go.").Value;
+			UnstableTransmitter_Rework.CapCooldown = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Cap Cooldown", 1f, "The lowest the cooldown can go.").Value;
 			UnstableTransmitter_Rework.BaseDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Damage", 3.5f, "Damage at a single stack.").Value;
 			UnstableTransmitter_Rework.StackDamage = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Damage", 2.8f, "Damage for each additional stack.").Value;
-			UnstableTransmitter_Rework.BaseRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Radius", 15f, "Blast radius at a single stack.").Value;
+			UnstableTransmitter_Rework.BaseRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Base Radius", 16f, "Blast radius at a single stack.").Value;
 			UnstableTransmitter_Rework.StackRadius = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Stack Radius", 0f, "Blast radius for each additional stack.").Value;
 			UnstableTransmitter_Rework.ProcRate = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Proc Coefficient", 1f, "The Proc Coefficient of the blast.").Value;
 			UnstableTransmitter_Rework.ProcBands = ItemConfig.Bind(Section_UnstableTransmitter_Rework, "Proc Bands", true, "Should the blast proc bands?").Value;
@@ -349,10 +349,10 @@ namespace FlatItemBuff
 		{
 			Aegis.Enable = ItemConfig.Bind(Section_Aegis_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			Aegis.AllowRegen = ItemConfig.Bind(Section_Aegis_Buff, "Count Regen", true, "Allows excess regen to be converted into barrier.").Value;
-			Aegis.BaseOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Base Overheal", 0.5f, "Conversion rate of overheal to barrier at single stack.").Value;
-			Aegis.StackOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Stack Overheal", 0.5f, "Conversion rate of overheal to barrier for each additional stack.").Value;
-			Aegis.BaseMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Base Max Barrier", 0.25f, "Increases maximum barrier by this much at single stack.").Value;
-			Aegis.StackMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Stack Max Barrier", 0.25f, "Increases maximum barrier by this much for each additional stack.").Value;
+			Aegis.BaseOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Base Overheal", 1f, "Conversion rate of overheal to barrier at single stack.").Value;
+			Aegis.StackOverheal = ItemConfig.Bind(Section_Aegis_Buff, "Stack Overheal", 0f, "Conversion rate of overheal to barrier for each additional stack.").Value;
+			Aegis.BaseMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Base Max Barrier", 1f, "Increases maximum barrier by this much at single stack.").Value;
+			Aegis.StackMaxBarrier = ItemConfig.Bind(Section_Aegis_Buff, "Stack Max Barrier", 1f, "Increases maximum barrier by this much for each additional stack.").Value;
 		}
 		private static void Read_BensRaincoat()
         {
@@ -381,13 +381,13 @@ namespace FlatItemBuff
 		private static void Read_SymbioticScorpion()
         {
 			SymbioticScorpion_Rework.Enable = ItemConfig.Bind(Section_SymbioticScorpion_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			SymbioticScorpion_Rework.Slayer_BaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Base Damage", 1f, "Slayer DoT damage increase at a single stack.").Value;
+			SymbioticScorpion_Rework.Slayer_BaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Base Damage", 2f, "Slayer DoT damage increase at a single stack.").Value;
 			SymbioticScorpion_Rework.Slayer_StackDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Stack Damage", 0f, "Slayer DoT damage increase for each additional stack.").Value;
 			SymbioticScorpion_Rework.SlayerDot_AffectTotalDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Slayer DoT Affects Total Damage", false, "Makes the Slayer DoT affect the total damage for the purpose of proc items. (False = Vanilla)").Value;
 			SymbioticScorpion_Rework.Radius = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Radius", 13f, "The targetting radius for the Venom attack. (Set to 0 to disable the effect entirely.)").Value;
 			SymbioticScorpion_Rework.Cooldown = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Cooldown", 5f, "Cooldown between Venom attacks.").Value;
-			SymbioticScorpion_Rework.VenomBaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Base Damage", 8f, "Damage of the Venom at a single stack.").Value;
-			SymbioticScorpion_Rework.VenomStackDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Stack Damage", 8f, "Damage of the Venom for each additional stack.").Value;
+			SymbioticScorpion_Rework.VenomBaseDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Base Damage", 6f, "Damage of the Venom at a single stack.").Value;
+			SymbioticScorpion_Rework.VenomStackDamage = ItemConfig.Bind(Section_SymbioticScorpion_Rework, "Venom Stack Damage", 6f, "Damage of the Venom for each additional stack.").Value;
 		}
 		private static void Read_Planula()
         {
@@ -415,7 +415,7 @@ namespace FlatItemBuff
 			TitanicKnurl_Rework.BaseDamage = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Base Damage", 8f, "Base damage at a single stack.").Value;
 			TitanicKnurl_Rework.StackDamage = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Stack Damage", 6f, "Base damage for each additional stack.").Value;
 			TitanicKnurl_Rework.BaseCooldown = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Base Cooldown", 6f, "Cooldown at a single stack.").Value;
-			TitanicKnurl_Rework.StackCooldown = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Stack Cooldown", 0.15f, "Cooldown rate for each additional stack.").Value;
+			TitanicKnurl_Rework.StackCooldown = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Stack Cooldown", 0.25f, "Cooldown rate for each additional stack.").Value;
 			TitanicKnurl_Rework.ProcRate = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Proc Coefficient", 1.0f, "Proc coefficient of the stone fist.").Value;
 			TitanicKnurl_Rework.ProcBands = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Proc Bands", true, "Should the stone fist proc bands?").Value;
 			TitanicKnurl_Rework.TargetRadius = ItemConfig.Bind(Section_TitanicKnurl_Rework, "Target Radius", 60f, "Targeting radius in metres.").Value;
@@ -433,7 +433,7 @@ namespace FlatItemBuff
 			DefenseNucleus.Comp_AssistManager = ItemConfig.Bind(Section_DefenseNucleus_Buff, Label_AssistManager, false, Desc_AssistManager).Value;
 
 			DefenseNucleus_Rework.Enable = ItemConfig.Bind(Section_DefenseNucleus_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			DefenseNucleus_Rework.SummonCount = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 6 because I said so.)").Value;
+			DefenseNucleus_Rework.SummonCount = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 8 because I said so.)").Value;
 			DefenseNucleus_Rework.BaseHealth = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus_Rework.StackHealth = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Stack Health", 10, "Extra health the construct gets for each additional stack.").Value;
 			DefenseNucleus_Rework.BaseAttack = ItemConfig.Bind(Section_DefenseNucleus_Rework, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;

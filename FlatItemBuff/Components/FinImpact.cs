@@ -14,7 +14,10 @@ namespace FlatItemBuff.Components
 		public CharacterBody attackerBody;
 		public int itemCount = 0;
 
+		public float enforceDuration = 1f;
 		private float lastSpeed = 0f;
+		private float lastSpeedA = 0f;
+		private float lastSpeedB = 0f;
 		private float fallCreditGrace = 1f;
 		private bool HasImpact = false;
 		private void Awake()
@@ -24,8 +27,12 @@ namespace FlatItemBuff.Components
 		internal void Reset()
 		{
 			lastSpeed = 0f;
+			lastSpeedA = 0f;
+			lastSpeedB = 0f;
 			fallCreditGrace = 1f;
 			HasImpact = false;
+
+			enforceDuration = 1f;
 
 			victimBody = GetComponent<CharacterBody>();
 			if (victimBody)
@@ -60,13 +67,31 @@ namespace FlatItemBuff.Components
 			if (victimBody.HasBuff(KnockbackFin.knockMidBuff))
 			{
 				fallCreditGrace = 1f;
-				if (victimMotor.isGrounded)
+				if (!victimMotor.isGrounded)
 				{
-					OnImpact();
-				}
-				else
-				{
-					lastSpeed = victimMotor.velocity.magnitude;
+					if (enforceDuration < 0f)
+					{
+						if (victimMotor.isFlying)
+						{
+							float resistance = Mathf.Max(victimBody.moveSpeed, victimBody.baseMoveSpeed);
+							float magnitude = victimMotor.velocity.magnitude;
+							if (magnitude < resistance)
+							{
+								StartCooldown();
+							}
+						}
+					}
+					else
+					{
+						enforceDuration -= Time.fixedDeltaTime;
+					}
+					lastSpeedB = lastSpeedA;
+					lastSpeedA = lastSpeed;
+					lastSpeed = victimMotor.velocity.y;
+					if (lastSpeed < 0f)
+                    {
+						lastSpeed *= -1f;
+					}
 				}
 			}
 			else
@@ -98,8 +123,14 @@ namespace FlatItemBuff.Components
 				}
 			}
 		}
+		private float GetBestSpeed()
+        {
+			float returnVal = Math.Max(lastSpeed, lastSpeedA);
+			return Math.Max(returnVal, lastSpeedB);
+		}
 		private void Detonate()
         {
+			float bestSpeed = GetBestSpeed();
 			HasImpact = true;
 			if (KnockbackFin.BaseRadius > 0f && attackerBody)
             {
@@ -107,9 +138,10 @@ namespace FlatItemBuff.Components
 				float blastRadius = KnockbackFin.GetImpactRadius(itemCount);
 				if (blastDamage > 0f)
 				{
+					float resistance = (victimBody.jumpPower + 20f) / 4f;
 					bool isCrit = Util.CheckRoll(attackerBody.crit, attackerBody.master);
-					float velDmg = Mathf.Max(0f, lastSpeed);
-					velDmg = Mathf.InverseLerp((victimBody.jumpPower + 20f) / 4f, 120f, velDmg);
+					float velDmg = Mathf.Max(0f, bestSpeed);
+					velDmg = Mathf.InverseLerp(resistance, 80f, velDmg);
 					blastDamage *= Mathf.Lerp(1f, KnockbackFin.MaxDistDamage, velDmg);
 					
 
