@@ -12,7 +12,7 @@ namespace FlatItemBuff.Items
 	public class AntlerShield_Rework
 	{
 		internal static bool Enable = true;
-		internal static float StackArmor = 7.5f;
+		internal static float StackArmor = 5f;
 		internal static float StackSpeed = 0.07f;
 		public AntlerShield_Rework()
 		{

@@ -16,8 +16,8 @@ namespace FlatItemBuff.Items
 		internal static bool Enable = false;
 		internal static float DamagePerDebuff = 0.1f;
 		internal static int MaxDebuffs = 5;
-		internal static float BaseDuration = 7f;
-		internal static float StackDuration = 7f;
+		internal static float BaseDuration = 6f;
+		internal static float StackDuration = 4f;
 		public DeathMark()
 		{
 			if (!Enable)
@@ -80,21 +80,23 @@ namespace FlatItemBuff.Items
 			{
 				if (attackerBody && victimBody)
 				{
-					Inventory inventory = damageReport.attackerBody.inventory;
-					if (inventory)
-					{
-						int itemCount = inventory.GetItemCount(RoR2Content.Items.DeathMark);
-						if (itemCount > 0)
+					if (attackerBody != victimBody)
+                    {
+						Inventory inventory = damageReport.attackerBody.inventory;
+						if (inventory)
 						{
-							float duration = GetDeathMarkDuration(itemCount);
-							if (duration > 0f)
-                            {
-								victimBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, duration);
+							int itemCount = inventory.GetItemCount(RoR2Content.Items.DeathMark);
+							if (itemCount > 0)
+							{
+								float duration = GetDeathMarkDuration(itemCount) * procRate;
+								if (duration > 0f)
+								{
+									victimBody.AddTimedBuff(RoR2Content.Buffs.DeathMark, duration);
+								}
 							}
 						}
 					}
 				}
-				
 			}
 		}
 		private float GetDeathMarkDuration(int itemCount)

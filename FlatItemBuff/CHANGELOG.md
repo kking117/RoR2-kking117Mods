@@ -1,3 +1,26 @@
+**1.22.5**
+
+```
+- Antler Shield:
+- Changed "Stack Armor" default configuration. (7.5 -> 5)
+^ 7.5 armor is almost the same effective amount of health from a Personal Shield Generator.
+
+- Death Mark:
+- Fixed config category name.
+- Changed "Base Duration" default configuration. (7 -> 6)
+- Changed "Stack Duration" default configuration. (7 -> 4)
+- Duration is now scaled by proc coefficient, and can no longer proc on yourself.
+
+- Old War Stealthkit:
+- Removed "Cancel Combat" configuration.
+^ Never felt that impactful and this is designed to allow you to escape combat situations anyway.
+- Added a stunning area of effect similar to Bandit's Smoke Bomb when activating.
+- Description now mentions that it cleanses damage over time.
+
+- Symbiotic Scorpion Rework:
+- AI Blacklisted for real this time.
+```
+
 **1.22.4**
 
 <details><summary>Notes</summary>Death Mark Rework has been changed completely and the fix to expired pings has been moved to a seperate mod. Most changes made are balancing related with a focus on being more consistent with the game, doing all this as the idea of the mod being complete is within sight, but still a while away.</details>
@@ -7,9 +30,9 @@
 - Fixed certain flying enemies not going on cooldown once they have stable velocity, such as Flying Pests and Alloy Vultures.
 - Made velocity based damage more consistent and the damage cap much more realistic to achieve.
 
-- Deathmark Rework:
+- Death Mark Rework:
 - Scrapped since the ping system can be quite frustrating at times.
-- Changed to be closer to how Deathmark works but less binary and can be tweaked to work better with modded setups.
+- Changed to be closer to how Death Mark works but less binary and can be tweaked to work better with modded setups.
 - Is now classed as a buff instead of a rework.
 
 - Ignition Tank Rework:
@@ -19,10 +42,10 @@
 - Added a configuration to make the healing from DoTs scale with the tick rate of said DoT. (It was doing this already by default)
 - Changed "Base DoT Healing" default configuration. (4 -> 1)
 - Changed "Stack DoT Healing" default configuration. (4 -> 1)
-- ^ A tick rate of 4 is used as the baseline for DoT scaling so the healing amount is unchanged with these values.
+^ A tick rate of 4 is used as the baseline for DoT scaling so the healing amount is unchanged with these values.
 - Changed "Leech Base Damage" default configuration. (0.5 -> 2.5) (Unchanged technically)
 - Replaced "Leech Stack Duration" with "Leech Stack Damage" configuration.
-- ^ This is done to be consistent with how other items increase their DoT damage.
+^ This is done to be consistent with how other items increase their DoT damage.
 - Healing from the Leech debuff is now scaled from the attacker's damage stat rather than with time.
 - Changed "Leech Life Steal" default configuration. (0.1 -> 1)
 - Removed "Leech Minimum Life Steal", now always in effect at a value of 1.
@@ -33,7 +56,7 @@
 
 - Symbiotic Scorpion Rework:
 - Changed "Slayer DoT Base Damage" default configuration. (1 -> 2)
-- ^ Originally at 1 for balance reasons, but decided to set it to 2 so it's consistent with actual Slayer damage.
+^ Originally at 1 for balance reasons, but decided to set it to 2 so it's consistent with actual Slayer damage.
 - Changed "Venom Base Damage" default configuration. (8 -> 6)
 - Changed "Venom Stack Damage" default configuration. (8 -> 6)
 - Removed Monster specific interaction, is now AI Blacklisted by default.

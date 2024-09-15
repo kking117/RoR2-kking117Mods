@@ -30,7 +30,7 @@ namespace FlatItemBuff
 
 		private const string Section_Chronobauble_Buff = "Chronobauble";
 
-		private const string Section_DeathMark_Rework = "Death Mark Rework";
+		private const string Section_DeathMark_Buff = "Death Mark";
 
 		private const string Section_LeptonDaisy_Buff = "Lepton Daisy";
 
@@ -145,7 +145,7 @@ namespace FlatItemBuff
 		private static void Read_AntlerShield()
         {
 			AntlerShield_Rework.Enable = ItemConfig.Bind(Section_AntlerShield_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			AntlerShield_Rework.StackArmor = ItemConfig.Bind(Section_AntlerShield_Rework, "Stack Armor", 7.5f, "Armor each stack gives.").Value;
+			AntlerShield_Rework.StackArmor = ItemConfig.Bind(Section_AntlerShield_Rework, "Stack Armor", 5f, "Armor each stack gives.").Value;
 			AntlerShield_Rework.StackSpeed = ItemConfig.Bind(Section_AntlerShield_Rework, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
 		}
 		private static void Read_BisonSteak()
@@ -213,12 +213,12 @@ namespace FlatItemBuff
 		}
 		private static void Read_DeathMark()
 		{
-			DeathMark.Enable = ItemConfig.Bind(Section_DeathMark_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			DeathMark.Enable = ItemConfig.Bind(Section_DeathMark_Buff, Label_EnableRework, false, Desc_EnableRework).Value;
 
-			DeathMark.BaseDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Base Duration", 7f, "Duration of the Death Mark at a single stack.").Value;
-			DeathMark.StackDuration = ItemConfig.Bind(Section_DeathMark_Rework, "Stack Duration", 7f, "Duration of the Death Mark for each additional stack.").Value;
-			DeathMark.DamagePerDebuff = ItemConfig.Bind(Section_DeathMark_Rework, "Damage Per Debuff", 0.1f, "Damage take per debuff.").Value;
-			DeathMark.MaxDebuffs = ItemConfig.Bind(Section_DeathMark_Rework, "Max Debuffs", 5, "The max amount of debuff that can increase damage.").Value;
+			DeathMark.BaseDuration = ItemConfig.Bind(Section_DeathMark_Buff, "Base Duration", 6f, "Duration of the Death Mark at a single stack.").Value;
+			DeathMark.StackDuration = ItemConfig.Bind(Section_DeathMark_Buff, "Stack Duration", 4f, "Duration of the Death Mark for each additional stack.").Value;
+			DeathMark.DamagePerDebuff = ItemConfig.Bind(Section_DeathMark_Buff, "Damage Per Debuff", 0.1f, "Damage take per debuff.").Value;
+			DeathMark.MaxDebuffs = ItemConfig.Bind(Section_DeathMark_Buff, "Max Debuffs", 5, "The max amount of debuff that can increase damage.").Value;
 		}
 		private static void Read_LeptonDaisy()
         {
@@ -293,9 +293,9 @@ namespace FlatItemBuff
 			Stealthkit.BuffDuration = ItemConfig.Bind(Section_Stealthkit_Buff, "Buff Duration", 5f, "Duration of the Stealth buff.").Value;
 			Stealthkit.Stealth_MoveSpeed = ItemConfig.Bind(Section_Stealthkit_Buff, "Stealth Movement Speed", 0.4f, "How much Movement Speed is given from the Stealth buff.").Value;
 			Stealthkit.Stealth_ArmorPerBuff = ItemConfig.Bind(Section_Stealthkit_Buff, "Stealth Armor", 20f, "How much Armor to give per stack of the Stealth buff.").Value;
-			Stealthkit.CancelCombat = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Combat", true, "Puts you in 'Out of Combat' upon activation.").Value;
 			Stealthkit.CancelDanger = ItemConfig.Bind(Section_Stealthkit_Buff, "Cancel Danger", true, "Puts you in 'Out of Danger' upon activation.").Value;
 			Stealthkit.CleanseDoT = ItemConfig.Bind(Section_Stealthkit_Buff, "Clean DoTs", true, "Removes damage over time effects upon activation.").Value;
+			Stealthkit.SmokeBomb = ItemConfig.Bind(Section_Stealthkit_Buff, "Smoke Bomb", true, "Causes a stunning smoke bomb effect upon activation.").Value;
 		}
 		private static void Read_UnstableTransmitter()
         {

@@ -10,6 +10,7 @@ namespace FlatItemBuff.Items
 	{
 		public static BuffDef StealthBuff;
 		private static Color StealthBuff_Color = new Color(0.266f, 0.368f, 0.713f, 1f);
+		private static GameObject SmokePrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab").WaitForCompletion();
 		internal static bool Enable = true;
 
 		internal static float BuffDuration = 5.0f;
@@ -18,8 +19,8 @@ namespace FlatItemBuff.Items
 		
 		internal static float Stealth_MoveSpeed = 0.4f;
 		internal static float Stealth_ArmorPerBuff = 20f;
-		internal static bool CancelCombat = true;
 		internal static bool CancelDanger = true;
+		internal static bool SmokeBomb = true;
 		internal static bool CleanseDoT = true;
 		public Stealthkit()
 		{
@@ -45,8 +46,23 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "Become stealthed at low health.";
-			string desc = "";
+			string desc = string.Format("Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style> for <style=cIsUtility>{0}s</style>", BuffDuration);
 			string desc_stealth = " While <style=cIsUtility>stealthed</style> gain <style=cIsUtility>invisibility</style>";
+			if (SmokeBomb)
+            {
+				if (CleanseDoT)
+                {
+					desc += ", <style=cIsDamage>stuns</style> nearby enemies";
+				}
+				else
+                {
+					desc += " and <style=cIsDamage>stuns</style> nearby enemies.";
+				}
+			}
+			if (CleanseDoT)
+			{
+				desc += " and <style=cIsUtility>cleanses</style> damage over time.";
+            }
 			if (Stealth_MoveSpeed > 0f || Stealth_ArmorPerBuff > 0f)
 			{
 				if (Stealth_MoveSpeed > 0f)
@@ -68,7 +84,7 @@ namespace FlatItemBuff.Items
 			}
 			string desc_cooldown = string.Format(" Recharges every <style=cIsUtility>{0} seconds</style> <style=cStack>(-{1}% per stack)</style>.", BaseRecharge, StackRecharge * 100);
 
-			desc = string.Format("Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style> for <style=cIsUtility>{0}s</style>.{1}{2}", BuffDuration, desc_stealth, desc_cooldown);
+			desc += desc_stealth + desc_cooldown;
 			LanguageAPI.Add("ITEM_PHASING_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_PHASING_DESC", desc);
 		}
@@ -77,10 +93,6 @@ namespace FlatItemBuff.Items
 			Stealthkit_Override();
 			On.RoR2.CharacterBody.GetVisibilityLevel_TeamIndex += CharacterBody_GetVisibility;
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
-			if (CancelCombat)
-			{
-				On.RoR2.CharacterBody.OnSkillActivated += CharacterBody_OnSkillActivated;
-			}
 			if (CancelDanger)
 			{
 				On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
@@ -122,15 +134,37 @@ namespace FlatItemBuff.Items
 							{
 								Util.CleanseBody(self.body, false, false, false, true, true, false);
 							}
-							if (CancelCombat)
-							{
-								self.body.outOfCombat = true;
-								self.body.outOfCombatStopwatch = float.PositiveInfinity;
-							}
 							if (CancelDanger)
 							{
 								self.body.outOfDanger = true;
 								self.body.outOfDangerStopwatch = float.PositiveInfinity;
+							}
+
+							if (SmokeBomb)
+                            {
+								BlastAttack blastAttack = new BlastAttack();
+								blastAttack.radius = 12f;
+								blastAttack.procCoefficient = 1f;
+								blastAttack.position = body.transform.position;
+								blastAttack.attacker = body.gameObject;
+								blastAttack.crit = Util.CheckRoll(body.crit, body.master);
+								blastAttack.baseDamage = body.damage * 2f;
+								blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+								blastAttack.damageType = DamageType.Stun1s;
+								blastAttack.baseForce = 60f;
+								blastAttack.teamIndex = TeamComponent.GetObjectTeam(blastAttack.attacker);
+								blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+								blastAttack.Fire();
+
+								GameObject smokePrefab = EntityStates.Bandit2.StealthMode.smokeBombEffectPrefab;
+								if (smokePrefab)
+								{
+									EffectData effectData = new EffectData();
+									effectData.origin = body.corePosition;
+									effectData.SetNetworkedObjectReference(body.gameObject);
+									effectData.scale = 1f;
+									EffectManager.SpawnEffect(SmokePrefab, effectData, true);
+								}
 							}
 						}
 					}

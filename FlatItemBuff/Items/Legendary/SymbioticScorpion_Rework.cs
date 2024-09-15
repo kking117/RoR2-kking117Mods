@@ -53,7 +53,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/PermanentDebuffOnHit/bdPermanentDebuff.asset").WaitForCompletion();
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/PermanentDebuffOnHit/PermanentDebuffOnHit.asset").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
