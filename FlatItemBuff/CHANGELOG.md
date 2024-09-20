@@ -1,3 +1,28 @@
+**1.23.0**
+
+```
+- Configs:
+- Seperated item configs for each tier, it was getting difficult to look through.
+
+- Artifact of Spite:
+- Changes moved to a new mod.
+
+- Added a rework to Sonorous Whispers.
+
+- Leeching Seed Rework:
+- Healing from the Leech debuff is now scaled from the attacker's expected damage stat at level rather than their damage stat.
+^ Just means having damage stat increases from items will actually increase the healing, for example Shaped Glass will now increase the healing previously it did not.
+
+- Lepton Daisy:
+- Removed the hyperbolic stacking calculations and made it linear.
+^ Felt needlessly complicated, plus it's okay for some items to reach hard limits.
+- Changed "Stack Healing" default configuration. (10 -> 5)
+
+- Unstable Transmitter Rework:
+- Added configuration "Respawn Minion", setting it to false makes the Strike Drone not respawn until the user respawns, like how Spare Drone Parts and Col. Droneman work. (Default: False)
+- Finally wrote a nicer note about it in the README.
+```
+
 **1.22.5**
 
 ```

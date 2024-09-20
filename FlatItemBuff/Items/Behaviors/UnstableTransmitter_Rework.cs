@@ -24,6 +24,7 @@ namespace FlatItemBuff.Items.Behaviors
 		private int oldTeleIndex = 0;
 
 		private float nextTeleport = 5f;
+		private bool hasSpawnedDrone = false;
 		private void OnEnable()
 		{
 			ulong num = Run.instance.seed ^ (ulong)Run.instance.stageClearCount;
@@ -45,18 +46,36 @@ namespace FlatItemBuff.Items.Behaviors
 				return;
 			}
 			CharacterMaster owner = body.master;
-			int maxDrones = owner.GetDeployableSameSlotLimit(deploySlot);
-			if (owner.GetDeployableCount(deploySlot) < maxDrones)
-			{
-				if (nextSpawn <= 0f)
+			if (Items.UnstableTransmitter_Rework.Respawns)
+            {
+				int maxDrones = owner.GetDeployableSameSlotLimit(deploySlot);
+				if (owner.GetDeployableCount(deploySlot) < maxDrones)
 				{
-					SpawnDrone();
-				}
-				else
-				{
-					nextSpawn -= Time.fixedDeltaTime;
+					if (nextSpawn <= 0f)
+					{
+						SpawnDrone();
+					}
+					else
+					{
+						nextSpawn -= Time.fixedDeltaTime;
+					}
 				}
 			}
+			else
+            {
+				if (!hasSpawnedDrone)
+                {
+					if (nextSpawn <= 0f)
+					{
+						SpawnDrone();
+					}
+					else
+					{
+						nextSpawn -= Time.fixedDeltaTime;
+					}
+				}
+            }
+			
 			nextTeleport -= Time.fixedDeltaTime;
 			if (nextTeleport < 0f)
             {
@@ -310,6 +329,7 @@ namespace FlatItemBuff.Items.Behaviors
 							origin = summonBody.transform.position,
 							rotation = Quaternion.identity
 						}, true);
+						hasSpawnedDrone = true;
 					}
 				}
 			}));

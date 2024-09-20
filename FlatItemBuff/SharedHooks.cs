@@ -21,6 +21,9 @@ namespace FlatItemBuff
 		public delegate void Handle_GlobalHitEvent(CharacterBody victim, CharacterBody attacker, DamageInfo damageInfo);
 		public static Handle_GlobalHitEvent Handle_GlobalHitEvent_Actions;
 
+		public delegate void Handle_HealthComponentTakeDamage(HealthComponent self, DamageInfo damageInfo);
+		public static Handle_HealthComponentTakeDamage Handle_HealthComponentTakeDamage_Actions;
+
 		public delegate void Handle_CharacterMaster_OnBodyDeath(CharacterMaster master, CharacterBody body);
 		public static Handle_CharacterMaster_OnBodyDeath Handle_CharacterMaster_OnBodyDeath_Actions;
 
@@ -44,6 +47,14 @@ namespace FlatItemBuff
 			{
 				On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_HitEnemy;
 			}
+			if (Handle_GlobalHitEvent_Actions != null)
+			{
+				On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_HitEnemy;
+			}
+			if (Handle_HealthComponentTakeDamage_Actions != null)
+			{
+				On.RoR2.HealthComponent.TakeDamageProcess += HealthComponent_TakeDamage;
+			}
 			if (Handle_GlobalInventoryChangedEvent_Actions != null)
             {
 				CharacterBody.onBodyInventoryChangedGlobal += GlobalEventManager_OnInventoryChanged;
@@ -60,6 +71,12 @@ namespace FlatItemBuff
 			{
 				Handle_GetStatCoefficients_Actions.Invoke(sender, args, sender.inventory);
 			}
+		}
+
+		internal static void HealthComponent_TakeDamage(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
+		{
+			Handle_HealthComponentTakeDamage_Actions.Invoke(self, damageInfo);
+			orig(self, damageInfo);
 		}
 
 		internal static void GlobalEventManager_onCharacterDeathGlobal(DamageReport damageReport)

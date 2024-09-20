@@ -23,7 +23,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.22.5";
+		public const string MODVERSION = "1.23.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -66,6 +66,7 @@ namespace FlatItemBuff
 			new Items.BensRaincoat();
 			new Items.HappiestMask_Rework();
 			new Items.LaserScope();
+			new Items.SonorousWhispers_Rework();
 			new Items.SymbioticScorpion_Rework();
 			//Boss
 			new Items.DefenseNucleus_Rework();
@@ -75,8 +76,6 @@ namespace FlatItemBuff
 			new Items.LigmaLenses();
 			new Items.NewlyHatchedZoea_Rework();
 			new Items.VoidsentFlame();
-			//Artifacts
-			new Artifacts.Spite();
 		}
 		private void PostLoad_GameModeCatalog()
         {

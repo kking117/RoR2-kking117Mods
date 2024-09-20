@@ -193,15 +193,6 @@ namespace FlatItemBuff.Items
 				self.outOfDangerStopwatch = float.PositiveInfinity;
 			}
 		}
-		private void CharacterBody_OnSkillActivated(On.RoR2.CharacterBody.orig_OnSkillActivated orig, CharacterBody self, GenericSkill skill)
-		{
-			orig(self, skill);
-			if (HasStealthBuffer(self))
-			{
-				self.outOfCombat = true;
-				self.outOfCombatStopwatch = float.PositiveInfinity;
-			}
-		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
 			int buffcount = sender.GetBuffCount(StealthBuff);

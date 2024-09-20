@@ -26,6 +26,7 @@ namespace FlatItemBuff.Items
 		internal static float ProcRate = 1f;
 		internal static bool ProcBands = true;
 		internal static bool AllyOwnsDamage = false;
+		internal static bool Respawns = false;
 		internal static float TeleportRadius = 40f;
 		internal static float TeleFragRadius = 60f;
 		internal static bool TeleImmobile = true;

@@ -120,7 +120,7 @@ namespace FlatItemBuff.Items
 				{
 					if (damageReport.dotType != LeechDotIndex && damageReport.victimBody.HasBuff(LeechBuff))
 					{
-						totalHealing += LeechHealing(damageReport.attackerBody.damage, damageReport.damageDealt);
+						totalHealing += LeechHealing(damageReport.attackerBody, damageReport.damageDealt);
 					}
 				}
 				Inventory inventory = attackerBody.inventory;
@@ -156,10 +156,11 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
-		private float LeechHealing(float baseDamage, float damageDealt)
+		private float LeechHealing(CharacterBody attackerBody, float damageDealt)
         {
-			float result = damageDealt * LeechLifeSteal;
-			result /= baseDamage;
+			float level = Math.Max(0, attackerBody.level - 1f);
+			level = attackerBody.baseDamage + (attackerBody.levelDamage * level);
+			float result = (damageDealt / level) * LeechLifeSteal;
 			return Math.Max(1f, result);
 		}
 		private float LeechDoTHealing(float itemCount)

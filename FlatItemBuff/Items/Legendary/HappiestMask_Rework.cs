@@ -7,6 +7,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
@@ -70,11 +71,11 @@ namespace FlatItemBuff.Items
 		{
 			GhostCloneIdentifier = ScriptableObject.CreateInstance<ItemDef>();
 			GhostCloneIdentifier.canRemove = false;
-			GhostCloneIdentifier.name = "FlatItem_GhostCloneIdentifier";
+			GhostCloneIdentifier.name = MainPlugin.MODNAME + "_GhostCloneIdentifier";
 			GhostCloneIdentifier.deprecatedTier = ItemTier.NoTier;
 			GhostCloneIdentifier.tier = ItemTier.NoTier;
 			GhostCloneIdentifier.descriptionToken = "";
-			GhostCloneIdentifier.nameToken = "FlatItem_GhostCloneIdentifier";
+			GhostCloneIdentifier.nameToken = MainPlugin.MODNAME + "_GhostCloneIdentifier";
 			GhostCloneIdentifier.pickupToken = "";
 			GhostCloneIdentifier.hidden = true;
 			GhostCloneIdentifier.pickupIconSprite = null;
@@ -85,7 +86,7 @@ namespace FlatItemBuff.Items
 				ItemTag.CannotDuplicate,
 				ItemTag.AIBlacklist
 			};
-			Utils.ContentManager.AddItem(GhostCloneIdentifier);
+			ContentManager.AddItem(GhostCloneIdentifier);
 		}
 		private void UpdateText()
 		{

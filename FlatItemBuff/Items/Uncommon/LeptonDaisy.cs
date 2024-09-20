@@ -13,12 +13,9 @@ namespace FlatItemBuff.Items
 	public class LeptonDaisy
 	{
 		internal static bool Enable = true;
-		internal static float BaseHeal = 0.15f;
-		internal static float StackHeal = 0.1f;
-		internal static float CapHeal = 2f;
+		internal static float BaseHeal = 0.1f;
+		internal static float StackHeal = 0.05f;
 		internal static float Cooldown = 10f;
-		private static float ActualBaseHeal = 0.05f;
-		private static float ActualStackHeal = 0.05f;
 		
 		public LeptonDaisy()
 		{
@@ -35,14 +32,7 @@ namespace FlatItemBuff.Items
 		{
 			BaseHeal = Math.Max(0f, BaseHeal);
 			StackHeal = Math.Max(0f, StackHeal);
-			CapHeal = Math.Max(0f, CapHeal);
 			Cooldown = Math.Max(0f, Cooldown);
-
-			if (CapHeal > 0f)
-			{
-				ActualBaseHeal = BaseHeal / CapHeal;
-				ActualStackHeal = StackHeal / CapHeal;
-			}
 		}
 		private void UpdateText()
 		{
@@ -113,10 +103,6 @@ namespace FlatItemBuff.Items
 				{
 					num += characterMaster.inventory.GetItemCount(RoR2Content.Items.TPHealingNova);
 				}
-			}
-			if (CapHeal > 0f)
-            {
-				return Utils.Helpers.HyperbolicResult(num, ActualBaseHeal, ActualStackHeal, 1) * CapHeal;
 			}
 			return BaseHeal + (StackHeal * (num - 1));
 		}
