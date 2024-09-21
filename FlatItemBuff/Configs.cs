@@ -389,8 +389,11 @@ namespace FlatItemBuff
 			SonorousWhispers_Rework.StackPower = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Power", 0f, "Health and Damage scaling of the monster for each additional stack.").Value;
 			SonorousWhispers_Rework.BaseDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Damage", 2f, "Damage Bonus the monster gets against non-player targets at a single stack.").Value;
 			SonorousWhispers_Rework.StackDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Damage", 1f, "Damage Bonus the monster gets against non-player targets for each additional stack.").Value;
-			SonorousWhispers_Rework.BaseReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Rewards", 1, "Rewards dropped at a single stack.").Value;
-			SonorousWhispers_Rework.StackReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Rewards", 1, "Rewards dropped for each additional stack.").Value;
+			SonorousWhispers_Rework.BaseReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Rewards", 1, "Rewards dropped upon defeat at a single stack.").Value;
+			SonorousWhispers_Rework.StackReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Rewards", 1, "Rewards dropped upon defeat for each additional stack.").Value;
+			SonorousWhispers_Rework.RewardLimit = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Reward Limit", 200, "The maximum amount of rewards the monster can drop, also acts as a cap for other stacking effects.").Value;
+			SonorousWhispers_Rework.BaseGold = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Gold", 200, "Gold dropped upon defeat at a single stack.").Value;
+			SonorousWhispers_Rework.StackGold = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Gold", 100, "Gold dropped upon defeat for each additional stack.").Value;
 			SonorousWhispers_Rework.ScalePlayer = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Player Scaling", true, "Scales the monster's stats and rewards with player count.").Value;
 			SonorousWhispers_Rework.IsElite = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Elite", true, "Makes the monster always spawn as Gilded, has no affect on stats.").Value;
 			SonorousWhispers_Rework.HasAdaptive = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Adaptive Armor", false, "Gives the monster adaptive armor.").Value;

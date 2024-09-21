@@ -57,8 +57,8 @@ namespace FlatItemBuff.Items
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
-				itemTags.Remove(ItemTag.AIBlacklist);
-				itemTags.Remove(ItemTag.BrotherBlacklist);
+				itemTags.Add(ItemTag.AIBlacklist);
+				itemTags.Add(ItemTag.BrotherBlacklist);
 				itemDef.tags = itemTags.ToArray();
 			}
 		}

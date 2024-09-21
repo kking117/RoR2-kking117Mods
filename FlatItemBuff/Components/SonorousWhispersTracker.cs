@@ -46,7 +46,7 @@ namespace FlatItemBuff.Components
 			return returnCard;
 		}
 
-		public void ResetKill(CharacterMaster victim)
+		public void ClearKills(CharacterMaster victim)
 		{
 			int index = (int)victim.masterIndex;
 			if (index > -1 && index < ChampionKills.Length)
@@ -58,33 +58,40 @@ namespace FlatItemBuff.Components
 		public SpawnCard DoSelection()
 		{
 			SpawnCard result = SonorousWhispers_Rework.BaseSpawnCard;
-			int bestCount = 0;
-			List<int> tieList = new List<int>();
+			List<int> tieListWeight = new List<int>();
+			List<int> tieListIndex = new List<int>();
+			int maxRoll = 0;
 			for (int i = 0; i < ChampionKills.Length; i++)
 			{
-				if (ChampionCard[i])
+				if (ChampionCard[i] && ChampionKills[i] > 0)
                 {
-					if (ChampionKills[i] > bestCount)
-					{
-						tieList = new List<int>();
-						tieList.Add(i);
-						result = ChampionCard[i];
-						bestCount = ChampionKills[i];
-					}
-					else if (bestCount > 0 && ChampionKills[i] == bestCount)
-					{
-						tieList.Add(i);
-					}
+					maxRoll += ChampionKills[i];
+					tieListWeight.Add(maxRoll);
+					tieListIndex.Add(i);
 				}
 			}
-			if (tieList.Count > 0)
+			if (tieListIndex.Count > 0 && maxRoll > 0)
             {
-				int maxRange = Math.Max(0, tieList.Count - 1);
-				int roll = tieList[UnityEngine.Random.Range(0, maxRange)];
+				//Does RangeInt cap at maxRange - 1, seems like it?
+				int roll = Run.instance.runRNG.RangeInt(1, maxRoll + 1);
+				if (roll > maxRoll)
+                {
+					roll = maxRoll;
+				}
+				//MainPlugin.ModLogger.LogInfo("rng roll = " + roll + ", max is: " + maxRoll);
 				if (roll > -1)
                 {
-					result = ChampionCard[roll];
-					ChampionKills[roll] = 0;
+					for(int i = 0; i<tieListWeight.Count; i++)
+                    {
+						if (roll <= tieListWeight[i])
+                        {
+							//MainPlugin.ModLogger.LogInfo("Chose index " + tieListIndex[i] + " with weight " + tieListWeight[i]);
+							int index = tieListIndex[i];
+							result = ChampionCard[index];
+							ChampionKills[index] = 1;
+							break;
+                        }
+                    }
 				}
 			}
 			return result;

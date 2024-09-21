@@ -1,3 +1,31 @@
+**1.23.3**
+
+```
+- Sonorous Whispers Rework:
+- Actually fixed monster selection, whoops.
+```
+
+**1.23.2**
+
+```
+- Sonorous Whispers Rework:
+- Added "Reward Limit" configuration, limits the amount of item rewards the monster can drop. Also caps other stacking effects when reaching this limit. (Default: 200)
+- Added "Base Gold" and "Stack Gold" configurations, makes the monster give scaling gold upon defeat, I mean it is made of gold. (Default: 200, 100)
+- Fixed "Base Rewards" and "Stack Rewards" configurations having no affect on item reward amounts.
+- Now uses the Run's RNG when selecting the monster to spawn.
+- Changed how the monster is selected to reduce repetition.
+```
+
+**1.23.1**
+
+```
+- Sonorous Whispers Rework:
+- Fixed up item tags.
+
+- Symbiotic Scorpion Rework:
+- AI Blacklisted for real this time, this time.
+```
+
 **1.23.0**
 
 ```

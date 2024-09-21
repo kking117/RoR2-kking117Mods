@@ -12,7 +12,10 @@ namespace FlatItemBuff.Components
 	{
 		private int spawnState = 0;
 		private float spawnTimer = 20f;
+		private int playerCount = 1;
 		private int itemCount = 0;
+		private int rewardCount = 0;
+		private uint goldReward = 0;
 		internal static float SpawnDelayMin = 10;
 		internal static float SpawnDelayMax = 17;
 		private Vector3 LastDeathPos = new Vector3(0f, 0f, 0f);
@@ -35,9 +38,17 @@ namespace FlatItemBuff.Components
 					itemCount = Util.GetItemCountForTeam(TeamIndex.Player, DLC2Content.Items.ResetChests.itemIndex, true, true);
 					if (itemCount > 0)
                     {
-						if (itemCount > 50)
+						if (SonorousWhispers_Rework.ScalePlayer)
+						{
+							playerCount = Math.Max(1, Run.instance.participatingPlayerCount);
+						}
+						if (SonorousWhispers_Rework.BaseReward > 0)
                         {
-							itemCount = 50; //lmfao, no.
+							rewardCount = CalcRewardCount(itemCount);
+						}
+						if (SonorousWhispers_Rework.BaseGold > 0)
+                        {
+							goldReward = CalcGoldReward(itemCount);
 						}
 						BroadcastSpawn();
 						spawnTimer += 3f;
@@ -56,7 +67,48 @@ namespace FlatItemBuff.Components
 				}
 			}
 		}
-
+		private uint CalcGoldReward(int itemAmount)
+		{
+			int result = SonorousWhispers_Rework.BaseGold + (SonorousWhispers_Rework.StackGold * Math.Max(0, itemAmount-1));
+			if (result > 0)
+            {
+				if (SonorousWhispers_Rework.ScalePlayer)
+				{
+					result = Mathf.CeilToInt(playerCount * Run.instance.GetDifficultyScaledCost(result));
+				}
+				else
+				{
+					result = Run.instance.GetDifficultyScaledCost(result);
+				}
+				return (uint)result;
+			}
+			return 0;
+		}
+		private int CalcRewardCount(int itemAmount)
+        {
+			int baseAmount = SonorousWhispers_Rework.BaseReward;
+			int stackAmount = SonorousWhispers_Rework.StackReward;
+			if (SonorousWhispers_Rework.ScalePlayer)
+			{
+				baseAmount *= playerCount;
+				stackAmount *= playerCount;
+			}
+			int result = baseAmount;
+			itemCount = 1;
+			for (int i = 1; i < itemAmount; i++)
+            {
+				if (result + stackAmount <= SonorousWhispers_Rework.RewardLimit)
+                {
+					result += stackAmount;
+					itemCount += 1;
+				}
+				else
+                {
+					break;
+                }
+			}
+			return result;
+		}
 		private void BroadcastSpawn()
         {
 			Chat.SimpleChatMessage message = new Chat.SimpleChatMessage();
@@ -142,12 +194,7 @@ namespace FlatItemBuff.Components
 							HPItem *= itemMult;
 							DmgItem *= itemMult;
 
-							int playerBonus = 1;
-							if (SonorousWhispers_Rework.ScalePlayer)
-                            {
-								playerBonus = Mathf.Max(1, Run.instance.livingPlayerCount);
-							}
-							HPItem *= Mathf.Pow(playerBonus, 0.5f);
+							HPItem *= Mathf.Pow(playerCount, 0.5f);
 
 							inventory.GiveItem(RoR2Content.Items.BoostHp, Mathf.RoundToInt((HPItem - 1f) * 10f));
 							inventory.GiveItem(RoR2Content.Items.BoostDamage, Mathf.RoundToInt((DmgItem - 1f) * 10f));
@@ -193,18 +240,6 @@ namespace FlatItemBuff.Components
 		}
 		private void OnEchoFinish()
         {
-			int rewardCount = itemCount;
-
-			if (SonorousWhispers_Rework.ScalePlayer)
-			{
-				rewardCount *= Run.instance.participatingPlayerCount;
-			}
-
-			if (rewardCount > 200)
-            {
-				rewardCount = 200;
-			}
-
 			if (rewardCount > 0)
             {
 				float horiAngle = 360f / rewardCount;
@@ -217,6 +252,10 @@ namespace FlatItemBuff.Components
 					i++;
 					vector = quaternion * vector;
 				}
+			}
+			if (goldReward > 0)
+            {
+				TeamManager.instance.GiveTeamMoney(TeamIndex.Player, goldReward);
 			}
 		}
 	}

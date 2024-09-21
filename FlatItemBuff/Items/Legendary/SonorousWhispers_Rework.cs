@@ -28,6 +28,9 @@ namespace FlatItemBuff.Items
 		internal static float StackDamage = 1f;
 		internal static int BaseReward = 1;
 		internal static int StackReward = 1;
+		internal static int BaseGold = 100;
+		internal static int StackGold = 50;
+		internal static int RewardLimit = 200;
 		public static List<SceneDef> SceneList = new List<SceneDef>();
 		public static List<Vector3> SceneSpawn = new List<Vector3>();
 
@@ -53,6 +56,9 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			BaseReward = Math.Max(0, BaseReward);
 			StackReward = Math.Max(0, StackReward);
+			RewardLimit = Math.Max(BaseReward, RewardLimit);
+			BaseGold = Math.Max(0, BaseGold);
+			StackGold = Math.Max(0, StackGold);
 		}
 		private void CreateSpawnList()
         {
@@ -157,12 +163,14 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/PermanentDebuffOnHit/PermanentDebuffOnHit.asset").WaitForCompletion();
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/ResetChests/ResetChests.asset").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
-				itemTags.Remove(ItemTag.AIBlacklist);
-				itemTags.Remove(ItemTag.BrotherBlacklist);
+				itemTags.Add(ItemTag.AIBlacklist);
+				itemTags.Add(ItemTag.CannotCopy);
+				itemTags.Add(ItemTag.OnStageBeginEffect);
+				itemTags.Remove(ItemTag.OnKillEffect);
 				itemDef.tags = itemTags.ToArray();
 			}
 		}
@@ -205,12 +213,43 @@ namespace FlatItemBuff.Items
 				pickup += ", drops its trophy upon defeat";
 				if (StackReward > 0)
                 {
-					description += string.Format(" Defeating this monster will drop <style=cIsDamage>{0}</style> <style=cStack>(+{1} per stack)</style> <style=cIsDamage>unique rewards</style>.", BaseReward, StackReward);
+					description += string.Format(" Defeating this monster will drop <style=cIsDamage>{0}</style> <style=cStack>(+{1} per stack)</style> <style=cIsDamage>unique rewards</style>", BaseReward, StackReward);
 				}
 				else
                 {
-					description += string.Format(" Defeating this monster will drop <style=cIsDamage>{0}</style> <style=cIsDamage>unique rewards</style>.", BaseReward);
+					description += string.Format(" Defeating this monster will drop <style=cIsDamage>{0}</style> <style=cIsDamage>unique rewards</style>", BaseReward);
 				}
+				if (BaseGold < 1)
+                {
+					description += ".";
+                }
+			}
+			if (BaseGold > 0)
+			{
+				if (BaseReward > 0)
+                {
+					if (StackGold > 0)
+					{
+						description += string.Format(" plus an additional <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> <style=cIsUtility>gold, scaling with time</style>.", BaseGold, StackGold);
+					}
+					else
+					{
+						description += string.Format(" plus an additional <style=cIsUtility>{0} gold, scaling with time</style>.", BaseGold);
+					}
+				}
+				else
+                {
+					if (StackGold > 0)
+					{
+						description += string.Format(" Defeating this monster will drop <style=cIsUtility>{0}</style> <style=cStack>(+{1} per stack)</style> <style=cIsUtility>gold, scaling with time</style>.", BaseGold, StackGold);
+					}
+					else
+					{
+						description += string.Format(" Defeating this monster will drop <style=cIsUtility>{0} gold, scaling with time</style>.", BaseGold);
+					}
+					pickup += ", drops gold upon defeat";
+				}
+				
 			}
 			if (BaseDamage > 0f)
 			{
@@ -222,7 +261,6 @@ namespace FlatItemBuff.Items
                 {
 					description += string.Format("\n\nThe monster also deals an extra <style=cIsDamage>{0}%</style> <style=cStack>(+{1}% per stack)</style> <style=cIsDamage>damage</style> against your enemies.", BaseDamage);
 				}
-				
 			}
 			pickup += ".";
 			LanguageAPI.Add("ITEM_RESETCHESTS_PICKUP", pickup);
