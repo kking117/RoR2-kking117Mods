@@ -2,7 +2,6 @@
 using BepInEx;
 using BepInEx.Configuration;
 using System.Collections.Generic;
-using R2API.Utils;
 using R2API;
 using RoR2;
 using UnityEngine;
@@ -15,28 +14,44 @@ using System.Security.Permissions;
 
 namespace ConfigurableBenthic
 {
-	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-	[R2APISubmoduleDependency(new string[]
+	public enum OverspillBonus : int
 	{
-		"LanguageAPI",
-	})]
+		None = 0,
+		PlusOne = 1,
+		Duplicate = 2,
+	}
+
+	public enum SelectMethod : int
+	{
+		Random = 0,
+		LeastStacks = 1,
+		MostStacks = 2,
+	}
+
+	[BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.ConfigurableBenthic";
 		public const string MODNAME = "ConfigurableBenthic";
 		public const string MODTOKEN = "KKING117_CONFIGBENTHIC_";
-		public const string MODVERSION = "1.0.0";
+		public const string MODVERSION = "1.1.0";
 
-		public static ConfigEntry<int> Config_BaseCount;
-		public static ConfigEntry<int> Config_StackCount;
+		public static int Config_BaseCount = 3;
+		public static int Config_StackCount = 3;
 
-		public static ConfigEntry<string> Config_BlackList;
-		public static ConfigEntry<bool> Config_WholeStack;
+		public static string Config_BlackList = "";
+		public static bool Config_WholeStack = true;
 
-		public static ConfigEntry<int> Config_SelectionMethod;
-		public static ConfigEntry<bool> Config_PreferScrap;
-		public static ConfigEntry<bool> Config_RefreshOnUpgrade;
+		public static SelectMethod Config_Select_Method = SelectMethod.Random;
+		public static bool Config_Select_PreferScrap = false;
+		public static bool Config_Select_AllowVoid = false;
+		public static bool Config_Select_AllowSelf = true;
+
+		public static bool Config_RefreshOnUpgrade;
+		public static bool Config_Overspill_Enable = false;
+		public static OverspillBonus Config_Overspill_Bonus = OverspillBonus.PlusOne;
 
 		private static bool NewDesc = false;
 
@@ -45,7 +60,7 @@ namespace ConfigurableBenthic
 		private void Awake()
 		{
 			ReadConfig();
-			if (Config_BaseCount.Value != 3 || Config_StackCount.Value != 3)
+			if (Config_BaseCount != 3 || Config_StackCount != 3)
 			{
 				UpdateText();
 			}
@@ -58,7 +73,7 @@ namespace ConfigurableBenthic
 		}
 		private static void UpdateText()
 		{
-			string desc = String.Format("<style=cIsUtility>Upgrades {0}</style> <style=cStack>(+{1} per stack)</style> random items to items of the next <style=cIsUtility>higher rarity</style> at the <style=cIsUtility>start of each stage</style>. <style=cIsVoid>Corrupts all 57 Leaf Clovers</style>.", Config_BaseCount.Value, Config_StackCount.Value);
+			string desc = String.Format("<style=cIsUtility>Upgrades {0}</style> <style=cStack>(+{1} per stack)</style> random items to items of the next <style=cIsUtility>higher rarity</style> at the <style=cIsUtility>start of each stage</style>. <style=cIsVoid>Corrupts all 57 Leaf Clovers</style>.", Config_BaseCount, Config_StackCount);
 			LanguageAPI.Add(MODTOKEN + "ITEM_CLOVERVOID_DESC", desc);
 			NewDesc = true;
 		}
@@ -70,7 +85,7 @@ namespace ConfigurableBenthic
 				DLC1Content.Items.CloverVoid.descriptionToken = MODTOKEN + "ITEM_CLOVERVOID_DESC";
 			}
 			BanList = new List<ItemDef>();
-			string[] items = MainPlugin.Config_BlackList.Value.Split(',');
+			string[] items = MainPlugin.Config_BlackList.Split(',');
 			for (int i = 0; i < items.Length; i++)
 			{
 				items[i] = items[i].Trim();
@@ -94,30 +109,21 @@ namespace ConfigurableBenthic
 			int itemCount = self.inventory.GetItemCount(DLC1Content.Items.CloverVoid);
 			if (itemCount > 0)
 			{
-				int upgradeCount = Config_BaseCount.Value + ((itemCount - 1) * Config_StackCount.Value);
+				int upgradeCount = Config_BaseCount + (Math.Max(0, itemCount - 1) * Config_StackCount);
 				if (upgradeCount > 0)
 				{
-					List<ItemIndex> Tier2List = RemoveClutter_PickupList(Run.instance.availableTier2DropList);
-					List<ItemIndex> Tier3List = RemoveClutter_PickupList(Run.instance.availableTier3DropList);
-
 					List<ItemIndex> itemList = GetAndSortInventory(self);
 
 					int totalUpgrades = 0;
 					int i = 0;
+					int failCount = 0;
 					List<ItemIndex> ConvertList = new List<ItemIndex>();
 					while (totalUpgrades < upgradeCount && i < itemList.Count)
 					{
+						bool refreshList = false;
 						ItemDef itemDef = ItemCatalog.GetItemDef(itemList[i]);
 						ItemDef newitemDef = null;
-						List<ItemIndex> UpgradeList = null;
-						if (itemDef.tier == ItemTier.Tier2)
-						{
-							UpgradeList = Tier3List;
-						}
-						else if (itemDef.tier == ItemTier.Tier1)
-						{
-							UpgradeList = Tier2List;
-						}
+						List<ItemIndex> UpgradeList = GetUpgradeList(itemDef);
 						if (UpgradeList != null && UpgradeList.Count > 0)
 						{
 							Util.ShuffleList<ItemIndex>(UpgradeList, self.cloverVoidRng);
@@ -126,29 +132,74 @@ namespace ConfigurableBenthic
 						}
 						if (newitemDef != null)
 						{
+							failCount = 0;
 							totalUpgrades++;
-                            
-							if(Config_WholeStack.Value)
+
+							int plusCount = 0;
+							int multCount = 1;
+
+							if (itemDef.tier == ItemTier.Tier3 || itemDef.tier == ItemTier.VoidTier3)
+							{
+								if (Config_Overspill_Bonus == OverspillBonus.PlusOne)
+								{
+									plusCount = 1;
+								}
+								if (Config_Overspill_Bonus == OverspillBonus.Duplicate)
+								{
+									multCount = 2;
+								}
+							}
+
+							if (Config_WholeStack)
                             {
 								int removeCount = self.inventory.GetItemCount(itemDef);
-								self.inventory.GiveItem(newitemDef, removeCount);
+								int addCount = (removeCount * multCount) + plusCount;
+								
+								self.inventory.GiveItem(newitemDef, addCount);
 								self.inventory.RemoveItem(itemDef, removeCount);
 								itemList.RemoveAt(i);
 							}
 							else
                             {
-								self.inventory.GiveItem(newitemDef, 1);
+								int addCount = (1 * multCount) + plusCount;
+								self.inventory.GiveItem(newitemDef, addCount);
 								self.inventory.RemoveItem(itemDef, 1);
 								if(self.inventory.GetItemCount(itemDef) < 1)
                                 {
 									itemList.RemoveAt(i);
 								}
+								
 							}
-							
-							CharacterMasterNotificationQueue.PushItemTransformNotification(self, itemDef.itemIndex, newitemDef.itemIndex, CharacterMasterNotificationQueue.TransformationType.CloverVoid);
 
 							i = -1;
-							if (Config_RefreshOnUpgrade.Value)
+
+							CharacterMasterNotificationQueue.PushItemTransformNotification(self, itemDef.itemIndex, newitemDef.itemIndex, CharacterMasterNotificationQueue.TransformationType.CloverVoid);
+
+							if (Config_Select_PreferScrap)
+							{
+								if (newitemDef.ContainsTag(ItemTag.Scrap) || newitemDef.ContainsTag(ItemTag.PriorityScrap))
+								{
+									refreshList = true;
+								}
+							}
+							if (Config_Select_Method > SelectMethod.Random && Config_WholeStack)
+							{
+								if (itemList.Count < 1)
+								{
+									failCount += 1;
+									if (failCount > 3)
+                                    {
+										break;
+                                    }
+									refreshList = true;
+								}
+							}
+							else
+                            {
+								refreshList = true;
+							}
+                            
+							if (refreshList)
                             {
 								itemList = GetAndSortInventory(self);
 							}
@@ -219,17 +270,19 @@ namespace ConfigurableBenthic
 			{
 				master.cloverVoidRng = new Xoroshiro128Plus(Run.instance.seed);
 			}
-			Util.ShuffleList<ItemIndex>(itemList, master.cloverVoidRng);
-			switch (Config_SelectionMethod.Value)
+			switch (Config_Select_Method)
             {
-				case 1:
+				case SelectMethod.LeastStacks:
 					itemList = SortItemList_ByLowest(itemList, master);
 					break;
-				case 2:
+				case SelectMethod.MostStacks:
 					itemList = SortItemList_ByHighest(itemList, master);
 					break;
-            }
-			if(Config_PreferScrap.Value)
+				default:
+					Util.ShuffleList<ItemIndex>(itemList, master.cloverVoidRng);
+					break;
+			}
+			if(Config_Select_PreferScrap)
             {
 				itemList = SortItemList_ByScrap(itemList);
 			}
@@ -267,9 +320,62 @@ namespace ConfigurableBenthic
 			}
 			return itemList;
 		}
+
+		private static List<ItemIndex> GetUpgradeList(ItemDef oldItemDef)
+        {
+			List<ItemIndex> nullList = null;
+			if (oldItemDef.tier == ItemTier.Tier3)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableTier1DropList);
+			}
+			else if (oldItemDef.tier == ItemTier.Tier2)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableTier3DropList);
+			}
+			else if (oldItemDef.tier == ItemTier.Tier1)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableTier2DropList);
+			}
+			if (oldItemDef.tier == ItemTier.VoidTier3)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableVoidTier1DropList);
+			}
+			else if (oldItemDef.tier == ItemTier.VoidTier2)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableVoidTier3DropList);
+			}
+			else if (oldItemDef.tier == ItemTier.VoidTier1)
+			{
+				return RemoveClutter_PickupList(Run.instance.availableVoidTier2DropList);
+			}
+			return nullList;
+		}
 		private static bool IsItemUpgradeable(ItemDef item)
         {
-			return item.tier == ItemTier.Tier1 || item.tier == ItemTier.Tier2;
+			if (!Config_Select_AllowSelf && item == DLC1Content.Items.CloverVoid)
+            {
+				return false;
+            }
+			if (item.tier == ItemTier.Tier1 || item.tier == ItemTier.Tier2)
+            {
+				return true;
+            }
+			if (item.tier == ItemTier.Tier3 && Config_Overspill_Enable)
+            {
+				return true;
+            }
+			if (Config_Select_AllowVoid)
+            {
+				if (item.tier == ItemTier.VoidTier1 || item.tier == ItemTier.VoidTier2)
+				{
+					return true;
+				}
+				if (item.tier == ItemTier.VoidTier3 && Config_Overspill_Enable)
+                {
+					return true;
+                }
+			}
+			return false;
 		}
 		private static List<ItemIndex> SortItemList_ByLowest(List<ItemIndex> itemList, CharacterMaster master)
 		{
@@ -324,13 +430,16 @@ namespace ConfigurableBenthic
 		}
 		private void ReadConfig()
 		{
-			Config_BaseCount = Config.Bind<int>(new ConfigDefinition("Stacking", "Base Upgrade Count"), 3, new ConfigDescription("How many items to upgrade at a single stack.", null, Array.Empty<object>()));
-			Config_StackCount = Config.Bind<int>(new ConfigDefinition("Stacking", "Stack Upgrade Count"), 3, new ConfigDescription("How many items to upgrade for each additional stack.", null, Array.Empty<object>()));
-			Config_BlackList = Config.Bind<string>(new ConfigDefinition("Upgrading", "Upgrade Blacklist"), "", new ConfigDescription("Prevents upgrading into these specific items. (Example = Clover, ExtraLife, MoreMissile)", null, Array.Empty<object>()));
-			Config_WholeStack = Config.Bind<bool>(new ConfigDefinition("Upgrading", "Upgrade Entire Stack"), true, new ConfigDescription("Should the entire stack get upgraded or a single instance of the selected item?", null, Array.Empty<object>()));
-			Config_SelectionMethod = Config.Bind<int>(new ConfigDefinition("Item Selection", "Selection Method"), 0, new ConfigDescription("The method to use when selecting items for upgrading. (0 = random, 1 = lowest stacks first, 2 = highest stacks first)", null, Array.Empty<object>()));
-			Config_PreferScrap = Config.Bind<bool>(new ConfigDefinition("Item Selection", "Prioritize Scrap"), false, new ConfigDescription("Should Scrap have priority over the selection method?", null, Array.Empty<object>()));
-			Config_RefreshOnUpgrade = Config.Bind<bool>(new ConfigDefinition("Item Selection", "Refresh Selections On Each Upgrade"), true, new ConfigDescription("Should we revaluate our selections after each upgrade? (Vanilla = true) (Recommended to disable if sorting by stack count and upgrading individual items.)", null, Array.Empty<object>()));
+			Config_BaseCount = Config.Bind("Stacking", "Base Upgrade Count", 3, "How many items to upgrade at a single stack.").Value;
+			Config_StackCount = Config.Bind("Stacking", "Stack Upgrade Count", 3, "How many items to upgrade for each additional stack.").Value;
+			Config_BlackList = Config.Bind("Upgrading", "Upgrade Blacklist", "", "Prevents upgrading into these specific items. (Example = Clover, ExtraLife, MoreMissile)").Value;
+			Config_WholeStack = Config.Bind("Upgrading", "Upgrade Entire Stack", true, "Should the entire stack get upgraded or a single instance of the selected item?").Value;
+			Config_Select_Method = Config.Bind("Item Selection", "Selection Method", SelectMethod.Random, "The method to use when selecting items for upgrading.").Value;
+			Config_Select_PreferScrap = Config.Bind("Item Selection", "Prioritise Scrap", false, "Should Scrap have priority over the selection method?").Value;
+			Config_Select_AllowVoid = Config.Bind("Item Selection", "Allow Void", false, "Allow Void items to be selected for upgrading?").Value;
+			Config_Select_AllowSelf = Config.Bind("Item Selection", "Allow Self", false, "Allow Benthic Bloom to be selected for upgrading?").Value;
+			Config_Overspill_Enable = Config.Bind("Overflow", "Enable", false, "Allows Legendary items to be selected and 'upgraded' into Common items.").Value;
+			Config_Overspill_Bonus = Config.Bind("Overflow", "Bonus Gain", OverspillBonus.PlusOne, "Gain extra items when 'upgrading' an item.").Value;
 		}
 	}
 }
