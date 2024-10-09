@@ -9,11 +9,10 @@ namespace ConsumedBuff.ItemChanges
     {
         public static void Enable()
         {
-
-            if (MainPlugin.Dio_BlockChance.Value > 0.0f)
+            if (MainPlugin.Dio_BlockChance > 0.0f)
             {
                 UpdateText();
-                On.RoR2.HealthComponent.TakeDamage += OnTakeDamage;
+                On.RoR2.HealthComponent.TakeDamageProcess += OnTakeDamage;
             }
         }
         private static void UpdateText()
@@ -22,16 +21,16 @@ namespace ConsumedBuff.ItemChanges
             string desc = "";
 
             pickup = string.Format("Chance to block incoming damage.");
-            desc = string.Format("<style=cIsHealing>{0}%</style> <style=cStack>(+{0}% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cIsUtility>Unaffected by luck</style>.", MainPlugin.Dio_BlockChance.Value);
+            desc = string.Format("<style=cIsHealing>{0}%</style> <style=cStack>(+{0}% per stack)</style> chance to <style=cIsHealing>block</style> incoming damage. <style=cIsUtility>Unaffected by luck</style>.", MainPlugin.Dio_BlockChance);
 
             LanguageAPI.Add("ITEM_EXTRALIFECONSUMED_PICKUP", pickup);
             LanguageAPI.Add("ITEM_EXTRALIFECONSUMED_DESC", desc);
         }
-        private static void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
+        private static void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
         {
             if (NetworkServer.active)
             {
-                if (self.alive && !self.godMode)
+                if (self.alive && !self.godMode && !damageInfo.rejected)
                 {
                     if (self.ospTimer <= 0f)
                     {
@@ -44,7 +43,7 @@ namespace ConsumedBuff.ItemChanges
                                 if (inventory)
                                 {
                                     int itemCount = inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed);
-                                    if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance.Value * itemCount), 0f, null))
+                                    if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance * itemCount), 0f, null))
                                     {
                                         EffectData effectData = new EffectData
                                         {

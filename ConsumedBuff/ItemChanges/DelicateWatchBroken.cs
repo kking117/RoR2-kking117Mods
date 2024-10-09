@@ -3,15 +3,12 @@ using RoR2;
 using R2API;
 using UnityEngine;
 using UnityEngine.Networking;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
 using UnityEngine.AddressableAssets;
 
 namespace ConsumedBuff.ItemChanges
 {
     public class DelicateWatchBroken
     {
-        private static float dmgMult = 1f;
         private static bool canDouble = true;
         public static BuffDef TrackerBuff;
         public static BuffDef TrackerDoubleBuff;
@@ -19,18 +16,13 @@ namespace ConsumedBuff.ItemChanges
         private static Color buff2Color = new Color(0.96f, 0.623f, 0.282f, 1f);
         public static void Enable()
         {
-            MainPlugin.Watch_HitsToProc.Value = Math.Max(1, MainPlugin.Watch_HitsToProc.Value);
-            if (MainPlugin.Watch_ProcsToDouble.Value < 2)
+            MainPlugin.Watch_HitsToProc = Math.Max(1, MainPlugin.Watch_HitsToProc);
+            if (MainPlugin.Watch_ProcsToDouble < 2)
             {
                 canDouble = false;
             }
-            if (MainPlugin.Watch_Damage.Value > 0.0f)
-            {
-                dmgMult = MainPlugin.Watch_Damage.Value * 5f;
-                IL.RoR2.HealthComponent.TakeDamage += new ILContext.Manipulator(IL_TakeDamage);
-            }
-            On.RoR2.GlobalEventManager.ServerDamageDealt += OnTakeDamagePost;
-            if (MainPlugin.Watch_Indicator.Value)
+            On.RoR2.HealthComponent.TakeDamageProcess += OnTakeDamage;
+            if (MainPlugin.Watch_Indicator)
             {
                 CreateBuff();
             }
@@ -42,7 +34,7 @@ namespace ConsumedBuff.ItemChanges
             TrackerBuff = Modules.Buffs.AddNewBuff("BrokenWatchCounter", buffIcon, buffColor, true, false, true);
             if (canDouble)
             {
-                TrackerDoubleBuff = Modules.Buffs.AddNewBuff("BrokenWatchDoubleCounter", buffIcon, buff2Color, true, false, true);
+                TrackerDoubleBuff = Modules.Buffs.AddNewBuff("BrokenWatchDoubleCounter", buffIcon, buff2Color, true, false, true, true);
             }
         }
         private static string GetNthString(int number)
@@ -78,24 +70,24 @@ namespace ConsumedBuff.ItemChanges
 
             bool addAnd = false;
 
-            pickup = string.Format("Every {0}{1} hit", MainPlugin.Watch_HitsToProc.Value, GetNthString(MainPlugin.Watch_HitsToProc.Value));
-            desc = string.Format("Every <style=cIsDamage>{0}{1} hit</style>", MainPlugin.Watch_HitsToProc.Value, GetNthString(MainPlugin.Watch_HitsToProc.Value));
-            if (dmgMult > 0f)
+            pickup = string.Format("Every {0}{1} hit", MainPlugin.Watch_HitsToProc, GetNthString(MainPlugin.Watch_HitsToProc));
+            desc = string.Format("Every <style=cIsDamage>{0}{1} hit</style>", MainPlugin.Watch_HitsToProc, GetNthString(MainPlugin.Watch_HitsToProc));
+            if (MainPlugin.Watch_Damage > 0f)
             {
                 pickup += string.Format(" deals bonus damage");
-                desc += string.Format(" deals <style=cIsDamage>{0}%</style> <style=cStack>(+{0}% per stack)</style> extra damage", dmgMult * 20f);
+                desc += string.Format(" deals <style=cIsDamage>{0}%</style> <style=cStack>(+{0}% per stack)</style> extra damage", MainPlugin.Watch_Damage * 100f);
                 addAnd = true;
             }
 
-            if(MainPlugin.Watch_SlowBase.Value > 0f || MainPlugin.Watch_SlowStack.Value > 0f)
+            if(MainPlugin.Watch_SlowBase > 0f || MainPlugin.Watch_SlowStack > 0f)
             {
                 if(addAnd)
                 {
                     pickup += string.Format(" and");
                     desc += string.Format(" and");
                 }
-                pickup += string.Format(" applies slow");
-                desc += string.Format(" applies <style=cIsUtility>slow</style> for <style=cIsUtility>-60% movement speed</style> for <style=cIsUtility>{0}s</style> <style=cStack>(+{1}s per stack)</style>", MainPlugin.Watch_SlowBase.Value, MainPlugin.Watch_SlowStack.Value);
+                pickup += string.Format(" slows");
+                desc += string.Format(" applies <style=cIsUtility>slow</style> for <style=cIsUtility>-60% movement speed</style> for <style=cIsUtility>{0}s</style> <style=cStack>(+{1}s per stack)</style>", MainPlugin.Watch_SlowBase, MainPlugin.Watch_SlowStack);
             }
             pickup += string.Format(".");
             desc += string.Format(".");
@@ -104,48 +96,17 @@ namespace ConsumedBuff.ItemChanges
             LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_PICKUP", pickup, "en");
             LanguageAPI.Add("ITEM_FRAGILEDAMAGEBONUSCONSUMED_DESC", desc, "en");
         }
-        private static void IL_TakeDamage(ILContext il)
+
+        private static void OnTakeDamage(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
         {
-            ILCursor ilcursor = new ILCursor(il);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchStloc(x, 25)
-            );
-            ilcursor.Emit(OpCodes.Ldarg_1);
-            ilcursor.EmitDelegate<Func<DamageInfo, int>>((damageInfo) =>
-            {
-                CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-                int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonusConsumed) * PredictWatchBoostMult(attackerBody);
-                return itemCount;
-            });
-            ilcursor.Emit(OpCodes.Add);
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 25)
-            );
-            ilcursor.GotoNext(
-                x => ILPatternMatchingExt.MatchLdloc(x, 25)
-            );
-            ilcursor.Remove();
-            ilcursor.Emit(OpCodes.Ldarg_1);
-            ilcursor.EmitDelegate<Func<DamageInfo, float>>((damageInfo) =>
-            {
-                CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-                float itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonus) * 1.0f;
-                itemCount += (attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonusConsumed) * dmgMult) * PredictWatchBoostMult(attackerBody);
-                return itemCount;
-            });
-        }
-        private static void OnTakeDamagePost(On.RoR2.GlobalEventManager.orig_ServerDamageDealt orig, DamageReport dr)
-        {
-            orig(dr);
             if (NetworkServer.active)
             {
-                if (!dr.damageInfo.rejected)
+                if (self.alive && !self.godMode && !damageInfo.rejected && self.ospTimer <= 0f)
                 {
-                    if (dr.damageInfo.damage > 0f)
+                    if (self.body && damageInfo.attacker)
                     {
-                        CharacterBody attackerBody = dr.attackerBody;
-                        CharacterBody victimBody = dr.victimBody;
-                        if (attackerBody && victimBody)
+                        CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+                        if (attackerBody)
                         {
                             if (attackerBody.inventory)
                             {
@@ -156,18 +117,20 @@ namespace ConsumedBuff.ItemChanges
                                     int powerMult = GetWatchPowerMult(attackerBody);
                                     if (powerMult > 0)
                                     {
+                                        damageInfo.damage *= 1f + (itemCount * MainPlugin.Watch_Damage * powerMult);
                                         //The funny effect
                                         EffectData watchEffect = new EffectData
                                         {
-                                            origin = victimBody.transform.position
+                                            origin = self.body.transform.position
                                         };
-                                        watchEffect.SetNetworkedObjectReference(victimBody.gameObject);
+                                        watchEffect.SetNetworkedObjectReference(self.body.gameObject);
                                         EffectManager.SpawnEffect(HealthComponent.AssetReferences.fragileDamageBonusBreakEffectPrefab, watchEffect, true);
                                         //The buff
-                                        float buffdur = MainPlugin.Watch_SlowBase.Value + ((itemCount - 1) * MainPlugin.Watch_SlowStack.Value) * powerMult;
+
+                                        float buffdur = MainPlugin.Watch_SlowBase + (Math.Max(0, itemCount - 1) * MainPlugin.Watch_SlowStack) * powerMult;
                                         if (buffdur > 0f)
                                         {
-                                            victimBody.AddTimedBuff(RoR2Content.Buffs.Slow60, buffdur);
+                                            self.body.AddTimedBuff(RoR2Content.Buffs.Slow60, buffdur);
                                         }
                                     }
                                 }
@@ -176,6 +139,7 @@ namespace ConsumedBuff.ItemChanges
                     }
                 }
             }
+            orig(self, damageInfo);
         }
         private static void AddWatchCounter(CharacterBody body)
         {
@@ -185,16 +149,16 @@ namespace ConsumedBuff.ItemChanges
                 comp = body.gameObject.AddComponent<Components.BrokenWatchCounter>();
             }
             comp.hits += 1;
-            if (comp.hits >= MainPlugin.Watch_HitsToProc.Value)
+            if (comp.hits >= MainPlugin.Watch_HitsToProc)
             {
-                comp.hits -= MainPlugin.Watch_HitsToProc.Value;
+                comp.hits -= MainPlugin.Watch_HitsToProc;
                 comp.hitmult = 1;
                 if (canDouble)
                 {
                     comp.procs += 1;
-                    if (comp.procs % MainPlugin.Watch_ProcsToDouble.Value == 0)
+                    if (comp.procs % MainPlugin.Watch_ProcsToDouble == 0)
                     {
-                        comp.procs -= MainPlugin.Watch_ProcsToDouble.Value;
+                        comp.procs -= MainPlugin.Watch_ProcsToDouble;
                         comp.hitmult = 2;
                     }
                 }
@@ -211,12 +175,12 @@ namespace ConsumedBuff.ItemChanges
             if (comp)
             {
                 int hits = comp.hits + 1;
-                if (hits % MainPlugin.Watch_HitsToProc.Value == 0)
+                if (hits % MainPlugin.Watch_HitsToProc == 0)
                 {
                     if (canDouble)
                     {
                         int procs = comp.procs + 1;
-                        if (procs % MainPlugin.Watch_ProcsToDouble.Value == 0)
+                        if (procs % MainPlugin.Watch_ProcsToDouble == 0)
                         {
                             return 2;
                         }
@@ -237,7 +201,7 @@ namespace ConsumedBuff.ItemChanges
         }
         private static void UpdateTrackerBuff(CharacterBody body)
         {
-            if (MainPlugin.Watch_Indicator.Value)
+            if (MainPlugin.Watch_Indicator)
             {
                 int buffCount = 0;
                 int procCount = 0;
@@ -261,7 +225,7 @@ namespace ConsumedBuff.ItemChanges
                 }
                 procCount++;
 
-                if (canDouble && procCount % MainPlugin.Watch_ProcsToDouble.Value == 0)
+                if (canDouble && procCount % MainPlugin.Watch_ProcsToDouble == 0)
                 {
                     for (; body.GetBuffCount(TrackerDoubleBuff.buffIndex) < buffCount;)
                     {

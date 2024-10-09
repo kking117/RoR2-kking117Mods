@@ -1,7 +1,6 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Configuration;
-using R2API.Utils;
 
 using System.Security;
 using System.Security.Permissions;
@@ -11,57 +10,59 @@ using System.Security.Permissions;
 namespace ConsumedBuff
 {
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
     [BepInPlugin(MODUID, MODNAME, MODVERSION)]
-    [R2APISubmoduleDependency(new string[]
-    {
-        "LanguageAPI",
-        "RecalculateStatsAPI"
-    })]
     public class MainPlugin : BaseUnityPlugin
     {
         public const string MODUID = "com.kking117.ConsumedBuff";
         public const string MODNAME = "ConsumedBuff";
-        public const string MODVERSION = "1.2.4";
+        public const string MODVERSION = "1.3.0";
         public const string MODTOKEN = "KKING117_CONSUMEDBUFF_";
 
-        public static ConfigEntry<bool> VoidDio_Enable;
-        public static ConfigEntry<float> VoidDio_BlockCooldown;
-        public static ConfigEntry<float> VoidDio_CollapseChance;
-        public static ConfigEntry<float> VoidDio_CollapseDamage;
-        public static ConfigEntry<bool> VoidDio_CollapseUseTotal;
-        public static ConfigEntry<bool> VoidDio_Corrupt;
-        public static ConfigEntry<float> VoidDio_Curse;
+        private const string Section_Elixir = "Empty Bottle";
+        private const string Section_Watch = "Delicate Watch (Broken)";
+        private const string Section_VoidDio = "Pluripotent Larva (Consumed)";
+        private const string Section_Dio = "Dios Best Friend (Consumed)";
 
-        public static ConfigEntry<bool> Dio_Enable;
-        public static ConfigEntry<float> Dio_BlockChance;
+        public static bool VoidDio_Enable = false;
+        public static float VoidDio_BlockCooldown = 0.9f;
+        public static float VoidDio_CollapseChance = 100f;
+        public static float VoidDio_CollapseDamage = 4f;
+        public static bool VoidDio_CollapseUseTotal = false;
+        public static bool VoidDio_Corrupt = true;
+        public static float VoidDio_Curse = 0.1f;
 
-        public static ConfigEntry<bool> Elixir_Enable;
-        public static ConfigEntry<float> Elixir_Buff;
-        public static ConfigEntry<float> Elixir_Regen;
+        public static bool Dio_Enable = false;
+        public static float Dio_BlockChance = 15f;
 
-        public static ConfigEntry<bool> Watch_Enable;
-        public static ConfigEntry<bool> Watch_Indicator;
-        public static ConfigEntry<float> Watch_Damage;
-        public static ConfigEntry<int> Watch_HitsToProc;
-        public static ConfigEntry<int> Watch_ProcsToDouble;
-        public static ConfigEntry<float> Watch_SlowBase;
-        public static ConfigEntry<float> Watch_SlowStack;
+        public static bool Elixir_Enable = false;
+        public static float Elixir_Buff = 2.5f;
+        public static float Elixir_Regen = 1f;
+
+        public static bool Watch_Enable = false;
+        public static bool Watch_Indicator = true;
+        public static float Watch_Damage = 0.2f;
+        public static int Watch_HitsToProc = 12;
+        public static int Watch_ProcsToDouble = 12;
+        public static float Watch_SlowBase = 1f;
+        public static float Watch_SlowStack = 0.25f;
         private void Awake()
         {
             ReadConfig();
-            if (Elixir_Enable.Value)
+            if (Elixir_Enable)
             {
                 ItemChanges.EmptyBottle.Enable();
             }
-            if(VoidDio_Enable.Value)
+            if(VoidDio_Enable)
             {
                 ItemChanges.PluripotentLarvaConsumed.Enable();
             }
-            if (Watch_Enable.Value)
+            if (Watch_Enable)
             {
                 ItemChanges.DelicateWatchBroken.Enable();
             }
-            if(Dio_Enable.Value)
+            if(Dio_Enable)
             {
                 ItemChanges.DiosBestFriendConsumed.Enable();
             }
@@ -69,28 +70,28 @@ namespace ConsumedBuff
         }
         private void ReadConfig()
         {
-            Elixir_Enable = Config.Bind<bool>(new ConfigDefinition("Empty Bottle", "Enable Changes"), true, new ConfigDescription("Allows this mod to make changes to the Empty Bottle item.", null, Array.Empty<object>()));
-            Elixir_Buff = Config.Bind<float>(new ConfigDefinition("Empty Bottle", "Regen Buff Duration"), 2.5f, new ConfigDescription("Duration of the regen buff when the Power Elixir item is consumed.", null, Array.Empty<object>()));
-            Elixir_Regen = Config.Bind<float>(new ConfigDefinition("Empty Bottle", "Passive Regen"), 1.0f, new ConfigDescription("passive regen per stack this item gives.", null, Array.Empty<object>()));
+            Elixir_Enable = Config.Bind(Section_Elixir, "Enable Changes", false, "Allows this mod to make changes to the Empty Bottle item.").Value;
+            Elixir_Buff = Config.Bind(Section_Elixir, "Regen Buff Duration", 2.5f,"Duration of the regen buff when the Power Elixir item is consumed.").Value;
+            Elixir_Regen = Config.Bind(Section_Elixir, "Passive Regen", 1.0f, "passive regen per stack this item gives.").Value;
 
-            Watch_Enable = Config.Bind<bool>(new ConfigDefinition("Delicate Watch (Broken)", "Enable Changes"), true, new ConfigDescription("Allows this mod to make changes to the Delicate Watch (Broken) item.", null, Array.Empty<object>()));
-            Watch_Indicator = Config.Bind<bool>(new ConfigDefinition("Delicate Watch (Broken)", "Buff Indicator"), true, new ConfigDescription("Enables a buff to help track how many hits the item needs.", null, Array.Empty<object>()));
-            Watch_HitsToProc = Config.Bind<int>(new ConfigDefinition("Delicate Watch (Broken)", "Hit To Proc"), 12, new ConfigDescription("On this number hit, proc its effect.", null, Array.Empty<object>()));
-            Watch_ProcsToDouble = Config.Bind<int>(new ConfigDefinition("Delicate Watch (Broken)", "Proc to Double Proc"), 12, new ConfigDescription("On this number proc, double the proc effect. (1 or less disables this)", null, Array.Empty<object>()));
-            Watch_Damage = Config.Bind<float>(new ConfigDefinition("Delicate Watch (Broken)", "Damage On Proc"), 0.2f, new ConfigDescription("Damage bonus on procs.", null, Array.Empty<object>()));
-            Watch_SlowBase = Config.Bind<float>(new ConfigDefinition("Delicate Watch (Broken)", "Base Slow On Proc"), 1f, new ConfigDescription("Base duration of the slow effect that this applies on proc.", null, Array.Empty<object>()));
-            Watch_SlowStack = Config.Bind<float>(new ConfigDefinition("Delicate Watch (Broken)", "Stack Slow On Proc"), 0.25f, new ConfigDescription("Stack duration of the slow effect.", null, Array.Empty<object>()));
+            Watch_Enable = Config.Bind(Section_Watch, "Enable Changes", false, "Allows this mod to make changes to the Delicate Watch (Broken) item.").Value;
+            Watch_Indicator = Config.Bind(Section_Watch, "Buff Indicator", true, "Enables a buff to help track how many hits the item needs.").Value;
+            Watch_HitsToProc = Config.Bind(Section_Watch, "Hit To Proc", 12, "On this number hit, proc its effect.").Value;
+            Watch_ProcsToDouble = Config.Bind(Section_Watch, "Proc to Double Proc", 12, "On this number proc, double the proc effect. (1 or less disables this)").Value;
+            Watch_Damage = Config.Bind(Section_Watch, "Damage On Proc", 0.2f, "Damage bonus on procs.").Value;
+            Watch_SlowBase = Config.Bind(Section_Watch, "Base Slow On Proc", 1f, "Base duration of the slow effect that this applies on proc.").Value;
+            Watch_SlowStack = Config.Bind(Section_Watch, "Stack Slow On Proc", 0.25f, "Stack duration of the slow effect.").Value;
 
-            VoidDio_Enable = Config.Bind<bool>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Enable Changes"), true, new ConfigDescription("Allows this mod to make changes to the Pluripotent Larva (Consumed) item.", null, Array.Empty<object>()));
-            VoidDio_BlockCooldown = Config.Bind<float>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Block Cooldown"), 0.9f, new ConfigDescription("How much to multiply the block cooldown per stack. (Higher than 1 disables this)", null, Array.Empty<object>()));
-            VoidDio_CollapseChance = Config.Bind<float>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Collapse Chance"), 10.0f, new ConfigDescription("The chance to apply Collapse per stack.", null, Array.Empty<object>()));
-            VoidDio_CollapseDamage = Config.Bind<float>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Collapse Damage"), 4.0f, new ConfigDescription("How much damage each Collapse stack does.", null, Array.Empty<object>()));
-            VoidDio_CollapseUseTotal = Config.Bind<bool>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Collapse Total Damage"), false, new ConfigDescription("Should the Collapse stack deal total damage instead of base damage?", null, Array.Empty<object>()));
-            VoidDio_Corrupt = Config.Bind<bool>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Corrupted Life"), true, new ConfigDescription("Automatically corrupt new items and be classed as void while carrying this item?", null, Array.Empty<object>()));
-            VoidDio_Curse = Config.Bind<float>(new ConfigDefinition("Pluripotent Larva (Consumed)", "Health Curse"), 0.1f, new ConfigDescription("Health curse per stack.", null, Array.Empty<object>()));
+            VoidDio_Enable = Config.Bind(Section_VoidDio, "Enable Changes", false, "Allows this mod to make changes to the Pluripotent Larva (Consumed) item.").Value;
+            VoidDio_BlockCooldown = Config.Bind(Section_VoidDio, "Block Cooldown", 0.9f, "How much to multiply the block cooldown per stack. (Higher than 1 disables this)").Value;
+            VoidDio_CollapseChance = Config.Bind(Section_VoidDio, "Collapse Chance", 10.0f, "The chance to apply Collapse per stack.").Value;
+            VoidDio_CollapseDamage = Config.Bind(Section_VoidDio, "Collapse Damage", 4.0f, "How much damage each Collapse stack does.").Value;
+            VoidDio_CollapseUseTotal = Config.Bind(Section_VoidDio, "Collapse Total Damage", false, "Should the Collapse stack deal total damage instead of base damage?").Value;
+            VoidDio_Corrupt = Config.Bind(Section_VoidDio, "Corrupted Life", true, "Automatically corrupt new items and be classed as void while carrying this item?").Value;
+            VoidDio_Curse = Config.Bind(Section_VoidDio, "Health Curse", 0.1f, "Health curse per stack.").Value;
 
-            Dio_Enable = Config.Bind<bool>(new ConfigDefinition("Dios Best Friend (Consumed)", "Enable"), true, new ConfigDescription("Allows this mod to make changes to the Dios Best Friend (Consumed) item.", null, Array.Empty<object>()));
-            Dio_BlockChance = Config.Bind<float>(new ConfigDefinition("Dios Best Friend (Consumed)", "Block Chance"), 15.0f, new ConfigDescription("The chance per stack to block damage.", null, Array.Empty<object>()));
+            Dio_Enable = Config.Bind(Section_Dio, "Enable", false, "Allows this mod to make changes to the Dios Best Friend (Consumed) item.").Value;
+            Dio_BlockChance = Config.Bind(Section_Dio, "Block Chance", 15.0f, "The chance per stack to block damage.").Value;
         }
     }
 }
