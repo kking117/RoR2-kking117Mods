@@ -85,9 +85,9 @@ namespace WarBannerBuff.ItemChanges
 			}
 			if (MainPlugin.MeridianBanner > 0f)
             {
-				On.RoR2.MeridianEventTriggerInteraction.Phase1.OnEnter += Meridian_Phase1;
-				On.RoR2.MeridianEventTriggerInteraction.Phase2.OnEnter += Meridian_Phase2;
-				On.RoR2.MeridianEventTriggerInteraction.Phase3.OnEnter += Meridian_Phase3;
+				On.EntityStates.MeridianEvent.Phase1.OnEnter += Meridian_Phase1;
+				On.EntityStates.MeridianEvent.Phase2.OnEnter += Meridian_Phase2;
+				On.EntityStates.MeridianEvent.Phase3.OnEnter += Meridian_Phase3;
 			}
 			if (MainPlugin.Merge_Enable)
 			{
@@ -242,7 +242,7 @@ namespace WarBannerBuff.ItemChanges
 			orig(self);
 			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.HalcyonBanner);
 		}
-		private static void Meridian_Phase1(On.RoR2.MeridianEventTriggerInteraction.Phase1.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase1 self)
+		private static void Meridian_Phase1(On.EntityStates.MeridianEvent.Phase1.orig_OnEnter orig, EntityStates.MeridianEvent.Phase1 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
@@ -250,7 +250,7 @@ namespace WarBannerBuff.ItemChanges
 				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.MeridianBanner);
 			}
 		}
-		private static void Meridian_Phase2(On.RoR2.MeridianEventTriggerInteraction.Phase2.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase2 self)
+		private static void Meridian_Phase2(On.EntityStates.MeridianEvent.Phase2.orig_OnEnter orig, EntityStates.MeridianEvent.Phase2 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
@@ -258,7 +258,7 @@ namespace WarBannerBuff.ItemChanges
 				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.MeridianBanner);
 			}
 		}
-		private static void Meridian_Phase3(On.RoR2.MeridianEventTriggerInteraction.Phase3.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase3 self)
+		private static void Meridian_Phase3(On.EntityStates.MeridianEvent.Phase3.orig_OnEnter orig, EntityStates.MeridianEvent.Phase3 self)
 		{
 			orig(self);
 			if (NetworkServer.active)

@@ -1,3 +1,15 @@
+**5.3.1**
+
+````
+- Updated for latest patch.
+
+- Changed "Halcyon Shrine Banners" default configuration. (0.75 -> 0)
+^ These are technically not holdout zones but I already went to the trouble of coding the interaction so it's just being defaulted to 0.
+
+- Renabled Starstorm 2 setting.
+````
+
+
 **5.3.0**
 
 ````

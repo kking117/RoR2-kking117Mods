@@ -13,13 +13,12 @@ namespace WarBannerBuff
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	[BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.recalculatestats", BepInDependency.DependencyFlags.HardDependency)]
-
 	public class MainPlugin : BaseUnityPlugin
     {
 		public const string MODUID = "com.kking117.WarBannerBuff";
 		public const string MODNAME = "WarBannerBuff";
 		public const string MODTOKEN = "KKING117_WARBANNERBUFF_";
-		public const string MODVERSION = "5.3.0";
+		public const string MODVERSION = "5.3.1";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -68,13 +67,13 @@ namespace WarBannerBuff
 		}
 		private void PostLoad()
 		{
-			//LoadCompat();
+			LoadCompat();
 		}
 		private void LoadCompat()
 		{
-			/*if (SS2_ShareWithGreaterBanner)
+			if (SS2_ShareWithGreaterBanner)
             {
-				Starstorm_Loaded = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm.Starstorm2");
+				Starstorm_Loaded = Chainloader.PluginInfos.ContainsKey("com.TeamMoonstorm");
 				if (Starstorm_Loaded)
 				{
 					BuffIndex greaterBanner = BuffCatalog.FindBuffIndex("BuffGreaterBanner");
@@ -82,8 +81,16 @@ namespace WarBannerBuff
 					{
 						ItemChanges.WarBanner.GreaterBannerBuff = BuffCatalog.GetBuffDef(greaterBanner);
 					}
+					if (ItemChanges.WarBanner.GreaterBannerBuff != RoR2Content.Buffs.Warbanner)
+                    {
+						ModLogger.LogInfo("Found SS2 Greater Banner Buff");
+					}
+					else
+                    {
+						ModLogger.LogInfo("Couldn't find SS2 Greater Banner Buff");
+					}
 				}
-			}*/
+			}
 		}
 		public void ReadConfig()
 		{
@@ -111,7 +118,7 @@ namespace WarBannerBuff
 			FocusBanner = Config.Bind("Placement Events", "Focus Banners", 1f, "Players equipped with Warbanners will place one down when activating the Focus in Simulacrum. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 
 			MeridianBanner = Config.Bind("Placement Events", "Prime Meridian Banners", 1f, "Players equipped with Warbanners will place one down at the start of False Son's phases. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
-			HalcyonBanner = Config.Bind("Placement Events", "Halcyon Shrine Banners", 0.75f, "Players equipped with Warbanners will place one down when activating the Halcyon Shrine. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
+			HalcyonBanner = Config.Bind("Placement Events", "Halcyon Shrine Banners", 0f, "Players equipped with Warbanners will place one down when activating the Halcyon Shrine. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 
 			Merge_Enable = Config.Bind("Banner Merging", "Enable", true, "Allow banner merging? (May cause stutters when banners are placed.)").Value;
 			Merge_MinOverlap = Config.Bind("Banner Merging", "Minimum Overlap", 0.25f, "Minimum amount of overlap that banners need to merge. Values closer to 0 makes the requirement less strict. (Accepts 0-1)").Value;
