@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using HG;
 using RoR2;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -85,16 +83,16 @@ namespace HalcyonSeedBuff.Changes
 				switch (MainPlugin.ChannelOn_MeridianPhase)
 				{
 					case 1:
-						On.RoR2.MeridianEventTriggerInteraction.Phase1.OnEnter += Meridian_Phase1;
+						On.EntityStates.MeridianEvent.Phase1.OnEnter += Meridian_Phase1;
 						break;
 					case 2:
-						On.RoR2.MeridianEventTriggerInteraction.Phase2.OnEnter += Meridian_Phase2;
+						On.EntityStates.MeridianEvent.Phase2.OnEnter += Meridian_Phase2;
 						break;
 					case 3:
-						On.RoR2.MeridianEventTriggerInteraction.Phase3.OnEnter += Meridian_Phase3;
+						On.EntityStates.MeridianEvent.Phase3.OnEnter += Meridian_Phase3;
 						break;
 				}
-				On.RoR2.MeridianEventTriggerInteraction.Phase3.OnExit += Meridian_Finish;
+				On.EntityStates.MeridianEvent.Phase3.OnExit += Meridian_Finish;
 			}
 			if (MainPlugin.Halcyon_CanBeStolen)
 			{
@@ -397,7 +395,7 @@ namespace HalcyonSeedBuff.Changes
 				SummonTimer = -1f;
 			}
 		}
-		private static void Meridian_Phase1(On.RoR2.MeridianEventTriggerInteraction.Phase1.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase1 self)
+		private static void Meridian_Phase1(On.EntityStates.MeridianEvent.Phase1.orig_OnEnter orig, EntityStates.MeridianEvent.Phase1 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
@@ -406,7 +404,7 @@ namespace HalcyonSeedBuff.Changes
 				SpawnLocation = MeridianPosition;
 			}
 		}
-		private static void Meridian_Phase2(On.RoR2.MeridianEventTriggerInteraction.Phase2.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase2 self)
+		private static void Meridian_Phase2(On.EntityStates.MeridianEvent.Phase2.orig_OnEnter orig, EntityStates.MeridianEvent.Phase2 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
@@ -415,7 +413,7 @@ namespace HalcyonSeedBuff.Changes
 				SpawnLocation = MeridianPosition;
 			}
 		}
-		private static void Meridian_Phase3(On.RoR2.MeridianEventTriggerInteraction.Phase3.orig_OnEnter orig, MeridianEventTriggerInteraction.Phase3 self)
+		private static void Meridian_Phase3(On.EntityStates.MeridianEvent.Phase3.orig_OnEnter orig, EntityStates.MeridianEvent.Phase3 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
@@ -425,7 +423,7 @@ namespace HalcyonSeedBuff.Changes
 			}
 		}
 
-		private static void Meridian_Finish(On.RoR2.MeridianEventTriggerInteraction.Phase3.orig_OnExit orig, MeridianEventTriggerInteraction.Phase3 self)
+		private static void Meridian_Finish(On.EntityStates.MeridianEvent.Phase3.orig_OnExit orig, EntityStates.MeridianEvent.Phase3 self)
 		{
 			orig(self);
 			if (NetworkServer.active)
