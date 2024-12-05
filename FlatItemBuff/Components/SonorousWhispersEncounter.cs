@@ -18,6 +18,8 @@ namespace FlatItemBuff.Components
 		private uint goldReward = 0;
 		internal static float SpawnDelayMin = 10;
 		internal static float SpawnDelayMax = 17;
+		private CharacterBody lastKiller;
+		private CharacterBody lastBody;
 		private Vector3 LastDeathPos = new Vector3(0f, 0f, 0f);
 		private PickupIndex rewardIndex = PickupCatalog.FindPickupIndex(RoR2Content.Items.Pearl.itemIndex);
 		private void Awake()
@@ -156,7 +158,7 @@ namespace FlatItemBuff.Components
 				};
 				DirectorSpawnRequest spawnRequest = new DirectorSpawnRequest(spawnCard, placementRule, Run.instance.runRNG);
 				spawnRequest.ignoreTeamMemberLimit = true;
-				spawnRequest.teamIndexOverride = TeamIndex.Neutral;
+				spawnRequest.teamIndexOverride = TeamIndex.Monster;
 
 				spawnRequest.onSpawnedServer = (Action<SpawnCard.SpawnResult>)Delegate.Combine(spawnRequest.onSpawnedServer, new Action<SpawnCard.SpawnResult>(delegate (SpawnCard.SpawnResult result)
 				{
@@ -172,7 +174,6 @@ namespace FlatItemBuff.Components
                         {
 							CharacterBody characterBody = characterMaster.GetBody();
 							inventory.ResetItem(RoR2Content.Items.InvadingDoppelganger);
-							inventory.GiveItem(SonorousWhispers_Rework.EchoLevelItem, itemCount);
 							inventory.GiveItem(RoR2Content.Items.TeleportWhenOob);
 							inventory.GiveItem(RoR2Content.Items.UseAmbientLevel);
 							if (SonorousWhispers_Rework.HasAdaptive)
@@ -221,11 +222,15 @@ namespace FlatItemBuff.Components
 
 		private void OnEchoKilled(CharacterMaster member, DamageReport damageReport)
         {
-			CharacterBody victimBody = member.GetBody();
-			if (victimBody)
+			lastBody = member.GetBody();
+			if (damageReport.attackerBody)
             {
-				LastDeathPos = victimBody.transform.position;
-				DeathRewards deathRewards = victimBody.GetComponent<DeathRewards>();
+				lastKiller = damageReport.attackerBody;
+			}
+			if (lastBody)
+            {
+				LastDeathPos = lastBody.transform.position;
+				DeathRewards deathRewards = lastBody.GetComponent<DeathRewards>();
 				PickupIndex pickupIndex = PickupIndex.none;
 				if (deathRewards && deathRewards.bossDropTable)
                 {
@@ -256,6 +261,43 @@ namespace FlatItemBuff.Components
 			if (goldReward > 0)
             {
 				TeamManager.instance.GiveTeamMoney(TeamIndex.Player, goldReward);
+			}
+			if (SonorousWhispers_Rework.BaseDamage > 0f && SonorousWhispers_Rework.BaseRadius > 0f)
+            {
+				
+				float blastDamage = SonorousWhispers_Rework.BaseDamage + (Math.Max(0, itemCount - 1) * SonorousWhispers_Rework.StackDamage);
+				float blastRadius = SonorousWhispers_Rework.BaseRadius + (Math.Max(0, itemCount - 1) * SonorousWhispers_Rework.StackRadius);
+
+				float baseDamage = 12f + (3.6f * Math.Max(0, Run.instance.ambientLevel -1f));
+				new BlastAttack
+				{
+					attacker = (lastKiller && lastKiller.gameObject) ? lastKiller.gameObject : null,
+					baseDamage = baseDamage * blastDamage * playerCount,
+					baseForce = blastDamage * 100f,
+					bonusForce = Vector3.zero,
+					attackerFiltering = AttackerFiltering.Default,
+					crit = lastKiller ? lastKiller.RollCrit() : false,
+					damageColorIndex = DamageColorIndex.Item,
+					damageType = DamageType.Stun1s|DamageType.BonusToLowHealth,
+					falloffModel = BlastAttack.FalloffModel.None,
+					inflictor = (lastBody && lastBody.gameObject) ? lastBody.gameObject : null,
+					position = LastDeathPos,
+					procChainMask = default(ProcChainMask),
+					procCoefficient = 3f,
+					radius = blastRadius,
+					losType = BlastAttack.LoSType.None,
+					teamIndex = TeamIndex.Player
+				}.Fire();
+				EffectManager.SpawnEffect(EntityStates.VagrantMonster.FireMegaNova.novaEffectPrefab, new EffectData
+				{
+					origin = LastDeathPos,
+					scale = 1f,
+					rotation = Quaternion.identity
+				}, true);
+				if (lastBody)
+                {
+					Util.PlaySound(EntityStates.VagrantNovaItem.DetonateState.explosionSound, lastBody.gameObject);
+				}
 			}
 		}
 	}

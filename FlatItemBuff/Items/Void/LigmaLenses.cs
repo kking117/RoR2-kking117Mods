@@ -100,7 +100,7 @@ namespace FlatItemBuff.Items
 					if (itemCount > 0)
 					{
 						float effectChance = BaseChance + (StackChance * (itemCount - 1));
-						if (Util.CheckRoll(effectChance * damageInfo.procCoefficient))
+						if (Util.CheckRoll(effectChance * damageInfo.procCoefficient, attackerMaster))
 						{
 							float coefDamage = BaseDamage + (StackDamage * (itemCount - 1));
 							float baseDamage = attackerBody.damage;

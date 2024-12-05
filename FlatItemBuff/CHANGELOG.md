@@ -1,3 +1,26 @@
+**1.23.5**
+
+<details><summary>Notes</summary>Small update to fix some problems I noticed while playing, haven't played RoR2 in a while so.</details>
+
+```
+- Partially updated for v1.3.5.
+
+- Unstable Transmitter Rework:
+- Fixed for v1.3.5
+
+- Sonorous Whispers Rework:
+- Now spawns on the Monster Team instead of Neutral as it caused many problems.
+- Removed the increased damage it does to non-player teams.
+- Defeating the boss now causes a large explosion that hurts the teams that are hostile to the player team.
+```
+
+**1.23.4**
+
+```
+- Lost Seer's Lenses:
+- Fixed chance not being affected by luck.
+```
+
 **1.23.3**
 
 ```

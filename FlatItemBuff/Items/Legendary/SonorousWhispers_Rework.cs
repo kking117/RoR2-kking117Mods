@@ -16,7 +16,6 @@ namespace FlatItemBuff.Items
 		internal static GameObject CombatEncounterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ShadowClone/ShadowCloneEncounter.prefab").WaitForCompletion();
 		internal static SpawnCard BaseSpawnCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Titan/cscTitanDampCave.asset").WaitForCompletion();
 		internal static SpawnCard BossCardTemplate = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/RoboBallBoss/cscSuperRoboBallBoss.asset").WaitForCompletion();
-		public static ItemDef EchoLevelItem;
 		internal static bool Enable = true;
 		internal static bool HasAdaptive = false;
 		internal static bool IsElite = true;
@@ -24,8 +23,10 @@ namespace FlatItemBuff.Items
 		internal static bool GoodEnding = true;
 		internal static float BasePower = 1f;
 		internal static float StackPower = 0f;
-		internal static float BaseDamage = 2f;
-		internal static float StackDamage = 1f;
+		internal static float BaseDamage = 60f;
+		internal static float StackDamage = 48f;
+		internal static float BaseRadius = 100f;
+		internal static float StackRadius = 20f;
 		internal static int BaseReward = 1;
 		internal static int StackReward = 1;
 		internal static int BaseGold = 100;
@@ -44,7 +45,6 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			UpdateItemDef();
 			CreateSpawnList();
-			CreateItemDef();
 			UpdateText();
 			Hooks();
 		}
@@ -54,6 +54,8 @@ namespace FlatItemBuff.Items
 			StackPower = Math.Max(0f, StackPower);
 			BaseDamage = Math.Max(0f, BaseDamage);
 			StackDamage = Math.Max(0f, StackDamage);
+			BaseRadius = Math.Max(0f, BaseRadius);
+			StackRadius = Math.Max(0f, StackRadius);
 			BaseReward = Math.Max(0, BaseReward);
 			StackReward = Math.Max(0, StackReward);
 			RewardLimit = Math.Max(BaseReward, RewardLimit);
@@ -174,27 +176,6 @@ namespace FlatItemBuff.Items
 				itemDef.tags = itemTags.ToArray();
 			}
 		}
-		private void CreateItemDef()
-		{
-			EchoLevelItem = ScriptableObject.CreateInstance<ItemDef>();
-			EchoLevelItem.canRemove = false;
-			EchoLevelItem.name = MainPlugin.MODNAME + "_EchoLevelItem";
-			EchoLevelItem.deprecatedTier = ItemTier.NoTier;
-			EchoLevelItem.tier = ItemTier.NoTier;
-			EchoLevelItem.descriptionToken = "";
-			EchoLevelItem.nameToken = MainPlugin.MODNAME + "_EchoLevelItem";
-			EchoLevelItem.pickupToken = "";
-			EchoLevelItem.hidden = true;
-			EchoLevelItem.pickupIconSprite = null;
-			EchoLevelItem.tags = new[]
-			{
-				ItemTag.BrotherBlacklist,
-				ItemTag.CannotSteal,
-				ItemTag.CannotDuplicate,
-				ItemTag.AIBlacklist
-			};
-			ContentManager.AddItem(EchoLevelItem);
-		}
 		private void UpdateText()
 		{
 			MainPlugin.ModLogger.LogInfo("Updating item text");
@@ -249,18 +230,28 @@ namespace FlatItemBuff.Items
 					}
 					pickup += ", drops gold upon defeat";
 				}
-				
 			}
-			if (BaseDamage > 0f)
+			if (BaseRadius > 0f && BaseDamage > 0f)
 			{
+				string damage = "";
 				if (StackDamage > 0f)
                 {
-					description += string.Format("\n\nThe monster also deals an extra <style=cIsDamage>{0}%</style> <style=cStack>(+{1}% per stack)</style> <style=cIsDamage>damage</style> against your enemies.", BaseDamage * 100f, StackDamage * 100f);
+					damage += string.Format(" for <style=cIsDamage>{0}%</style> <style=cStack>(+{1}% per stack)</style> <style=cIsDamage>ambient damage</style>.", BaseDamage * 100f, StackDamage * 100f);
 				}
 				else
                 {
-					description += string.Format("\n\nThe monster also deals an extra <style=cIsDamage>{0}%</style> <style=cStack>(+{1}% per stack)</style> <style=cIsDamage>damage</style> against your enemies.", BaseDamage);
+					damage += string.Format(" for <style=cIsDamage>{0}%</style> <style=cIsDamage>ambient damage</style>.", BaseDamage * 100f);
 				}
+				string radius = "";
+				if (StackRadius > 0f)
+				{
+					radius += string.Format(" <style=cIsDamage>explodes</style> in a <style=cIsDamage>{0}m</style> <style=cStack>(+{1}m per stack)</style> radius", BaseRadius, StackRadius);
+				}
+				else
+				{
+					radius += string.Format(" <style=cIsDamage>explodes</style> in a <style=cIsDamage>{0}m</style> radius", BaseRadius);
+				}
+				description += string.Format("\n\nWhen defeated, the monster{0}{1}", radius, damage);
 			}
 			pickup += ".";
 			LanguageAPI.Add("ITEM_RESETCHESTS_PICKUP", pickup);
@@ -272,10 +263,6 @@ namespace FlatItemBuff.Items
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			Run.onRunStartGlobal += OnRunStartGlobal;
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
-			if (BaseDamage > 0f)
-            {
-				SharedHooks.Handle_HealthComponentTakeDamage_Actions += OnTakeDamage;
-			}
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
 		private void OnInventoryChanged(CharacterBody self)
@@ -286,35 +273,6 @@ namespace FlatItemBuff.Items
 				StartEchoSummon(Stage.instance);
 			}
 		}
-		private void OnTakeDamage(HealthComponent self, DamageInfo damageInfo)
-        {
-			if (!damageInfo.attacker)
-            {
-				return;
-            }
-			if (self && self.alive && self.body)
-            {
-				TeamComponent teamComp = self.body.teamComponent;
-				if (teamComp && teamComp.teamIndex != TeamIndex.Player)
-                {
-					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
-					if (attackerBody && attackerBody.master)
-					{
-						Inventory inventory = attackerBody.master.inventory;
-						if (inventory)
-						{
-							int itemCount = inventory.GetItemCount(EchoLevelItem);
-							if (itemCount > 0)
-							{
-								itemCount = Math.Max(0, itemCount - 1);
-								float dmgMult = 1f + BaseDamage + (StackDamage * itemCount);
-								damageInfo.damage *= dmgMult;
-							}
-						}
-					}
-				}
-			}
-        }
 		private void GlobalKillEvent(DamageReport damageReport)
 		{
 			CharacterMaster victimMaster = damageReport.victimMaster;

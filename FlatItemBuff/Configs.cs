@@ -387,8 +387,10 @@ namespace FlatItemBuff
 			SonorousWhispers_Rework.Enable = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			SonorousWhispers_Rework.BasePower = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Power", 1f, "Health and Damage scaling of the monster at a single stack.").Value;
 			SonorousWhispers_Rework.StackPower = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Power", 0f, "Health and Damage scaling of the monster for each additional stack.").Value;
-			SonorousWhispers_Rework.BaseDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Damage", 2f, "Damage Bonus the monster gets against non-player targets at a single stack.").Value;
-			SonorousWhispers_Rework.StackDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Damage", 1f, "Damage Bonus the monster gets against non-player targets for each additional stack.").Value;
+			SonorousWhispers_Rework.BaseDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Damage", 60f, "Damage of the explosion the monster causes when defeated at a single stack. (Set to 0 to disable this.)").Value;
+			SonorousWhispers_Rework.StackDamage = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Damage", 48f, "Damage of the explosion the monster causes when defeated for each additional stack.").Value;
+			SonorousWhispers_Rework.BaseRadius = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Radius", 100f, "Radius of the explosion the monster causes when defeated at a single stack. (Set to 0 to disable this.)").Value;
+			SonorousWhispers_Rework.StackRadius = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Radius", 20f, "Radius of the explosion the monster causes when defeated for each additional stack.").Value;
 			SonorousWhispers_Rework.BaseReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Base Rewards", 1, "Rewards dropped upon defeat at a single stack.").Value;
 			SonorousWhispers_Rework.StackReward = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Stack Rewards", 1, "Rewards dropped upon defeat for each additional stack.").Value;
 			SonorousWhispers_Rework.RewardLimit = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, "Reward Limit", 200, "The maximum amount of rewards the monster can drop, also acts as a cap for other stacking effects.").Value;
