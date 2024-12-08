@@ -1,6 +1,30 @@
+**1.24.0**
+
+Also know as: "The Poorly Timed Warped Echo Update"
+
+```
+- Added a buff to Warped Echo.
+
+- Added a buff to Red Whip.
+- Added a buff to Rose Buckler.
+
+- Added a buff to Growth Nectar.
+
+- Unstable Transmitter Rework:
+- Strike Drone is marked as an ally for RiskyMod.
+- Has a minion leash, like all other npc allies.
+```
+
+**1.23.6**
+
+```
+- Chronobauble:
+- Changed how debuff visuals are handled to hopefully fix an issue.
+```
+
 **1.23.5**
 
-<details><summary>Notes</summary>Small update to fix some problems I noticed while playing, haven't played RoR2 in a while so.</details>
+<details><summary>Notes</summary>Small update to fix some problems I noticed while playing, haven't played RoR2 in a while.</details>
 
 ```
 - Partially updated for v1.3.5.

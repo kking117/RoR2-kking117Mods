@@ -31,6 +31,8 @@ namespace FlatItemBuff
 
 		private const string Section_RollOfPennies_Rework = "Roll of Pennies Rework";
 
+		private const string Section_WarpedEcho_Buff = "Warped Echo";
+
 		private const string Section_Chronobauble_Buff = "Chronobauble";
 
 		private const string Section_DeathMark_Buff = "Death Mark";
@@ -54,15 +56,23 @@ namespace FlatItemBuff
 
 		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter";
 
+		private const string Section_RedWhip_Buff = "Red Whip";
+
+		private const string Section_RoseBuckler_Buff = "Rose Buckler";
+
 		private const string Section_WaxQuail_Buff = "Wax Quail";
 
 		private const string Section_Aegis_Buff = "Aegis";
 
 		private const string Section_BensRaincoat_Buff = "Bens Raincoat";
 
+		private const string Section_GrowthNectar_Buff = "Growth Nectar";
+
 		private const string Section_HappiestMask_Rework = "Happiest Mask Rework";
 
 		private const string Section_LaserScope_Buff = "Laser Scope";
+
+		private const string Section_PocketICBM_Buff = "Pocket ICBM";
 
 		private const string Section_SonorousWhispers_Rework = "Sonorous Whispers Rework";
 
@@ -110,6 +120,7 @@ namespace FlatItemBuff
 			Read_KnockbackFin();
 			Read_TopazBrooch();
 			Read_RollOfPennies();
+			Read_WarpedEcho();
 			//Uncommon
 			Read_Chronobauble();
 			Read_DeathMark();
@@ -121,13 +132,17 @@ namespace FlatItemBuff
 			Read_SquidPolyp();
 			Read_Stealthkit();
 			Read_UnstableTransmitter();
+			Read_RedWhip();
+			Read_RoseBuckler();
 			Read_WarHorn();
 			Read_WaxQuail();
 			//Legendary
 			Read_Aegis();
 			Read_BensRaincoat();
+			Read_GrowthNectar();
 			Read_HappiestMask_Rework();
 			Read_LaserScope();
+			Read_PocketICBM();
 			Read_SonorousWhispers();
 			Read_SymbioticScorpion();
 			//Boss
@@ -207,6 +222,13 @@ namespace FlatItemBuff
 			RollOfPennies_Rework.BaseDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 2f, "Duration given to the armor at a single stack.").Value;
 			RollOfPennies_Rework.StackDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 2f, "Duration given to the armor for each additional stack.").Value;
 			RollOfPennies_Rework.GoldDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Gold Armor Duration", 0.5f, "Multiplier for the gold's value when calculating the extra duration.").Value;
+		}
+
+		private static void Read_WarpedEcho()
+        {
+			WarpedEcho.Enable = Item_Common_Config.Bind(Section_WarpedEcho_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 6f, "Armor given at a single stack.").Value;
+			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 6f, "Armor given for each additional stack.").Value;
 		}
 		private static void Read_Chronobauble()
         {
@@ -317,6 +339,23 @@ namespace FlatItemBuff
 			UnstableTransmitter_Rework.TeleFragRadius = Item_Uncommon_Config.Bind(Section_UnstableTransmitter_Rework, "Telefrag Radius", 60f, "Enemies within this radius of the user can be purposely telefragged by allies. (Set to 0 or less to disable this behavior.)").Value;
 			UnstableTransmitter_Rework.TeleImmobile = Item_Uncommon_Config.Bind(Section_UnstableTransmitter_Rework, "Teleport Immobile", true, "Allows immobile allies to be targeted for teleportation.").Value;
 		}
+		private static void Read_RedWhip()
+		{
+			RedWhip.Enable = Item_Uncommon_Config.Bind(Section_RedWhip_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			RedWhip.BaseSpeed = Item_Uncommon_Config.Bind(Section_RedWhip_Buff, "Base Speed", 0.1f, "Passive speed increase at a single stack.").Value;
+			RedWhip.StackSpeed = Item_Uncommon_Config.Bind(Section_RedWhip_Buff, "Stack Speed", 0.1f, "Passive speed increase for each additional stack.").Value;
+			RedWhip.BaseActiveSpeed = Item_Uncommon_Config.Bind(Section_RedWhip_Buff, "Base Active Speed", 0.2f, "Active speed increase at a single stack.").Value;
+			RedWhip.StackActiveSpeed = Item_Uncommon_Config.Bind(Section_RedWhip_Buff, "Stack Active Speed", 0.2f, "Active speed increase for each additional stack.").Value;
+		}
+
+		private static void Read_RoseBuckler()
+		{
+			RoseBuckler.Enable = Item_Uncommon_Config.Bind(Section_RoseBuckler_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			RoseBuckler.BaseArmor = Item_Uncommon_Config.Bind(Section_RoseBuckler_Buff, "Base Armor", 10f, "Passive armor increase at a single stack.").Value;
+			RoseBuckler.StackArmor = Item_Uncommon_Config.Bind(Section_RoseBuckler_Buff, "Stack Armor", 10f, "Passive armor increase for each additional stack.").Value;
+			RoseBuckler.BaseActiveArmor = Item_Uncommon_Config.Bind(Section_RoseBuckler_Buff, "Base Active Armor", 20f, "Active armor increase at a single stack.").Value;
+			RoseBuckler.StackActiveArmor = Item_Uncommon_Config.Bind(Section_RoseBuckler_Buff, "Stack Active Armor", 20f, "Active armor increase for each additional stack.").Value;
+		}
 		private static void Read_HuntersHarpoon()
         {
 			HuntersHarpoon.Enable = Item_Uncommon_Config.Bind(Section_HuntersHarpoon_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
@@ -365,6 +404,14 @@ namespace FlatItemBuff
 			BensRaincoat.Cooldown = Item_Legendary_Config.Bind(Section_BensRaincoat_Buff, "Cooldown", 7f, "Time in seconds it takes to restock debuff blocks. (Anything less than 0 will skip this change.)").Value;
 			BensRaincoat.GraceTime = Item_Legendary_Config.Bind(Section_BensRaincoat_Buff, "Debuff Grace Time", 0.25f, "Time in seconds after consuming a block that further debuffs are negated for free.").Value;
 		}
+		private static void Read_GrowthNectar()
+		{
+			GrowthNectar.Enable = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			GrowthNectar.BaseBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Boost", 0.04f, "Stat increase per unique buff at a single stack.").Value;
+			GrowthNectar.StackBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Stack Boost", 0.04f, "Stat increase per unique buff for each additional stack.").Value;
+			GrowthNectar.BaseCap = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Cap", 5, "The cap on how many buffs can increase your stats.").Value;
+			GrowthNectar.VFXCap = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Visual Cap", 5, "How many buffs are needed to show the item's visual effect. (Set to higher than 'Base Cap' to disable this.)").Value;
+		}
 		private static void Read_HappiestMask_Rework()
         {
 			HappiestMask_Rework.Enable = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
@@ -381,7 +428,14 @@ namespace FlatItemBuff
 			LaserScope.Enable = Item_Legendary_Config.Bind(Section_LaserScope_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			LaserScope.BaseCrit = Item_Legendary_Config.Bind(Section_LaserScope_Buff, "Crit Chance", 5f, "Crit chance at a single stack.").Value;
 		}
-
+		private static void Read_PocketICBM()
+		{
+			PocketICBM.Enable = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			PocketICBM.BaseChance = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Base Chance", 7f, "Chance of firing a missile at a single stack. (100 = 100%)").Value;
+			PocketICBM.StackChance = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Stack Chance", 0f, "Chance of firing a missile for each additional stack.").Value;
+			PocketICBM.BaseDamage = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Base Damage", 2f, "Damage of the missile at a single stack.").Value;
+			PocketICBM.StackDamage = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Stack Damage", 0f, "Damage of the missile for each additional stack.").Value;
+		}
 		private static void Read_SonorousWhispers()
         {
 			SonorousWhispers_Rework.Enable = Item_Legendary_Config.Bind(Section_SonorousWhispers_Rework, Label_EnableRework, false, Desc_EnableRework).Value;

@@ -77,7 +77,7 @@ namespace FlatItemBuff.Items
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
-			On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
+			IL.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += new ILContext.Manipulator(IL_VisualEffects);
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -112,19 +112,30 @@ namespace FlatItemBuff.Items
 				args.moveSpeedReductionMultAdd += SlowDown;
 			}
 		}
-		private static void CharacterBody_UpdateAllTemporaryVisualEffects(On.RoR2.CharacterBody.orig_UpdateAllTemporaryVisualEffects orig, CharacterBody self)
-		{
-			orig(self);
-			if (self.HasBuff(ChronoDebuff) && !self.HasBuff(RoR2Content.Buffs.Slow60))
-			{
-				self.UpdateSingleTemporaryVisualEffect(ref self.slowDownTimeTempEffectInstance, CharacterBody.AssetReferences.slowDownTimeTempEffectPrefab, self.radius, true, "");
-			}
-		}
 		private float SlowDuration(float itemCount)
         {
 			itemCount = Math.Max(0, itemCount - 1);
 			return BaseDuration + (StackDuration * itemCount);
 		}
+		private void IL_VisualEffects(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Buffs), "Slow60")
+			))
+			{
+				ilcursor.RemoveRange(2);
+				ilcursor.EmitDelegate<Func<CharacterBody, bool>>((self) =>
+				{
+					return self.HasBuff(RoR2Content.Buffs.Slow60) || self.HasBuff(ChronoDebuff);
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Chronobauble - Visual Effect Override - IL Hook failed");
+			}
+		}
+		
 		private void IL_OnHitEnemy(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);

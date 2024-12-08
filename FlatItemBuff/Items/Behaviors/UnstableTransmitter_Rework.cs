@@ -330,10 +330,24 @@ namespace FlatItemBuff.Items.Behaviors
 							rotation = Quaternion.identity
 						}, true);
 						hasSpawnedDrone = true;
+						summonMaster.inventory.GiveItem(RoR2Content.Items.MinionLeash);
+						if (MainPlugin.RiskyMod_Loaded)
+                        {
+							RiskyMod_MarkAlly(summonMaster, summonMaster.inventory);
+						}
 					}
 				}
 			}));
 			DirectorCore.instance.TrySpawnObject(directorSpawnRequest);
+		}
+
+		private void RiskyMod_MarkAlly(CharacterMaster master, Inventory inventory)
+        {
+			inventory.ResetItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
+			if (master.teamIndex == TeamIndex.Player)
+            {
+				inventory.GiveItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
+			}
 		}
 	}
 }

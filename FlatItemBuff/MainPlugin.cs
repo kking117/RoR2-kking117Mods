@@ -17,24 +17,27 @@ namespace FlatItemBuff
 	[BepInDependency("com.bepis.r2api.orb", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.bepis.r2api.damagetype", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("com.Moffein.AssistManager", BepInDependency.DependencyFlags.SoftDependency)]
+	[BepInDependency("com.RiskyLives.RiskyMod", BepInDependency.DependencyFlags.SoftDependency)]
 	[BepInPlugin(MODUID, MODNAME, MODVERSION)]
 	public class MainPlugin : BaseUnityPlugin
 	{
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.23.5";
+		public const string MODVERSION = "1.24.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
 
 		internal static bool AssistManager_Loaded = false;
+		internal static bool RiskyMod_Loaded = false;
 		private void Awake()
 		{
 			ModLogger = this.Logger;
 			pluginInfo = Info;
 			Configs.Setup();
 			AssistManager_Loaded = Chainloader.PluginInfos.ContainsKey("com.Moffein.AssistManager");
+			RiskyMod_Loaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
 			EnableChanges();
 			SharedHooks.Setup();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad_GameModeCatalog));
@@ -48,6 +51,7 @@ namespace FlatItemBuff
 			new Items.KnockbackFin();
 			new Items.TopazBrooch();
 			new Items.RollOfPennies_Rework();
+			new Items.WarpedEcho();
 			//Uncommon
 			new Items.Chronobauble();
 			new Items.DeathMark();
@@ -55,8 +59,10 @@ namespace FlatItemBuff
 			new Items.IgnitionTank_Rework();
 			new Items.Infusion();
 			new Items.LeechingSeed_Rework();
-			new Items.UnstableTransmitter_Rework();
 			new Items.LeptonDaisy();
+			new Items.UnstableTransmitter_Rework();
+			new Items.RedWhip();
+			new Items.RoseBuckler();
 			new Items.Stealthkit();
 			new Items.SquidPolyp();
 			new Items.WarHorn();
@@ -64,8 +70,10 @@ namespace FlatItemBuff
 			//Legendary
 			new Items.Aegis();
 			new Items.BensRaincoat();
+			new Items.GrowthNectar();
 			new Items.HappiestMask_Rework();
 			new Items.LaserScope();
+			new Items.PocketICBM();
 			new Items.SonorousWhispers_Rework();
 			new Items.SymbioticScorpion_Rework();
 			//Boss

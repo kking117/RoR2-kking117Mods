@@ -3,8 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 using RoR2;
 using R2API;
-using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
@@ -12,7 +10,6 @@ namespace FlatItemBuff.Items
 {
 	public class DeathMark
 	{
-		private BuffDef DeathMarkDef = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/DeathMark/bdDeathMark.asset").WaitForCompletion();
 		internal static bool Enable = false;
 		internal static float DamagePerDebuff = 0.1f;
 		internal static int MaxDebuffs = 5;
