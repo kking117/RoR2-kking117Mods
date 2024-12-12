@@ -14,6 +14,7 @@ namespace FlatItemBuff.Items
 		private static Color BuffColor = new Color(0.53f, 0.77f, 0.31f, 1f);
 		public static DotController.DotDef LeechDotDef;
 		private static DotController.DotIndex LeechDotIndex;
+		private const string LogName = "Leeching Seed Rework";
 		internal static bool Enable = false;
 		internal static float BaseDoTHeal = 1f;
 		internal static float StackDoTHeal = 1f;
@@ -30,7 +31,7 @@ namespace FlatItemBuff.Items
 				new LeechingSeed();
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			if (LeechChance > 0f)
 			{
@@ -63,7 +64,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
 			if(BaseDoTHeal > 0f)
@@ -91,7 +92,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 		}
@@ -187,7 +188,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Leeching Seed Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnHitEnemy - Hook failed");
 			}
 		}
 	}

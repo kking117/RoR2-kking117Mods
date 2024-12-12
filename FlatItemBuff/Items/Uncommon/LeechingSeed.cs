@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class LeechingSeed
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Leeching Seed";
+		internal static bool Enable = false;
 		internal static float ProcHeal = 1f;
 		internal static float BaseHeal = 1f;
 		public LeechingSeed()
@@ -17,7 +18,7 @@ namespace FlatItemBuff.Items
 			{
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Leeching Seed");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -29,13 +30,13 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = string.Format("Dealing damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", ProcHeal + BaseHeal);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_RemoveOldFunction);
 		}
@@ -66,7 +67,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Leeching Seed - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RemoveOldFunction - Hook failed");
 			}
 		}
 	}

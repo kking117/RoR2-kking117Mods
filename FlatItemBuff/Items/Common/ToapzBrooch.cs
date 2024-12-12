@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class TopazBrooch
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Topaz Brooch";
+		internal static bool Enable = false;
 		internal static float BaseFlatBarrier = 8.0f;
 		internal static float StackFlatBarrier = 0.0f;
 		internal static float BaseCentBarrier = 0.02f;
@@ -20,7 +21,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Topaz Brooch");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -46,7 +47,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "Gain a <style=cIsHealing>temporary barrier</style> on kill for ";
 			if (BaseFlatBarrier > 0f || StackFlatBarrier > 0f)
 			{
@@ -75,7 +76,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 		}
 		private void AssistManger_OnKill(AssistManager.AssistManager.Assist assist, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
@@ -123,7 +124,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Topaz Brooch - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
 			}
 		}
 	}

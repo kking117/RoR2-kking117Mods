@@ -6,7 +6,8 @@ namespace FlatItemBuff.Items
 {
 	public class LaserScope
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Laser Scope";
+		internal static bool Enable = false;
 		internal static float BaseCrit = 5f;
 		public LaserScope()
 		{
@@ -14,7 +15,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Laser Scope");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -25,7 +26,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "";
 			desc += String.Format("Gain <style=cIsDamage>{0}% critical chance</style>.", BaseCrit);
 			desc += " <style=cIsDamage>Critical strikes</style> deal an additional <style=cIsDamage>100% damage</style><style=cStack> (+100% per stack)</style>.";

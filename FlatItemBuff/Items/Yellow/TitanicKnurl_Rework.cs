@@ -12,7 +12,7 @@ namespace FlatItemBuff.Items
 	public class TitanicKnurl_Rework
 	{
 		public static GameObject StoneFistProjectile;
-
+		private const string LogName = "Titanic Knurl Rework";
 		internal static bool Enable = false;
 		internal static float BaseDamage = 8f;
 		internal static float StackDamage = 6f;
@@ -29,7 +29,7 @@ namespace FlatItemBuff.Items
 				new Items.TitanicKnurl();
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Titanic Knurl");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			CreateProjectiles();
@@ -46,7 +46,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("Every few seconds a Stone Titan attacks a nearby enemy.");
 			string stackCool = "";
 			if (StackCooldown != 0f)
@@ -73,7 +73,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
@@ -103,7 +103,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Titanic Knurl Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
 			}
 		}
 

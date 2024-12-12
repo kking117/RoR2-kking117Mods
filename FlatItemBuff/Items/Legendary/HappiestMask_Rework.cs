@@ -17,6 +17,7 @@ namespace FlatItemBuff.Items
 		public static ItemDef GhostCloneIdentifier;
 		public static DeployableSlot Ghost_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Ghost_DeployableLimit;
+		private const string LogName = "Happiest Mask Rework";
 		internal static bool Enable = false;
 		internal static float BaseDamage = 2f;
 		internal static float StackDamage = 2f;
@@ -31,7 +32,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Happiest Mask");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateDeployableSlot();
 			UpdateItemDef();
@@ -90,7 +91,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string description = "";
 			string baseDmg = "";
@@ -135,7 +136,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
@@ -234,7 +235,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Happiest Mask Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
 			}
 		}
 

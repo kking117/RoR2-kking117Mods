@@ -12,6 +12,7 @@ namespace FlatItemBuff.Items
 	{
 		public static BuffDef ChronoDebuff;
 		private static Color BuffColor = new Color(0.678f, 0.612f, 0.412f, 1f);
+		private const string LogName = "Chronobauble";
 		internal static bool Enable = false;
 		internal static float SlowDown = 0.6f;
 		internal static float AttackDown = 0.3f;
@@ -23,7 +24,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Chronobauble");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateBuff();
 			UpdateText();
@@ -42,7 +43,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			//string pickup = "";
 			string desc = "";
 			string slowText = "";
@@ -73,7 +74,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
@@ -132,7 +133,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Chronobauble - Visual Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_VisualEffect - Hook failed");
 			}
 		}
 		
@@ -149,7 +150,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Chronobauble - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnHitEnemy - Hook failed");
 			}
 		}
 	}

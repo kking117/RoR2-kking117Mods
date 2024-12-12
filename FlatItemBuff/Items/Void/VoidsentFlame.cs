@@ -14,7 +14,8 @@ namespace FlatItemBuff.Items
 {
 	public class VoidsentFlame
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Voidsent Flame";
+		internal static bool Enable = false;
 		internal static float BaseRadius = 12f;
 		internal static float StackRadius = 2.4f;
 		internal static float BaseDamage = 2.6f;
@@ -26,7 +27,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Voidsent Flame");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			UpdateText();
@@ -52,7 +53,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Detonate an enemy on your first hit against them. <style=cIsVoid>Corrupts all Will-o'-the-wisps</style>.";
 			string stackA = "";
 			if (StackRadius != 0)
@@ -70,7 +71,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 		}
 		private void IL_TakeDamage(ILContext il)
@@ -94,14 +95,14 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Voidsent Flame - Proc Condition - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TakeDamage A - Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(0),
+				x => x.MatchLdloc(1),
 				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
 				x => x.MatchCallvirt(typeof(Inventory), "GetItemCount"),
-				x => x.MatchStloc(23)
+				x => x.MatchStloc(30)
 			))
 			{
 				//Add new condition
@@ -151,7 +152,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Voidsent Flame - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TakeDamage B - Hook failed");
 			}
 		}
 	}

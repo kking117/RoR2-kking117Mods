@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class RoseBuckler
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Rose Buckler";
+		internal static bool Enable = false;
 		internal static float BaseArmor = 10f;
 		internal static float StackArmor = 10f;
 		internal static float BaseActiveArmor = 20f;
@@ -19,7 +20,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Rose Buckler");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -33,7 +34,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string description = "Increases <style=cIsHealing>armor</style>";
 			if (BaseArmor > 0f)
@@ -80,7 +81,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_OnRecalculateStats);
 			if (BaseArmor > 0f)
             {
@@ -100,7 +101,7 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(22),
+				x => x.MatchLdloc(23),
 				x => x.MatchLdcI4(30)
 			))
 			{
@@ -108,12 +109,12 @@ namespace FlatItemBuff.Items
 				ilcursor.RemoveRange(3);
 				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 				{
-					return BaseActiveArmor+ (Math.Max(0, itemCount - 1) * StackActiveArmor);
+					return BaseActiveArmor + (Math.Max(0, itemCount - 1) * StackActiveArmor);
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Rose Buckler - Stat Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats - Hook failed");
 			}
 		}
 	}

@@ -18,7 +18,8 @@ namespace FlatItemBuff.Items
 		public static DeployableSlot SquidTurret_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit SquidTurret_DeployableLimit;
 
-		internal static bool Enable = true;
+		private const string LogName = "Squid Polyp";
+		internal static bool Enable = false;
 		internal static bool ApplyTar = true;
 		internal static int BaseDuration = 25;
 		internal static int StackDuration = 5;
@@ -30,7 +31,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Squid Polyp");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			if (MaxTurrets > 0)
@@ -65,7 +66,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
         {
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "";
 			if (ApplyTar)
 			{
@@ -87,7 +88,7 @@ namespace FlatItemBuff.Items
 		}
         private void Hooks()
         {
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.OnInteractionBegin += new ILContext.Manipulator(IL_InteractBegin);
 			On.RoR2.GlobalEventManager.OnInteractionBegin += OnInteraction;
 			IL.EntityStates.Squid.SquidWeapon.FireSpine.FireOrbArrow += new ILContext.Manipulator(IL_OnFire);
@@ -208,7 +209,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Squid Polyp - Interact Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_InteractBegin - Hook failed");
 			}
 		}
 		private void IL_OnFire(ILContext il)
@@ -231,7 +232,7 @@ namespace FlatItemBuff.Items
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Squid Polyp - Tar Shot - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnFire A - Hook failed");
 				}
 			}
 			if (ilcursor.TryGotoNext(
@@ -248,7 +249,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Squid Polyp - Scale Force - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName  + " - IL_OnFire B - Hook failed");
 			}
 		}
 	}

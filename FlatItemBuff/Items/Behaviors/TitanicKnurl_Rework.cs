@@ -76,7 +76,7 @@ namespace FlatItemBuff.Items.Behaviors
 				procChainMask = procChainMask,
 				force = 0f,
 				damageColorIndex = DamageColorIndex.Item,
-				fuseOverride = body.teamComponent.teamIndex == TeamIndex.Player ? 0.5f : -1f
+				fuseOverride = body.teamComponent.teamIndex == TeamIndex.Player ? 0.5f : -1f,
 			};
 			ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 		}

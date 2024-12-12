@@ -11,9 +11,10 @@ namespace FlatItemBuff.Items
 {
 	public class RollOfPennies_Rework
 	{
+		private const string LogName = "Roll of Pennies Rework";
 		public static BuffDef PennyArmorBuff;
 		private static Color BuffColor = new Color(1f, 0.788f, 0.055f, 1f);
-		internal static bool Enable = true;
+		internal static bool Enable = false;
 		internal static float BaseGold = 3f;
 		internal static float StackGold = 0f;
 		internal static float BaseArmor = 5f;
@@ -21,14 +22,14 @@ namespace FlatItemBuff.Items
 		internal static float BaseDuration = 2f;
 		internal static float StackDuration = 2f;
 		internal static float GoldDuration = 0.5f;
+		internal static int VFXAmount = 10;
 		public RollOfPennies_Rework()
 		{
-			
 			if (!Enable)
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Roll of Pennies");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			if (BaseArmor > 0f || StackArmor > 0f)
 			{
@@ -46,6 +47,7 @@ namespace FlatItemBuff.Items
 			BaseDuration = Math.Max(0f, BaseDuration);
 			StackDuration = Math.Max(0f, StackDuration);
 			GoldDuration = Math.Max(0f, GoldDuration);
+			VFXAmount = Math.Max(0, VFXAmount);
 		}
 		private void CreateBuff()
 		{
@@ -53,7 +55,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string description = "";
 			string goldPick = "";
@@ -110,7 +112,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
 			if (BaseArmor > 0f || StackArmor > 0f)
             {
@@ -120,6 +122,10 @@ namespace FlatItemBuff.Items
 			if (BaseGold > 0f || StackGold > 0f)
             {
 				SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			}
+			if (VFXAmount > 0)
+            {
+				IL.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += new ILContext.Manipulator(IL_VisualEffects);
 			}
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
@@ -198,7 +204,25 @@ namespace FlatItemBuff.Items
 			}
 			else
             {
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Roll Of Pennies Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage - Hook failed");
+			}
+		}
+		private void IL_VisualEffects(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "AurelioniteBlessing")
+			))
+			{
+				ilcursor.RemoveRange(2);
+				ilcursor.EmitDelegate<Func<CharacterBody, bool>>((self) =>
+				{
+					return self.HasBuff(DLC2Content.Buffs.AurelioniteBlessing) || self.GetBuffCount(PennyArmorBuff) >= VFXAmount;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_VisualEffects - Hook failed");
 			}
 		}
 		private float GetGoldFromHit(int itemCount, float procRate)

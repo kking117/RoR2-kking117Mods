@@ -12,7 +12,8 @@ namespace FlatItemBuff.Items
 	public class BisonSteak_Rework
 	{
 		public static BuffDef FreshRegenBuff;
-		internal static bool Enable = true;
+		private const string LogName = "Bison Steak Rework";
+		internal static bool Enable = false;
 		internal static bool NerfFakeKill = false;
 		internal static float ExtendDuration = 1f;
 		internal static float BaseRegen = 1f;
@@ -27,7 +28,7 @@ namespace FlatItemBuff.Items
 				new BisonSteak();
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Bison Steak");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateBuffs();
 			UpdateItemDef();
@@ -71,7 +72,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
 			pickup += "Regenerate health after killing an enemy.";
@@ -100,7 +101,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 			if (BaseDuration > 0f || StackDuration > 0f)
             {
@@ -196,7 +197,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Bison Steak Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
 			}
 		}
 	}

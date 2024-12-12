@@ -11,7 +11,8 @@ namespace FlatItemBuff.Items
 		public static BuffDef StealthBuff;
 		private static Color StealthBuff_Color = new Color(0.266f, 0.368f, 0.713f, 1f);
 		private static GameObject SmokePrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab").WaitForCompletion();
-		internal static bool Enable = true;
+		private const string LogName = "Old War Stealthkit";
+		internal static bool Enable = false;
 
 		internal static float BuffDuration = 5.0f;
 		internal static float BaseRecharge = 30.0f;
@@ -28,7 +29,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Old War Stealthkit");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateBuffs();
 			Hooks();
@@ -44,7 +45,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Become stealthed at low health.";
 			string desc = string.Format("Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style> for <style=cIsUtility>{0}s</style>", BuffDuration);
 			string desc_stealth = " While <style=cIsUtility>stealthed</style> gain <style=cIsUtility>invisibility</style>";

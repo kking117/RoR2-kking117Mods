@@ -16,7 +16,8 @@ namespace FlatItemBuff.Items
 		internal static GameObject CombatEncounterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ShadowClone/ShadowCloneEncounter.prefab").WaitForCompletion();
 		internal static SpawnCard BaseSpawnCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Titan/cscTitanDampCave.asset").WaitForCompletion();
 		internal static SpawnCard BossCardTemplate = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/RoboBallBoss/cscSuperRoboBallBoss.asset").WaitForCompletion();
-		internal static bool Enable = true;
+		private const string LogName = "Sonorous Whispers";
+		internal static bool Enable = false;
 		internal static bool HasAdaptive = false;
 		internal static bool IsElite = true;
 		internal static bool ScalePlayer = true;
@@ -41,7 +42,7 @@ namespace FlatItemBuff.Items
 			{
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Sonorous Whispers");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			CreateSpawnList();
@@ -178,7 +179,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Summons a powerful monster each stage";
 			string description = "";
 			if (StackPower > 0f)
@@ -259,7 +260,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			Run.onRunStartGlobal += OnRunStartGlobal;
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
@@ -335,7 +336,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Sonorous Whispers - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
 			}
 		}
 	}

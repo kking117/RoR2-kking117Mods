@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class BisonSteak
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Bison Steak";
+		internal static bool Enable = false;
 		internal static float BaseHP = 10f;
 		internal static float LevelHP = 3f;
 		public BisonSteak()
@@ -17,7 +18,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Bison Steak");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -29,13 +30,13 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
 			pickup += "Gain max health.";
 			if (LevelHP > 0f)
             {
-				desc += string.Format("Increases <style=cIsHealing>base health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>. <style=cStack>Health increases further with level</style>.", BaseHP);
+				desc += string.Format("Increases <style=cIsHealing>base health</style> by <style=cIsHealing>{0}</style> <style=cStack>(+{0} per stack)</style>. <style=cStack>Increases further with level</style>.", BaseHP);
 			}
 			else
             {
@@ -46,7 +47,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 		}
 		private void IL_RecalculateStats(ILContext il)
@@ -54,7 +55,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdloc(70),
-				x => x.MatchLdloc(36),
+				x => x.MatchLdloc(37),
 				x => x.MatchConvR4()
 			))
             {
@@ -73,7 +74,7 @@ namespace FlatItemBuff.Items
 			}
 			else
             {
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Bison Steak - Health Stat - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
 			}
 		}
 	}

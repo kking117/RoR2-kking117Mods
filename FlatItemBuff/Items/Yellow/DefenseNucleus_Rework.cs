@@ -14,6 +14,7 @@ namespace FlatItemBuff.Items
 {
     public class DefenseNucleus_Rework
     {
+        private const string LogName = "Defense Nucleus Rework";
         internal static bool Enable = false;
         internal static float ShieldBaseDuration = 5f;
         internal static float ShieldStackDuration = 1f;
@@ -32,7 +33,7 @@ namespace FlatItemBuff.Items
                 new Items.DefenseNucleus();
                 return;
             }
-            MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
+            MainPlugin.ModLogger.LogInfo(LogName);
             ClampConfig();
             
             UpdateText();
@@ -64,7 +65,7 @@ namespace FlatItemBuff.Items
         }
         private void UpdateText()
         {
-            MainPlugin.ModLogger.LogInfo("Updating item text");
+            MainPlugin.ModLogger.LogInfo("Updating Text");
             string deployDesc = string.Format("Activating your equipment");
             string shieldDesc = "";
             string summonDesc = "";

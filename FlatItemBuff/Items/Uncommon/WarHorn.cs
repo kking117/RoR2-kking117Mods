@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class WarHorn
 	{
-		internal static bool Enable = true;
+		private const string LogName = "War Horn";
+		internal static bool Enable = false;
 		internal static float BaseDuration = 6f;
 		internal static float StackDuration = 3f;
 		internal static float BaseAttack = 0.6f;
@@ -19,7 +20,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing War Horn");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -34,7 +35,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "Activating your Equipment gives you ";
 			desc += string.Format("<style=cIsDamage>+{0}% ", BaseAttack * 100f);
 			if (StackAttack > 0f)
@@ -51,7 +52,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.EquipmentSlot.OnEquipmentExecuted += new ILContext.Manipulator(IL_OnEquipmentExecuted);
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 		}
@@ -74,7 +75,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": War Horn - Stat Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
 			}
 		}
 		private void IL_OnEquipmentExecuted(ILContext il)
@@ -96,7 +97,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": War Horn - Activation Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnEquipmentExecuted - Hook failed");
 			}
 		}
 	}

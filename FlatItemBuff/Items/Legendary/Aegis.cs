@@ -8,6 +8,7 @@ namespace FlatItemBuff.Items
 {
 	public class Aegis
 	{
+		private const string LogName = "Aegis";
 		internal static bool Enable = false;
 		internal static bool AllowRegen = true;
 		internal static float BaseOverheal = 1f;
@@ -20,7 +21,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Aegis");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -34,7 +35,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup_overheal = "";
 			string pickup_maxbarrier = "";
 			string desc_overheal = "";
@@ -75,7 +76,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.Heal += new ILContext.Manipulator(IL_Heal);
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 			IL.RoR2.HealthComponent.GetHealthBarValues += new ILContext.Manipulator(IL_GetHealthBarValues);
@@ -112,7 +113,7 @@ namespace FlatItemBuff.Items
 			}
 			else
             {
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Max Barrier - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
             }
 		}
 		private void IL_GetHealthBarValues(ILContext il)
@@ -136,7 +137,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Barrier Health Bar Visual Fix - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_GetHealthBarValues - Hook failed");
 			}
 		}
 		private void IL_Heal(ILContext il)
@@ -154,7 +155,7 @@ namespace FlatItemBuff.Items
 				}
 				else
                 {
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Overheal from regen - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_Heal A - Hook failed");
 				}
 			}
 			if (ilcursor.TryGotoNext(
@@ -174,7 +175,7 @@ namespace FlatItemBuff.Items
 			}
             else
             {
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Aegis - Overheal conversion rate - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_Heal B - Hook failed");
 			}
 		}
 	}

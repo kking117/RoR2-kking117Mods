@@ -64,7 +64,7 @@ namespace FlatItemBuff.Components
 				Destroy(this);
 				return;
 			}
-			if (victimBody.HasBuff(KnockbackFin.knockMidBuff))
+			if (victimBody.HasBuff(BreachingFin_Rework.KBDebuff))
 			{
 				fallCreditGrace = 1f;
 				lastSpeed = victimRigid.velocity.magnitude;
@@ -101,33 +101,33 @@ namespace FlatItemBuff.Components
 		}
 		private void StartCooldown()
 		{
-			victimBody.RemoveBuff(KnockbackFin.knockMidBuff);
-			if (!victimBody.HasBuff(DLC2Content.Buffs.KnockUpHitEnemies))
+			victimBody.RemoveBuff(BreachingFin_Rework.KBDebuff);
+			if (!victimBody.HasBuff(BreachingFin_Rework.KBCooldown))
             {
-				for (int i = KnockbackFin.Cooldown; i > 0; i--)
+				for (int i = BreachingFin_Rework.Cooldown; i > 0; i--)
 				{
-					victimBody.AddTimedBuff(DLC2Content.Buffs.KnockUpHitEnemies, i);
+					victimBody.AddTimedBuff(BreachingFin_Rework.KBCooldown, i);
 				}
 			}
 		}
 		internal void Detonate()
         {
 			HasImpact = true;
-			if (KnockbackFin.BaseRadius > 0f && attackerBody)
+			if (BreachingFin_Rework.BaseRadius > 0f && attackerBody)
 			{
-				float blastDamage = attackerBody.damage * KnockbackFin.GetImpactDamage(itemCount);
-				float blastRadius = KnockbackFin.GetImpactRadius(itemCount);
+				float blastDamage = attackerBody.damage * BreachingFin_Rework.GetImpactDamage(itemCount);
+				float blastRadius = BreachingFin_Rework.GetImpactRadius(itemCount);
 				if (blastDamage > 0f)
 				{
 					float resistance = Mathf.Max(victimBody.moveSpeed, victimBody.baseMoveSpeed);
 					bool isCrit = Util.CheckRoll(attackerBody.crit, attackerBody.master);
 					float velDmg = Mathf.Max(0f, lastSpeed);
 					velDmg = Mathf.InverseLerp(resistance, 120f, velDmg);
-					blastDamage *= Mathf.Lerp(1f, KnockbackFin.MaxDistDamage, velDmg);
+					blastDamage *= Mathf.Lerp(1f, BreachingFin_Rework.MaxDistDamage, velDmg);
 
 					Vector3 blastPosition = victimBody.footPosition;
 					BlastAttack blastAttack = new BlastAttack();
-					if (KnockbackFin.DoStun)
+					if (BreachingFin_Rework.DoStun)
 					{
 						SetStateOnHurt comp = victimBody.GetComponent<SetStateOnHurt>();
 						if (comp)
@@ -142,7 +142,7 @@ namespace FlatItemBuff.Components
 					blastAttack.radius = blastRadius;
 					blastAttack.baseDamage = blastDamage;
 					blastAttack.baseForce = 0f;
-					blastAttack.procCoefficient = KnockbackFin.ProcRate;
+					blastAttack.procCoefficient = BreachingFin_Rework.ProcRate;
 					blastAttack.crit = isCrit;
 					blastAttack.falloffModel = BlastAttack.FalloffModel.SweetSpot;
 					blastAttack.attacker = attackerBody.gameObject;
@@ -151,7 +151,7 @@ namespace FlatItemBuff.Components
 					blastAttack.damageType = DamageType.Generic;
 					blastAttack.damageColorIndex = DamageColorIndex.Item;
 					blastAttack.Fire();
-					EffectManager.SpawnEffect(KnockbackFin.ImpactEffect, new EffectData
+					EffectManager.SpawnEffect(BreachingFin_Rework.ImpactEffect, new EffectData
 					{
 						origin = blastPosition,
 						rotation = Util.QuaternionSafeLookRotation(victimBody.transform.forward),

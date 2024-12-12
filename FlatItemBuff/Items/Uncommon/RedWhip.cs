@@ -8,7 +8,8 @@ namespace FlatItemBuff.Items
 {
 	public class RedWhip
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Red Whip";
+		internal static bool Enable = false;
 		internal static float BaseSpeed = 0.1f;
 		internal static float StackSpeed = 0.1f;
 		internal static float BaseActiveSpeed = 0.2f;
@@ -19,7 +20,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Red Whip");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -33,7 +34,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string description = "Increases <style=cIsUtility>movement speed</style>";
 			if (BaseSpeed > 0f)
@@ -80,7 +81,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_OnRecalculateStats);
 			if (BaseSpeed > 0f)
             {
@@ -113,7 +114,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Red Whip - Stat Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats - Hook failed");
 			}
 		}
 	}

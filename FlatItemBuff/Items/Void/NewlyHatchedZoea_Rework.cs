@@ -14,6 +14,7 @@ namespace FlatItemBuff.Items
 		public static BuffDef VoidMissileStockBuff;
 		private static Color BuffColor = new Color(0.682f, 0.415f, 0.725f, 1f);
 
+		private const string LogName = "Newly Hatched Zoea Rework";
 		internal static bool Enable = false;
 		internal static int BaseStock = 12;
 		internal static int StackStock = 4;
@@ -30,7 +31,7 @@ namespace FlatItemBuff.Items
 			{
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Newly Hatched Zoea");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			CreateBuff();
@@ -52,7 +53,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string corruptsAll = "";
 			if (CanCorrupt)
             {

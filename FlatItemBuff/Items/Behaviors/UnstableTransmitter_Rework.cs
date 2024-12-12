@@ -238,7 +238,7 @@ namespace FlatItemBuff.Items.Behaviors
 				origin = corePosition,
 				rotation = Quaternion.identity
 			}, true);
-			TeleportHelper.TeleportBody(targetBody, newPos);
+			TeleportHelper.TeleportBody(targetBody, newPos, true);
 
 			CharacterBody attackerBody = body;
 			if (Items.UnstableTransmitter_Rework.AllyOwnsDamage)
@@ -272,11 +272,12 @@ namespace FlatItemBuff.Items.Behaviors
 				losType = BlastAttack.LoSType.None,
 				teamIndex = body.teamComponent.teamIndex
 			}.Fire();
-			EffectManager.SpawnEffect(CharacterBody.CommonAssets.teleportOnLowHealthExplosion, new EffectData
+			EffectManager.SpawnEffect(Items.UnstableTransmitter_Rework.BlinkPrefab, new EffectData
 			{
 				origin = newPos,
-				scale = Math.Max(5f, blastRadius * 1.25f),
-				rotation = Quaternion.identity
+				scale = blastRadius,
+				rotation = Quaternion.identity,
+				forceUnpooled = true
 			}, true);
 			Util.PlaySound("Play_item_proc_teleportOnLowHealth", targetBody.gameObject);
 		}

@@ -6,7 +6,8 @@ namespace FlatItemBuff.Items
 {
 	public class PocketICBM
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Pocket ICBM";
+		internal static bool Enable = false;
 		internal static float BaseChance = 7f;
 		internal static float StackChance = 0f;
 		internal static float BaseDamage = 2f;
@@ -17,7 +18,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Pocket ICBM");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -31,7 +32,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			//string pickup = "";
 			string description = "Missile items, equipment and skills fire an additional <style=cIsDamage>2</style> missiles and deal <style=cIsDamage>0%</style> <style=cStack>(+50% per stack)</style> more damage.";
 			if (BaseChance > 0f && BaseDamage > 0f)
@@ -86,7 +87,6 @@ namespace FlatItemBuff.Items
 						dmgMult = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, dmgMult);
 						MissileUtils.FireMissile(attackerBody.corePosition, attackerBody, damageInfo.procChainMask, victimBody.gameObject, dmgMult, damageInfo.crit, GlobalEventManager.CommonAssets.missilePrefab, DamageColorIndex.Item, true);
 					}
-
 				}
             }
 		}

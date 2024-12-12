@@ -12,7 +12,8 @@ namespace FlatItemBuff.Items
 {
 	public class Infusion
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Infusion";
+		internal static bool Enable = false;
 		internal static float StackLevel = 2f;
 		internal static bool Infinite = true;
 		internal static bool Inherit = true;
@@ -26,7 +27,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Infusion");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			UpdateText();
@@ -64,7 +65,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string level = string.Format("<style=cIsUtility>{0} <style=cStack>(+{0} per stack)</style></style>", StackLevel);
 
 			string pickup = "Killing enemies give samples. Collected samples increases your level.";
@@ -74,10 +75,8 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			MainPlugin.ModLogger.LogInfo("Changing stacking behaviour");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
-			MainPlugin.ModLogger.LogInfo("Changing proc behaviour");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
 			if (Inherit)
@@ -211,12 +210,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnCharacterDeath(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Infusion")
-			);
-			ilcursor.Index += 2;
-			ilcursor.Emit(OpCodes.Ldc_I4_0);
-			ilcursor.Emit(OpCodes.Mul);
+			))
+			{
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
+			}
 		}
 		private void IL_RecalculateStats(ILContext il)
 		{
@@ -233,13 +238,13 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats A - Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdarg(0),
 				x => x.MatchLdarg(0),
 				x => x.MatchCallOrCallvirt<CharacterBody>("get_level"),
-				x => x.MatchLdloc(2),
+				x => x.MatchLdloc(3),
 				x => x.MatchConvR4(),
 				x => x.MatchAdd(),
 				x => x.MatchCallOrCallvirt<CharacterBody>("set_level")
@@ -258,13 +263,13 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Level Increase Effect - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats B - Hook failed");
 			}
 
 			//Prevents on level up abuse
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdarg(0),
-				x => x.MatchLdloc(0),
+				x => x.MatchLdloc(1),
 				x => x.MatchLdarg(0),
 				x => x.MatchCallOrCallvirt<CharacterBody>("get_level")
 			))
@@ -288,7 +293,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Infusion - Level Up Safety - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats C - Hook failed");
 			}
 		}
 	}

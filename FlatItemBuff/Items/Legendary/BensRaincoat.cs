@@ -12,7 +12,8 @@ namespace FlatItemBuff.Items
 {
 	public class BensRaincoat
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Ben's Raincoat";
+		internal static bool Enable = false;
 		internal static int BaseBlock = 2;
 		internal static int StackBlock = 1;
 		internal static float Cooldown = 7f;
@@ -23,7 +24,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Ben's Raincoat");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -37,13 +38,13 @@ namespace FlatItemBuff.Items
         }
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = String.Format("Prevents <style=cIsUtility>{0} <style=cStack>(+{1} per stack)</style></style> <style=cIsDamage>debuffs</style> and instead grants a <style=cIsHealing>temporary barrier</style> for <style=cIsHealing>10%</style> of <style=cIsHealing>maximum health</style>. Recharges every <style=cIsUtility>{2}</style> seconds.", BaseBlock, StackBlock, Cooldown);
 			LanguageAPI.Add("ITEM_IMMUNETODEBUFF_DESC", desc);
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.Items.ImmuneToDebuffBehavior.TryApplyOverride += new ILContext.Manipulator(IL_TryApplyOverride);
 			On.RoR2.Items.ImmuneToDebuffBehavior.FixedUpdate += ImmuneToDebuff_FixedUpdate;
 		}
@@ -84,7 +85,7 @@ namespace FlatItemBuff.Items
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Grace Time 1 - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TryApplyOverride A - Hook failed");
 				}
 			}
 
@@ -109,7 +110,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Cooldown Behavior Fix - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TryApplyOverride B - Hook failed");
 			}
 			if (Cooldown >= 0f)
 			{
@@ -119,16 +120,15 @@ namespace FlatItemBuff.Items
 					x => x.MatchLdcR4(5),
 					x => x.MatchCallOrCallvirt<CharacterBody>("AddTimedBuff")
 				))
-                {
+				{
 					ilcursor.Index += 2;
 					ilcursor.Next.Operand = Cooldown;
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Cooldown Override - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TryApplyOverride C - Hook failed");
 				}
 			}
-
 			if (GraceTime > 0f)
 			{
 				if (ilcursor.TryGotoNext(
@@ -152,7 +152,7 @@ namespace FlatItemBuff.Items
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Ben's Raincoat - Grace Time 2 - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TryApplyOverride D - Hook failed");
 				}
 			}
 		}

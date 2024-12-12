@@ -14,8 +14,10 @@ namespace FlatItemBuff.Items
 	{
 		public static DeployableSlot Drone_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Drone_DeployableLimit;
+		internal static GameObject BlinkPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ImpBoss/ImpBossGroundSlam.prefab").WaitForCompletion();
 
-		internal static bool Enable = true;
+		private const string LogName = "Unstable Transmitter Rework";
+		internal static bool Enable = false;
 		internal static float BaseCooldown = 30f;
 		internal static float AllyStackCooldown = 0.5f;
 		internal static float CapCooldown = 2f;
@@ -36,7 +38,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Unstable Transmitter");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			CreateDeployableSlot();
@@ -58,7 +60,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Allies periodically teleport to you";
 			string desc = "Gain a <style=cIsDamage>Strike Drone</style>.\n";
 			if (AllyStackCooldown > 0f)
@@ -74,7 +76,7 @@ namespace FlatItemBuff.Items
 				string descRadius = string.Format(" The ally <style=cIsDamage>explodes</style> upon arrival in a <style=cIsDamage>{0}m</style> radius", BaseRadius);
 				if (StackRadius > 0f)
                 {
-					descRadius = string.Format(" The ally <style=cIsDamage>explodes</style> upon arrival in a <style=cIsDamage>{0}m</style> <style=cStack>(+{1}% per stack)</style> radius", BaseRadius, StackRadius);
+					descRadius = string.Format(" The ally <style=cIsDamage>explodes</style> upon arrival in a <style=cIsDamage>{0}m</style> <style=cStack>(+{1}m per stack)</style> radius", BaseRadius, StackRadius);
 				}
 				desc += descRadius;
 				pickup += " with a bang";
@@ -113,31 +115,17 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
-			IL.RoR2.CharacterBody.OnInventoryChanged += new ILContext.Manipulator(IL_OnInventoryChanged);
 			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
+			On.RoR2.TeleportOnLowHealthBehavior.GetItemDef += GetItemDef;
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
 			self.AddItemBehavior<Behaviors.UnstableTransmitter_Rework>(self.inventory.GetItemCount(DLC2Content.Items.TeleportOnLowHealth));
 		}
-		private void IL_OnInventoryChanged(ILContext il)
+
+		private ItemDef GetItemDef(On.RoR2.TeleportOnLowHealthBehavior.orig_GetItemDef orig)
 		{
-			//doing this since it shits the bed otherwise
-			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Items), "TeleportOnLowHealth"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
-			))
-			{
-				ilcursor.Index += 2;
-				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Unstable Transmitter Rework - Effect Override - IL Hook failed");
-			}
+			return JunkContent.Items.PlasmaCore;
 		}
 	}
 }

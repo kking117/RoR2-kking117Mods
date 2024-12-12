@@ -7,7 +7,8 @@ namespace FlatItemBuff.Items
 {
 	public class TitanicKnurl
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Titanic Knurl";
+		internal static bool Enable = false;
 		internal static float BaseHP = 30f;
 		internal static float LevelHP = 9f;
 		internal static float BaseRegen = 1.6f;
@@ -18,7 +19,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Titanic Knurl");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -32,7 +33,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("");
 			string desc = string.Format("");
 			if(BaseHP > 0f)
@@ -63,7 +64,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 		}
@@ -80,7 +81,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Titanic Knurl - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
 			}
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)

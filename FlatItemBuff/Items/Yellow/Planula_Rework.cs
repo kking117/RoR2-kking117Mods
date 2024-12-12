@@ -12,6 +12,7 @@ namespace FlatItemBuff.Items
 {
 	public class Planula_Rework
 	{
+		private const string LogName = "Planula Rework";
 		internal static bool Enable = false;
 		internal static float BaseDamage = 0.8f;
 		internal static float StackDamage = 0.6f;
@@ -26,7 +27,7 @@ namespace FlatItemBuff.Items
 				new Planula();
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Planula");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateVFX();
 			UpdateItemDef();
@@ -58,7 +59,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string radius = "";
 			string damage = "";
 
@@ -100,7 +101,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Planula Rework - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_HealthTakeDamage - Hook failed");
 			}
 		}
 		internal static float GetTotalDamage(int itemCount)

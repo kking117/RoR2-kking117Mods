@@ -9,7 +9,8 @@ namespace FlatItemBuff.Items
 {
 	public class WaxQuail
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Wax Quail";
+		internal static bool Enable = false;
 		internal static float BaseHori = 12f;
 		internal static float StackHori = 8f;
 		internal static float ActualBaseHori = 0.12f;
@@ -33,7 +34,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Wax Quail");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -83,7 +84,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string jumpBoost = "";
 			if (BaseHori != 0f || StackHori != 0f)
             {
@@ -114,7 +115,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.EntityStates.GenericCharacterMain.ProcessJump += new ILContext.Manipulator(IL_ProcessJump);
 			if (StackAirSpeed != 0f || StackAirSpeed != 0f)
             {

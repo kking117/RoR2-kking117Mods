@@ -19,7 +19,8 @@ namespace FlatItemBuff.Items
 		private static bool SingleCool = true;
 		public static GameObject BoostVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MoveSpeedOnKill/MoveSpeedOnKillActivate.prefab").WaitForCompletion();
 
-		internal static bool Enable = true;
+		private const string LogName = "Hunter's Harpoon";
+		internal static bool Enable = false;
 		internal static float BaseDuration = 1f;
 		internal static float StackDuration = 1f;
 		internal static float MovementSpeed = 1.25f;
@@ -36,7 +37,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Hunter's Harpoon");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			CreateBuff();
@@ -98,7 +99,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string cooldown_pickup = "";
 			string speed_pickup = "";
 			string cooldown_description = "";
@@ -196,7 +197,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
 			SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
 			if (MovementSpeed != 0f)
@@ -362,7 +363,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Hunter's Harpoon - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
 			}
 		}
 	}

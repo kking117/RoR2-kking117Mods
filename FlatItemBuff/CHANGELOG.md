@@ -1,3 +1,54 @@
+**1.24.2**
+
+Also know as: "The Poorly Timed - nah I'm joking. Still though less than a week since I changed it.
+Most things were fixed up to boot to the title, but I'm only listing the ones that were modified in v1.3.6.
+Some damage interactions may not work as expect due to changes in the update.
+
+```
+- Elusive Antlers:
+- Fixed for v1.3.6.
+- Renamed in description and configs.
+
+- Breaching Fin:
+- Fixed for v1.3.6.
+- Moved to Uncommon Items in the description and configs.
+- Now classed as a rework.
+- Base config values have been increased to better match its new tier.
+- Changed "Base Damage" default configuration. (1 -> 1.5)
+- Changed "Stack Damage" default configuration. (1 -> 0.3)
+- Changed "Cooldown" default configuration. (5 -> 10)
+- Only activates on damage from skills.
+
+- Roll of Pennies Rework:
+- Added a VFX when above a certain number of buff stacks.
+
+- Warped Echo:
+- Fixed for v1.3.6.
+- Added configs for ignore Block and Armor damage flags to taken and delayed damage.
+- If damage triggered OSP the delayed damage from that instance will be Non-Lethal.
+- Set the Proc Coefficient of delayed damage to 0.
+
+- Unstable Transmitter Rework:
+- Fixed for v1.3.6.
+- Properly renamed to rework in the configs.
+
+- Growth Nectar:
+- Fixed for v1.3.6.
+- Changed "Base Boost" default configuration. (0.04 -> 0.06)
+- Changed "Stack Boost" default configuration. (0.04 -> 0.06)
+- Removed "Visual Cap" configuration, it now uses the visuals from the v1.3.6 version.
+```
+
+
+**1.24.1**
+
+Also know as: "The Poorly Timed Warped Echo Update"
+
+```
+- Warped Echo:
+- Fixed changes causing Pots to become fucking invincible.
+```
+
 **1.24.0**
 
 Also know as: "The Poorly Timed Warped Echo Update"

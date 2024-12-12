@@ -13,18 +13,18 @@ namespace FlatItemBuff.Items
 	{
 		public static BuffDef ImperfectBuff;
 		private static Color BuffColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-		internal static bool Enable = true;
-		internal static float BaseBoost = 0.04f;
-		internal static float StackBoost = 0.04f;
+		private const string LogName = "Growth Nectar";
+		internal static bool Enable = false;
+		internal static float BaseBoost = 0.06f;
+		internal static float StackBoost = 0.06f;
 		internal static int BaseCap = 5;
-		internal static int VFXCap = 5;
 		public GrowthNectar()
 		{
 			if (!Enable)
 			{
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Growth Nectar");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateBuff();
 			UpdateText();
@@ -35,7 +35,6 @@ namespace FlatItemBuff.Items
 			BaseBoost = Math.Max(0f, BaseBoost);
 			StackBoost = Math.Max(0f, StackBoost);
 			BaseCap = Math.Max(0, BaseCap);
-			VFXCap = Math.Max(1, VFXCap);
 		}
 		private void CreateBuff()
 		{
@@ -48,7 +47,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Become marked for greatness, increasing ALL of your stats for each unique buff.";
 			string description = "Become <style=cIsUtility>marked for greatness</style>,";
 			if (BaseBoost > 0f)
@@ -67,108 +66,60 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_OnRecalculateStats);
-			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
-		}
-		private void OnInventoryChanged(CharacterBody self)
-		{
-			int itemCount = self.inventory.GetItemCount(DLC2Content.Items.BoostAllStats);
-			if (itemCount < 1)
-            {
-				if (self.HasBuff(DLC2Content.Buffs.BoostAllStatsBuff))
-				{
-					self.RemoveBuff(DLC2Content.Buffs.BoostAllStatsBuff);
-				}
-				if (self.HasBuff(ImperfectBuff))
-				{
-					self.RemoveBuff(ImperfectBuff);
-				}
-			}
 		}
 		private void IL_OnRecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);	
 			if(ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "BoostAllStatsBuff")
+				x => x.MatchStfld(typeof(RoR2.CharacterBody).GetField("maxGrowthNectarBuffCount"))
 			))
             {
-				ilcursor.RemoveRange(2);
-				ilcursor.Emit(OpCodes.Ldloc, 53);
-				ilcursor.EmitDelegate<Func<CharacterBody, int, bool>>((self, itemCount) =>
-				{
-					return itemCount > 0;
-				});
+				ilcursor.Index -= 3;
+				ilcursor.RemoveRange(3);
+				ilcursor.Emit(OpCodes.Ldc_I4, BaseCap);
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Growth Nectar - Conditional Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats A - IL Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(53),
-				x => x.MatchConvR4(),
-				x => x.MatchLdarg(0),
-				x => x.MatchLdfld(typeof(CharacterBody), "boostAllStatsMultiplier")
+				x => x.MatchLdcI4(0)
 			))
 			{
-				ilcursor.RemoveRange(5);
+				ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 53);
-				ilcursor.EmitDelegate<Func<CharacterBody, int, float>>((self, itemCount) =>
+				ilcursor.EmitDelegate<Func<CharacterBody, int>>((self) =>
 				{
-					int buffCount = 0;
-					foreach (BuffIndex buffIndex in BuffCatalog.nonHiddenBuffIndices)
+					if (!self.HasBuff(DLC2Content.Buffs.BoostAllStatsBuff))
 					{
-						if (self.HasBuff(buffIndex) && !BuffCatalog.ignoreGrowthNectarIndices.Contains(buffIndex))
-						{
-							buffCount++;
-							if (buffCount >= BaseCap)
-							{
-								buffCount = BaseCap;
-								break;
-							}
-						}
+						self.AddBuff(DLC2Content.Buffs.BoostAllStatsBuff);
 					}
-					if (buffCount >= VFXCap)
-					{
-						if (self.HasBuff(ImperfectBuff))
-						{
-							self.RemoveBuff(ImperfectBuff);
-						}
-						if (!self.HasBuff(DLC2Content.Buffs.BoostAllStatsBuff))
-						{
-							self.AddBuff(DLC2Content.Buffs.BoostAllStatsBuff);
-						}
-					}
-					else
-					{
-						if (self.HasBuff(DLC2Content.Buffs.BoostAllStatsBuff))
-						{
-							self.RemoveBuff(DLC2Content.Buffs.BoostAllStatsBuff);
-						}
-						if (!self.HasBuff(ImperfectBuff))
-						{
-							self.AddBuff(ImperfectBuff);
-						}
-					}
-					return (BaseBoost + (StackBoost * Math.Max(0, itemCount - 1))) * buffCount;
+					return 1;
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Growth Nectar - Stats Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats B - IL Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "BoostAllStatsBuff")
+				x => x.MatchLdcR4(0.07f),
+				x => x.MatchLdloc(55)
 			))
 			{
-				ilcursor.RemoveRange(2);
-				ilcursor.EmitDelegate<Func<CharacterBody, bool>>((self) =>
+				ilcursor.Index += 1;
+				ilcursor.RemoveRange(8);
+				ilcursor.Emit(OpCodes.Ldarg, 0);
+				ilcursor.Emit(OpCodes.Ldloc, 55);
+				ilcursor.EmitDelegate<Func<float, CharacterBody, int, float>>((oldValue, self, itemCount) =>
 				{
-					return true;
+					itemCount = Math.Max(0, itemCount - 1);
+					float statPerBuff = BaseBoost + (StackBoost * itemCount);
+					return statPerBuff * self.GetBuffCount(DLC2Content.Buffs.BoostAllStatsBuff);
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Growth Nectar - Buff Check Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats C - IL Hook failed");
 			}
 		}
 	}

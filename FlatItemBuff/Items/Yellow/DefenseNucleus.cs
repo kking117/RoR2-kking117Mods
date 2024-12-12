@@ -14,7 +14,8 @@ namespace FlatItemBuff.Items
 {
     public class DefenseNucleus
     {
-        internal static bool Enable = true;
+        private const string LogName = "Defense Nucleus";
+        internal static bool Enable = false;
         internal static int MaxSummons = 4;
         internal static float SummonCooldown = 1f;
         internal static float SummonFullCooldown = 6f;
@@ -31,7 +32,7 @@ namespace FlatItemBuff.Items
             {
                 return;
             }
-            MainPlugin.ModLogger.LogInfo("Changing Defense Nucleus");
+            MainPlugin.ModLogger.LogInfo(LogName);
             ClampConfig();
             UpdateText();
             UpdateItemDef();
@@ -70,7 +71,7 @@ namespace FlatItemBuff.Items
         }
         private void UpdateText()
         {
-            MainPlugin.ModLogger.LogInfo("Updating item text");
+            MainPlugin.ModLogger.LogInfo("Updating Text");
             string deployDesc = string.Format("Activating your equipment");
             string statDesc = "";
 
@@ -118,7 +119,7 @@ namespace FlatItemBuff.Items
         }
         private void Hooks()
         {
-            MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+            MainPlugin.ModLogger.LogInfo("Applying IL");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
             SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;

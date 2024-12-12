@@ -40,6 +40,11 @@ namespace FlatItemBuff.Utils
             return proj;
         }
 
+        internal static GameObject AddObject(GameObject gameObject)
+        {
+            R2API.ContentAddition.AddNetworkedObject(gameObject);
+            return gameObject;
+        }
         public static Type RegisterState(Type state)
         {
             bool wasAdded = false;

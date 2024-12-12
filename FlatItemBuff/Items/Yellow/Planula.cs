@@ -11,7 +11,8 @@ namespace FlatItemBuff.Items
 {
 	public class Planula
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Planula";
+		internal static bool Enable = false;
 		internal static float BaseFlatHeal = 10.0f;
 		internal static float StackFlatHeal = 10.0f;
 		internal static float BaseMaxHeal = 0.01f;
@@ -22,7 +23,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Planula");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			UpdateText();
@@ -47,7 +48,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string flat = "";
 			string max = "";
 
@@ -88,7 +89,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_HealthTakeDamage);
 		}
 		private void IL_HealthTakeDamage(ILContext il)
@@ -121,7 +122,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Planula - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_HealthTakeDamage - Hook failed");
 			}
 		}
 	}

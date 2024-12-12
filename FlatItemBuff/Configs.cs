@@ -20,18 +20,18 @@ namespace FlatItemBuff
 		public static ConfigFile Item_Void_Config;
 		public static string ConfigFolderPath { get => System.IO.Path.Combine(BepInEx.Paths.ConfigPath, MainPlugin.pluginInfo.Metadata.GUID); }
 
-		private const string Section_AntlerShield_Rework = "Antler Shield Rework";
+		private const string Section_ElusiveAntlers_Rework = "Elusive Antlers Rework";
 
 		private const string Section_BisonSteak_Buff = "Bison Steak";
 		private const string Section_BisonSteak_Rework = "Bison Steak Rework";
-
-		private const string Section_KnockbackFin_Buff = "Knockback Fin";
 
 		private const string Section_TopazBrooch_Buff = "Topaz Brooch";
 
 		private const string Section_RollOfPennies_Rework = "Roll of Pennies Rework";
 
 		private const string Section_WarpedEcho_Buff = "Warped Echo";
+
+		private const string Section_BreachingFin_Rework = "Breaching Fin Rework";
 
 		private const string Section_Chronobauble_Buff = "Chronobauble";
 
@@ -54,7 +54,7 @@ namespace FlatItemBuff
 
 		private const string Section_Stealthkit_Buff = "Old War Stealthkit";
 
-		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter";
+		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter Reowrk";
 
 		private const string Section_RedWhip_Buff = "Red Whip";
 
@@ -115,13 +115,13 @@ namespace FlatItemBuff
 			Item_Yellow_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Yellow.cfg"), true);
 			Item_Void_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Void.cfg"), true);
 			//Common
-			Read_AntlerShield();
 			Read_BisonSteak();
-			Read_KnockbackFin();
+			Read_ElusiveAntlers();
 			Read_TopazBrooch();
 			Read_RollOfPennies();
 			Read_WarpedEcho();
 			//Uncommon
+			Read_BreachingFin();
 			Read_Chronobauble();
 			Read_DeathMark();
 			Read_HuntersHarpoon();
@@ -161,13 +161,6 @@ namespace FlatItemBuff
 			//Section_Bugs
 			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier, recommended and specifically catered for Aegis changes.").Value;
 		}
-
-		private static void Read_AntlerShield()
-        {
-			AntlerShield_Rework.Enable = Item_Common_Config.Bind(Section_AntlerShield_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			AntlerShield_Rework.StackArmor = Item_Common_Config.Bind(Section_AntlerShield_Rework, "Stack Armor", 5f, "Armor each stack gives.").Value;
-			AntlerShield_Rework.StackSpeed = Item_Common_Config.Bind(Section_AntlerShield_Rework, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
-		}
 		private static void Read_BisonSteak()
         {
 			BisonSteak.Enable = Item_Common_Config.Bind(Section_BisonSteak_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
@@ -183,25 +176,11 @@ namespace FlatItemBuff
 			BisonSteak_Rework.NerfFakeKill = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
 			BisonSteak_Rework.Comp_AssistManager = Item_Common_Config.Bind(Section_BisonSteak_Rework, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
-
-		private static void Read_KnockbackFin()
+		private static void Read_ElusiveAntlers()
 		{
-			KnockbackFin.Enable = Item_Common_Config.Bind(Section_KnockbackFin_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			KnockbackFin.BaseForce = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Base Force", 20.0f, "Vertical force at a single stack.").Value;
-			KnockbackFin.StackForce = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Stack Force", 2.0f, "Vertical force for each additional stack.").Value;
-			KnockbackFin.BackForce = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
-			KnockbackFin.ChampionMult = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
-			KnockbackFin.BossMult = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
-			KnockbackFin.FlyingMult = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Flying Force Mult", 1f, "Force multiplier for flying targets.").Value;
-			KnockbackFin.MaxForce = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
-			KnockbackFin.BaseRadius = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Base Radius", 12f, "Radius in metres for the impact. (Set to 0 to completely disable the Impact and its damage.)").Value;
-			KnockbackFin.BaseDamage = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Base Damage", 1f, "Impact damage at a single stack.").Value;
-			KnockbackFin.StackDamage = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Stack Damage", 0.1f, "Impact damage for each additional stack.").Value;
-			KnockbackFin.MaxDistDamage = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Velocity Damage", 10f, "Maximum damage multiplier that can be achieved through velocity.").Value;
-			KnockbackFin.ProcRate = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Proc Coefficient", 0f, "Impact proc coefficient. (It can proc itself)").Value;
-			KnockbackFin.DoStun = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
-			KnockbackFin.CreditFall = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Credit Fall Damage", false, "Credits any fall damage the target takes to the inflictor of the knockback.").Value;
-			KnockbackFin.Cooldown = Item_Common_Config.Bind(Section_KnockbackFin_Buff, "Cooldown", 5, "The cooldown between knockbacks.").Value;
+			ElusiveAntlers_Rework.Enable = Item_Common_Config.Bind(Section_ElusiveAntlers_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			ElusiveAntlers_Rework.StackArmor = Item_Common_Config.Bind(Section_ElusiveAntlers_Rework, "Stack Armor", 5f, "Armor each stack gives.").Value;
+			ElusiveAntlers_Rework.StackSpeed = Item_Common_Config.Bind(Section_ElusiveAntlers_Rework, "Stack Movement Speed", 0.07f, "Movement speed each stack gives.").Value;
 		}
 		private static void Read_TopazBrooch()
         {
@@ -222,13 +201,37 @@ namespace FlatItemBuff
 			RollOfPennies_Rework.BaseDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 2f, "Duration given to the armor at a single stack.").Value;
 			RollOfPennies_Rework.StackDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 2f, "Duration given to the armor for each additional stack.").Value;
 			RollOfPennies_Rework.GoldDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Gold Armor Duration", 0.5f, "Multiplier for the gold's value when calculating the extra duration.").Value;
+			RollOfPennies_Rework.VFXAmount = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "VFX Amount", 10, "How many stacks of the armor buff are needed for the gold shield VFX active. (Set to 0 to disable this)").Value;
 		}
-
 		private static void Read_WarpedEcho()
         {
 			WarpedEcho.Enable = Item_Common_Config.Bind(Section_WarpedEcho_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 6f, "Armor given at a single stack.").Value;
 			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 6f, "Armor given for each additional stack.").Value;
+			WarpedEcho.InCountArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Armor", true, "Counts as Armor when spliting damage.").Value;
+			WarpedEcho.InCountBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Block", false, "Counts as Block when spliting damage.").Value;
+			WarpedEcho.OutIgnoreArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Armor", false, "Should delayed damage ignore armor?").Value;
+			WarpedEcho.OutIgnoreBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Block", false, "Should delayed damage ignore block?").Value;
+		}
+		private static void Read_BreachingFin()
+		{
+			BreachingFin_Rework.Enable = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			BreachingFin_Rework.BaseForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Base Force", 20.0f, "Vertical force at a single stack.").Value;
+			BreachingFin_Rework.StackForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Stack Force", 2.0f, "Vertical force for each additional stack.").Value;
+			BreachingFin_Rework.BackForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
+			BreachingFin_Rework.ChampionMult = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
+			BreachingFin_Rework.BossMult = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
+			BreachingFin_Rework.FlyingMult = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Flying Force Mult", 1f, "Force multiplier for flying targets.").Value;
+			BreachingFin_Rework.MaxForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Max Force", 200f, "The limit on how much force can be gained from stacking the item.").Value;
+			BreachingFin_Rework.BaseRadius = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Base Radius", 12f, "Radius in metres for the impact. (Set to 0 to completely disable the Impact and its damage.)").Value;
+			BreachingFin_Rework.BaseDamage = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Base Damage", 1.5f, "Impact damage at a single stack.").Value;
+			BreachingFin_Rework.StackDamage = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Stack Damage", 0.3f, "Impact damage for each additional stack.").Value;
+			BreachingFin_Rework.MaxDistDamage = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Velocity Damage", 10f, "Maximum damage multiplier that can be achieved through velocity.").Value;
+			BreachingFin_Rework.ProcRate = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Proc Coefficient", 0f, "Impact proc coefficient. (It can proc itself)").Value;
+			BreachingFin_Rework.DoStun = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Stun", true, "Stuns launched targets when they impact the ground.").Value;
+			BreachingFin_Rework.CreditFall = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Credit Fall Damage", false, "Credits any fall damage the target takes to the inflictor of the knockback.").Value;
+			BreachingFin_Rework.Cooldown = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Cooldown", 10, "The cooldown between knockbacks.").Value;
+			BreachingFin_Rework.OnSkill = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "On Skills", true, "Only activate on Skill damage?").Value;
 		}
 		private static void Read_Chronobauble()
         {
@@ -407,10 +410,9 @@ namespace FlatItemBuff
 		private static void Read_GrowthNectar()
 		{
 			GrowthNectar.Enable = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			GrowthNectar.BaseBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Boost", 0.04f, "Stat increase per unique buff at a single stack.").Value;
-			GrowthNectar.StackBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Stack Boost", 0.04f, "Stat increase per unique buff for each additional stack.").Value;
+			GrowthNectar.BaseBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Boost", 0.06f, "Stat increase per unique buff at a single stack.").Value;
+			GrowthNectar.StackBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Stack Boost", 0.06f, "Stat increase per unique buff for each additional stack.").Value;
 			GrowthNectar.BaseCap = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Cap", 5, "The cap on how many buffs can increase your stats.").Value;
-			GrowthNectar.VFXCap = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Visual Cap", 5, "How many buffs are needed to show the item's visual effect. (Set to higher than 'Base Cap' to disable this.)").Value;
 		}
 		private static void Read_HappiestMask_Rework()
         {

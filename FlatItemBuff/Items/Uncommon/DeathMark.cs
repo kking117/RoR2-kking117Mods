@@ -10,6 +10,7 @@ namespace FlatItemBuff.Items
 {
 	public class DeathMark
 	{
+		private const string LogName = "Death Mark";
 		internal static bool Enable = false;
 		internal static float DamagePerDebuff = 0.1f;
 		internal static int MaxDebuffs = 5;
@@ -21,7 +22,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Death Mark");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
 			Hooks();
@@ -35,7 +36,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("Mark enemies for death on hit");
 
 			string desc = string.Format("Enemies are <style=cIsDamage>marked for death</style> on hit for <style=cIsUtility>{0}s</style>", BaseDuration);
@@ -62,7 +63,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
@@ -104,47 +105,54 @@ namespace FlatItemBuff.Items
 		private void IL_TakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdsfld(x, typeof(RoR2Content.Buffs), "DeathMark")
-			);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 7),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 1.5f),
-				x => ILPatternMatchingExt.MatchMul(x)
-			);
-			ilcursor.Index += 1;
-			ilcursor.Remove();
-			ilcursor.Emit(OpCodes.Ldarg_0);
-			ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Buffs), "DeathMark")
+			)
+			&&
+			ilcursor.TryGotoNext(
+				x => x.MatchLdloc(7),
+				x => x.MatchLdcR4(1.5f),
+				x => x.MatchMul()
+			))
 			{
-				int debuffCount = 0;
-				DotController dotController = DotController.FindDotController(self.body.gameObject);
-				List<BuffIndex> debuffList = BuffCatalog.debuffBuffIndices.ToList<BuffIndex>();
-				if (dotController)
+				ilcursor.Index += 1;
+				ilcursor.Remove();
+				ilcursor.Emit(OpCodes.Ldarg_0);
+				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
 				{
-					for (DotController.DotIndex dotIndex = DotController.DotIndex.Bleed; dotIndex < (DotController.DotIndex)(DotAPI.VanillaDotCount+ DotAPI.CustomDotCount); dotIndex++)
+					int debuffCount = 0;
+					DotController dotController = DotController.FindDotController(self.body.gameObject);
+					List<BuffIndex> debuffList = BuffCatalog.debuffBuffIndices.ToList<BuffIndex>();
+					if (dotController)
 					{
-						if (dotController.HasDotActive(dotIndex))
+						for (DotController.DotIndex dotIndex = DotController.DotIndex.Bleed; dotIndex < (DotController.DotIndex)(DotAPI.VanillaDotCount + DotAPI.CustomDotCount); dotIndex++)
 						{
-							BuffDef buffDef = DotController.GetDotDef(dotIndex).associatedBuff;
-							if (buffDef)
-                            {
-								debuffList.Remove(buffDef.buffIndex);
-								debuffCount++;
+							if (dotController.HasDotActive(dotIndex))
+							{
+								BuffDef buffDef = DotController.GetDotDef(dotIndex).associatedBuff;
+								if (buffDef)
+								{
+									debuffList.Remove(buffDef.buffIndex);
+									debuffCount++;
+								}
 							}
 						}
 					}
-				}
-				foreach (BuffIndex buffType in debuffList)
-				{
-					if (self.body.HasBuff(buffType))
+					foreach (BuffIndex buffType in debuffList)
 					{
-						debuffCount++;
+						if (self.body.HasBuff(buffType))
+						{
+							debuffCount++;
+						}
 					}
-				}
-				debuffCount = Math.Min(debuffCount, MaxDebuffs);
-				return 1f + (debuffCount * DamagePerDebuff);
-			});
+					debuffCount = Math.Min(debuffCount, MaxDebuffs);
+					return 1f + (debuffCount * DamagePerDebuff);
+				});
+			}
+			else
+            {
+				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TakeDamage - Hook failed");
+			}
 		}
 		private void IL_OnHitEnemy(ILContext il)
 		{
@@ -159,7 +167,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": Death Mark - Effect Override - IL Hook failed");
+				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnHitEnemy - Hook failed");
 			}
 		}
 	}

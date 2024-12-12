@@ -19,6 +19,7 @@ namespace FlatItemBuff.Items
 		public static DotController.DotDef VenomDotDef;
 		private static DotController.DotIndex VenomDotIndex;
 		public static GameObject OrbVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Croco/CrocoDiseaseOrbEffect.prefab").WaitForCompletion();
+		private const string LogName = "Symbiotic Scorpion Rework";
 		internal static bool Enable = false;
 		internal static float Slayer_BaseDamage = 2f;
 		internal static float Slayer_StackDamage = 0f;
@@ -35,7 +36,7 @@ namespace FlatItemBuff.Items
 			{
 				return;
 			}
-			MainPlugin.ModLogger.LogInfo("Changing Symbiotic Scorpion");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
 			CreateBuff();
@@ -79,7 +80,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string description = "";
 			string slayer_pickup = "";
@@ -122,8 +123,12 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
+			if (SlayerDot_AffectTotalDamage && Slayer_BaseDamage > 0f)
+			{
+				On.RoR2.HealthComponent.TakeDamageProcess += TakeDamageProcess;
+			}
 			if (Radius > 0f)
 			{
 				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
@@ -134,6 +139,30 @@ namespace FlatItemBuff.Items
 		{
 			int itemCount = self.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
 			self.AddItemBehavior<Behaviors.SymbioticScorpion_Rework>(itemCount);
+		}
+		private void TakeDamageProcess(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
+        {
+			if (damageInfo.dotIndex != DotController.DotIndex.None)
+			{
+				if (damageInfo.attacker)
+				{
+					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
+					if (attackerBody && attackerBody.inventory)
+					{
+						int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
+						if (itemCount > 0)
+						{
+							itemCount = Math.Max(0, itemCount - 1);
+							float slayerDmg = Slayer_BaseDamage + (itemCount * Slayer_StackDamage);
+							if (slayerDmg > 0f)
+							{
+								damageInfo.damage *= Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction);
+							}
+						}
+					}
+				}
+			}
+			orig(self, damageInfo);
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -166,19 +195,18 @@ namespace FlatItemBuff.Items
 		private void IL_OnTakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			if (Slayer_BaseDamage > 0f)
+			if (!SlayerDot_AffectTotalDamage && Slayer_BaseDamage > 0f)
             {
 				if (ilcursor.TryGotoNext(
-					x => x.MatchLdarg(1),
 					x => x.MatchLdfld(typeof(DamageInfo), "damage"),
 					x => x.MatchStloc(7)
 				))
 				{
-					ilcursor.Index += 3;
+					ilcursor.Index += 2;
 					ilcursor.Emit(OpCodes.Ldarg, 0);
 					ilcursor.Emit(OpCodes.Ldarg, 1);
 					ilcursor.Emit(OpCodes.Ldloc, 7);
-					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, damage) =>
+					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, returnDamage) =>
 					{
 						if (damageInfo.dotIndex != DotController.DotIndex.None)
 						{
@@ -194,27 +222,21 @@ namespace FlatItemBuff.Items
 										float slayerDmg = Slayer_BaseDamage + (itemCount * Slayer_StackDamage);
 										if (slayerDmg > 0f)
 										{
-											float dmgMult = Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction);
-											if (SlayerDot_AffectTotalDamage)
-											{
-												damageInfo.damage *= dmgMult;
-											}
-											return damage * dmgMult;
+											return returnDamage *= Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction);
 										}
                                     }
 								}
 							}
 						}
-						return damage;
+						return returnDamage;
 					});
 					ilcursor.Emit(OpCodes.Stloc, 7);
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Symbiotic Scorpion - DoT Damage - IL Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - Hook failed");
 				}
 			}
-				
 			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "PermanentDebuffOnHit"),
 				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
@@ -226,7 +248,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Symbiotic Scorpion - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - Hook failed");
 			}
 		}
 	}

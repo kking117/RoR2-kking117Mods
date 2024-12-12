@@ -9,7 +9,8 @@ namespace FlatItemBuff.Items
 {
 	public class LigmaLenses
 	{
-		internal static bool Enable = true;
+		private const string LogName = "Lost Seer's Lenses";
+		internal static bool Enable = false;
 		internal static float BaseDamage = 50.0f;
 		internal static float StackDamage = 0.0f;
 		internal static float BaseChance = 0.5f;
@@ -22,7 +23,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Lost Seer's Lenses");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateVFX();
 			UpdateText();
@@ -50,7 +51,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 
 			string descChance = string.Format("<style=cIsDamage>{0}%", BaseChance);
 			if (StackChance > 0.0f)
@@ -80,7 +81,7 @@ namespace FlatItemBuff.Items
 		}
 		private void Hooks()
 		{
-			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 			SharedHooks.Handle_GlobalHitEvent_Actions += GlobalEventManager_HitEnemy;
 		}
@@ -149,7 +150,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Lost Seer's Lenses - Effect Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TakeDamage - Hook failed");
 			}
 		}
 	}

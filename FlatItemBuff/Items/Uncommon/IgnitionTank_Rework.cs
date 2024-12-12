@@ -9,6 +9,8 @@ namespace FlatItemBuff.Items
 {
 	public class IgnitionTank_Rework
 	{
+		private const string LogName = "Ignition Tank Rework";
+
 		internal static bool Enable = false;
 		internal static float BurnChance = 10f;
 		internal static float BurnBaseDamage = 0.8f;
@@ -31,7 +33,7 @@ namespace FlatItemBuff.Items
             {
 				return;
             }
-			MainPlugin.ModLogger.LogInfo("Changing Ignition Tank");
+			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateVFX();
 			UpdateText();
@@ -59,7 +61,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
+			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string burnPickup = "";
 			string burnDesc = "";
 

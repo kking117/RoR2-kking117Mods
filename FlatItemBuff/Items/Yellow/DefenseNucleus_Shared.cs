@@ -17,9 +17,10 @@ namespace FlatItemBuff.Items
         private static GameObject ConstructBodyObject;
         public static BodyIndex ConstructBodyIndex = BodyIndex.None;
 
-        internal static bool ForceMechanical = true;
-        internal static bool ExtraDisplays = true;
-        internal static bool TweakAI = true;
+        private const string LogName = "Defense Nucleus Shared";
+        internal static bool ForceMechanical = false;
+        internal static bool ExtraDisplays = false;
+        internal static bool TweakAI = false;
         public static void EnableChanges()
         {
             if (TweakAI)
@@ -28,7 +29,7 @@ namespace FlatItemBuff.Items
             }
             On.RoR2.Projectile.ProjectileSpawnMaster.SpawnMaster += Projectile_SpawnMaster;
             On.RoR2.Projectile.ProjectileSpawnMaster.OnProjectileImpact += OnProjImpact;
-            MainPlugin.ModLogger.LogInfo("Applying IL modifications");
+            MainPlugin.ModLogger.LogInfo("Applying IL");
             IL.RoR2.GlobalEventManager.OnCharacterDeath += new ILContext.Manipulator(IL_OnCharacterDeath);
         }
         private static void IL_OnCharacterDeath(ILContext il)
@@ -45,7 +46,7 @@ namespace FlatItemBuff.Items
             }
             else
             {
-                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Defense Nucleus Shared - Effect Override - IL Hook failed");
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnCharacterDeath - Hook failed");
             }
         }
         public static void ExtraChanges()
