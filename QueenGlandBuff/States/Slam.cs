@@ -71,6 +71,7 @@ namespace QueenGlandBuff.States
 			attack.damage = damageCoefficient * damageStat;
 			attack.hitEffectPrefab = hitEffectPrefab;
 			attack.forceVector = Vector3.up * forceMagnitude;
+			attack.damageType = DamageSource.Primary;
 			if (modelTransform)
 			{
 				attack.hitBoxGroup = Array.Find<HitBoxGroup>(modelTransform.GetComponents<HitBoxGroup>(), (HitBoxGroup element) => element.groupName == "GroundSlam");
@@ -175,7 +176,22 @@ namespace QueenGlandBuff.States
 				Vector3 ShotAngleTemp = ShotAngle;
 				ShotAngleTemp = Quaternion.AngleAxis(baseangle + (360f / RockCount * (i - RockCount / 2f)), Vector3.up) * ShotAngle;
 				ShotAngleTemp.y = RockRotateOffset;
-				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Default_RockProjectile, ShotPos + ShotAngleTemp.normalized, Util.QuaternionSafeLookRotation(ShotAngleTemp), gameObject, damageStat * RockDamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, RockSpeed);
+
+				FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
+				{
+					projectilePrefab = BeetleGuardAlly.Default_RockProjectile,
+					position = ShotPos + ShotAngleTemp.normalized,
+					rotation = Util.QuaternionSafeLookRotation(ShotAngleTemp),
+					owner = gameObject,
+					damage = damageStat * RockDamageCoefficient,
+					crit = crit,
+					force = forceMagnitude,
+					damageColorIndex = DamageColorIndex.Default,
+					speedOverride = RockSpeed,
+					useSpeedOverride = true,
+					damageTypeOverride = DamageSource.Primary
+				};
+				ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 			}
 		}
 	}

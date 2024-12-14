@@ -120,11 +120,35 @@ namespace QueenGlandBuff.States
 					if (characterBody.HasBuff(RoR2Content.Buffs.AffixLunar))
 					{
 						Perfected_FanRocks();
-						ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Perfected_Sunder_MainProjectile, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+						FireProjectileInfo elitefireProjectileInfo = new FireProjectileInfo
+						{
+							projectilePrefab = BeetleGuardAlly.Perfected_Sunder_MainProjectile,
+							position = handRTransform.position,
+							rotation = Util.QuaternionSafeLookRotation(aimRay.direction),
+							owner = gameObject,
+							damage = damageStat * damageCoefficient,
+							crit = crit,
+							force = forceMagnitude,
+							damageColorIndex = DamageColorIndex.Default,
+							damageTypeOverride = DamageSource.Secondary
+						};
+						ProjectileManager.instance.FireProjectile(elitefireProjectileInfo);
 						return;
 					}
 				}
-				ProjectileManager.instance.FireProjectile(SunderProjectile, handRTransform.position, Util.QuaternionSafeLookRotation(aimRay.direction), gameObject, damageStat * damageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, -1f);
+				FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
+				{
+					projectilePrefab = SunderProjectile,
+					position = handRTransform.position,
+					rotation = Util.QuaternionSafeLookRotation(aimRay.direction),
+					owner = gameObject,
+					damage = damageStat * damageCoefficient,
+					crit = crit,
+					force = forceMagnitude,
+					damageColorIndex = DamageColorIndex.Default,
+					damageTypeOverride = DamageSource.Secondary
+				};
+				ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 				FanRocks();
 			}
 		}
@@ -163,7 +187,22 @@ namespace QueenGlandBuff.States
 			{
 				spreadAngle -= 1f;
 				Vector3 direction = Util.ApplySpread(finalaimRay.direction, 0f, 0f, 1f, 1f, spreadAngle * RockFanSpreadAngle, 0f);
-				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Perfected_Sunder_RockProjectile, finalaimRay.origin, Util.QuaternionSafeLookRotation(direction), gameObject, damageStat * damage, forceMagnitude, crit, DamageColorIndex.Default, homeTarget, speed);
+				FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
+				{
+					projectilePrefab = BeetleGuardAlly.Perfected_Sunder_RockProjectile,
+					position = finalaimRay.origin,
+					rotation = Util.QuaternionSafeLookRotation(direction),
+					owner = gameObject,
+					damage = damageStat * damageCoefficient,
+					crit = crit,
+					force = forceMagnitude,
+					damageColorIndex = DamageColorIndex.Default,
+					damageTypeOverride = DamageSource.Secondary,
+					target = homeTarget,
+					speedOverride = speed,
+					useSpeedOverride = true
+				};
+				ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 			}
 		}
 		private void FanRocks()
@@ -211,7 +250,22 @@ namespace QueenGlandBuff.States
 				}
 				yawAngle *= RockYawAdd;
 				Vector3 direction = Util.ApplySpread(finalaimRay.direction, 0f, 0f, 1f, 1f, spreadAngle * RockFanSpreadAngle, yawBonus + yawAngle);
-				ProjectileManager.instance.FireProjectile(BeetleGuardAlly.Default_RockProjectile, finalaimRay.origin, Util.QuaternionSafeLookRotation(direction), gameObject, damageStat * RockDamageCoefficient, forceMagnitude, crit, DamageColorIndex.Default, null, RockSpeed);
+
+				FireProjectileInfo fireProjectileInfo = new FireProjectileInfo
+				{
+					projectilePrefab = BeetleGuardAlly.Default_RockProjectile,
+					position = finalaimRay.origin,
+					rotation = Util.QuaternionSafeLookRotation(direction),
+					owner = gameObject,
+					damage = damageStat * damageCoefficient,
+					crit = crit,
+					force = forceMagnitude,
+					damageColorIndex = DamageColorIndex.Default,
+					damageTypeOverride = DamageSource.Secondary,
+					speedOverride = RockSpeed,
+					useSpeedOverride = true
+				};
+				ProjectileManager.instance.FireProjectile(fireProjectileInfo);
 			}
 		}
 	}

@@ -21,7 +21,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.5.0";
+		public const string MODVERSION = "1.5.3";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 
@@ -45,13 +45,14 @@ namespace QueenGlandBuff
 			new Modules.ContentPacks().Initialize();
 			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad));
 		}
-		private void LoadCompat()
+		//RiskyMod already supports this mod so we don't need this.
+		/*private void LoadCompat()
         {
 			RiskyMod_Loaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
-		}
+		}*/
 		private void PostLoad()
 		{
-			LoadCompat();
+			//LoadCompat();
 			BazaarSceneDef = SceneCatalog.FindSceneDef("bazaar");
 		}
 	}

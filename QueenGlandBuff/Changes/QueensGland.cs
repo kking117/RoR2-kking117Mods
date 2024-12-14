@@ -208,7 +208,7 @@ namespace QueenGlandBuff.Changes
 											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
 											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
 											inv.GiveItem(RoR2Content.Items.MinionLeash);
-											//RiskyMod Compat Uncomment Later
+											//RiskyMod already supports this mod so we don't need this.
 											/*if (MainPlugin.RiskyMod_Loaded)
                                             {
 												RiskyMod_MarkAlly(deployableMaster, inv);
@@ -223,9 +223,8 @@ namespace QueenGlandBuff.Changes
 			}
 		}
 
-		//RiskyMod Compat Uncomment Later
-		/*
-		private static void RiskyMod_MarkAlly(CharacterMaster master, Inventory inventory)
+		//RiskyMod already supports this mod so we don't need this.
+		/*private static void RiskyMod_MarkAlly(CharacterMaster master, Inventory inventory)
         {
 			inventory.ResetItem(RiskyMod.Allies.AllyItems.AllyMarkerItem);
 			if (master.teamIndex == TeamIndex.Player)

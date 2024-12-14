@@ -1,3 +1,21 @@
+**1.5.3**
+
+```
+- Updated to support damage source from v1.3.6.
+```
+
+**1.5.2**
+
+```
+- Dropped RiskyMod ally support since it already supports this and it was causing an infinite load priority loop with the two installed.
+```
+
+**1.5.1**
+
+```
+- RiskyMod ally support added back.
+```
+
 **1.5.0**
 
 ```
