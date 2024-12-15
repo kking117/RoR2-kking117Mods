@@ -33,7 +33,7 @@ namespace PerfectedLoopTri
 	{
 		public const string MODUID = "com.kking117.PerfectedLoop3";
 		public const string MODNAME = "PerfectedLoop3";
-		public const string MODVERSION = "1.0.2";
+		public const string MODVERSION = "1.0.3";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		internal static PluginInfo pluginInfo;
@@ -45,8 +45,10 @@ namespace PerfectedLoopTri
 		private bool Tier_Gilded_AllowAny = false;
 		private float Tier_Gilded_Cost = 6f;
 		private float Tier_Gilded_CostHonor = 3f;
-		private int Tier_Gilded_StageCount = 3;
+		private int Tier_Gilded_StartStageCount = 3;
 		private bool Tier_Gilded_Clear = false;
+
+		private int Tier_One_EndStageCount = 0;
 
 		private ConfigAddTo Gilded_Tier = ConfigAddTo.TierGilded;
 		private float Gilded_Health = 6f;
@@ -113,6 +115,17 @@ namespace PerfectedLoopTri
 				{
 					eliteTypes.Add(Base_GildedDef);
 				}
+				if (Tier_One_EndStageCount != 0)
+                {
+					if (Tier_One_EndStageCount < 0)
+                    {
+						T1Def.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.NotEliteOnlyArtifactActive() && rules == SpawnCard.EliteRules.Default;
+					}
+					else
+                    {
+						T1Def.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.NotEliteOnlyArtifactActive() && rules == SpawnCard.EliteRules.Default && Run.instance.stageClearCount + 1 <= Tier_One_EndStageCount;
+					}
+                }
 				T1Def.eliteTypes = eliteTypes.ToArray();
 			}
 			EliteTierDef T1HonorDef = EliteAPI.VanillaEliteTiers[2];
@@ -130,6 +143,17 @@ namespace PerfectedLoopTri
 				if (Gilded_Tier == ConfigAddTo.TierOne)
 				{
 					eliteTypes.Add(Base_GildedHonorDef);
+				}
+				if (Tier_One_EndStageCount != 0)
+				{
+					if (Tier_One_EndStageCount < 0)
+					{
+						T1HonorDef.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.IsEliteOnlyArtifactActive();
+					}
+					else
+					{
+						T1HonorDef.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.IsEliteOnlyArtifactActive() && Run.instance.stageClearCount + 1 <= Tier_One_EndStageCount;
+					}
 				}
 				T1HonorDef.eliteTypes = eliteTypes.ToArray();
 			}
@@ -168,11 +192,11 @@ namespace PerfectedLoopTri
 				gildedHonorTierDef.eliteTypes = eliteTypes.ToArray();
 				if (Tier_Gilded_AllowAny)
 				{
-					gildedHonorTierDef.isAvailable = (SpawnCard.EliteRules rules) => Run.instance.stageClearCount + 1 >= Tier_Gilded_StageCount;
+					gildedHonorTierDef.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.IsEliteOnlyArtifactActive() && Run.instance.stageClearCount + 1 >= Tier_Gilded_StartStageCount;
 				}
 				else
 				{
-					gildedHonorTierDef.isAvailable = (SpawnCard.EliteRules rules) => rules == SpawnCard.EliteRules.Default && Run.instance.stageClearCount + 1 >= Tier_Gilded_StageCount;
+					gildedHonorTierDef.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.IsEliteOnlyArtifactActive() && rules == SpawnCard.EliteRules.Default && Run.instance.stageClearCount + 1 >= Tier_Gilded_StartStageCount;
 				}
 				gildedHonorTierDef.costMultiplier = Tier_Gilded_CostHonor;
 			}
@@ -209,14 +233,7 @@ namespace PerfectedLoopTri
 					eliteTypes.Add(Base_GildedDef);
 				}
 				gildedTierDef.eliteTypes = eliteTypes.ToArray();
-				if (Tier_Gilded_AllowAny)
-				{
-					gildedTierDef.isAvailable = (SpawnCard.EliteRules rules) => Run.instance.stageClearCount + 1 >= Tier_Gilded_StageCount;
-				}
-				else
-				{
-					gildedTierDef.isAvailable = (SpawnCard.EliteRules rules) => rules == SpawnCard.EliteRules.Default && Run.instance.stageClearCount + 1 >= Tier_Gilded_StageCount;
-				}
+				gildedTierDef.isAvailable = (SpawnCard.EliteRules rules) => CombatDirector.NotEliteOnlyArtifactActive() && rules == SpawnCard.EliteRules.Default && Run.instance.stageClearCount + 1 >= Tier_Gilded_StartStageCount;
 				gildedTierDef.costMultiplier = Tier_Gilded_Cost;
 			}
 			//T2 Tier
@@ -345,10 +362,12 @@ namespace PerfectedLoopTri
 			Lunar_Perfected_Health = Config.Bind("Elite - Vanilla Perfected", "Health", 2f, "Health multiplier. (2 = Vanilla) (Get x1.25 Shield from the Aspect)").Value;
 			Lunar_Perfected_Damage = Config.Bind("Elite - Vanilla Perfected", "Damage", 2f, "Damage multiplier. (2 = Vanilla)").Value;
 
-			Tier_Gilded_AllowAny = Config.Bind("Elite Tier - Gilded", "Allow Any", true, "Allows most enemies to spawn as this Elite. (True would be closer to T1 Elite behavior, False would be closer to T2 Elite.)").Value;
+			Tier_One_EndStageCount = Config.Bind("Elite Tier - One", "Stage End Count", 0, "The minimun stage count that this elite tier stops being used on. (0 = Don't Change, -1 = Never Stop)").Value;
+
+			Tier_Gilded_AllowAny = Config.Bind("Elite Tier - Gilded", "Allow Any", true, "Allows most enemies to have affixes from this Elite Tier with Honor enabled. (True would be closer to T1 Elite behavior, False would be closer to T2 Elite.)").Value;
 			Tier_Gilded_Cost = Config.Bind("Elite Tier - Gilded", "Cost", 6f, "Director cost for spawning. (6 = Vanilla)").Value;
 			Tier_Gilded_CostHonor = Config.Bind("Elite Tier - Gilded", "Honor Cost", 3f, "Director cost for spawning. (3 = Vanilla)").Value;
-			Tier_Gilded_StageCount = Config.Bind("Elite Tier - Gilded", "Stage Count", 3, "The minimun stage count that this elite tier becomes active on. (3 = Vanilla)").Value;
+			Tier_Gilded_StartStageCount = Config.Bind("Elite Tier - Gilded", "Stage Count", 3, "The minimun stage count that this elite tier becomes active on. (3 = Vanilla)").Value;
 			Tier_Gilded_Clear = Config.Bind("Elite Tier - Gilded", "Clear Tier", false, "Removes Blazing, Glacial, Overloading, Mending and Gilded from this Elite Tier and its Honor version.").Value;
 
 			Gilded_Tier = Config.Bind("Elite - Gilded", "Elite Tier", ConfigAddTo.TierGilded, "Add to which elite pool?").Value;
