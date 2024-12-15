@@ -1,8 +1,24 @@
+**1.24.3**
+
+```
+- Unstable Transmitter Rework:
+- Properly renamed to rework in the configs. It was "reowrk" on accident.
+
+- Warped Echo:
+- Added an additional measure for one shot protection.
+- Changed "Base Armor" default configuration. (6 -> 8)
+- Changed "Stack Armor" default configuration. (6 -> 8)
+
+- Breaching Fin:
+- Changed "Base Force" default configuration. (20 -> 24)
+- Changed "Stack Force" default configuration. (2 -> 3)
+```
+
 **1.24.2**
 
 Also know as: "The Poorly Timed - nah I'm joking. Still though less than a week since I changed it.
 Most things were fixed up to boot to the title, but I'm only listing the ones that were modified in v1.3.6.
-Some damage interactions may not work as expect due to changes in the update.
+Some damage interactions may not work as expected due to changes in the update.
 
 ```
 - Elusive Antlers:

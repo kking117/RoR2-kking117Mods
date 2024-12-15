@@ -142,6 +142,10 @@ namespace FlatItemBuff.Items
 									{
 										damageType |= DamageType.NonLethal;
 									}
+									if (self.body.hasOneShotProtection && (damageInfo.damageType & DamageType.BypassOneShotProtection) != DamageType.BypassOneShotProtection)
+                                    {
+										damageType |= DamageType.NonLethal;
+									}
 									if ((damageInfo.damageType & DamageType.Silent) > DamageType.Generic)
 									{
 										damageType |= DamageType.Silent;

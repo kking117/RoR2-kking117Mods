@@ -54,7 +54,7 @@ namespace FlatItemBuff
 
 		private const string Section_Stealthkit_Buff = "Old War Stealthkit";
 
-		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter Reowrk";
+		private const string Section_UnstableTransmitter_Rework = "Unstable Transmitter Rework";
 
 		private const string Section_RedWhip_Buff = "Red Whip";
 
@@ -206,8 +206,8 @@ namespace FlatItemBuff
 		private static void Read_WarpedEcho()
         {
 			WarpedEcho.Enable = Item_Common_Config.Bind(Section_WarpedEcho_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 6f, "Armor given at a single stack.").Value;
-			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 6f, "Armor given for each additional stack.").Value;
+			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 8f, "Armor given at a single stack.").Value;
+			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 8f, "Armor given for each additional stack.").Value;
 			WarpedEcho.InCountArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Armor", true, "Counts as Armor when spliting damage.").Value;
 			WarpedEcho.InCountBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Block", false, "Counts as Block when spliting damage.").Value;
 			WarpedEcho.OutIgnoreArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Armor", false, "Should delayed damage ignore armor?").Value;
@@ -216,8 +216,8 @@ namespace FlatItemBuff
 		private static void Read_BreachingFin()
 		{
 			BreachingFin_Rework.Enable = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			BreachingFin_Rework.BaseForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Base Force", 20.0f, "Vertical force at a single stack.").Value;
-			BreachingFin_Rework.StackForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Stack Force", 2.0f, "Vertical force for each additional stack.").Value;
+			BreachingFin_Rework.BaseForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Base Force", 24.0f, "Vertical force at a single stack.").Value;
+			BreachingFin_Rework.StackForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Stack Force", 3.0f, "Vertical force for each additional stack.").Value;
 			BreachingFin_Rework.BackForce = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Push Force", 0.5f, "How much to push away, is multiplied by the vertical force.").Value;
 			BreachingFin_Rework.ChampionMult = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Champion Force Mult", 0.5f, "Force multiplier for champion targets.").Value;
 			BreachingFin_Rework.BossMult = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Boss Force Mult", 1f, "Force multiplier for boss targets.").Value;
