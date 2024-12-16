@@ -24,7 +24,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.24.3";
+		public const string MODVERSION = "1.24.4";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;

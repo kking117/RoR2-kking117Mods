@@ -212,6 +212,7 @@ namespace FlatItemBuff
 			WarpedEcho.InCountBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Block", false, "Counts as Block when spliting damage.").Value;
 			WarpedEcho.OutIgnoreArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Armor", false, "Should delayed damage ignore armor?").Value;
 			WarpedEcho.OutIgnoreBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Block", false, "Should delayed damage ignore block?").Value;
+			WarpedEcho.UseOldVisual = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Use Old VFX", false, "Uses the Warped Echo VFX from before v1.3.6.").Value;
 		}
 		private static void Read_BreachingFin()
 		{

@@ -124,7 +124,7 @@ namespace FlatItemBuff.Items
             SharedHooks.Handle_GlobalKillEvent_Actions += GlobalKillEvent;
             On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
         }
-        private void AssistManger_OnKill(CharacterBody assistBody, CharacterBody victimBody, DamageType? damageType, HashSet<R2API.DamageAPI.ModdedDamageType> modDamageType, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
+        private void AssistManger_OnKill(CharacterBody assistBody, CharacterBody victimBody, DamageType? damageType, DamageTypeExtended? damageTypeExtended, DamageSource? damageSource, HashSet<R2API.DamageAPI.ModdedDamageType> modDamageType, Inventory assistInventory, CharacterBody killerBody, DamageInfo damageInfo)
         {
             if (assistBody == killerBody)
             {

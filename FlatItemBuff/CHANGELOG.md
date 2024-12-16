@@ -1,17 +1,26 @@
+**1.24.4**
+
+```
+- Fixed AssistManager compatability.
+
+- Warped Echo:
+- Added "Use Old VFX" configuration, allows toggling the old VFX from before v1.3.6 of RoR2. (Default: False)
+```
+
 **1.24.3**
 
 ```
-- Unstable Transmitter Rework:
-- Properly renamed to rework in the configs. It was "reowrk" on accident.
-
 - Warped Echo:
 - Added an additional measure for one shot protection.
 - Changed "Base Armor" default configuration. (6 -> 8)
 - Changed "Stack Armor" default configuration. (6 -> 8)
 
-- Breaching Fin:
+- Breaching Fin Rework:
 - Changed "Base Force" default configuration. (20 -> 24)
 - Changed "Stack Force" default configuration. (2 -> 3)
+
+- Unstable Transmitter Rework:
+- Properly renamed to rework in the configs. It was "reowrk" on accident.
 ```
 
 **1.24.2**

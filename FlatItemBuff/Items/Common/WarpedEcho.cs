@@ -16,6 +16,7 @@ namespace FlatItemBuff.Items
 		internal static bool InCountBlock = false;
 		internal static bool OutIgnoreArmor = false;
 		internal static bool OutIgnoreBlock = false;
+		internal static bool UseOldVisual = false;
 		public WarpedEcho()
 		{
 			if (!Enable)
@@ -45,16 +46,10 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
 			IL.RoR2.CharacterBody.UpdateSecondHalfOfDamage += new ILContext.Manipulator(IL_ApplyDelayedDamage);
-			On.RoR2.CharacterBody.SecondHalfOfDelayedDamage += CharacterBody_OnDelayDamage;
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
-			//Stop some old updates
 			On.RoR2.CharacterBody.UpdateDelayedDamage += CharacterBody_UpdateEcho;
-            //On.RoR2.CharacterBody.DelayedDamageBehavior.Update += DelayedDamageBehavior_Update;
+			On.RoR2.CharacterBody.SecondHalfOfDelayedDamage += CharacterBody_OnDelayDamage;
 		}
-        //private void DelayedDamageBehavior_Update(On.RoR2.CharacterBody.DelayedDamageBehavior.orig_Update orig, CharacterBody.DelayedDamageBehavior self)
-        //{
-		//	return;
-        //}
         private void CharacterBody_UpdateEcho(On.RoR2.CharacterBody.orig_UpdateDelayedDamage orig, CharacterBody self, float deltaTime)
 		{
 			return;
@@ -63,13 +58,16 @@ namespace FlatItemBuff.Items
 		{
 			HealthComponent hpcomp = self.healthComponent;
 			if (hpcomp)
-            {
-				if (ForceDelayVFX(self) || damageInfo.damage * 20f >= self.healthComponent.combinedHealth)
-				{
-					//Transform transform = self.mainHurtBox ? self.mainHurtBox.transform : self.transform;
-					//UnityEngine.Object.Instantiate<GameObject>(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/DelayedDamageIndicator"), transform.position, Quaternion.identity, transform);
-					self.TransmitItemBehavior(new CharacterBody.NetworkItemBehaviorData(DLC2Content.Items.DelayedDamage.itemIndex, 0f));
-					Util.PlaySound("Play_item_proc_delayedDamage", self.gameObject);
+			{
+				if (UseOldVisual)
+                {
+					if (ForceDelayVFX(self) || damageInfo.damage * 20f >= self.healthComponent.combinedHealth)
+					{
+						//Transform transform = self.mainHurtBox ? self.mainHurtBox.transform : self.transform;
+						//UnityEngine.Object.Instantiate<GameObject>(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/DelayedDamageIndicator"), transform.position, Quaternion.identity, transform);
+						self.TransmitItemBehavior(new CharacterBody.NetworkItemBehaviorData(DLC2Content.Items.DelayedDamage.itemIndex, 0f));
+						Util.PlaySound("Play_item_proc_delayedDamage", self.gameObject);
+					}
 				}
 				self.AddBuff(DLC2Content.Buffs.DelayedDamageBuff);
 			}
