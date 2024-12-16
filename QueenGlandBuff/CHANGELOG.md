@@ -1,3 +1,13 @@
+**1.5.4**
+
+```
+- Fixed rock projectiles dealing more damage than intended on its Sunder skill.
+- Fixed lunar shard projectiles dealing way, way more damage than intended on its Sunder skill.
+- Can now activate equipment when chasing targets. (For the Gilded Aspect)
+
+- Added "Queens Gland" - "Elite Blacklist" configuration, allows you to blacklist Beetle Guards from selecting certain aspects.
+```
+
 **1.5.3**
 
 ```
@@ -34,7 +44,7 @@
 - Added slightly more granular configurations for the Beetle Guard's base stats.
 - Beetle Guard's health regen is now 5 (+1 per level), the same as mobile drones.
 
-- Added "Elite Skills" configuration to disable the skill changes Beetle Guard's get when Perfected.
+- Added "Elite Skills" configuration to disable the skill changes Beetle Guards get when Perfected.
 - Reduced the amount of rocks thrown from its skills from 5x75% to 3x125%.
 - Reduced the proc coefficient of the rock projectiles from 0.5 to 0.3.
 - Reduced the blast radius of the rock projectiles from 10.5m to 8m.

@@ -159,7 +159,7 @@ namespace QueenGlandBuff.States
 			finalaimRay.origin = handRTransform.position;
 			finalaimRay.origin += new Vector3(0f, RockYLocOffset, 0f);
 			int ShardCount = 5;
-			float damage = RockCount * RockDamageCoefficient / (float)ShardCount / 10f;
+			float damage = RockCount * RockDamageCoefficient / (float)ShardCount / 5f;
 			float speed = RockSpeed * 1.25f;
 
 			GameObject homeTarget = null;
@@ -193,7 +193,7 @@ namespace QueenGlandBuff.States
 					position = finalaimRay.origin,
 					rotation = Util.QuaternionSafeLookRotation(direction),
 					owner = gameObject,
-					damage = damageStat * damageCoefficient,
+					damage = damageStat * damage,
 					crit = crit,
 					force = forceMagnitude,
 					damageColorIndex = DamageColorIndex.Default,
@@ -257,7 +257,7 @@ namespace QueenGlandBuff.States
 					position = finalaimRay.origin,
 					rotation = Util.QuaternionSafeLookRotation(direction),
 					owner = gameObject,
-					damage = damageStat * damageCoefficient,
+					damage = damageStat * RockDamageCoefficient,
 					crit = crit,
 					force = forceMagnitude,
 					damageColorIndex = DamageColorIndex.Default,

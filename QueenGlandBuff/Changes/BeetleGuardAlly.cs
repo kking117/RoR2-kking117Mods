@@ -462,7 +462,7 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver6.selectionRequiresAimTarget = false;
 			aiskillDriver6.selectionRequiresOnGround = false;
 			aiskillDriver6.selectionRequiresTargetLoS = true;
-			aiskillDriver6.shouldFireEquipment = false;
+			aiskillDriver6.shouldFireEquipment = true;
 			aiskillDriver6.shouldSprint = false;
 			aiskillDriver6.skillSlot = SkillSlot.None;
 
@@ -493,7 +493,7 @@ namespace QueenGlandBuff.Changes
 			aiskillDriver7.selectionRequiresAimTarget = false;
 			aiskillDriver7.selectionRequiresOnGround = false;
 			aiskillDriver7.selectionRequiresTargetLoS = true;
-			aiskillDriver7.shouldFireEquipment = false;
+			aiskillDriver7.shouldFireEquipment = true;
 			aiskillDriver7.shouldSprint = false;
 			aiskillDriver7.skillSlot = SkillSlot.None;
 

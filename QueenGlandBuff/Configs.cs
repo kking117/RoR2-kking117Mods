@@ -36,6 +36,7 @@ namespace QueenGlandBuff
 			QueensGland.StackDamage = MainConfig.Bind(Section_Queens_Gland, "StackDamage", 20, "Extra Damage to give per stack after capping out the max summons. (1 = +10%)").Value;
 			QueensGland.AffixMode = MainConfig.Bind(Section_Queens_Gland, "Become Elite", 1, "Makes Beetle Guard Ally spawn with an Elite Affix. (0 = never, 1 = always, 2 = only during Honor)").Value;
 			QueensGland.DefaultAffixName = MainConfig.Bind(Section_Queens_Gland, "Default Elite", "EliteFireEquipment", "The Fallback equipment to give if an Elite Affix wasn't selected. (Set to None to disable)").Value;
+			QueensGland.AffixBlackList_Raw = MainConfig.Bind(Section_Queens_Gland, "Elite Blacklist", "", "List of Elite Equipment the Beetle Guard cannot select. ('EliteAurelioniteEquipment, EliteLunarEquipment' for example disables Gilded and Perfected)").Value;
 		}
 		private static void Read_Primary_SKill()
         {

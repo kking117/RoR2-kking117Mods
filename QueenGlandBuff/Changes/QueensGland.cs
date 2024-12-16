@@ -22,6 +22,8 @@ namespace QueenGlandBuff.Changes
 		internal static float RespawnTime = 30f;
 		internal static int AffixMode = 1;
 		internal static string DefaultAffixName = "EliteFireEquipment";
+		internal static string AffixBlackList_Raw = "";
+		internal static List<EquipmentIndex> AffixBlackList;
 		internal static void Begin()
         {
 			ClampConfig();
@@ -34,7 +36,22 @@ namespace QueenGlandBuff.Changes
 			CharacterBody.onBodyInventoryChangedGlobal += CharacterBody_OnInventoryChanged;
 			BeetleGland_Override();
 		}
-
+		internal static void PostLoad()
+		{
+			if (AffixBlackList_Raw.Length > 0)
+			{
+				AffixBlackList = new List<EquipmentIndex>();
+				string[] itemString = AffixBlackList_Raw.Split(',');
+				for (int i = 0; i < itemString.Length; i++)
+				{
+					EquipmentIndex equipmentIndex = EquipmentCatalog.FindEquipmentIndex(itemString[i].Trim());
+					if (equipmentIndex > EquipmentIndex.None)
+					{
+						AffixBlackList.Add(equipmentIndex);
+					}
+				}
+			}
+		}
 		private static void ClampConfig()
 		{
 			BaseDamage = Math.Max(0, BaseDamage);
@@ -131,7 +148,6 @@ namespace QueenGlandBuff.Changes
 				{
 					eliteRules = SpawnCard.EliteRules.Lunar;
 				}
-
 				for (int i = 0; i < DirectorElite.Length; i++)
 				{
 					if (DirectorElite[i].isAvailable.Invoke(eliteRules))
@@ -140,7 +156,14 @@ namespace QueenGlandBuff.Changes
 						{
 							if (DirectorElite[i].eliteTypes[z])
 							{
-								StageEliteEquipmentDefs.Add(DirectorElite[i].eliteTypes[z].eliteEquipmentDef);
+								EquipmentDef equipDef = DirectorElite[i].eliteTypes[z].eliteEquipmentDef;
+								if (!StageEliteEquipmentDefs.Contains(equipDef))
+                                {
+									if (AffixBlackList == null || !AffixBlackList.Contains(equipDef.equipmentIndex))
+									{
+										StageEliteEquipmentDefs.Add(equipDef);
+									}
+								}
 							}
 						}
 					}
