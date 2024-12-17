@@ -438,6 +438,7 @@ namespace FlatItemBuff
 			PocketICBM.StackChance = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Stack Chance", 0f, "Chance of firing a missile for each additional stack.").Value;
 			PocketICBM.BaseDamage = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Base Damage", 2f, "Damage of the missile at a single stack.").Value;
 			PocketICBM.StackDamage = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Stack Damage", 0f, "Damage of the missile for each additional stack.").Value;
+			PocketICBM.MissileProc = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, "Proc Coefficient", 1f, "Missile proc coefficient.").Value;
 		}
 		private static void Read_SonorousWhispers()
         {

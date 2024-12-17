@@ -47,10 +47,6 @@ namespace FlatItemBuff
 			{
 				On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_HitEnemy;
 			}
-			if (Handle_GlobalHitEvent_Actions != null)
-			{
-				On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_HitEnemy;
-			}
 			if (Handle_HealthComponentTakeDamage_Actions != null)
 			{
 				On.RoR2.HealthComponent.TakeDamageProcess += HealthComponent_TakeDamage;

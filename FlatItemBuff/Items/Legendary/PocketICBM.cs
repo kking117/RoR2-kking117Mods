@@ -1,17 +1,23 @@
 ﻿using System;
 using RoR2;
 using R2API;
+using RoR2.Projectile;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
 	public class PocketICBM
 	{
+		public static GameObject ICBMProjectile;
 		private const string LogName = "Pocket ICBM";
 		internal static bool Enable = false;
 		internal static float BaseChance = 7f;
 		internal static float StackChance = 0f;
 		internal static float BaseDamage = 2f;
 		internal static float StackDamage = 0f;
+		internal static float MissileProc = 1f;
+
 		public PocketICBM()
 		{
 			if (!Enable)
@@ -21,6 +27,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
+			CreateProjectiles();
 			Hooks();
 		}
 		private void ClampConfig()
@@ -29,6 +36,13 @@ namespace FlatItemBuff.Items
 			StackChance = Math.Max(0f, StackChance);
 			BaseDamage = Math.Max(0f, BaseDamage);
 			StackDamage = Math.Max(0f, StackDamage);
+			MissileProc = Math.Max(0f, MissileProc);
+		}
+		private void CreateProjectiles()
+		{
+			ICBMProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Common/MissileProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "ICBMMissile");
+			ProjectileController projController = ICBMProjectile.GetComponent<ProjectileController>();
+			projController.procCoefficient = MissileProc;
 		}
 		private void UpdateText()
 		{
@@ -85,7 +99,7 @@ namespace FlatItemBuff.Items
                     {
 						float dmgMult = BaseDamage + (itemCount * StackDamage);
 						dmgMult = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, dmgMult);
-						MissileUtils.FireMissile(attackerBody.corePosition, attackerBody, damageInfo.procChainMask, victimBody.gameObject, dmgMult, damageInfo.crit, GlobalEventManager.CommonAssets.missilePrefab, DamageColorIndex.Item, true);
+						MissileUtils.FireMissile(attackerBody.corePosition, attackerBody, damageInfo.procChainMask, victimBody.gameObject, dmgMult, damageInfo.crit, ICBMProjectile, DamageColorIndex.Item, true);
 					}
 				}
             }

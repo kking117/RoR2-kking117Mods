@@ -1,3 +1,12 @@
+**1.24.5**
+
+```
+- Fixed some on hit effects from this mod being called twice.
+
+- Pocket ICMB:
+- Added "Proc Coefficient" configuration. (Default: 1)
+```
+
 **1.24.4**
 
 ```
