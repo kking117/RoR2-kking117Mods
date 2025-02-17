@@ -17,7 +17,7 @@ namespace FlatItemBuff.Items
 		internal static float BaseHeal = 0.1f;
 		internal static float StackHeal = 0.05f;
 		internal static float Cooldown = 10f;
-		
+		internal static bool UseBaseRadius = false;
 		public LeptonDaisy()
 		{
 			if (!Enable)
@@ -81,6 +81,22 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdloc(2)
+			))
+			{
+				ilcursor.Index += 2;
+				ilcursor.Remove();
+				ilcursor.EmitDelegate<Func<HoldoutZoneController, float>>((holdoutZone) =>
+				{
+					return UseBaseRadius ? holdoutZone.baseRadius : holdoutZone.currentRadius;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_Heal A - Hook failed");
+			}
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.5f)
 			))
 			{
@@ -93,7 +109,7 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_Heal - Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_Heal B - Hook failed");
 			}
 		}
 		private float GetHealAmount(TeamIndex teamIndex)

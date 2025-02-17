@@ -206,13 +206,14 @@ namespace FlatItemBuff
 		private static void Read_WarpedEcho()
         {
 			WarpedEcho.Enable = Item_Common_Config.Bind(Section_WarpedEcho_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 8f, "Armor given at a single stack.").Value;
-			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 8f, "Armor given for each additional stack.").Value;
+			WarpedEcho.BaseArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Base Armor", 6f, "Armor given at a single stack.").Value;
+			WarpedEcho.StackArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Stack Armor", 6f, "Armor given for each additional stack.").Value;
 			WarpedEcho.InCountArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Armor", true, "Counts as Armor when spliting damage.").Value;
 			WarpedEcho.InCountBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Is Block", false, "Counts as Block when spliting damage.").Value;
 			WarpedEcho.OutIgnoreArmor = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Armor", false, "Should delayed damage ignore armor?").Value;
 			WarpedEcho.OutIgnoreBlock = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Delay Ignore Block", false, "Should delayed damage ignore block?").Value;
 			WarpedEcho.UseOldVisual = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Use Old VFX", false, "Uses the Warped Echo VFX from before v1.3.6.").Value;
+			WarpedEcho.HealthDisplay = Item_Common_Config.Bind(Section_WarpedEcho_Buff, "Health Display", true, "Use the health display for echo damage?").Value;
 		}
 		private static void Read_BreachingFin()
 		{
@@ -256,6 +257,7 @@ namespace FlatItemBuff
 			LeptonDaisy.BaseHeal = Item_Uncommon_Config.Bind(Section_LeptonDaisy_Buff, "Base Healing", 0.1f, "Healing at a single stack.").Value;
 			LeptonDaisy.StackHeal = Item_Uncommon_Config.Bind(Section_LeptonDaisy_Buff, "Stack Healing", 0.05f, "Healing for each additional stack.").Value;
 			LeptonDaisy.Cooldown = Item_Uncommon_Config.Bind(Section_LeptonDaisy_Buff, "Cooldown", 10f, "Cooldown of the healing nova.").Value;
+			LeptonDaisy.UseBaseRadius = Item_Uncommon_Config.Bind(Section_LeptonDaisy_Buff, "Use Base Radius", false, "Healing nova uses the base radius of the holdout instead of the current radius.").Value;
 		}
 		private static void Read_IgnitionTank()
 		{
@@ -283,6 +285,8 @@ namespace FlatItemBuff
 			Infusion.EliteGainMult = Item_Uncommon_Config.Bind(Section_Infusion_Buff, "Elite Multiplier", 3, "Sample value multiplier from elite enemies.").Value;
 			Infusion.BossGainMult = Item_Uncommon_Config.Bind(Section_Infusion_Buff, "Boss Multiplier", 2, "Sample value multiplier from boss enemies.").Value;
 			Infusion.Comp_AssistManager = Item_Uncommon_Config.Bind(Section_Infusion_Buff, Label_AssistManager, true, Desc_AssistManager).Value;
+			Infusion.BuffEnable = Item_Uncommon_Config.Bind(Section_Infusion_Buff, "Buff Icon", true, "Enables a buff icon to show how many levels are gained from this item.").Value;
+			Infusion.BuffGrowth = Item_Uncommon_Config.Bind(Section_Infusion_Buff, "Buff Count Nectar", true, "Buff given counts towards Growth Nectar's effect.").Value;
 		}
 		private static void Read_LeechingSeed()
         {

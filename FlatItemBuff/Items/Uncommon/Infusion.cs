@@ -5,6 +5,7 @@ using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
 
@@ -12,6 +13,8 @@ namespace FlatItemBuff.Items
 {
 	public class Infusion
 	{
+		public static BuffDef InfusionTrackerBuff;
+		private static Color BuffColor = new Color(0.918f, 0.408f, 0.42f, 1f);
 		private const string LogName = "Infusion";
 		internal static bool Enable = false;
 		internal static float StackLevel = 2f;
@@ -21,6 +24,8 @@ namespace FlatItemBuff.Items
 		internal static int EliteGainMult = 3;
 		internal static int ChampionGain = 5;
 		internal static bool Comp_AssistManager = true;
+		internal static bool BuffEnable = true;
+		internal static bool BuffGrowth = true;
 		public Infusion()
 		{
 			if (!Enable)
@@ -30,6 +35,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
+			CreateBuffs();
 			UpdateText();
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
@@ -51,6 +57,14 @@ namespace FlatItemBuff.Items
 			BossGainMult = Math.Max(0, BossGainMult);
 			EliteGainMult = Math.Max(0, EliteGainMult);
 			ChampionGain = Math.Max(0, ChampionGain);
+		}
+		private void CreateBuffs()
+		{
+			if (BuffEnable)
+            {
+				Sprite buffIcon = MainPlugin.assetBundle.LoadAsset<Sprite>("texInfusionTracker");
+				InfusionTrackerBuff = Utils.ContentManager.AddBuff("InfusionTracker", buffIcon, BuffColor, true, false, false, false, !BuffGrowth);
+			}
 		}
 		private void UpdateItemDef()
 		{
@@ -173,6 +187,14 @@ namespace FlatItemBuff.Items
 					comp.negateLevelBonus = true;
 				}
 				comp.lastLevel = levelFlat;
+			}
+			if (BuffEnable)
+			{
+				int buffCount = (int)Math.Floor(levelBonus);
+				if (body.GetBuffCount(InfusionTrackerBuff) != buffCount)
+                {
+					body.SetBuffCount(InfusionTrackerBuff.buffIndex, buffCount);
+				}
 			}
 			return levelBonus;
         }

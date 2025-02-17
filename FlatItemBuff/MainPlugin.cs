@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Reflection;
 using BepInEx;
 using RoR2;
 using BepInEx.Bootstrap;
 using System.Security.Permissions;
+using UnityEngine;
 
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 
@@ -24,10 +26,11 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.24.5";
+		public const string MODVERSION = "1.24.7";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
+		public static AssetBundle assetBundle;
 
 		internal static bool AssistManager_Loaded = false;
 		internal static bool RiskyMod_Loaded = false;
@@ -35,6 +38,10 @@ namespace FlatItemBuff
 		{
 			ModLogger = this.Logger;
 			pluginInfo = Info;
+			using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FlatItemBuff.AssetBundles.flatitembuff_assets"))
+			{
+				assetBundle = AssetBundle.LoadFromStream(stream);
+			}
 			Configs.Setup();
 			AssistManager_Loaded = Chainloader.PluginInfos.ContainsKey("com.Moffein.AssistManager");
 			RiskyMod_Loaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");

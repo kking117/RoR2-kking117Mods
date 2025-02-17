@@ -143,6 +143,7 @@ namespace FlatItemBuff.Items
 			BuffDef weakDef = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Treebot/bdWeak.asset").WaitForCompletion();
 			KBCooldown = Utils.ContentManager.AddBuff("Knockback Cooldown", weakDef.iconSprite, buffColor, true, false, false);
 			KBDebuff = Utils.ContentManager.AddBuff("Knockback Debuff", weakDef.iconSprite, buffColor, false, true, false);
+			KBDebuff.flags |= BuffDef.Flags.ExcludeFromNoxiousThorns;
 		}
 		private void Hooks()
 		{

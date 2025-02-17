@@ -3,6 +3,9 @@ using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
@@ -17,6 +20,7 @@ namespace FlatItemBuff.Items
 		internal static bool OutIgnoreArmor = false;
 		internal static bool OutIgnoreBlock = false;
 		internal static bool UseOldVisual = false;
+		internal static bool HealthDisplay = true;
 		public WarpedEcho()
 		{
 			if (!Enable)
@@ -26,12 +30,18 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateText();
+			UpdateBuff();
 			Hooks();
 		}
 		private void ClampConfig()
 		{
 			BaseArmor = Math.Max(0f, BaseArmor);
 			StackArmor = Math.Max(0f, StackArmor);
+		}
+		private void UpdateBuff()
+		{
+			BuffDef DelayBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC2/Items/DelayedDamage/bdDelayedDamageBuff.asset").WaitForCompletion();
+			DelayBuff.canStack = true;
 		}
 		private void UpdateText()
 		{
@@ -45,12 +55,13 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_OnTakeDamage);
-			IL.RoR2.CharacterBody.UpdateSecondHalfOfDamage += new ILContext.Manipulator(IL_ApplyDelayedDamage);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 			On.RoR2.CharacterBody.UpdateDelayedDamage += CharacterBody_UpdateEcho;
 			On.RoR2.CharacterBody.SecondHalfOfDelayedDamage += CharacterBody_OnDelayDamage;
+			On.RoR2.CharacterBody.UpdateSecondHalfOfDamage += CharacterBody_UpdateSecondHalfOfDamage;
+			IL.RoR2.HealthComponent.GetHealthBarValues += new ILContext.Manipulator(IL_GetHealthBarValues);
 		}
-        private void CharacterBody_UpdateEcho(On.RoR2.CharacterBody.orig_UpdateDelayedDamage orig, CharacterBody self, float deltaTime)
+		private void CharacterBody_UpdateEcho(On.RoR2.CharacterBody.orig_UpdateDelayedDamage orig, CharacterBody self, float deltaTime)
 		{
 			return;
 		}
@@ -72,6 +83,38 @@ namespace FlatItemBuff.Items
 				self.AddBuff(DLC2Content.Buffs.DelayedDamageBuff);
 			}
 			orig(self, damageInfo, delay);
+		}
+
+		private void CharacterBody_UpdateSecondHalfOfDamage(On.RoR2.CharacterBody.orig_UpdateSecondHalfOfDamage orig, CharacterBody self, float deltaTime)
+		{
+			if (!NetworkServer.active)
+			{
+				return;
+			}
+			if (self.halfDamageReady)
+			{
+				for (int i = 0; i < self.incomingDamageList.Count; i++)
+				{
+					CharacterBody.DelayedDamageInfo delayedDamageInfo = self.incomingDamageList[i];
+					DamageInfo halfDamage = delayedDamageInfo.halfDamage;
+					float subDamage = halfDamage.damage;
+					halfDamage.position = self.GetBody().corePosition;
+					delayedDamageInfo.timeUntilDamage -= deltaTime;
+					if (delayedDamageInfo.timeUntilDamage <= 0f)
+					{
+						new EffectData
+						{
+							origin = self.transform.position
+						}.SetNetworkedObjectReference(self.gameObject);
+						self.healthComponent.TakeDamage(halfDamage);
+						HealthComponent healthComponent = self.healthComponent;
+						healthComponent.NetworkechoDamage = healthComponent.echoDamage - subDamage;
+						self.RemoveBuff(DLC2Content.Buffs.DelayedDamageBuff);
+						self.incomingDamageList.RemoveAt(i);
+					}
+				}
+			}
+			return;
 		}
 
 		private bool ForceDelayVFX(CharacterBody self)
@@ -163,6 +206,8 @@ namespace FlatItemBuff.Items
 										firstHitOfDelayedDamageSecondHalf = false
 									};
 									self.body.SecondHalfOfDelayedDamage(damageInfo2, 3f);
+									MainPlugin.ModLogger.LogInfo("Damage = " + returnValue);
+									MainPlugin.ModLogger.LogInfo("All Echo = " + self.echoDamage);
 								}
 							}
 						}
@@ -193,9 +238,28 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - IL Hook failed");
 			}
 		}
-		private void IL_ApplyDelayedDamage(ILContext il)
+		/*private void IL_ApplyDelayedDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
+			//ensures that the correct damage amount is subtracted from the echo damage tracker.
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(0),
+				x => x.MatchLdfld(typeof(DamageInfo), "damage"),
+				x => x.MatchSub()
+			))
+			{
+				ilcursor.RemoveRange(2);
+				ilcursor.Emit(OpCodes.Ldarg, 0);
+				ilcursor.Emit(OpCodes.Ldloc, 1);
+				ilcursor.EmitDelegate<Func<CharacterBody, int, float>>((body, index) =>
+				{
+					return body.incomingDamageList[index].halfDamage.damage;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Warped Echo - Deal Delayed Damage Override A - IL Hook failed");
+			}
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "DelayedDamageDebuff")
 			))
@@ -205,7 +269,67 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Warped Echo - Deal Delayed Damage Override - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Warped Echo - Deal Delayed Damage Override B - IL Hook failed");
+			}
+		}*/
+
+		private float GetArmorMult(float armor)
+        {
+			if (armor >= 0f)
+            {
+				return 1f - armor / (armor + 100f);
+			}
+			return 2f + 100f / (100f - armor);
+		}
+		private void IL_GetHealthBarValues(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (HealthDisplay)
+            {
+				if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdfld(typeof(HealthComponent), "echoDamage"),
+				x => x.MatchLdloc(1),
+				x => x.MatchMul()
+				))
+				{
+					ilcursor.Index += 1;
+					ilcursor.RemoveRange(1);
+					ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+					{
+						float mult = 1f;
+						if (OutIgnoreArmor == false)
+                        {
+							mult = GetArmorMult(self.body.armor);
+						}
+						return Math.Max(0f, (self.echoDamage * mult) - self.barrier);
+					});
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_GetHealthBarValues A - Hook failed");
+				}
+			}
+			else
+            {
+				if (ilcursor.TryGotoNext(
+				x => x.MatchLdarg(0),
+				x => x.MatchLdfld(typeof(HealthComponent), "echoDamage"),
+				x => x.MatchLdloc(1),
+				x => x.MatchMul()
+				))
+				{
+					ilcursor.Index += 1;
+					ilcursor.RemoveRange(1);
+					ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+					{
+						return 0f;
+					});
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_GetHealthBarValues B - Hook failed");
+				}
 			}
 		}
 	}

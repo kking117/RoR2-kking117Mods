@@ -1,9 +1,35 @@
+**1.24.7**
+
+```
+- Warped Echo:
+- Added "Health Display" configuration, allows you to disable the displayed echo damage you'll take.
+- Displayed echo damage now accounts for the Barrier stat.
+- Displayed echo damage now accounts for the Armor stat, if configured to be affected by it.
+- Fixed a bug with displayed echo damage not being subtracted correctly.
+- Delayed Damage buff stacks again, so you can see how many times you're being hit.
+- Changed "Base Armor" and "Stack Armor" default configurations. (8 -> 6)
+
+- Infusion Rework:
+- Added "Buff Icon" configuration, shows a buff to display how many levels infusion is giving. (Default: True)
+- Added "Buff Count Nectar" configuration, allows the above buff to count towards Growth Nectar. (Default: True)
+
+- Lepton Daisy:
+- Added "Use Base Radius" configuration, makes the healing nova use the base radius of holdouts instead of their current radius.
+```
+
+**1.24.6**
+
+```
+- Symbiotic Scorpion Rework:
+- Made IL 1% more compatible.
+```
+
 **1.24.5**
 
 ```
 - Fixed some on hit effects from this mod being called twice.
 
-- Pocket ICMB:
+- Pocket ICBM:
 - Added "Proc Coefficient" configuration. (Default: 1)
 ```
 

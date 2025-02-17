@@ -198,7 +198,7 @@ namespace FlatItemBuff.Items
 			if (!SlayerDot_AffectTotalDamage && Slayer_BaseDamage > 0f)
             {
 				if (ilcursor.TryGotoNext(
-					x => x.MatchLdfld(typeof(DamageInfo), "damage"),
+					//x => x.MatchLdfld(typeof(DamageInfo), "damage"), //Was disabled for compat with SkillsReturns
 					x => x.MatchStloc(7)
 				))
 				{
