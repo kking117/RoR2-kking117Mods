@@ -166,7 +166,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/ResetChests/ResetChests.asset").WaitForCompletion();
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/ItemDropChanceOnKill/ItemDropChanceOnKill.asset").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
@@ -255,8 +255,8 @@ namespace FlatItemBuff.Items
 				description += string.Format("\n\nWhen defeated, the monster{0}{1}", radius, damage);
 			}
 			pickup += ".";
-			LanguageAPI.Add("ITEM_RESETCHESTS_PICKUP", pickup);
-			LanguageAPI.Add("ITEM_RESETCHESTS_DESC", description);
+			LanguageAPI.Add("ITEM_ITEMDROPCHANCEONKILL_PICKUP", pickup);
+			LanguageAPI.Add("ITEM_ITEMDROPCHANCEONKILL_DESC", description);
 		}
 		private void Hooks()
 		{
@@ -268,7 +268,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			int itemCount = self.inventory.GetItemCount(DLC2Content.Items.ResetChests);
+			int itemCount = self.inventory.GetItemCount(DLC2Content.Items.ItemDropChanceOnKill);
 			if (itemCount > 0)
 			{
 				StartEchoSummon(Stage.instance);
@@ -327,7 +327,7 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Items), "ResetChests")
+				x => x.MatchLdsfld(typeof(DLC2Content.Items), "ItemDropChanceOnKill")
 			))
 			{
 				ilcursor.Index += 2;

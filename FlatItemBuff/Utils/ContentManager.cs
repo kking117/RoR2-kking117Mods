@@ -8,7 +8,7 @@ namespace FlatItemBuff.Utils
 {
     public static class ContentManager
     {
-        internal static BuffDef AddBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown, bool isHidden = false, bool ignoreGrowthNectar = false)
+        internal static BuffDef AddBuff(string buffName, Sprite buffIcon, Color buffColor, bool canStack, bool isDebuff, bool isCooldown, bool isHidden = false, bool ignoreGrowthNectar = true)
         {
             BuffDef buffDef = ScriptableObject.CreateInstance<BuffDef>();
             buffDef.name = buffName + " (FlatItemBuff)";

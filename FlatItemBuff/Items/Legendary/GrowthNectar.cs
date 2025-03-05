@@ -15,8 +15,8 @@ namespace FlatItemBuff.Items
 		private static Color BuffColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 		private const string LogName = "Growth Nectar";
 		internal static bool Enable = false;
-		internal static float BaseBoost = 0.06f;
-		internal static float StackBoost = 0.06f;
+		internal static float BaseBoost = 0.04f;
+		internal static float StackBoost = 0.04f;
 		internal static int BaseCap = 5;
 		public GrowthNectar()
 		{
@@ -102,15 +102,16 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats B - IL Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdcR4(0.07f),
-				x => x.MatchLdloc(55)
+				x => x.MatchLdcR4(0.04f),
+				x => x.MatchLdarg(0),
+				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "BoostAllStatsBuff")
 			))
 			{
 				ilcursor.Index += 1;
-				ilcursor.RemoveRange(8);
+				ilcursor.RemoveRange(5);
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 55);
-				ilcursor.EmitDelegate<Func<float, CharacterBody, int, float>>((oldValue, self, itemCount) =>
+				ilcursor.Emit(OpCodes.Ldloc, 54);
+				ilcursor.EmitDelegate<Func<float, CharacterBody, int, float>>((oldvalue, self, itemCount) =>
 				{
 					itemCount = Math.Max(0, itemCount - 1);
 					float statPerBuff = BaseBoost + (StackBoost * itemCount);

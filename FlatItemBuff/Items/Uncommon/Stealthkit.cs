@@ -101,7 +101,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuffs()
         {
-			StealthBuff = Utils.ContentManager.AddBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, StealthBuff_Color, true, false, false);
+			StealthBuff = Utils.ContentManager.AddBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, StealthBuff_Color, true, false, false, false, false);
 		}
 		private void Stealthkit_Override()
         {

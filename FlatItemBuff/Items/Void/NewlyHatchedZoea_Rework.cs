@@ -49,7 +49,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			VoidMissileStockBuff = Utils.ContentManager.AddBuff("Void Missile", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Merc/bdMercExpose.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false);
+			VoidMissileStockBuff = Utils.ContentManager.AddBuff("Void Missile", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Merc/bdMercExpose.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false, false, false);
 		}
 		private void UpdateText()
 		{

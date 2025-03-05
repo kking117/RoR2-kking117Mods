@@ -1,20 +1,43 @@
+**1.24.9**
+
+Quick update for Roadmap Update 2, mainly boot up errors for changed items have been addressed for now.
+If other parts are broken be sure to contact me.
+
+```
+- Growth Nectar:
+- Fixed for update.
+- Changed "Base Boost" and "Stack Boost" default configurations. (0.06 -> 0.04)
+
+- Sonorous Whispers Rework:
+- Fixed for update.
+```
+
+**1.24.8**
+
+```
+- Warped Echo:
+- Removed debug logging.
+
+- Fixed some buffs/debuffs counting towards Growth Nectar when they shouldn't.
+```
+
 **1.24.7**
 
 ```
 - Warped Echo:
-- Added "Health Display" configuration, allows you to disable the displayed echo damage you'll take.
+- Added "Health Display" configuration, allows you to disable the displayed echo damage you'll take. (Default: True)
 - Displayed echo damage now accounts for the Barrier stat.
 - Displayed echo damage now accounts for the Armor stat, if configured to be affected by it.
 - Fixed a bug with displayed echo damage not being subtracted correctly.
 - Delayed Damage buff stacks again, so you can see how many times you're being hit.
 - Changed "Base Armor" and "Stack Armor" default configurations. (8 -> 6)
 
-- Infusion Rework:
+- Infusion:
 - Added "Buff Icon" configuration, shows a buff to display how many levels infusion is giving. (Default: True)
 - Added "Buff Count Nectar" configuration, allows the above buff to count towards Growth Nectar. (Default: True)
 
 - Lepton Daisy:
-- Added "Use Base Radius" configuration, makes the healing nova use the base radius of holdouts instead of their current radius.
+- Added "Use Base Radius" configuration, makes the healing nova use the base radius of holdouts instead of their current radius. (Default: False)
 ```
 
 **1.24.6**

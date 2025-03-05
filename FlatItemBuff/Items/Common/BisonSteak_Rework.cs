@@ -57,7 +57,7 @@ namespace FlatItemBuff.Items
 		private void CreateBuffs()
 		{
 			BuffDef MeatRegen = Addressables.LoadAssetAsync<BuffDef>("RoR2/Junk/Common/bdMeatRegenBoost.asset").WaitForCompletion();
-			FreshRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, MeatRegen.buffColor, true, false, false);
+			FreshRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, MeatRegen.buffColor, true, false, false, false, false);
 		}
 		private void UpdateItemDef()
 		{

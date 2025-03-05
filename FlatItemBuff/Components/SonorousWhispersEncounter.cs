@@ -37,7 +37,7 @@ namespace FlatItemBuff.Components
             {
 				if (spawnState == 0)
 				{
-					itemCount = Util.GetItemCountForTeam(TeamIndex.Player, DLC2Content.Items.ResetChests.itemIndex, true, true);
+					itemCount = Util.GetItemCountForTeam(TeamIndex.Player, DLC2Content.Items.ItemDropChanceOnKill.itemIndex, true, true);
 					if (itemCount > 0)
                     {
 						if (SonorousWhispers_Rework.ScalePlayer)

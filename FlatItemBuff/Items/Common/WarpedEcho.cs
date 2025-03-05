@@ -206,8 +206,6 @@ namespace FlatItemBuff.Items
 										firstHitOfDelayedDamageSecondHalf = false
 									};
 									self.body.SecondHalfOfDelayedDamage(damageInfo2, 3f);
-									MainPlugin.ModLogger.LogInfo("Damage = " + returnValue);
-									MainPlugin.ModLogger.LogInfo("All Echo = " + self.echoDamage);
 								}
 							}
 						}

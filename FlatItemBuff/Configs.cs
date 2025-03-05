@@ -415,8 +415,8 @@ namespace FlatItemBuff
 		private static void Read_GrowthNectar()
 		{
 			GrowthNectar.Enable = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			GrowthNectar.BaseBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Boost", 0.06f, "Stat increase per unique buff at a single stack.").Value;
-			GrowthNectar.StackBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Stack Boost", 0.06f, "Stat increase per unique buff for each additional stack.").Value;
+			GrowthNectar.BaseBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Boost", 0.04f, "Stat increase per unique buff at a single stack.").Value;
+			GrowthNectar.StackBoost = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Stack Boost", 0.04f, "Stat increase per unique buff for each additional stack.").Value;
 			GrowthNectar.BaseCap = Item_Legendary_Config.Bind(Section_GrowthNectar_Buff, "Base Cap", 5, "The cap on how many buffs can increase your stats.").Value;
 		}
 		private static void Read_HappiestMask_Rework()
