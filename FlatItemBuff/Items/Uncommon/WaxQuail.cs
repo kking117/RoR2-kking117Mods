@@ -116,7 +116,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.EntityStates.GenericCharacterMain.ProcessJump += new ILContext.Manipulator(IL_ProcessJump);
+			IL.EntityStates.GenericCharacterMain.ProcessJump_bool += new ILContext.Manipulator(IL_ProcessJump);
 			if (StackAirSpeed != 0f || StackAirSpeed != 0f)
             {
 				SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
@@ -150,72 +150,107 @@ namespace FlatItemBuff.Items
 		private void IL_ProcessJump(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchLdloc(x, 5),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 0.0f)
-			);
-			//Prevent Quail from boosting airborne jumps
-			if (ilcursor.Index > 0)
+			//Make effect run
+			if (ilcursor.TryGotoNext(
+				x => x.MatchStloc(1)
+			))
+			{
+				ilcursor.Index -= 1;
+				ilcursor.Remove();
+				ilcursor.Emit(OpCodes.Ldarg_0);
+				ilcursor.EmitDelegate<Func<EntityState, bool>>((stateBase) =>
+				{
+					if (stateBase.characterMotor.isGrounded && stateBase.characterBody.isSprinting)
+					{
+						return stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost) > 0;
+					}
+					return false;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump C - Hook failed");
+			}
+			//Disable Old Behaviour
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(RoR2Content.Items), "JumpBoost"),
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+			))
+			{
+				ilcursor.Index += 2;
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
+				ilcursor.Emit(OpCodes.Mul);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump A - Hook failed");
+			}
+			//Now do the cool stuff
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(4),
+				x => x.MatchLdloc(5)
+			))
 			{
 				ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 5);
-				ilcursor.EmitDelegate<Func<EntityState, float, float>>((stateBase, originalValue) =>
+				ilcursor.Emit(OpCodes.Ldloc, 4);
+				ilcursor.Emit(OpCodes.Ldloc, 1);
+				ilcursor.EmitDelegate<Func<EntityState, float, bool, float>>((stateBase, returnValue, canBoost) =>
 				{
-					if (stateBase.characterMotor.isGrounded)
+					int itemCount = stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+					if (canBoost && itemCount > 0)
                     {
-						return originalValue;
-					}
-					return 0.0f;
-				});
-			}
-			ilcursor.GotoNext(
-				x => ILPatternMatchingExt.MatchStloc(x, 1),
-				x => ILPatternMatchingExt.MatchLdcR4(x, 10f),
-				x => ILPatternMatchingExt.MatchLdloc(x, 2)
-			);
-			//Horizontal Boost
-			if(ilcursor.Index > 0)
-            {
-				ilcursor.Index += 1;
-				ilcursor.RemoveRange(4);
-				ilcursor.Emit(OpCodes.Ldloc_2);
-				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
-				{
-					if (CapHori > 0f)
-					{
-						return Utils.Helpers.HyperbolicResult(itemCount, ActualBaseHori, ActualStackHori, 1) * CapHori;
-					}
-					return BaseHori + (StackHori * (itemCount - 1));
-				});
-			}
-			//Vertical Boost
-			//This was surprisingly easy to add, was expecting it to be an hour of head banging to no end.
-			if (BaseVert != 0f || StackVert != 0f)
-			{
-				ilcursor.GotoNext(
-					x => ILPatternMatchingExt.MatchStloc(x, 3)
-				);
-				if (ilcursor.Index > 0)
-				{
-					ilcursor.Index += 1;
-					ilcursor.Emit(OpCodes.Ldarg, 0);
-					ilcursor.Emit(OpCodes.Ldloc, 4);
-					ilcursor.Emit(OpCodes.Ldloc_2);
-					ilcursor.EmitDelegate<Func<EntityState, float, int, float>>((statebase, verticalBonus, itemCount) =>
-					{
 						float jumpBoost = 0f;
-						if (CapVert > 0f)
+						if (CapHori > 0f)
 						{
-							jumpBoost = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseVert, ActualStackVert, 1) * CapVert;
+							jumpBoost = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseHori, ActualStackHori, 1) * CapHori;
 						}
+						else
+                        {
+							jumpBoost = BaseHori + (StackHori * (itemCount - 1));
+						}
+						float airControl = stateBase.characterBody.acceleration * stateBase.characterMotor.airControl;
+						jumpBoost = (float)Math.Sqrt(jumpBoost / airControl);
+						airControl = stateBase.characterBody.moveSpeed / airControl;
+						jumpBoost = (jumpBoost + airControl) / airControl;
+						return returnValue + (jumpBoost - 1f);
+					}
+					return returnValue;
+				});
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdloc(5)
+				))
+                {
+					ilcursor.Remove();
+					ilcursor.Emit(OpCodes.Ldarg, 0);
+					ilcursor.Emit(OpCodes.Ldloc, 5);
+					ilcursor.Emit(OpCodes.Ldloc, 1);
+					ilcursor.EmitDelegate<Func<EntityState, float, bool, float>>((stateBase, returnValue, canBoost) =>
+					{
+						int itemCount = stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+						if (canBoost && itemCount > 0)
 						{
-							jumpBoost = BaseVert + (StackVert * (itemCount - 1));
+							float jumpBoost = 0f;
+							if (CapVert > 0f)
+							{
+								jumpBoost = Utils.Helpers.HyperbolicResult(itemCount, ActualBaseVert, ActualStackVert, 1) * CapVert;
+							}
+							{
+								jumpBoost = BaseVert + (StackVert * (itemCount - 1));
+							}
+							return returnValue + jumpBoost;
 						}
-						return verticalBonus + jumpBoost;
+						return returnValue;
 					});
-					ilcursor.Emit(OpCodes.Stloc, 4);
 				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump C - Hook failed");
+				}
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump B - Hook failed");
 			}
 		}
 	}

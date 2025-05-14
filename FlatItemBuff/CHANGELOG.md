@@ -1,3 +1,26 @@
+**1.24.11**
+
+Quick fix for Roadmap Update 3.
+If other parts are broken be sure to contact me.
+
+```
+- Bison Steak:
+- Fixed for update.
+
+- Wax Quail:
+- Fixed for update.
+
+- Voidsent Flame:
+- Fixed for update.
+```
+
+**1.24.10**
+
+```
+- Death Mark:
+- Fixed for update.
+```
+
 **1.24.9**
 
 Quick update for Roadmap Update 2, mainly boot up errors for changed items have been addressed for now.

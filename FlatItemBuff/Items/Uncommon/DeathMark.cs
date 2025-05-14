@@ -5,6 +5,7 @@ using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using UnityEngine;
 
 namespace FlatItemBuff.Items
 {
@@ -64,9 +65,13 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.RoR2.GlobalEventManager.ProcessHitEnemy += new ILContext.Manipulator(IL_OnHitEnemy);
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamage);
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
+			On.RoR2.GlobalEventManager.ProcDeathMark += CheckProcDeathMark;
+		}
+		private void CheckProcDeathMark(On.RoR2.GlobalEventManager.orig_ProcDeathMark orig, GameObject victim, CharacterBody victimBody, CharacterMaster attackerMaster)
+		{
+			return;
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -152,22 +157,6 @@ namespace FlatItemBuff.Items
 			else
             {
 				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_TakeDamage - Hook failed");
-			}
-		}
-		private void IL_OnHitEnemy(ILContext il)
-		{
-			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(RoR2Content.Items), "DeathMark")
-			))
-			{
-				ilcursor.Index += 2;
-				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
-			}
-			else
-			{
-				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnHitEnemy - Hook failed");
 			}
 		}
 	}
