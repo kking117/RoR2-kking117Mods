@@ -119,6 +119,41 @@ namespace HalcyonSeedBuff.Changes
 			On.RoR2.MasterCatalog.Init += MasterCatalog_Init;
 			//Override team and power
 			On.RoR2.GoldTitanManager.CalcTitanPowerAndBestTeam += CalcTitanPowerAndTeam;
+			On.EntityStates.MeridianEvent.FSBFEncounterBaseState.KillAllMonsters += KillAllMonsters;
+		}
+		private static void KillAllMonsters(On.EntityStates.MeridianEvent.FSBFEncounterBaseState.orig_KillAllMonsters orig, EntityStates.MeridianEvent.FSBFEncounterBaseState self)
+		{
+			if (!MeridianEventTriggerInteraction.instance || (!MeridianEventTriggerInteraction.instance.isFirstPhase && !MeridianEventTriggerInteraction.instance.isFinalPhase))
+            {
+				MainPlugin.ModLogger.LogInfo("Phase 1, skipping.");
+				orig(self);
+			}
+			if (NetworkServer.active)
+			{
+				foreach (TeamComponent teamComponent in new List<TeamComponent>(TeamComponent.GetTeamMembers(TeamIndex.Monster)))
+				{
+					if (teamComponent)
+					{
+						HealthComponent component = teamComponent.GetComponent<HealthComponent>();
+						if (component)
+						{
+							bool doKill = true;
+							if (component.body)
+                            {
+								CharacterMaster master = component.body.master;
+								if (master && GoldTitanManager.currentTitans.Contains(master))
+                                {
+									doKill = false;
+                                }
+							}
+							if (doKill)
+							{
+								component.Suicide(null, null, default(DamageTypeCombo));
+							}
+						}
+					}
+				}
+			}
 		}
 		private static void MasterCatalog_Init(On.RoR2.MasterCatalog.orig_Init orig)
 		{
@@ -297,20 +332,30 @@ namespace HalcyonSeedBuff.Changes
 		private static void GoldTitanManager_OnBossGroupStartServer(On.RoR2.GoldTitanManager.orig_OnBossGroupStartServer orig, BossGroup self)
 		{
 			bool IsMithrix = false;
-			bool isFalseSon = false;
+			bool IsFalseSon = false;
 			CombatSquad combatSquad = self.combatSquad;
 			foreach (CharacterMaster characterMaster in combatSquad.readOnlyMembersList)
 			{
-				if (characterMaster.masterIndex == MithrixIndex)
+				if (characterMaster.masterIndex == GoldTitanManager.brotherHurtMasterIndex)
 				{
 					IsMithrix = true;
 					break;
 				}
-				if (FalseSonIndices.Count > 0 && FalseSonIndices.Contains(characterMaster.masterIndex))
+				if (characterMaster.masterIndex == GoldTitanManager.falseSonBossLunarShardBrokenMasterIndex)
+				{
+					if (MeridianEventTriggerInteraction.instance)
+					{
+						//Fixes losing a Halcyon Seed when killing False Son
+						MeridianEventTriggerInteraction.instance.isGoldTitanSpawned = true;
+					}
+					IsFalseSon = true;
+					break;
+				}
+				/*else if (FalseSonIndices.Count > 0 && FalseSonIndices.Contains(characterMaster.masterIndex))
 				{
 					isFalseSon = true;
 					break;
-				}
+				}*/
 				//Channel Aurelionite if Voidling spawns in a boss group while VoidRaidGauntletController exists.
 				if (MainPlugin.ChannelOn_VoidRaid)
                 {
@@ -326,7 +371,7 @@ namespace HalcyonSeedBuff.Changes
 					}
 				}
 			}
-			if (!IsMithrix && !isFalseSon)
+			if (!IsMithrix && !IsFalseSon)
 			{
 				orig(self);
 			}

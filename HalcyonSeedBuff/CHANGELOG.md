@@ -1,3 +1,11 @@
+**1.1.3**
+
+```
+- Updated references DLLs for SoTS phase 3.
+- Attempted fix for losing Halcyon Seeds from the False Son fight.
+- Channeled Aurelonite on the Monster Team are no longer killed when moving from Phase 2 to Phase 3 of the False Son fight.
+```
+
 **1.1.2**
 
 ```
