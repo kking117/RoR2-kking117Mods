@@ -197,7 +197,7 @@ namespace VoidDamageConfig.Changes
 			return orig(self, zone);
 		}
 
-		private void OnSuicide(On.RoR2.HealthComponent.orig_Suicide orig, HealthComponent self, GameObject killerOverride, GameObject inflictorOverride, DamageType damageType)
+		private void OnSuicide(On.RoR2.HealthComponent.orig_Suicide orig, HealthComponent self, GameObject killerOverride, GameObject inflictorOverride, DamageTypeCombo damageType)
 		{
 			if (NetworkServer.active)
 			{

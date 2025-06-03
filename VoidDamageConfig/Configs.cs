@@ -17,7 +17,7 @@ namespace VoidDamageConfig
 
 		public static void Setup()
         {
-			MainConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"MainConfig.cfg"), true);
+			MainConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"VoidDamageConfig_Main.cfg"), true);
 			Read_LightConfig();
 		}
 		private static void Read_LightConfig()
