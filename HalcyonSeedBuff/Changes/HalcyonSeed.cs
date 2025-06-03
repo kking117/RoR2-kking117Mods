@@ -125,7 +125,6 @@ namespace HalcyonSeedBuff.Changes
 		{
 			if (!MeridianEventTriggerInteraction.instance || (!MeridianEventTriggerInteraction.instance.isFirstPhase && !MeridianEventTriggerInteraction.instance.isFinalPhase))
             {
-				MainPlugin.ModLogger.LogInfo("Phase 1, skipping.");
 				orig(self);
 			}
 			if (NetworkServer.active)
