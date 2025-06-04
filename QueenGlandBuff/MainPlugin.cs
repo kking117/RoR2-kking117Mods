@@ -21,7 +21,7 @@ namespace QueenGlandBuff
 	{
 		public const string MODUID = "com.kking117.QueenGlandBuff";
 		public const string MODNAME = "QueenGlandBuff";
-		public const string MODVERSION = "1.5.4";
+		public const string MODVERSION = "1.5.5";
 
 		public const string MODTOKEN = "KKING117_QUEENGLANDBUFF_";
 

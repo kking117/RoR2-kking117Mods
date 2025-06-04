@@ -43,4 +43,5 @@ And probably other people that I can't remember.
 
 ## Contact
 
-You can find me as kking117#0370 on discord.
+Can be found as kking117#0370 on Discord.
+My GitHub repository for RoR2 mods: https://github.com/kking117/RoR2-kking117Mods

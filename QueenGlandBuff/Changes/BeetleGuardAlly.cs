@@ -33,9 +33,11 @@ namespace QueenGlandBuff.Changes
 		public static GameObject Perfected_Sunder_MainProjectile;
 
 		public static GameObject Default_RockProjectile;
-		
-		public static GameObject BodyObject = LegacyResourcesAPI.Load<GameObject>("prefabs/characterbodies/BeetleGuardAllyBody");
-		public static GameObject MasterObject = LegacyResourcesAPI.Load<GameObject>("prefabs/charactermasters/BeetleGuardAllyMaster");
+
+		//"RoR2/Base/BeetleGland/BeetleGuardAllyBody.prefab"
+		//"RoR2/Base/BeetleGland/BeetleGuardAllyMaster.prefab"
+		public static GameObject BodyObject = Addressables.LoadAssetAsync<GameObject>("e21e3b9cdc2802148986eda1c923c9a1").WaitForCompletion();
+		public static GameObject MasterObject = Addressables.LoadAssetAsync<GameObject>("a8cc835d25f85d542aeb5bb59ebbe33b").WaitForCompletion();
 
 		public static BaseAI BaseAI;
 
@@ -43,8 +45,10 @@ namespace QueenGlandBuff.Changes
 		public static SkillDef SunderSkill;
 		public static SkillDef ValorSkill;
 
-		public static SkillDef OldSlamSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodyGroundSlam.asset").WaitForCompletion();
-		public static SkillDef OldSunderSkill = Addressables.LoadAssetAsync<SkillDef>("RoR2/Base/Beetle/BeetleGuardBodySunder.asset").WaitForCompletion();
+		//"RoR2/Base/BeetleGuard/BeetleGuardBodyGroundSlam.asset"
+		//"RoR2/Base/BeetleGuard/BeetleGuardBodySunder.asset"
+		public static SkillDef OldSlamSkill = Addressables.LoadAssetAsync<SkillDef>("9abaa52efee2e694ebd826739420d79a").WaitForCompletion();
+		public static SkillDef OldSunderSkill = Addressables.LoadAssetAsync<SkillDef>("0ccf3c706488000478d0d07dff868bd7").WaitForCompletion();
 
 		public static void Begin()
 		{
@@ -60,7 +64,8 @@ namespace QueenGlandBuff.Changes
 			MainPlugin.ModLogger.LogInfo("Creating BeetleGuardAlly projectiles.");
 			if (Enable_Slam_Skill || Enable_Sunder_Skill)
 			{
-				Default_RockProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/HermitCrab/HermitCrabBombProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "RockProjectile", true);
+				//"RoR2/Base/HermitCrab/HermitCrabBombProjectile.prefab"
+				Default_RockProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("25c3f321c934adf4cb0f223f62be964a").WaitForCompletion(), MainPlugin.MODTOKEN + "RockProjectile", true);
 				ProjectileExplosion projExplode = Default_RockProjectile.GetComponent<ProjectileExplosion>();
 				projExplode.falloffModel = BlastAttack.FalloffModel.SweetSpot;
 				projExplode.bonusBlastForce = Vector3.down * 10f;
@@ -70,9 +75,12 @@ namespace QueenGlandBuff.Changes
 
 				if (Elite_Skills)
 				{
-					Perfected_Slam_RockProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherFirePillar.prefab").WaitForCompletion();
-					Perfected_Sunder_RockProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/LunarShardProjectile.prefab").WaitForCompletion();
-					Perfected_Sunder_MainProjectile = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Brother/BrotherSunderWave.prefab").WaitForCompletion();
+					//"RoR2/Base/Brother/BrotherFirePillar.prefab"
+					//"RoR2/Base/Brother/LunarShardProjectile.prefab"
+					//"RoR2/Base/Brother/BrotherSunderWave.prefab"
+					Perfected_Slam_RockProjectile = Addressables.LoadAssetAsync<GameObject>("2d38e18b73708b6409e1f49d34566a89").WaitForCompletion();
+					Perfected_Sunder_RockProjectile = Addressables.LoadAssetAsync<GameObject>("7fda9d7db9976544fa4061679fe7604a").WaitForCompletion();
+					Perfected_Sunder_MainProjectile = Addressables.LoadAssetAsync<GameObject>("2bf848c66467fdf49a7b43a330e8dd80").WaitForCompletion();
 				}
 			}
 		}

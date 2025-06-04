@@ -1,3 +1,11 @@
+**1.5.5**
+
+```
+- Updated referenced DLLs for SoTs Memory Optimized Update.
+- Fixed an error that prevented loading.
+- Uses Addressable GUIDs instead of LegacyResourcesAPI.
+```
+
 **1.5.4**
 
 ```

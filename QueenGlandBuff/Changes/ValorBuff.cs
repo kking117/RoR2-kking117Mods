@@ -26,7 +26,8 @@ namespace QueenGlandBuff.Changes
 		}
 		private static void CreateBuff()
         {
-			ThisBuffDef = Modules.Buffs.AddNewBuff("Valor", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Beetle/bdBeetleJuice.asset").WaitForCompletion().iconSprite, BuffColor, false, false, false);
+			//"RoR2/Base/BeetleGroup/bdBeetleJuice.asset"
+			ThisBuffDef = Modules.Buffs.AddNewBuff("Valor", Addressables.LoadAssetAsync<BuffDef>("60b10a34c45065e4f8ee877e3c306f56").WaitForCompletion().iconSprite, BuffColor, false, false, false);
 		}
 		private static void CalculateStatsHook(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
