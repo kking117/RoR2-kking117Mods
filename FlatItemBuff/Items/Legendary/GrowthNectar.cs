@@ -38,7 +38,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			BuffDef BoostAllStatsBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC2/bdBoostAllStatsBuff.asset").WaitForCompletion();
+			//"RoR2/DLC2/bdBoostAllStatsBuff.asset"
+			BuffDef BoostAllStatsBuff = Addressables.LoadAssetAsync<BuffDef>("3bdd1fce23f153a41b3bf2e5434b5243").WaitForCompletion();
 			if (BoostAllStatsBuff)
             {
 				BoostAllStatsBuff.ignoreGrowthNectar = false;

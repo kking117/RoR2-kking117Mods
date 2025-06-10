@@ -83,6 +83,7 @@ namespace FlatItemBuff
 
 		private const string Section_TitanicKnurl_Buff = "Titanic Knurl";
 		private const string Section_TitanicKnurl_Rework = "Titanic Knurl Rework";
+		private const string Section_TitanicKnurl_Rework_B = "Titanic Knurl Rework B";
 
 		private const string Section_DefenseNucleus_Buff = "Defense Nucleus";
 		private const string Section_DefenseNucleus_Rework = "Defense Nucleus Rework";
@@ -98,7 +99,8 @@ namespace FlatItemBuff
 		private const string Label_EnableRework = "Enable Rework";
 
 		private const string Desc_EnableBuff = "Enables changes for this item.";
-		private const string Desc_EnableRework = "Enables the rework for this item. Has priority over the the normal changes.";
+		private const string Desc_EnableRework = "Enables the rework for this item. Has priority over the normal changes.";
+		private const string Desc_EnableRework_B = "Enables the rework for this item. Has priority over the normal changes and other rework.";
 
 		private const string Section_General_Mechanics = "Mechanics";
 
@@ -107,13 +109,13 @@ namespace FlatItemBuff
 
 		public static void Setup()
         {
-			GeneralConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"General.cfg"), true);
+			GeneralConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_General.cfg"), true);
 
-			Item_Common_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Common.cfg"), true);
-			Item_Uncommon_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Uncommon.cfg"), true);
-			Item_Legendary_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Legendary.cfg"), true);
-			Item_Yellow_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Yellow.cfg"), true);
-			Item_Void_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Items_Void.cfg"), true);
+			Item_Common_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Common.cfg"), true);
+			Item_Uncommon_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Uncommon.cfg"), true);
+			Item_Legendary_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Legendary.cfg"), true);
+			Item_Yellow_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Yellow.cfg"), true);
+			Item_Void_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Void.cfg"), true);
 			//Common
 			Read_BisonSteak();
 			Read_ElusiveAntlers();
@@ -498,18 +500,33 @@ namespace FlatItemBuff
 			TitanicKnurl_Rework.Enable = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			TitanicKnurl_Rework.BaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Base Damage", 8f, "Base damage at a single stack.").Value;
 			TitanicKnurl_Rework.StackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Stack Damage", 6f, "Base damage for each additional stack.").Value;
-			TitanicKnurl_Rework.BaseCooldown = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Base Cooldown", 6f, "Cooldown at a single stack.").Value;
-			TitanicKnurl_Rework.StackCooldown = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Stack Cooldown", 0.25f, "Cooldown rate for each additional stack.").Value;
+			TitanicKnurl_Rework.BaseCooldown = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Base Cooldown", 8f, "Cooldown at a single stack.").Value;
+			TitanicKnurl_Rework.StackCooldown = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Stack Cooldown", 0.15f, "Cooldown rate for each additional stack.").Value;
 			TitanicKnurl_Rework.ProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Proc Coefficient", 1.0f, "Proc coefficient of the stone fist.").Value;
 			TitanicKnurl_Rework.ProcBands = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Proc Bands", true, "Should the stone fist proc bands?").Value;
 			TitanicKnurl_Rework.TargetRadius = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Target Radius", 60f, "Targeting radius in metres.").Value;
 			TitanicKnurl_Rework.TargetMode = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Target Mode", 0, "Decides how the target is selected. (0 = Weak, 1 = Closest)").Value;
+
+			TitanicKnurl_Rework_B.Enable = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, Label_EnableRework, false, Desc_EnableRework_B).Value;
+			TitanicKnurl_Rework_B.LaserBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Base Damage", 0.5f, "Base damage per tick of the laser at a single stack.").Value;
+			TitanicKnurl_Rework_B.LaserStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Stack Damage", 0.0f, "Base damage per tick of the laser for each additional stack.").Value;
+			TitanicKnurl_Rework_B.ShotBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Base Damage", 1.5f, "Base damage the laser shots at a single stack.").Value;
+			TitanicKnurl_Rework_B.ShotStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Stack Damage", 0.0f, "Base damage the laser shots for each additional stack.").Value;
+			TitanicKnurl_Rework_B.BaseDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Base Duration", 3.0f, "Laser duration at a single stack.").Value;
+			TitanicKnurl_Rework_B.StackDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Stack Duration", 2.0f, "Laser duration for each additional stack.").Value;
+			TitanicKnurl_Rework_B.LaserProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Proc Coefficient", 0.15f, "Proc coefficient of the laser per tick.").Value;
+			TitanicKnurl_Rework_B.ShotProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Proc Coefficient", 0.15f, "Proc coefficient of the laser shots.").Value;
+			TitanicKnurl_Rework_B.ExtraShots = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Fire Extra Shots", 3, "Fire a laser shot if you build this much charge during the laser, set to 0 to disable this.").Value;
+			TitanicKnurl_Rework_B.HitProcMult = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Hit Proc Mult", 1f, "How effective hitting is for building charge.").Value;
+			TitanicKnurl_Rework_B.HurtProcMult = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Hurt Proc Mult", 5f, "How effective being hit is for building charge.").Value;
 		}
 		private static void Read_DefenseNucleus()
         {
 			DefenseNucleus.Enable = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			DefenseNucleus.BaseArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Armor", 50, "How much armor allied minions get at a single stack.").Value;
+			DefenseNucleus.StackArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Armor", 35, "How much armor allied minions get for each additional stack.").Value;
 			DefenseNucleus.BaseHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
-			DefenseNucleus.StackHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Health", 10, "Extra health the construct gets for each additional stack.").Value;
+			DefenseNucleus.StackHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Health", 0, "Extra health the construct gets for each additional stack.").Value;
 			DefenseNucleus.BaseAttack = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackAttack = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Attack Speed", 0, "Extra attack speed the construct gets for each additional stack.").Value;
 			DefenseNucleus.BaseDamage = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Damage", 0, "Extra damage the construct gets at a single stack. (1 = +10%)").Value;
@@ -517,7 +534,7 @@ namespace FlatItemBuff
 			DefenseNucleus.Comp_AssistManager = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, Label_AssistManager, false, Desc_AssistManager).Value;
 
 			DefenseNucleus_Rework.Enable = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			DefenseNucleus_Rework.SummonCount = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, "Summon Count", 3, "How many constructs to summon on activation. (Cannot go above 8 because I said so.)").Value;
+			DefenseNucleus_Rework.SummonCount = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, "Summon Count", 4, "How many constructs to summon on activation. (Cannot go above 8 because I said so.)").Value;
 			DefenseNucleus_Rework.BaseHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus_Rework.StackHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, "Stack Health", 10, "Extra health the construct gets for each additional stack.").Value;
 			DefenseNucleus_Rework.BaseAttack = Item_Yellow_Config.Bind(Section_DefenseNucleus_Rework, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
@@ -556,6 +573,7 @@ namespace FlatItemBuff
 			NewlyHatchedZoea_Rework.StackStock = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Stack Stock", 4, "Extra missiles for each additional stack.").Value;
 			NewlyHatchedZoea_Rework.BaseDamage = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Base Damage", 3f, "Missile damage at a single stack.").Value;
 			NewlyHatchedZoea_Rework.StackDamage = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Stack Damage", 0.75f, "Missile damage for each additional stack.").Value;
+			NewlyHatchedZoea_Rework.FireDelay = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Fire Delay", 0.2f, "Time between each missile fired, scales with attack speed.").Value;
 			NewlyHatchedZoea_Rework.ProcRate = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Proc Coefficient", 0.2f, "Missile proc coefficient.").Value;
 			NewlyHatchedZoea_Rework.RestockTime = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Restock Time", 30, "How long it takes in seconds to fully restock.").Value;
 			NewlyHatchedZoea_Rework.CanCorrupt = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Allow Corruption", true, "Set to false to disable the item corruption effect.").Value;

@@ -20,6 +20,7 @@ namespace FlatItemBuff.Utils
             buffDef.isCooldown = isCooldown;
             buffDef.isHidden = isHidden;
             buffDef.ignoreGrowthNectar = ignoreGrowthNectar;
+            //buffDef.flags = BuffDef.Flags.ExcludeFromNoxiousThorns;
             (buffDef as ScriptableObject).name = buffDef.name;
 
             R2API.ContentAddition.AddBuffDef(buffDef);

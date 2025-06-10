@@ -10,7 +10,8 @@ namespace FlatItemBuff.Items
 	{
 		public static BuffDef StealthBuff;
 		private static Color StealthBuff_Color = new Color(0.266f, 0.368f, 0.713f, 1f);
-		private static GameObject SmokePrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab").WaitForCompletion();
+		//"RoR2/Base/Bandit2/Bandit2SmokeBomb.prefab"
+		private static GameObject SmokePrefab = Addressables.LoadAssetAsync<GameObject>("56e965f822208a1438744bae84358e1d").WaitForCompletion();
 		private const string LogName = "Old War Stealthkit";
 		internal static bool Enable = false;
 
@@ -101,7 +102,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuffs()
         {
-			StealthBuff = Utils.ContentManager.AddBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Common/bdCloak.asset").WaitForCompletion().iconSprite, StealthBuff_Color, true, false, false, false, false);
+			//"RoR2/Base/Common/bdCloak.asset"
+			StealthBuff = Utils.ContentManager.AddBuff("Stealthed", Addressables.LoadAssetAsync<BuffDef>("f8ae3093de860bd4a84d1987b1a41b3d").WaitForCompletion().iconSprite, StealthBuff_Color, true, false, false, false, false);
 		}
 		private void Stealthkit_Override()
         {

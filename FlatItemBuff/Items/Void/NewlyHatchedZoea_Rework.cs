@@ -21,6 +21,7 @@ namespace FlatItemBuff.Items
 		internal static float BaseDamage = 8f;
 		internal static float StackDamage = 6f;
 		internal static float ProcRate = 0.2f;
+		internal static float FireDelay = 0.2f;
 		internal static int RestockTime = 30;
 		internal static bool CanCorrupt = true;
 		internal static string CorruptList = "";
@@ -46,10 +47,12 @@ namespace FlatItemBuff.Items
 			StackDamage = Math.Max(0f, StackDamage);
 			ProcRate = Math.Max(0f, ProcRate);
 			RestockTime = Math.Max(0, RestockTime);
+			FireDelay = Math.Max(0f, FireDelay);
 		}
 		private void CreateBuff()
 		{
-			VoidMissileStockBuff = Utils.ContentManager.AddBuff("Void Missile", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Merc/bdMercExpose.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false, false, false);
+			//"RoR2/Base/Merc/bdMercExpose.asset"
+			VoidMissileStockBuff = Utils.ContentManager.AddBuff("Void Missile", Addressables.LoadAssetAsync<BuffDef>("6ce812f39acfaff4c8b586774cd0fb37").WaitForCompletion().iconSprite, BuffColor, true, false, false, false, false);
 		}
 		private void UpdateText()
 		{
@@ -91,7 +94,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateProjectiles()
         {
-			VoidMissileProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MissileVoid/MissileVoidProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "VoidMissile");
+			//"RoR2/DLC1/MissileVoid/MissileVoidProjectile.prefab"
+			VoidMissileProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("e006990e46d3b7b4eb92dcebf62d2307").WaitForCompletion(), MainPlugin.MODTOKEN + "VoidMissile");
 			ProjectileController projController = VoidMissileProjectile.GetComponent<ProjectileController>();
 			MissileController projMissile = VoidMissileProjectile.GetComponent<MissileController>();
 			projMissile.deathTimer = 10f; //Originally 3.5f

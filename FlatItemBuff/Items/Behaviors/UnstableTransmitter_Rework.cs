@@ -29,7 +29,8 @@ namespace FlatItemBuff.Items.Behaviors
 		{
 			ulong num = Run.instance.seed ^ (ulong)Run.instance.stageClearCount;
 			rng = new Xoroshiro128Plus(num);
-			droneSpawnCard = Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/Base/Drones/cscBackupDrone.asset").WaitForCompletion();
+			//"RoR2/Base/Drones/cscBackupDrone.asset"
+			droneSpawnCard = Addressables.LoadAssetAsync<CharacterSpawnCard>("419e41228dd2c594e9e3359bf6cfa90f").WaitForCompletion();
 			helperPrefab = LegacyResourcesAPI.Load<GameObject>("SpawnCards/HelperPrefab");
 			placementRule = new DirectorPlacementRule
 			{

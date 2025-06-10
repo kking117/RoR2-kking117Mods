@@ -40,7 +40,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateProjectiles()
 		{
-			ICBMProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Common/MissileProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "ICBMMissile");
+			//"RoR2/Base/Common/MissileProjectile.prefab"
+			ICBMProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("2b983d683d9cd5a4595c990f5ff28c51").WaitForCompletion(), MainPlugin.MODTOKEN + "ICBMMissile");
 			ProjectileController projController = ICBMProjectile.GetComponent<ProjectileController>();
 			projController.procCoefficient = MissileProc;
 		}

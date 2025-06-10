@@ -6,7 +6,6 @@ using MonoMod.Cil;
 using Mono.Cecil;
 using UnityEngine;
 using FlatItemBuff.Utils;
-using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {

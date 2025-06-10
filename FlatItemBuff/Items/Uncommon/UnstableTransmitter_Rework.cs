@@ -14,7 +14,8 @@ namespace FlatItemBuff.Items
 	{
 		public static DeployableSlot Drone_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Drone_DeployableLimit;
-		internal static GameObject BlinkPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ImpBoss/ImpBossGroundSlam.prefab").WaitForCompletion();
+		//"RoR2/Base/ImpBoss/ImpBossGroundSlam.prefab"
+		internal static GameObject BlinkPrefab = Addressables.LoadAssetAsync<GameObject>("8fccbb1eb99f91849ba3b6076e1f220b").WaitForCompletion();
 
 		private const string LogName = "Unstable Transmitter Rework";
 		internal static bool Enable = false;
@@ -94,7 +95,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/TeleportOnLowHealth/TeleportOnLowHealth.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/TeleportOnLowHealth/TeleportOnLowHealth.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("354a6df4ce8249f4cbe9c0e207e2b674").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

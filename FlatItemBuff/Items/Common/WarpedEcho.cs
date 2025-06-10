@@ -40,7 +40,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateBuff()
 		{
-			BuffDef DelayBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC2/Items/DelayedDamage/bdDelayedDamageBuff.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/DelayedDamage/bdDelayedDamageBuff.asset"
+			BuffDef DelayBuff = Addressables.LoadAssetAsync<BuffDef>("062a0ccbc4669814dad5207a1e14946e").WaitForCompletion();
 			DelayBuff.canStack = true;
 		}
 		private void UpdateText()

@@ -53,7 +53,8 @@ namespace FlatItemBuff.Items
         }
         private void UpdateItemDef()
         {
-            ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKill.asset").WaitForCompletion();
+            //"RoR2/DLC1/MinorConstructOnKill/MinorConstructOnKill.asset"
+            ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("420dd5d1248cb0341a000a4d61bf1aae").WaitForCompletion();
             if (itemDef)
             {
                 List<ItemTag> itemtags = itemDef.tags.ToList();

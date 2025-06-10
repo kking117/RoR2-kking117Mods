@@ -43,7 +43,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/ExplodeOnDeathVoid/ExplodeOnDeathVoid.asset").WaitForCompletion();
+			//"RoR2/DLC1/ExplodeOnDeathVoid/ExplodeOnDeathVoid.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("e7bdf6730acde3648b085cf125ad4b72").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemtags = itemDef.tags.ToList();
@@ -102,7 +103,7 @@ namespace FlatItemBuff.Items
 				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
 				x => x.MatchCallvirt(typeof(Inventory), "GetItemCount"),
-				x => x.MatchStloc(31)
+				x => x.MatchStloc(32)
 			))
 			{
 				//Add new condition

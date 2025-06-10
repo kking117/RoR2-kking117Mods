@@ -1,3 +1,34 @@
+**1.25.0**
+
+Fixes for SoTS Optimized Update, plus some extras.
+Some audio cues and Spare Drone Part displays are borked at the moment.
+I may have missed some things so please report errors.
+
+```
+- Added "FlatItemBuff_" to the start of config names for Gale users. Welcome back Config Update Mod.
+
+- Voidsent Flame:
+- Fixed for update.
+
+- Defense Nucleus:
+- Gives allied minions 50 (+35 per stack) armor.
+- Changed "Stack Health" default configuration. (10 -> 0)
+
+- Defense Nucleus Rework:
+- Changed "Summon Count" default configuration. (3 -> 4)
+
+- Titanic Knurl Rework:
+- Changed "Base Cooldown" default configuration. (6 -> 8)
+- Changed "Stack Cooldown" default configuration. (0.25 -> 0.15)
+^ May have been a bit potent in more vanilla setups. It's designed to help start proc and on kill chains, so removing or reducing the proc coefficient isn't ideal.
+
+- Added a second rework to Titanic Knurl called "Titanic Knurl Rework B".
+^ A more active alternative to the first rework that's based on the Stone Titan's laser ability.
+
+- Newly Hatched Zoea:
+- Added "Fire Delay" configuration, controls the time between each missile fired. (Default: 0.2)
+```
+
 **1.24.11**
 
 Quick fix for Roadmap Update 3.

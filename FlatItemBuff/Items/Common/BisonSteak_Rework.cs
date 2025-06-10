@@ -56,12 +56,14 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuffs()
 		{
-			BuffDef MeatRegen = Addressables.LoadAssetAsync<BuffDef>("RoR2/Junk/Common/bdMeatRegenBoost.asset").WaitForCompletion();
+			//"RoR2/Junk/Common/bdMeatRegenBoost.asset"
+			BuffDef MeatRegen = Addressables.LoadAssetAsync<BuffDef>("1c9bc2e1186d394429928b51b132114f").WaitForCompletion();
 			FreshRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, MeatRegen.buffColor, true, false, false, false, false);
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/Base/FlatHealth/FlatHealth.asset").WaitForCompletion();
+			//"RoR2/Base/FlatHealth/FlatHealth.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("8834db4eda23c6c42bb4e2abcd94c966").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

@@ -58,7 +58,8 @@ namespace FlatItemBuff.Items
 
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/SpeedBoostPickup/SpeedBoostPickup.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/SpeedBoostPickup/SpeedBoostPickup.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("eb5f0448e1b6ee048ba33b62ff78526f").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

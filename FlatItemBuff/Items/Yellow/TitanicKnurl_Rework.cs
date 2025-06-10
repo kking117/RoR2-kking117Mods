@@ -16,8 +16,8 @@ namespace FlatItemBuff.Items
 		internal static bool Enable = false;
 		internal static float BaseDamage = 8f;
 		internal static float StackDamage = 6f;
-		internal static float BaseCooldown = 6f;
-		internal static float StackCooldown = 0.25f;
+		internal static float BaseCooldown = 8f;
+		internal static float StackCooldown = 0.15f;
 		internal static float ProcRate = 1f;
 		internal static bool ProcBands = true;
 		internal static float TargetRadius = 60f;
@@ -79,7 +79,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateProjectiles()
         {
-			StoneFistProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Titan/TitanPreFistProjectile.prefab").WaitForCompletion(), MainPlugin.MODTOKEN + "StonePreFist");
+			//"RoR2/Base/Titan/TitanPreFistProjectile.prefab"
+			StoneFistProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("44b979afbdb688c438bd14bcf12e249f").WaitForCompletion(), MainPlugin.MODTOKEN + "StonePreFist");
 			ProjectileDamage projDmg = StoneFistProjectile.GetComponent<ProjectileDamage>();
 			ProjectileController projController = StoneFistProjectile.GetComponent<ProjectileController>();
 			projController.procCoefficient = ProcRate;

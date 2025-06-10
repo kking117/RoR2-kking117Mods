@@ -13,8 +13,10 @@ namespace FlatItemBuff.Items
 {
     public class SquidPolyp
     {
-		public static SpawnCard SquidTurret_SpawnCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Squid/cscSquidTurret.asset").WaitForCompletion();
-		public static GameObject SquidTurret_Body = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Squid/SquidTurretBody.prefab").WaitForCompletion();
+		//"RoR2/Base/Squid/cscSquidTurret.asset"
+		public static SpawnCard SquidTurret_SpawnCard = Addressables.LoadAssetAsync<SpawnCard>("1d32d31aef1bac2499de2ec2312c6e9c").WaitForCompletion();
+		//"RoR2/Base/Squid/SquidTurretBody.prefab"
+		public static GameObject SquidTurret_Body = Addressables.LoadAssetAsync<GameObject>("5290eaf612d386740ac26f289e06b62f").WaitForCompletion();
 		public static DeployableSlot SquidTurret_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit SquidTurret_DeployableLimit;
 

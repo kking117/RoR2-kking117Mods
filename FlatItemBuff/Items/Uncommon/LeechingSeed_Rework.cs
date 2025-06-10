@@ -18,7 +18,7 @@ namespace FlatItemBuff.Items
 		internal static bool Enable = false;
 		internal static float BaseDoTHeal = 1f;
 		internal static float StackDoTHeal = 1f;
-		internal static float LeechChance = 0.2f;
+		internal static float LeechChance = 20.0f;
 		internal static float LeechLifeSteal = 1f;
 		internal static float LeechBaseDamage = 2.5f;
 		internal static float LeechStackDamage = 0f;
@@ -52,7 +52,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			LeechBuff = Utils.ContentManager.AddBuff("Leech", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Bandit2/bdSuperBleed.asset").WaitForCompletion().iconSprite, BuffColor, false, false, false);
+			//"RoR2/Base/Bandit2/bdSuperBleed.asset"
+			LeechBuff = Utils.ContentManager.AddBuff("Leech", Addressables.LoadAssetAsync<BuffDef>("8898326a00e7eab4c8bf048869543d4f").WaitForCompletion().iconSprite, BuffColor, false, false, false);
 			LeechDotDef = new DotController.DotDef
 			{
 				associatedBuff = LeechBuff,

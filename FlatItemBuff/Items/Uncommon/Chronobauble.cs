@@ -39,7 +39,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			ChronoDebuff = Utils.ContentManager.AddBuff("ChronoDebuff", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/SlowOnHit/bdSlow60.asset").WaitForCompletion().iconSprite, BuffColor, false, true, false);
+			//"RoR2/Base/SlowOnHit/bdSlow60.asset"
+			ChronoDebuff = Utils.ContentManager.AddBuff("ChronoDebuff", Addressables.LoadAssetAsync<BuffDef>("6a0d533aa91d36340bcea5a2f90b1a78").WaitForCompletion().iconSprite, BuffColor, false, true, false);
 		}
 		private void UpdateText()
 		{

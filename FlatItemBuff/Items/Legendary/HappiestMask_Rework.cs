@@ -13,7 +13,8 @@ namespace FlatItemBuff.Items
 {
 	public class HappiestMask_Rework
 	{
-		public static GameObject GhostSpawnEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/DeathProjectile/DeathProjectileTickEffect.prefab").WaitForCompletion();
+		//"RoR2/Base/DeathProjectile/DeathProjectileTickEffect.prefab"
+		public static GameObject GhostSpawnEffect = Addressables.LoadAssetAsync<GameObject>("3e7d16b341412e64db6467a3682cb0ac").WaitForCompletion();
 		public static ItemDef GhostCloneIdentifier;
 		public static DeployableSlot Ghost_DeployableSlot;
 		public DeployableAPI.GetDeployableSameSlotLimit Ghost_DeployableLimit;
@@ -58,7 +59,8 @@ namespace FlatItemBuff.Items
         }
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/Base/GhostOnKill/GhostOnKill.asset").WaitForCompletion();
+			//"RoR2/Base/GhostOnKill/GhostOnKill.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("732b3b5bb70153148a4f8060a8c3cfc9").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

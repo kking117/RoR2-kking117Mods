@@ -43,11 +43,13 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateVFX()
 		{
-			BurnEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
+			//"RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab"
+			BurnEffect = Addressables.LoadAssetAsync<GameObject>("fd33680df35a2ab4db22b33a0e161f90").WaitForCompletion();
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/Base/ParentEgg/ParentEgg.asset").WaitForCompletion();
+			//"RoR2/Base/ParentEgg/ParentEgg.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("2ed530121eace7240ad4716be1e4688c").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

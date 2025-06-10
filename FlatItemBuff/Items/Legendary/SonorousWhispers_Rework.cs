@@ -13,9 +13,12 @@ namespace FlatItemBuff.Items
 {
 	public class SonorousWhispers_Rework
 	{
-		internal static GameObject CombatEncounterObject = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ShadowClone/ShadowCloneEncounter.prefab").WaitForCompletion();
-		internal static SpawnCard BaseSpawnCard = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/Titan/cscTitanDampCave.asset").WaitForCompletion();
-		internal static SpawnCard BossCardTemplate = Addressables.LoadAssetAsync<SpawnCard>("RoR2/Base/RoboBallBoss/cscSuperRoboBallBoss.asset").WaitForCompletion();
+		//"RoR2/Base/ShadowClone/ShadowCloneEncounter.prefab"
+		//"RoR2/Base/Titan/cscTitanDampCave.asset"
+		//"RoR2/Base/RoboBallBoss/cscSuperRoboBallBoss.asset"
+		internal static GameObject CombatEncounterObject = Addressables.LoadAssetAsync<GameObject>("21c30a52b0ea4074580b6528804b0efb").WaitForCompletion();
+		internal static SpawnCard BaseSpawnCard = Addressables.LoadAssetAsync<SpawnCard>("5d95c9377c88031459b0e9d3c41c69c8").WaitForCompletion();
+		internal static SpawnCard BossCardTemplate = Addressables.LoadAssetAsync<SpawnCard>("01d9753594cff56448b8326d4254c7e0").WaitForCompletion();
 		private const string LogName = "Sonorous Whispers";
 		internal static bool Enable = false;
 		internal static bool HasAdaptive = false;
@@ -69,104 +72,105 @@ namespace FlatItemBuff.Items
 			SceneSpawn = new List<Vector3>();
 
 			//ROR2
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/golemplains/golemplains.asset").WaitForCompletion());
+			//"RoR2/Base/golemplains/golemplains.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("8ba24a95e46b3944280a4b66afd0c4dc").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-78.95f, -142.39f, -6.6f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/golemplains2/golemplains2.asset").WaitForCompletion());
+			//"RoR2/Base/golemplains2/golemplains2.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("657a62eb3e4c409429c91ba6fdb7d921").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(238.17f, 48.71f, 34.07f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/blackbeach/blackbeach.asset").WaitForCompletion());
+			//"RoR2/Base/blackbeach/blackbeach.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("c129d2b9e62c31b4ba165091d1ae2c50").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(44.96f, -235.94f, -105.27f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/blackbeach2/blackbeach2.asset").WaitForCompletion());
+			//"RoR2/Base/blackbeach2/blackbeach2.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("f87198140bf9b5a4f82e206231df9091").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-163.82f, 5.44f, 22.86f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/goolake/goolake.asset").WaitForCompletion());
+			//"RoR2/Base/goolake/goolake.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("fd4d3738b6cbd8040bf47795cc2eb9e8").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(148.56f, -94.54f, -321.07f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/foggyswamp/foggyswamp.asset").WaitForCompletion());
+			//"RoR2/Base/foggyswamp/foggyswamp.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("759c255e5828e48478cd582df2897826").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(131.72f, -103.84f, -98.62f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/frozenwall/frozenwall.asset").WaitForCompletion());
+			//"RoR2/Base/frozenwall/frozenwall.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("4f4173fad59e5b24f98edbc1c7bf95a0").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-40.24f, 29.81f, 121.65f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/wispgraveyard/wispgraveyard.asset").WaitForCompletion());
+			//"RoR2/Base/wispgraveyard/wispgraveyard.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("32a76e99d300d0d4d86ce8f9f486512b").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(68.79f, 46.92f, -8.74f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/rootjungle/rootjungle.asset").WaitForCompletion());
+			//"RoR2/Base/rootjungle/rootjungle.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("ced489f798226594db0d115af2101a9b").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-102.25f, 44.77f, -91.5f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/shipgraveyard/shipgraveyard.asset").WaitForCompletion());
+			//"RoR2/Base/shipgraveyard/shipgraveyard.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("a4d138197f9eacb4eaa16e4df24108ef").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(111.93f, 5.27f, -98.25f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/dampcavesimple/dampcavesimple.asset").WaitForCompletion());
+			//"RoR2/Base/dampcavesimple/dampcavesimple.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("a0a19f82185253240951dc6b8750f67f").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-15.5f, -169.82f, -256.5f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/skymeadow/skymeadow.asset").WaitForCompletion());
+			//"RoR2/Base/skymeadow/skymeadow.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("e07c7a5799b2fe745a5bad477384ed7e").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(266.87f, 25f, -90.23f));
-			
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/moon2/moon2.asset").WaitForCompletion());
+			//"RoR2/Base/moon2/moon2.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("5d69f3396feb7ba428d1e53a44479594").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(242.89f, -168.38f, 320.99f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/arena/arena.asset").WaitForCompletion());
+			//"RoR2/Base/arena/arena.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("a478a034d8da76244b2e1fb463ef1b81").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-120.8f, 64.11f, 64.05f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/goldshores/goldshores.asset").WaitForCompletion());
+			//"RoR2/Base/goldshores/goldshores.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("b8682562d8eb846458bd32ed9f6c8941").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-10.47f, -3.11f, -65.29f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/moon/moon.asset").WaitForCompletion());
+			//"RoR2/Base/moon/moon.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("7278d516dc482e24f932f0edd27fa3ff").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(1697.38f, 336.78f, 724.9f));
 
 			//DLC1
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/snowyforest/snowyforest.asset").WaitForCompletion());
+			//"RoR2/DLC1/snowyforest/snowyforest.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("b46534a3026e7f844bde582a829d19f3").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-122.43f, 7.73f, 0f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/ancientloft/ancientloft.asset").WaitForCompletion());
+			//"RoR2/DLC1/ancientloft/ancientloft.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("8d0ca457a2e3a974796d21c4d5d920e8").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(164.46f, 23.43f, -29.2f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/sulfurpools/sulfurpools.asset").WaitForCompletion());
+			//"RoR2/DLC1/sulfurpools/sulfurpools.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("796f9b67682b3db4c8c5af7294d0490c").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(22.66f, 5.5f, 71.26f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/voidstage/voidstage.asset").WaitForCompletion());
+			//"RoR2/DLC1/voidstage/voidstage.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("66e0cfba315981a40afae481363ea0da").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-11.68f, 34.1f, -18.1f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/voidraid/voidraid.asset").WaitForCompletion());
+			//"RoR2/DLC1/voidraid/voidraid.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("223a0f0a86052654a9e473d13f77cb41").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-10.14f, 32.12f, -181.93f));
 
 			//DLC2
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/lakes/lakes.asset").WaitForCompletion());
+			//"RoR2/DLC2/lakes/lakes.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("6de54e0cb8ad59d40a1682d5782a79f3").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(72.87f, 24.23f, -89.85f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/lakesnight/lakesnight.asset").WaitForCompletion());
+			//"RoR2/DLC2/lakesnight/lakesnight.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("bbe87fabcab391d4b86adf605c00cb50").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(72.87f, 24.23f, -89.85f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/village/village.asset").WaitForCompletion());
+			//"RoR2/DLC2/village/village.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("29a242327a19b2b43a53992d186471f7").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-1.85f, -19.62f, -95.11f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/villagenight/villagenight.asset").WaitForCompletion());
+			//"RoR2/DLC2/villagenight/villagenight.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("9baf31098cf5ff24ba2226cd73e7a5fc").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-1.85f, -19.62f, -95.11f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/lemuriantemple/lemuriantemple.asset").WaitForCompletion());
+			//"RoR2/DLC2/lemuriantemple/lemuriantemple.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("ec84d6383fdf1b945871e3925df0f5d3").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-9.4f, -14.64f, -102.72f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/habitat/habitat.asset").WaitForCompletion());
+			//"RoR2/DLC2/habitat/habitat.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("0b33829c6cdfad34a8160c6ae17edfcc").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(10.34f, 26.65f, -144.72f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/habitatfall/habitatfall.asset").WaitForCompletion());
+			//"RoR2/DLC2/habitatfall/habitatfall.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("962a6a8a56f584b468a4835c82c11951").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(17.89f, 30.27f, -144.15f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/meridian/meridian.asset").WaitForCompletion());
+			//"RoR2/DLC2/meridian/meridian.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("520b764e3ac5743459fd923204083395").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(102.19f, -134.6f, 227.29f));
-
-			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/helminthroost/helminthroost.asset").WaitForCompletion());
+			//"RoR2/DLC2/helminthroost/helminthroost.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("56cef57fbbd34d247bbd21a2c315db7d").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-708.69f, 15.35f, 282.79f));
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/ItemDropChanceOnKill/ItemDropChanceOnKill.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/ItemDropChanceOnKill/ItemDropChanceOnKill.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("4838bba8e7fc5d6439e4ca0ab60a18bc").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

@@ -18,7 +18,8 @@ namespace FlatItemBuff.Items
 		private static Color BuffColor = new Color(0.694f, 0.219f, 0.498f, 1f);
 		public static DotController.DotDef VenomDotDef;
 		private static DotController.DotIndex VenomDotIndex;
-		public static GameObject OrbVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Croco/CrocoDiseaseOrbEffect.prefab").WaitForCompletion();
+		//"RoR2/Base/Croco/CrocoDiseaseOrbEffect.prefab"
+		public static GameObject OrbVFX = Addressables.LoadAssetAsync<GameObject>("73438a03ce9bb9643a914711d0e30b34").WaitForCompletion();
 		private const string LogName = "Symbiotic Scorpion Rework";
 		internal static bool Enable = false;
 		internal static float Slayer_BaseDamage = 2f;
@@ -54,7 +55,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC1/PermanentDebuffOnHit/PermanentDebuffOnHit.asset").WaitForCompletion();
+			//"RoR2/DLC1/PermanentDebuffOnHit/PermanentDebuffOnHit.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("c54706c1f007b7840b2394716d6c00d6").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
@@ -65,7 +67,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/PermanentDebuffOnHit/bdPermanentDebuff.asset").WaitForCompletion();
+			//"RoR2/DLC1/PermanentDebuffOnHit/bdPermanentDebuff.asset"
+			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("9fde133ce0b2624408a3b2d14199ced3").WaitForCompletion();
 			VenomBuff = Utils.ContentManager.AddBuff("Venom", refBuff.iconSprite, BuffColor, true, false, false);
 			VenomDotDef = new DotController.DotDef
 			{

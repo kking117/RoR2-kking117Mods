@@ -126,7 +126,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/DLC2/Items/KnockBackHitEnemies/KnockBackHitEnemies.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/KnockBackHitEnemies/Items.KnockBackHitEnemies.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("8d0e62a56e442ce41ab072c258ec22b1").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();
@@ -135,12 +136,15 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateVFX()
 		{
-			ImpactEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Beetle/BeetleGuardGroundSlam.prefab").WaitForCompletion();
+			//"RoR2/Base/BeetleGuard/BeetleGuardGroundSlam.prefab"
+			ImpactEffect = Addressables.LoadAssetAsync<GameObject>("d9cbb9db8a4992e49b933ab13eea4f9c").WaitForCompletion();
 		}
 		private void UpdateBuff()
 		{
-			KBDebuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC2/Items/KnockBackHitEnemies/bdKnockUpHitEnemies.asset").WaitForCompletion();
-			BuffDef weakDef = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Treebot/bdWeak.asset").WaitForCompletion();
+			//"RoR2/DLC2/Items/KnockBackHitEnemies/bdKnockUpHitEnemies.asset"
+			KBDebuff = Addressables.LoadAssetAsync<BuffDef>("1877d8952d395174cabd9234e907c007").WaitForCompletion();
+			//"RoR2/Base/Treebot/bdWeak.asset"
+			BuffDef weakDef = Addressables.LoadAssetAsync<BuffDef>("41f235937593e0a4e954d6de0ec4c636").WaitForCompletion();
 			KBCooldown = Utils.ContentManager.AddBuff("Knockback Cooldown", weakDef.iconSprite, buffColor, true, false, false);
 			KBDebuff = Utils.ContentManager.AddBuff("Knockback Debuff", weakDef.iconSprite, buffColor, false, true, false);
 			KBDebuff.flags |= BuffDef.Flags.ExcludeFromNoxiousThorns;

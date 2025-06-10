@@ -57,7 +57,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateVFX()
         {
-			BlastEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab").WaitForCompletion();
+			//"RoR2/Base/IgniteOnKill/IgniteExplosionVFX.prefab"
+			BlastEffect = Addressables.LoadAssetAsync<GameObject>("fd33680df35a2ab4db22b33a0e161f90").WaitForCompletion();
 		}
 		private void UpdateText()
 		{

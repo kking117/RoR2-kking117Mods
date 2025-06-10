@@ -17,7 +17,8 @@ namespace FlatItemBuff.Items
 		private static Color BuffColor = new Color(0.717f, 0.545f, 0.952f, 1f);
 		private static bool DoesCool = true;
 		private static bool SingleCool = true;
-		public static GameObject BoostVFX = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MoveSpeedOnKill/MoveSpeedOnKillActivate.prefab").WaitForCompletion();
+		// "RoR2/DLC1/MoveSpeedOnKill/MoveSpeedOnKillActivate.prefab"
+		public static GameObject BoostVFX = Addressables.LoadAssetAsync<GameObject>("8291135654c61704f9fc6d3e9d3a6f6d").WaitForCompletion();
 
 		private const string LogName = "Hunter's Harpoon";
 		internal static bool Enable = false;
@@ -93,7 +94,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("RoR2/DLC1/MoveSpeedOnKill/bdKillMoveSpeed.asset").WaitForCompletion();
+			//"RoR2/DLC1/MoveSpeedOnKill/bdKillMoveSpeed.asset"
+			BuffDef refBuff = Addressables.LoadAssetAsync<BuffDef>("76047f53120d6e340a0dd08d1788e673").WaitForCompletion();
 			HarpoonBuff = Utils.ContentManager.AddBuff("HunterBoost", refBuff.iconSprite, BuffColor, false, false, false, false, false);
 			ReduceCooldownBuff = Utils.ContentManager.AddBuff("HunterSkillReduction", refBuff.iconSprite, BuffColor, true, false, false);
 		}

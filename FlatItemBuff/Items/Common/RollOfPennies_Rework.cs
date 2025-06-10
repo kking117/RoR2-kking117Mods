@@ -51,7 +51,8 @@ namespace FlatItemBuff.Items
 		}
 		private void CreateBuff()
 		{
-			PennyArmorBuff = Utils.ContentManager.AddBuff("Penny Armor", Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/Grandparent/bdOverheat.asset").WaitForCompletion().iconSprite, BuffColor, true, false, false, false, false);
+			//"RoR2/Base/Grandparent/bdOverheat.asset"
+			PennyArmorBuff = Utils.ContentManager.AddBuff("Penny Armor", Addressables.LoadAssetAsync<BuffDef>("63aa6c6bd0ad3e944b87f6546d0cb7e4").WaitForCompletion().iconSprite, BuffColor, true, false, false, false, false);
 		}
 		private void UpdateText()
 		{

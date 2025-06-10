@@ -39,7 +39,8 @@ namespace FlatItemBuff.Items
 		private void UpdateVFX()
         {
 			//Remove the goofy nubme
-			HitEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/CritGlassesVoid/CritGlassesVoidExecuteEffect.prefab").WaitForCompletion();
+			//"RoR2/DLC1/CritGlassesVoid/CritGlassesVoidExecuteEffect.prefab"
+			HitEffect = Addressables.LoadAssetAsync<GameObject>("9a17948773f51b749824026e541c9c1a").WaitForCompletion();
 			if (HitEffect)
 			{
 				UnityEngine.Object.Destroy(HitEffect.transform.Find("FakeDamageNumbers").gameObject);

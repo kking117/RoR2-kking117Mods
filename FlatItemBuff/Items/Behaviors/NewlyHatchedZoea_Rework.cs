@@ -14,7 +14,7 @@ namespace FlatItemBuff.Items.Behaviors
 		private float nextMissile;
 		private float nextStock;
 
-		internal static float FireDelay = 0.25f;
+		internal static float FireDelay = FlatItemBuff.Items.NewlyHatchedZoea_Rework.FireDelay;
 
 		private void Awake()
 		{

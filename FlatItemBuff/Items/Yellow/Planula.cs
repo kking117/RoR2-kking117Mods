@@ -38,7 +38,8 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateItemDef()
 		{
-			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("RoR2/Base/ParentEgg/ParentEgg.asset").WaitForCompletion();
+			//"RoR2/Base/ParentEgg/ParentEgg.asset"
+			ItemDef itemDef = Addressables.LoadAssetAsync<ItemDef>("2ed530121eace7240ad4716be1e4688c").WaitForCompletion();
 			if (itemDef)
 			{
 				List<ItemTag> itemTags = itemDef.tags.ToList();

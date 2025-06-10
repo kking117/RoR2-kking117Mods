@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using RoR2;
+using RoR2.AddressableAssets;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using RoR2.CharacterAI;
@@ -12,7 +14,8 @@ namespace FlatItemBuff.Items
 {
     public class DefenseNucleus_Shared
     {
-        public static GameObject ShieldPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MajorAndMinorConstruct/MegaConstructBubbleShield.prefab").WaitForCompletion();
+        //"RoR2/DLC1/MajorAndMinorConstruct/MegaConstructBubbleShield.prefab"
+        public static GameObject ShieldPrefab = Addressables.LoadAssetAsync<GameObject>("0e0129d9b272aff448748afd9b501e4c").WaitForCompletion();
         private static CharacterSpawnCard ConstructCSC;
         private static GameObject ConstructBodyObject;
         public static BodyIndex ConstructBodyIndex = BodyIndex.None;
@@ -51,7 +54,8 @@ namespace FlatItemBuff.Items
         }
         public static void ExtraChanges()
         {
-            ConstructCSC = Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/MajorAndMinorConstruct/cscMinorConstructOnKill.asset").WaitForCompletion();
+            //"RoR2/DLC1/MajorAndMinorConstruct/cscMinorConstructOnKill.asset"
+            ConstructCSC = Addressables.LoadAssetAsync<CharacterSpawnCard>("99c6cbb2de90481409528b3d12294dc6").WaitForCompletion();
             if (ConstructCSC)
             {
                 for (int i = 0; i< ConstructCSC.itemsToGrant.Length; i++)
@@ -66,7 +70,8 @@ namespace FlatItemBuff.Items
                     }
                 }
             }
-            ConstructBodyObject = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MajorAndMinorConstruct/MinorConstructOnKillBody.prefab").WaitForCompletion();
+            //"RoR2/DLC1/MajorAndMinorConstruct/MinorConstructOnKillBody.prefab"
+            ConstructBodyObject = Addressables.LoadAssetAsync<GameObject>("bf5b53aa9306bce4b910220a43b30062").WaitForCompletion();
             if(ConstructBodyObject)
             {
                 CharacterBody body = ConstructBodyObject.GetComponent<CharacterBody>();
@@ -82,14 +87,20 @@ namespace FlatItemBuff.Items
                 {
                     ItemDisplayRuleSet itemdisplayruleSet = ConstructBodyObject.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet;
                     //DisplayRuleGroup displayruleGroup = ConstructBodyObject.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.keyAssetRuleGroups[0].displayRuleGroup;
-                    GameObject ArmPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/DroneWeapons/DisplayDroneWeaponRobotArm.prefab").WaitForCompletion();
-                    GameObject MiniGunPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/DroneWeapons/DisplayDroneWeaponMinigun.prefab").WaitForCompletion();
-                    GameObject LauncherPrefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/DroneWeapons/DisplayDroneWeaponLauncher.prefab").WaitForCompletion();
+                    
                     if (itemdisplayruleSet)
                     {
+                        //"RoR2/DLC1/DroneWeapons/DisplayDroneWeaponRobotArm.prefab"
+                        //"RoR2/DLC1/DroneWeapons/DisplayDroneWeaponMinigun.prefab"
+                        //"RoR2/DLC1/DroneWeapons/DisplayDroneWeaponRobotArm.prefab"
+                        GameObject ArmPrefab = Addressables.LoadAssetAsync<GameObject>("6a50b73e668dfe14e9330be5485494be").WaitForCompletion();
+                        GameObject MiniGunPrefab = Addressables.LoadAssetAsync<GameObject>("7083017a4d0e96a4dac36e9a88450989").WaitForCompletion();
+                        GameObject LauncherPrefab = Addressables.LoadAssetAsync<GameObject>("6a50b73e668dfe14e9330be5485494be").WaitForCompletion();
                         ItemDisplayRuleSet.KeyAssetRuleGroup droneBoostDisplay = new ItemDisplayRuleSet.KeyAssetRuleGroup
                         {
                             keyAsset = DLC1Content.Items.DroneWeaponsBoost,
+                            //"RoR2/DLC1/DroneWeapons/DroneWeaponsBoost.asset"
+                            keyAssetAddress = new IDRSKeyAssetReference("280de78e6d8946f45a3361ef2e925efc"),
                             displayRuleGroup = new DisplayRuleGroup
                             {
                                 rules = new ItemDisplayRule[]
@@ -97,7 +108,8 @@ namespace FlatItemBuff.Items
                                     new ItemDisplayRule
                                     {
                                         ruleType = ItemDisplayRuleType.ParentedPrefab,
-                                        followerPrefab = LauncherPrefab,
+                                        //followerPrefab = LauncherPrefab,
+                                        followerPrefabAddress = new AssetReferenceGameObject("6a50b73e668dfe14e9330be5485494be"),
                                         childName = "CapTop",
                                         localPos = new Vector3(0F, 0.25F, -0.3F),
                                         localAngles = new Vector3(330F, 180F, 0F),
@@ -110,6 +122,8 @@ namespace FlatItemBuff.Items
                         ItemDisplayRuleSet.KeyAssetRuleGroup dronePart1Display = new ItemDisplayRuleSet.KeyAssetRuleGroup
                         {
                             keyAsset = DLC1Content.Items.DroneWeaponsDisplay1,
+                            //"RoR2/DLC1/DroneWeapons/DroneWeaponsDisplay1.asset"
+                            keyAssetAddress = new IDRSKeyAssetReference("648a1d9c63c34b044b60ce3b2e99a6b8"),
                             displayRuleGroup = new DisplayRuleGroup
                             {
                                 rules = new ItemDisplayRule[]
@@ -117,7 +131,8 @@ namespace FlatItemBuff.Items
                                     new ItemDisplayRule
                                     {
                                         ruleType = ItemDisplayRuleType.ParentedPrefab,
-                                        followerPrefab = MiniGunPrefab,
+                                        //followerPrefab = MiniGunPrefab,
+                                        followerPrefabAddress = new AssetReferenceGameObject("7083017a4d0e96a4dac36e9a88450989"),
                                         childName = "CapTop",
                                         localPos = new Vector3(0F, 0.75F, 0F),
                                         localAngles = new Vector3(0F, 0F, 180F),
@@ -130,6 +145,8 @@ namespace FlatItemBuff.Items
                         ItemDisplayRuleSet.KeyAssetRuleGroup dronePart2Display = new ItemDisplayRuleSet.KeyAssetRuleGroup
                         {
                             keyAsset = DLC1Content.Items.DroneWeaponsDisplay2,
+                            //"RoR2/DLC1/DroneWeapons/DroneWeaponsDisplay2.asset"
+                            keyAssetAddress = new IDRSKeyAssetReference("1aaf36d4754a593458e921a3de3bd00b"),
                             displayRuleGroup = new DisplayRuleGroup
                             {
                                 rules = new ItemDisplayRule[]
@@ -137,7 +154,8 @@ namespace FlatItemBuff.Items
                                     new ItemDisplayRule
                                     {
                                         ruleType = ItemDisplayRuleType.ParentedPrefab,
-                                        followerPrefab = ArmPrefab,
+                                        //followerPrefab = ArmPrefab,
+                                        followerPrefabAddress = new AssetReferenceGameObject("6a50b73e668dfe14e9330be5485494be"),
                                         childName = "CapTop",
                                         localPos = new Vector3(0F, 0.8F, 0F),
                                         localAngles = new Vector3(270F, 0F, 0F),
@@ -151,14 +169,15 @@ namespace FlatItemBuff.Items
                         itemdisplayruleSet.keyAssetRuleGroups[itemdisplayruleSet.keyAssetRuleGroups.Length - 3] = droneBoostDisplay;
                         itemdisplayruleSet.keyAssetRuleGroups[itemdisplayruleSet.keyAssetRuleGroups.Length - 2] = dronePart1Display;
                         itemdisplayruleSet.keyAssetRuleGroups[itemdisplayruleSet.keyAssetRuleGroups.Length - 1] = dronePart2Display;
-                        itemdisplayruleSet.GenerateRuntimeValues();
+                        itemdisplayruleSet.GenerateRuntimeValuesAsync();
                     }
                 }
             }
         }
         private static void UpdateAI()
         {
-            GameObject prefab = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/MajorAndMinorConstruct/MinorConstructOnKillMaster.prefab").WaitForCompletion();
+            //"RoR2/DLC1/MajorAndMinorConstruct/MinorConstructOnKillMaster.prefab"
+            GameObject prefab = Addressables.LoadAssetAsync<GameObject>("f55edee9fe6792a43817ec99fa2615a1").WaitForCompletion();
             BaseAI baseai = prefab.GetComponent<BaseAI>();
             if (baseai)
             {
