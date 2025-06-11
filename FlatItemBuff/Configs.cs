@@ -508,11 +508,11 @@ namespace FlatItemBuff
 			TitanicKnurl_Rework.TargetMode = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework, "Target Mode", 0, "Decides how the target is selected. (0 = Weak, 1 = Closest)").Value;
 
 			TitanicKnurl_Rework_B.Enable = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, Label_EnableRework, false, Desc_EnableRework_B).Value;
-			TitanicKnurl_Rework_B.LaserBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Base Damage", 0.5f, "Base damage per tick of the laser at a single stack.").Value;
+			TitanicKnurl_Rework_B.LaserBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Base Damage", 0.625f, "Base damage per tick of the laser at a single stack.").Value;
 			TitanicKnurl_Rework_B.LaserStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Stack Damage", 0.0f, "Base damage per tick of the laser for each additional stack.").Value;
 			TitanicKnurl_Rework_B.ShotBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Base Damage", 1.5f, "Base damage the laser shots at a single stack.").Value;
 			TitanicKnurl_Rework_B.ShotStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Stack Damage", 0.0f, "Base damage the laser shots for each additional stack.").Value;
-			TitanicKnurl_Rework_B.BaseDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Base Duration", 3.0f, "Laser duration at a single stack.").Value;
+			TitanicKnurl_Rework_B.BaseDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Base Duration", 4.0f, "Laser duration at a single stack.").Value;
 			TitanicKnurl_Rework_B.StackDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Stack Duration", 2.0f, "Laser duration for each additional stack.").Value;
 			TitanicKnurl_Rework_B.LaserProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Proc Coefficient", 0.15f, "Proc coefficient of the laser per tick.").Value;
 			TitanicKnurl_Rework_B.ShotProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Proc Coefficient", 0.15f, "Proc coefficient of the laser shots.").Value;

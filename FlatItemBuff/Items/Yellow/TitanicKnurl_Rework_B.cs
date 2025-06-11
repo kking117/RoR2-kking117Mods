@@ -16,11 +16,11 @@ namespace FlatItemBuff.Items
 		private const string LogName = "Titanic Knurl Rework B";
 		internal static bool Enable = false;
 		internal static int ChargeCap = 99;
-		internal static float LaserBaseDamage = 0.5f;
+		internal static float LaserBaseDamage = 0.625f;
 		internal static float LaserStackDamage = 0.0f;
 		internal static float ShotBaseDamage = 1.5f;
 		internal static float ShotStackDamage = 0.0f;
-		internal static float BaseDuration = 3f;
+		internal static float BaseDuration = 4f;
 		internal static float StackDuration = 2f;
 		internal static float LaserProcRate = 0.15f;
 		internal static float ShotProcRate = 0.15f;

@@ -1,3 +1,15 @@
+**1.25.1**
+
+```
+- Titanic Knurl Rework B:
+- Changed "Laser Base Damage" default configuration. (0.5 -> 0.625)
+- Changed "Base Duration" default configuration. (3.0 -> 4.0)
+^ Laser itself felt too short by base and weak (like 1/3 of Laser of the Father's dps weak).
+- Added some random spread to the extra shots.
+- Laser begins a bit sooner when activated.
+- Laser will fire from the user's head, if one cannot be found it will revert to their AimRay instead.
+```
+
 **1.25.0**
 
 Fixes for SoTS Optimized Update, plus some extras.
@@ -25,7 +37,7 @@ I may have missed some things so please report errors.
 - Added a second rework to Titanic Knurl called "Titanic Knurl Rework B".
 ^ A more active alternative to the first rework that's based on the Stone Titan's laser ability.
 
-- Newly Hatched Zoea:
+- Newly Hatched Zoea Rework:
 - Added "Fire Delay" configuration, controls the time between each missile fired. (Default: 0.2)
 ```
 
