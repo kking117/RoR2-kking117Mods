@@ -71,7 +71,6 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 			IL.RoR2.CharacterBody.OnInventoryChanged += new ILContext.Manipulator(IL_OnInventoryChanged);
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
 		}
@@ -79,7 +78,7 @@ namespace FlatItemBuff.Items
 		{
 			if (sender.inventory)
 			{
-				int itemCount = sender.inventory.GetItemCount(DLC2Content.Items.SpeedBoostPickup);
+				int itemCount = sender.inventory.GetItemCountEffective(DLC2Content.Items.SpeedBoostPickup);
 				if (itemCount > 0)
 				{
 					args.moveSpeedMultAdd += itemCount * StackSpeed;
@@ -87,30 +86,13 @@ namespace FlatItemBuff.Items
 				}
 			}
 		}
-		private void IL_RecalculateStats(ILContext il)
-		{
-			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdarg(0),
-				x => x.MatchCall(typeof(RoR2.CharacterBody).GetMethod("get_inventory")),
-				x => x.MatchLdsfld(typeof(DLC2Content.Items), "SpeedBoostPickup")
-			))
-			{
-				ilcursor.RemoveRange(5);
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed.");
-			}
-		}
-
 		private void IL_OnInventoryChanged(ILContext il)
 		{
 			//doing this since it shits the bed otherwise
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC2Content.Items), "SpeedBoostPickup"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index += 2;

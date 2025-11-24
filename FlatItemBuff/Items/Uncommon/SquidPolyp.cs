@@ -106,7 +106,7 @@ namespace FlatItemBuff.Items
 					Inventory inventory = interactorBody.inventory;
 					if (inventory)
 					{
-						int itemCount = inventory.GetItemCount(RoR2Content.Items.Squid);
+						int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Squid);
 						if (itemCount > 0)
 						{
 							TrySpawnSquidPog(interactorBody, itemCount, interactableObject.transform.position);
@@ -141,9 +141,9 @@ namespace FlatItemBuff.Items
 				}
 				CharacterMaster master = result.spawnedInstance.GetComponent<CharacterMaster>();
 				int lifeTime = BaseDuration + (itemCount * StackDuration);
-				master.inventory.GiveItem(RoR2Content.Items.HealthDecay, lifeTime);
-				master.inventory.GiveItem(RoR2Content.Items.BoostHp, StackHealth * itemCount);
-				master.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, 10 * itemCount);
+				master.inventory.GiveItemPermanent(RoR2Content.Items.HealthDecay, lifeTime);
+				master.inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, StackHealth * itemCount);
+				master.inventory.GiveItemPermanent(RoR2Content.Items.BoostAttackSpeed, 10 * itemCount);
 				if (MaxTurrets > 0)
                 {
 					CharacterMaster ownerMaster = summoner.master;
@@ -200,8 +200,8 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(6),
 				x => x.MatchLdloc(5),
-				x => x.MatchLdloc(4),
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Squid")
 			))
 			{

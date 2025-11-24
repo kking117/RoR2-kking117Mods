@@ -1,3 +1,27 @@
+**1.26.0**
+
+Update to get it working with Alloyed Collective.
+Basic testing has been done to confirm fixes, if there's any issues please contact me.
+
+```
+- Aegis Buff:
+- Changed "Stack Overheal" default configuration. (0 -> 0.2)
+- Changed "Base Max Barrier" default configuration. (1 -> 0.5)
+- Changed "Stack Max Barrier" default configuration. (1 -> 0.5)
+^ Has been tuned to better suit those that have "Tweak Barrier Decay" disabled, as that's the default configuration.
+
+- Happiest Mask Rework:
+- Changed "Stack Damage" default configuration. (2 -> 3)
+
+- Defense Nucleus Buff:
+- Changed "Base Armor" default configuration. (50 -> 30)
+- Changed "Stack Armor" default configuration. (35 -> 30)
+^ Small nerfs since Drones were made more durable.
+
+- Seared Steak:
+- Added a buff and rework similar to Bison Steak.
+```
+
 **1.25.1**
 
 ```

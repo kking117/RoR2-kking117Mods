@@ -140,7 +140,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			int itemCount = self.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
+			int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.PermanentDebuffOnHit);
 			self.AddItemBehavior<Behaviors.SymbioticScorpion_Rework>(itemCount);
 		}
 		private void TakeDamageProcess(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
@@ -152,7 +152,7 @@ namespace FlatItemBuff.Items
 					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
 					if (attackerBody && attackerBody.inventory)
 					{
-						int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
+						int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.PermanentDebuffOnHit);
 						if (itemCount > 0)
 						{
 							itemCount = Math.Max(0, itemCount - 1);
@@ -182,9 +182,9 @@ namespace FlatItemBuff.Items
 						Inventory inventory = damageReport.attackerBody.inventory;
 						if (inventory)
 						{
-							itemCount = inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
+							itemCount = inventory.GetItemCountEffective(DLC1Content.Items.PermanentDebuffOnHit);
 						}
-						DotController.InflictDot(victimBody.gameObject, attackerBody.gameObject, VenomDotIndex, VenomDuration(itemCount) * procRate, 1f);
+						DotController.InflictDot(victimBody.gameObject, attackerBody.gameObject, damageReport.damageInfo.inflictedHurtbox, VenomDotIndex, VenomDuration(itemCount) * procRate, 1f);
 					}
 				}
 			}
@@ -202,13 +202,13 @@ namespace FlatItemBuff.Items
             {
 				if (ilcursor.TryGotoNext(
 					//x => x.MatchLdfld(typeof(DamageInfo), "damage"), //Was disabled for compat with SkillsReturns
-					x => x.MatchStloc(7)
+					x => x.MatchStloc(9)
 				))
 				{
 					ilcursor.Index += 2;
 					ilcursor.Emit(OpCodes.Ldarg, 0);
 					ilcursor.Emit(OpCodes.Ldarg, 1);
-					ilcursor.Emit(OpCodes.Ldloc, 7);
+					ilcursor.Emit(OpCodes.Ldloc, 9);
 					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, returnDamage) =>
 					{
 						if (damageInfo.dotIndex != DotController.DotIndex.None)
@@ -218,7 +218,7 @@ namespace FlatItemBuff.Items
 								CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
 								if (attackerBody && attackerBody.inventory)
                                 {
-									int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.PermanentDebuffOnHit);
+									int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.PermanentDebuffOnHit);
 									if (itemCount > 0)
                                     {
 										itemCount = Math.Max(0, itemCount - 1);
@@ -233,7 +233,7 @@ namespace FlatItemBuff.Items
 						}
 						return returnDamage;
 					});
-					ilcursor.Emit(OpCodes.Stloc, 7);
+					ilcursor.Emit(OpCodes.Stloc, 9);
 				}
 				else
 				{
@@ -242,7 +242,7 @@ namespace FlatItemBuff.Items
 			}
 			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "PermanentDebuffOnHit"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
             {
 				ilcursor.Index += 2;

@@ -139,7 +139,7 @@ namespace FlatItemBuff.Items
 				int itemCount = 0;
 				if (sender.inventory)
                 {
-					itemCount = Math.Max(0, sender.inventory.GetItemCount(DLC2Content.Items.DelayedDamage) - 1);
+					itemCount = Math.Max(0, sender.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) - 1);
                 }
 				args.armorAdd += BaseArmor + (StackArmor * itemCount);
 			}
@@ -147,18 +147,194 @@ namespace FlatItemBuff.Items
 		private void IL_OnTakeDamage(ILContext il)
 		{
 			//Moved entire chunk back so that A) it works properly with Eclipse 8 and B) It fixes a bug with shields and barrier
+			//Alloyed Collective Update: Delayed Damage code has been moved to before Eclipse8 curse calculations.
+			//This means the old comment is obsolete, keeping it for document purposes.
 			ILCursor ilcursor = new ILCursor(il);
+			//Allows delayed damage to be affected by armor, provided it has the correct damage flags.
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdfld(typeof(DamageInfo), "delayedDamageSecondHalf")
+			))
+			{
+				if (ilcursor.TryGotoNext(
+					x => x.MatchLdfld(typeof(DamageInfo), "delayedDamageSecondHalf")
+				))
+                {
+					ilcursor.Index -= 2;
+					ilcursor.RemoveRange(3);
+					ilcursor.Emit(OpCodes.Ldloc, 6);
+				}
+				else
+                {
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
+				}
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
+			}
+
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "DelayedDamageBuff")
+			))
+			{
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(3);
+				ilcursor.EmitDelegate<Func<HealthComponent, bool>>((self) =>
+				{
+					return self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
+			}
+
+			//Num9 = The number of delayed hits we should take based on our item count.
+			//Setting this to 0 so we can run our own code.
+			if (ilcursor.TryGotoNext(
+				x => x.MatchStloc(56)
+			))
+			{
+				ilcursor.Index -= 7;
+				ilcursor.RemoveRange(7);
+				ilcursor.Emit(OpCodes.Ldc_I4, 0);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - IL Hook failed");
+			}
+
+			//Num3 = The amount of damage we actually take in HealthComponent
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdcR4(0.0f),
+				x => x.MatchStloc(9)
+			))
+			{
+				//ilcursor.Index -= 1;
+				ilcursor.RemoveRange(1);
+				ilcursor.Emit(OpCodes.Ldarg, 0);
+				ilcursor.Emit(OpCodes.Ldarg, 1);
+				ilcursor.Emit(OpCodes.Ldloc, 7);
+				ilcursor.Emit(OpCodes.Ldloc, 9);
+
+				ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, bool, float, float>>((self, damageInfo, ignoreBlock, returnValue) =>
+				{
+					MainPlugin.ModLogger.LogInfo("old damage = " + returnValue);
+					if (!InCountArmor || (damageInfo.damageType & DamageType.BypassArmor) == DamageType.Generic)
+					{
+						if (!InCountBlock || !ignoreBlock)
+						{
+							if (self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0 && damageInfo.damage > 0f && !damageInfo.delayedDamageSecondHalf && !damageInfo.rejected)
+							{
+								returnValue *= 0.5f;
+								DamageTypeCombo damageType = DamageType.Generic;
+								/*if (OutIgnoreArmor)
+								{
+									damageType |= DamageType.BypassArmor;
+								}
+								if (OutIgnoreBlock)
+								{
+									damageType |= DamageType.BypassBlock;
+								}*/
+								if (self.ospTimer > 0f || (damageInfo.damageType & DamageType.NonLethal) > DamageType.Generic)
+								{
+									damageType |= DamageType.NonLethal;
+								}
+								if (self.body.hasOneShotProtection && (damageInfo.damageType & DamageType.BypassOneShotProtection) != DamageType.BypassOneShotProtection)
+								{
+									damageType |= DamageType.NonLethal;
+								}
+								if ((damageInfo.damageType & DamageType.Silent) > DamageType.Generic)
+								{
+									damageType |= DamageType.Silent;
+								}
+								DamageInfo damageInfo2 = new DamageInfo
+								{
+									crit = damageInfo.crit,
+									damage = returnValue,
+									damageType = damageType,
+									attacker = damageInfo.attacker,
+									position = damageInfo.position,
+									inflictor = damageInfo.inflictor,
+									procChainMask = damageInfo.procChainMask,
+									procCoefficient = 0f,
+									damageColorIndex = damageInfo.damageColorIndex,
+									delayedDamageSecondHalf = true,
+									firstHitOfDelayedDamageSecondHalf = false
+								};
+								self.body.SecondHalfOfDelayedDamage(damageInfo2, 3f);
+							}
+						}
+					}
+					MainPlugin.ModLogger.LogInfo("new damage = " + returnValue);
+					return returnValue;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage C - IL Hook failed");
+			}
+
+			if (ilcursor.TryGotoNext(
+				x => x.MatchStloc(11)
+			))
+			{
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(2);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage D - IL Hook failed");
+			}
+
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "DelayedDamageBuff")
+			))
+			{
+				ilcursor.Index -= 2;
+				ilcursor.RemoveRange(4);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage E - IL Hook failed");
+			}
+
+			//leaving old code here
+			//might archive or throw away
+
+			/*if (ilcursor.TryGotoNext(
+				x => x.MatchLdcR4(0.0f),
+				x => x.MatchStloc(10)
+			))
+			{
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(3);
+				ilcursor.EmitDelegate<Func<HealthComponent, bool>>((self) =>
+				{
+					return self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
+			}*/
+
+
+			/*ilcursor.GotoNext(
+				x => x.MatchLdloc(9),
+				x => x.MatchStloc(10)
+			);
 			if (ilcursor.TryGotoNext(
 
-				x => x.MatchLdloc(7),
-				x => x.MatchStloc(8)
+				x => x.MatchLdloc(9),
+				x => x.MatchStloc(10)
 			))
 			{
 				ilcursor.Index += 1;
 				//ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldarg, 0);
 				ilcursor.Emit(OpCodes.Ldarg, 1);
-				ilcursor.Emit(OpCodes.Ldloc, 6);
+				ilcursor.Emit(OpCodes.Ldloc, 7);
 				//ilcursor.Emit(OpCodes.Ldloc, 7);
 				ilcursor.EmitDelegate<Func<float, HealthComponent, DamageInfo, bool, float>>((returnValue, self, damageInfo, ignoreBlock) =>
 				{
@@ -168,7 +344,7 @@ namespace FlatItemBuff.Items
                         {
 							if (!InCountBlock || !ignoreBlock)
 							{
-								if (self.body.inventory.GetItemCount(DLC2Content.Items.DelayedDamage) > 0 && damageInfo.damage > 0f && !damageInfo.delayedDamageSecondHalf && !damageInfo.rejected)
+								if (self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0 && damageInfo.damage > 0f && !damageInfo.delayedDamageSecondHalf && !damageInfo.rejected)
 								{
 									returnValue *= 0.5f;
 									DamageType damageType = DamageType.Generic;
@@ -213,8 +389,8 @@ namespace FlatItemBuff.Items
 					}
 					return returnValue;
 				});
-				ilcursor.Emit(OpCodes.Stloc, 7);
-				ilcursor.Emit(OpCodes.Ldloc, 7);
+				ilcursor.Emit(OpCodes.Stloc, 9);
+				ilcursor.Emit(OpCodes.Ldloc, 9);
 			}
 			else
 			{
@@ -235,8 +411,9 @@ namespace FlatItemBuff.Items
 			else
             {
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - IL Hook failed");
-			}
+			}*/
 		}
+
 		/*private void IL_ApplyDelayedDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);

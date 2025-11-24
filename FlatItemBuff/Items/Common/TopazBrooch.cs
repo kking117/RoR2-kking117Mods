@@ -90,7 +90,7 @@ namespace FlatItemBuff.Items
 			HealthComponent hpComp = assistBody.healthComponent;
 			if (hpComp)
             {
-				int itemCount = assistInventory.GetItemCount(RoR2Content.Items.BarrierOnKill);
+				int itemCount = assistInventory.GetItemCountEffective(RoR2Content.Items.BarrierOnKill);
 				if (itemCount > 0)
 				{
 					hpComp.AddBarrier(GetFlatBarrier(hpComp, itemCount));
@@ -109,14 +109,14 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(15),
-				x => x.MatchLdloc(53),
+				x => x.MatchLdloc(55),
 				x => x.MatchConvR4(),
 				x => x.MatchMul()
 			))
 			{
 				ilcursor.RemoveRange(4);
 				ilcursor.Emit(OpCodes.Ldarg_1);
-				ilcursor.Emit(OpCodes.Ldloc, 53);
+				ilcursor.Emit(OpCodes.Ldloc, 55);
 				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((damageReport, itemCount) =>
 				{
 					return GetFlatBarrier(damageReport.attackerBody.healthComponent, itemCount);

@@ -21,7 +21,7 @@ namespace FlatItemBuff.Items
 		private const string LogName = "Happiest Mask Rework";
 		internal static bool Enable = false;
 		internal static float BaseDamage = 2f;
-		internal static float StackDamage = 2f;
+		internal static float StackDamage = 3f;
 		internal static float BaseMoveSpeed = 0.45f;
 		internal static int BaseDuration = 30;
 		internal static int BaseCooldown = 3;
@@ -160,7 +160,7 @@ namespace FlatItemBuff.Items
 			{
 				if (attackerMaster)
 				{
-					bool attackerIsGhost = attackerMaster.inventory.GetItemCount(GhostCloneIdentifier) > 0;
+					bool attackerIsGhost = attackerMaster.inventory.GetItemCountEffective(GhostCloneIdentifier) > 0;
 					if (attackerIsGhost)
 					{
 						CharacterMaster ownerMaster = GetGhostOwner(attackerMaster);
@@ -178,7 +178,7 @@ namespace FlatItemBuff.Items
 		}
 		private void CharacterMasterBodyDeath(CharacterMaster victimMaster, CharacterBody victimBody)
 		{
-			int itemCount = victimMaster.inventory.GetItemCount(GhostCloneIdentifier);
+			int itemCount = victimMaster.inventory.GetItemCountEffective(GhostCloneIdentifier);
 			if (itemCount > 0)
 			{
 				CharacterMaster attackerMaster = Utils.Helpers.GetOwnerAsDeployable(victimMaster, Ghost_DeployableSlot);
@@ -203,8 +203,8 @@ namespace FlatItemBuff.Items
 		
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			int itemCountA = self.inventory.GetItemCount(GhostCloneIdentifier);
-			int itemCountB = self.inventory.GetItemCount(RoR2Content.Items.GhostOnKill);
+			int itemCountA = self.inventory.GetItemCountEffective(GhostCloneIdentifier);
+			int itemCountB = self.inventory.GetItemCountEffective(RoR2Content.Items.GhostOnKill);
 			if (itemCountA > 0)
 			{
 				itemCountB = 0;
@@ -215,7 +215,7 @@ namespace FlatItemBuff.Items
 
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
         {
-			int itemCount = inventory.GetItemCount(GhostCloneIdentifier);
+			int itemCount = inventory.GetItemCountEffective(GhostCloneIdentifier);
 			if (itemCount > 0)
 			{
 				args.damageMultAdd += GetGhostDamageMult(itemCount, 0f);
@@ -228,7 +228,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "GhostOnKill"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
             {
 				ilcursor.Index += 2;

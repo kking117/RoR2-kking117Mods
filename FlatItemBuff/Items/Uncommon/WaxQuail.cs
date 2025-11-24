@@ -125,11 +125,11 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<Behaviors.WaxQuail>(self.inventory.GetItemCount(RoR2Content.Items.JumpBoost));
+			self.AddItemBehavior<Behaviors.WaxQuail>(self.inventory.GetItemCountEffective(RoR2Content.Items.JumpBoost));
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			int itemCount = inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+			int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.JumpBoost);
 			if (itemCount > 0)
 			{
 				if (sender.characterMotor && !sender.characterMotor.isGrounded)
@@ -162,19 +162,19 @@ namespace FlatItemBuff.Items
 				{
 					if (stateBase.characterMotor.isGrounded && stateBase.characterBody.isSprinting)
 					{
-						return stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost) > 0;
+						return stateBase.characterBody.inventory.GetItemCountEffective(RoR2Content.Items.JumpBoost) > 0;
 					}
 					return false;
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump C - Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump A - Hook failed");
 			}
 			//Disable Old Behaviour
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "JumpBoost"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index += 2;
@@ -183,21 +183,21 @@ namespace FlatItemBuff.Items
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump A - Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump B - Hook failed");
 			}
 			//Now do the cool stuff
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(4),
-				x => x.MatchLdloc(5)
+				x => x.MatchLdloc(5),
+				x => x.MatchLdloc(6)
 			))
 			{
 				ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 4);
+				ilcursor.Emit(OpCodes.Ldloc, 5);
 				ilcursor.Emit(OpCodes.Ldloc, 1);
 				ilcursor.EmitDelegate<Func<EntityState, float, bool, float>>((stateBase, returnValue, canBoost) =>
 				{
-					int itemCount = stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+					int itemCount = stateBase.characterBody.inventory.GetItemCountEffective(RoR2Content.Items.JumpBoost);
 					if (canBoost && itemCount > 0)
                     {
 						float jumpBoost = 0f;
@@ -218,16 +218,16 @@ namespace FlatItemBuff.Items
 					return returnValue;
 				});
 				if (ilcursor.TryGotoNext(
-					x => x.MatchLdloc(5)
+					x => x.MatchLdloc(6)
 				))
                 {
 					ilcursor.Remove();
 					ilcursor.Emit(OpCodes.Ldarg, 0);
-					ilcursor.Emit(OpCodes.Ldloc, 5);
+					ilcursor.Emit(OpCodes.Ldloc, 6);
 					ilcursor.Emit(OpCodes.Ldloc, 1);
 					ilcursor.EmitDelegate<Func<EntityState, float, bool, float>>((stateBase, returnValue, canBoost) =>
 					{
-						int itemCount = stateBase.characterBody.inventory.GetItemCount(RoR2Content.Items.JumpBoost);
+						int itemCount = stateBase.characterBody.inventory.GetItemCountEffective(RoR2Content.Items.JumpBoost);
 						if (canBoost && itemCount > 0)
 						{
 							float jumpBoost = 0f;
@@ -245,12 +245,12 @@ namespace FlatItemBuff.Items
 				}
 				else
 				{
-					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump C - Hook failed");
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump CB - Hook failed");
 				}
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump B - Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ProcessJump CA - Hook failed");
 			}
 		}
 	}

@@ -91,7 +91,7 @@ namespace FlatItemBuff.Items
             }
 			if (attackerBody && attackerBody.master && attackerBody.inventory)
             {
-				int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.MoreMissile);
+				int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.MoreMissile);
 				if (itemCount > 0)
                 {
 					itemCount = Math.Max(0, itemCount - 1);

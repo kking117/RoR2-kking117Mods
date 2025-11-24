@@ -46,7 +46,7 @@ namespace FlatItemBuff.Items
 			Inventory inventory = damageReport.attackerBody.inventory;
 			if (inventory)
 			{
-				int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
+				int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Seed);
 				if (itemCount > 0)
 				{
 					float healing = BaseHeal + (damageReport.damageInfo.procCoefficient * ProcHeal);
@@ -61,9 +61,9 @@ namespace FlatItemBuff.Items
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
 			))
 			{
-				ilcursor.Index += 2;
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(3);
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
 			}
 			else
 			{

@@ -54,7 +54,7 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(72),
+				x => x.MatchLdloc(91),
 				x => x.MatchLdloc(37),
 				x => x.MatchConvR4()
 			))

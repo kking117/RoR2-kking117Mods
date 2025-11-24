@@ -90,7 +90,7 @@ namespace FlatItemBuff.Items
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
         {
-			int itemCount = inventory.GetItemCount(RoR2Content.Items.SprintArmor);
+			int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.SprintArmor);
 			if (itemCount > 0)
 			{
 				args.armorAdd += BaseArmor + (Math.Max(0, itemCount - 1) * StackArmor);

@@ -101,7 +101,7 @@ namespace FlatItemBuff.Items
 					float fullHealth = self.maxHealth + self.maxShield;
 					if (self.inventory)
 					{
-						int itemCount = self.inventory.GetItemCount(RoR2Content.Items.BarrierOnOverHeal);
+						int itemCount = self.inventory.GetItemCountEffective(RoR2Content.Items.BarrierOnOverHeal);
 						if (itemCount > 0)
 						{
 							itemCount = Math.Max(0, itemCount - 1);
@@ -169,7 +169,7 @@ namespace FlatItemBuff.Items
 				ilcursor.RemoveRange(5);
 				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
 				{
-					int itemCount = Math.Max(1, self.itemCounts.barrierOnOverHeal -1);
+					int itemCount = Math.Max(0, self.itemCounts.barrierOnOverHeal -1);
 					return BaseOverheal + (itemCount * StackOverheal);
 				});
 			}

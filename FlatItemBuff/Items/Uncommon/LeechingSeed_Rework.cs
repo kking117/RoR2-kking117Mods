@@ -100,7 +100,7 @@ namespace FlatItemBuff.Items
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
 			CharacterBody attackerBody = damageReport.attackerBody;
-			if (attackerBody)
+			if (damageReport.damageInfo != null && attackerBody)
 			{
 				ProcChainMask procChainMask = damageReport.damageInfo.procChainMask;
 				float procRate = damageReport.damageInfo.procCoefficient;
@@ -128,7 +128,7 @@ namespace FlatItemBuff.Items
 				Inventory inventory = attackerBody.inventory;
 				if (inventory)
 				{
-					int itemCount = inventory.GetItemCount(RoR2Content.Items.Seed);
+					int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Seed);
 					if (itemCount > 0)
 					{
 						if (LeechChance > 0f && procRate > 0f)
@@ -137,7 +137,7 @@ namespace FlatItemBuff.Items
 							{
 								if (Util.CheckRoll(procRate * LeechChance, damageReport.attackerMaster))
 								{
-									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, LeechDotIndex, GetLeechDuration(itemCount) * procRate, 1f, 1);
+									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, damageReport.damageInfo.inflictedHurtbox, LeechDotIndex, GetLeechDuration(itemCount) * procRate, 1f, 1);
 								}
 							}
 						}
@@ -183,9 +183,9 @@ namespace FlatItemBuff.Items
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Seed")
 			))
 			{
-				ilcursor.Index += 2;
+				ilcursor.Index -= 1;
+				ilcursor.RemoveRange(3);
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
 			}
 			else
 			{

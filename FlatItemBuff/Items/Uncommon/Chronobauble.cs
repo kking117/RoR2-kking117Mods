@@ -93,7 +93,7 @@ namespace FlatItemBuff.Items
 					Inventory inventory = damageReport.attackerBody.inventory;
 					if (inventory)
 					{
-						int itemCount = inventory.GetItemCount(RoR2Content.Items.SlowOnHit);
+						int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.SlowOnHit);
 						if (itemCount > 0)
 						{
 							if (damageReport.victim)

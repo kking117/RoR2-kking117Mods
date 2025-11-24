@@ -122,7 +122,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<Behaviors.UnstableTransmitter_Rework>(self.inventory.GetItemCount(DLC2Content.Items.TeleportOnLowHealth));
+			self.AddItemBehavior<Behaviors.UnstableTransmitter_Rework>(self.inventory.GetItemCountEffective(DLC2Content.Items.TeleportOnLowHealth));
 		}
 
 		private ItemDef GetItemDef(On.RoR2.TeleportOnLowHealthBehavior.orig_GetItemDef orig)

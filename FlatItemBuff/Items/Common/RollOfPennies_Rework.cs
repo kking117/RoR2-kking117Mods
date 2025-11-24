@@ -141,7 +141,7 @@ namespace FlatItemBuff.Items
 					Inventory inventory = victimMaster.inventory;
 					if (inventory)
 					{
-						int itemCount = inventory.GetItemCount(DLC1Content.Items.GoldOnHurt);
+						int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.GoldOnHurt);
 						if (itemCount > 0)
                         {
 							uint gold = (uint)GetGoldFromHit(itemCount, procRate);
@@ -164,7 +164,7 @@ namespace FlatItemBuff.Items
 			orig(master, amount);
 			if (amount > 0)
 			{
-				int itemCount = master.inventory.GetItemCount(DLC1Content.Items.GoldOnHurt);
+				int itemCount = master.inventory.GetItemCountEffective(DLC1Content.Items.GoldOnHurt);
 				if (itemCount > 0)
 				{
 					CharacterBody characterBody = master.GetBody();
@@ -187,7 +187,7 @@ namespace FlatItemBuff.Items
 				int itemCount = 0;
 				if (sender.inventory)
                 {
-					itemCount = Math.Max(0, sender.inventory.GetItemCount(DLC1Content.Items.GoldOnHurt) - 1);
+					itemCount = Math.Max(0, sender.inventory.GetItemCountEffective(DLC1Content.Items.GoldOnHurt) - 1);
                 }
 				args.armorAdd += buffCount * (BaseArmor + (StackArmor * itemCount));
 			}

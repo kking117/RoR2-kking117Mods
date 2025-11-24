@@ -108,7 +108,7 @@ namespace FlatItemBuff.Items
 		private void OnInventoryChanged(CharacterBody self)
 		{
 			self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
-			self.AddItemBehavior<Behaviors.NewlyHatchedZoea_Rework>(self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem));
+			self.AddItemBehavior<Behaviors.NewlyHatchedZoea_Rework>(self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem));
 		}
 		internal static float GetMissileDamage(int itemCount)
         {

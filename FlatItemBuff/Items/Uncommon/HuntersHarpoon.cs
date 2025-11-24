@@ -273,7 +273,7 @@ namespace FlatItemBuff.Items
 				return;
 			}
 
-			int itemCount = assistInventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
+			int itemCount = assistInventory.GetItemCountEffective(DLC1Content.Items.MoveSpeedOnKill);
 			if (itemCount > 0)
 			{
 				itemCount = Math.Max(0, itemCount - 1);
@@ -314,7 +314,7 @@ namespace FlatItemBuff.Items
 			CharacterBody attackerBody = damageReport.attackerBody;
 			if (attackerBody.inventory)
 			{
-				int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.MoveSpeedOnKill);
+				int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.MoveSpeedOnKill);
 				if (itemCount > 0)
 				{
 					itemCount = Math.Max(0, itemCount - 1);
@@ -356,7 +356,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "MoveSpeedOnKill"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index += 2;

@@ -121,7 +121,7 @@ namespace FlatItemBuff.Items
 				CharacterMaster characterMaster = readOnlyInstancesList[i];
 				if (characterMaster.teamIndex == teamIndex)
 				{
-					num += characterMaster.inventory.GetItemCount(RoR2Content.Items.TPHealingNova);
+					num += characterMaster.inventory.GetItemCountEffective(RoR2Content.Items.TPHealingNova);
 				}
 			}
 			return BaseHeal + (StackHeal * (num - 1));

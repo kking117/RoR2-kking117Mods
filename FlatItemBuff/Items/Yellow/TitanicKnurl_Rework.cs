@@ -89,14 +89,14 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<Behaviors.TitanicKnurl_Rework>(self.inventory.GetItemCount(RoR2Content.Items.Knurl));
+			self.AddItemBehavior<Behaviors.TitanicKnurl_Rework>(self.inventory.GetItemCountEffective(RoR2Content.Items.Knurl));
 		}
 		private void IL_RecalculateStats(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Knurl"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index -= 2;

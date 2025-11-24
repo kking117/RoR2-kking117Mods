@@ -175,7 +175,7 @@ namespace FlatItemBuff.Items
 				{
 					if (attackerBody != victimBody)
                     {
-						int itemCount = attackerBody.inventory.GetItemCount(DLC2Content.Items.KnockBackHitEnemies);
+						int itemCount = attackerBody.inventory.GetItemCountEffective(DLC2Content.Items.KnockBackHitEnemies);
 						if (itemCount > 0)
 						{
 							if (!OnSkill || damageReport.damageInfo.damageType.IsDamageSourceSkillBased)
@@ -419,7 +419,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC2Content.Items), "KnockBackHitEnemies"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index += 2;
@@ -461,7 +461,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC2Content.Items), "KnockBackHitEnemies"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index += 2;

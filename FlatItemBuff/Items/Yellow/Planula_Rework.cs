@@ -88,7 +88,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<Behaviors.Planula_Rework>(self.inventory.GetItemCount(RoR2Content.Items.ParentEgg));
+			self.AddItemBehavior<Behaviors.Planula_Rework>(self.inventory.GetItemCountEffective(RoR2Content.Items.ParentEgg));
 		}
 		private void IL_HealthTakeDamage(ILContext il)
 		{

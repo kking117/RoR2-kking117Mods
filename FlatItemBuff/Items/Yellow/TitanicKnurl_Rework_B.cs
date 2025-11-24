@@ -141,7 +141,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<Behaviors.TitanicKnurl_Rework_B>(self.inventory.GetItemCount(RoR2Content.Items.Knurl));
+			self.AddItemBehavior<Behaviors.TitanicKnurl_Rework_B>(self.inventory.GetItemCountEffective(RoR2Content.Items.Knurl));
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -159,7 +159,7 @@ namespace FlatItemBuff.Items
 						if (victimMaster && victimMaster.inventory && victimMaster.GetBody())
 						{
 							CharacterBody victimBody = victimMaster.GetBody();
-							int itemCount = victimMaster.inventory.GetItemCount(RoR2Content.Items.Knurl);
+							int itemCount = victimMaster.inventory.GetItemCountEffective(RoR2Content.Items.Knurl);
 							if (itemCount > 0)
 							{
 								int buffCount = Math.Max(0, victimBody.GetBuffCount(LaserChargeBuff.buffIndex));
@@ -192,7 +192,7 @@ namespace FlatItemBuff.Items
 						CharacterMaster attackerMaster = damageReport.attackerMaster;
 						if (attackerMaster && attackerMaster.inventory)
 						{
-							int itemCount = attackerMaster.inventory.GetItemCount(RoR2Content.Items.Knurl);
+							int itemCount = attackerMaster.inventory.GetItemCountEffective(RoR2Content.Items.Knurl);
 							if (itemCount > 0)
 							{
 								int buffCount = Math.Max(0, attackerBody.GetBuffCount(LaserChargeBuff.buffIndex));
@@ -244,7 +244,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Knurl"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index -= 2;

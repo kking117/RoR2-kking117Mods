@@ -53,7 +53,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.RoR2.EquipmentSlot.OnEquipmentExecuted += new ILContext.Manipulator(IL_OnEquipmentExecuted);
+			IL.RoR2.EquipmentSlot.OnEquipmentExecuted_byte_byte_EquipmentIndex += new ILContext.Manipulator(IL_OnEquipmentExecuted);
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 		}
 		private void IL_RecalculateStats(ILContext il)
@@ -69,7 +69,7 @@ namespace FlatItemBuff.Items
 				ilcursor.Emit(OpCodes.Ldarg_0);
 				ilcursor.EmitDelegate<Func<CharacterBody, float>>((body) =>
 				{
-					int itemCount = Math.Max(0, body.inventory.GetItemCount(RoR2Content.Items.EnergizedOnEquipmentUse) - 1);
+					int itemCount = Math.Max(0, body.inventory.GetItemCountEffective(RoR2Content.Items.EnergizedOnEquipmentUse) - 1);
 					return BaseAttack + (itemCount * StackAttack);
 				});
 			}
@@ -89,7 +89,7 @@ namespace FlatItemBuff.Items
 			{
 				ilcursor.Index += 1;
 				ilcursor.RemoveRange(8);
-				ilcursor.Emit(OpCodes.Ldloc_1);
+				ilcursor.Emit(OpCodes.Ldloc_0);
 				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 				{
 					return BaseDuration + (StackDuration * (itemCount - 1));

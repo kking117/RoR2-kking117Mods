@@ -18,6 +18,7 @@ namespace FlatItemBuff
 		public static ConfigFile Item_Legendary_Config;
 		public static ConfigFile Item_Yellow_Config;
 		public static ConfigFile Item_Void_Config;
+		public static ConfigFile Item_Food_Config;
 		public static string ConfigFolderPath { get => System.IO.Path.Combine(BepInEx.Paths.ConfigPath, MainPlugin.pluginInfo.Metadata.GUID); }
 
 		private const string Section_ElusiveAntlers_Rework = "Elusive Antlers Rework";
@@ -95,6 +96,9 @@ namespace FlatItemBuff
 
 		private const string Section_NewlyHatchedZoea_Rework = "Newly Hatched Zoea Rework";
 
+		private const string Section_SearedSteak_Buff = "Seared Steak";
+		private const string Section_SearedSteak_Rework = "Seared Steak Rework";
+
 		private const string Label_EnableBuff = "Enable Changes";
 		private const string Label_EnableRework = "Enable Rework";
 
@@ -116,6 +120,7 @@ namespace FlatItemBuff
 			Item_Legendary_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Legendary.cfg"), true);
 			Item_Yellow_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Yellow.cfg"), true);
 			Item_Void_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Void.cfg"), true);
+			Item_Food_Config = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"FlatItemBuff_Items_Food.cfg"), true);
 			//Common
 			Read_BisonSteak();
 			Read_ElusiveAntlers();
@@ -155,6 +160,8 @@ namespace FlatItemBuff
 			Read_LigmaLenses();
 			Read_VoidsentFlame();
 			Read_NewlyHatchedZoea();
+			//Food
+			Read_SearedSteak();
 			//General
 			Read_General();
 		}
@@ -299,7 +306,7 @@ namespace FlatItemBuff
 			LeechingSeed_Rework.Enable = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			LeechingSeed_Rework.BaseDoTHeal = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Base DoT Healing", 1f, "Healing amount given from damage over time ticks at a single stack.").Value;
 			LeechingSeed_Rework.StackDoTHeal = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Stack DoT Healing", 1f, "Healing amount given from damage over time for each additional stack.").Value;
-			LeechingSeed_Rework.ScaleToTickRate = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Scale To Tick Rate", true, "Healing amount scales with how often the damager over time ticks, slower tick rates give more healing.").Value;
+			LeechingSeed_Rework.ScaleToTickRate = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Scale To Tick Rate", true, "Healing amount scales with how often the damage over time ticks, slower tick rates give more healing.").Value;
 			LeechingSeed_Rework.LeechChance = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Leech Chance", 20f, "Chance of applying the Leech debuff.").Value;
 			LeechingSeed_Rework.LeechLifeSteal = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Leech Life Steal", 1f, "Percent of damage received as healing when damaging a target with Leech. (Gets scaled by the attacker's damage stat.)").Value;
 			LeechingSeed_Rework.LeechBaseDamage = Item_Uncommon_Config.Bind(Section_LeechingSeed_Rework, "Leech Base Damage", 2.5f, "Damage of the Leech at a single stack.").Value;
@@ -401,10 +408,10 @@ namespace FlatItemBuff
 		{
 			Aegis.Enable = Item_Legendary_Config.Bind(Section_Aegis_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			Aegis.AllowRegen = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Count Regen", true, "Allows excess regen to be converted into barrier.").Value;
-			Aegis.BaseOverheal = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Base Overheal", 1f, "Conversion rate of overheal to barrier at single stack.").Value;
-			Aegis.StackOverheal = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Stack Overheal", 0f, "Conversion rate of overheal to barrier for each additional stack.").Value;
-			Aegis.BaseMaxBarrier = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Base Max Barrier", 1f, "Increases maximum barrier by this much at single stack.").Value;
-			Aegis.StackMaxBarrier = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Stack Max Barrier", 1f, "Increases maximum barrier by this much for each additional stack.").Value;
+			Aegis.BaseOverheal = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Base Overheal", 1f, "Conversion rate of overheal to barrier at a single stack.").Value;
+			Aegis.StackOverheal = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Stack Overheal", 0.2f, "Conversion rate of overheal to barrier for each additional stack.").Value;
+			Aegis.BaseMaxBarrier = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Base Max Barrier", 0.5f, "Increases maximum barrier by this much at a single stack.").Value;
+			Aegis.StackMaxBarrier = Item_Legendary_Config.Bind(Section_Aegis_Buff, "Stack Max Barrier", 0.5f, "Increases maximum barrier by this much for each additional stack.").Value;
 		}
 		private static void Read_BensRaincoat()
         {
@@ -425,7 +432,7 @@ namespace FlatItemBuff
         {
 			HappiestMask_Rework.Enable = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			HappiestMask_Rework.BaseDamage = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Base Damage", 2f, "Damage increase for ghosts at a single stack.").Value;
-			HappiestMask_Rework.StackDamage = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Stack Damage", 2f, "Damage increase for ghosts for each additional stack.").Value;
+			HappiestMask_Rework.StackDamage = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Stack Damage", 3f, "Damage increase for ghosts for each additional stack.").Value;
 			HappiestMask_Rework.BaseMoveSpeed = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Movement Speed", 0.45f, "Movement speed increase for ghosts.").Value;
 			HappiestMask_Rework.BaseDuration = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Duration", 30, "How long in seconds the ghosts lasts before dying.").Value;
 			HappiestMask_Rework.BaseCooldown = Item_Legendary_Config.Bind(Section_HappiestMask_Rework, "Cooldown", 3, "How long in seconds until a new ghost is summoned.").Value;
@@ -579,6 +586,24 @@ namespace FlatItemBuff
 			NewlyHatchedZoea_Rework.CanCorrupt = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Allow Corruption", true, "Set to false to disable the item corruption effect.").Value;
 			NewlyHatchedZoea_Rework.CorruptList = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Corruption List", "", "List of items that this item will corrupt. (Leave blank for vanilla values.)").Value;
 			NewlyHatchedZoea_Rework.CorruptText = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Corruption Text", "<style=cIsTierBoss>yellow items</style>", "The item(s) for the \"Corrupts all X\" text.").Value;
+		}
+
+		private static void Read_SearedSteak()
+		{
+			SearedSteak.Enable = Item_Food_Config.Bind(Section_SearedSteak_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			SearedSteak.BaseHP = Item_Food_Config.Bind(Section_SearedSteak_Buff, "Base HP", 20f, "Health each stack gives.").Value;
+			SearedSteak.LevelHP = Item_Food_Config.Bind(Section_SearedSteak_Buff, "Level HP", 6f, "Health each stack gives per level.").Value;
+			SearedSteak.BasePercentHP = Item_Food_Config.Bind(Section_SearedSteak_Buff, "Percent HP", 0.05f, "Percent Health each stack gives.").Value;
+
+			SearedSteak_Rework.Enable = Item_Food_Config.Bind(Section_SearedSteak_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
+			SearedSteak_Rework.BasePercentHP = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Percent HP", 0.05f, "Percent Health each stack gives.").Value;
+			SearedSteak_Rework.BaseRegen = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Regen", 2f, "Health regen at a single stack. (Scales with level)").Value;
+			SearedSteak_Rework.StackRegen = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Stack Regen", 0f, "Health regen for each additional stack. (Scales with level)").Value;
+			SearedSteak_Rework.BaseDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Regen Duration", 3f, "Duration of the regen buff at a single stack.").Value;
+			SearedSteak_Rework.StackDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
+			SearedSteak_Rework.ExtendDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
+			SearedSteak_Rework.NerfFakeKill = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
+			SearedSteak_Rework.Comp_AssistManager = Item_Food_Config.Bind(Section_SearedSteak_Rework, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 	}
 }

@@ -19,25 +19,39 @@ namespace FlatItemBuff
 			if (TweakBarrierDecay)
 			{
 				MainPlugin.ModLogger.LogInfo("Attempting IL to tweak barrier decay.");
-				IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
+				IL.RoR2.HealthComponent.GetBarrierDecayRate += new ILContext.Manipulator(IL_GetBarrierDecayRate);
 			}
 		}
-		private void IL_RecalculateStats(ILContext il)
+		private void IL_GetBarrierDecayRate(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchCall(typeof(CharacterBody), "get_maxBarrier")
+				x => x.MatchCall(typeof(HealthComponent), "get_fullBarrier")
 			))
 			{
 				ilcursor.Remove();
-				ilcursor.EmitDelegate<Func<CharacterBody, float>>((self) =>
+				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
 				{
-					return self.maxHealth + self.maxShield;
+					return self.fullCombinedHealth;
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": General - Improve Barrier Decay - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": General - Improve Barrier Decay A - IL Hook failed");
+			}
+			if (ilcursor.TryGotoNext(
+				x => x.MatchCall(typeof(HealthComponent), "get_fullBarrier")
+			))
+			{
+				ilcursor.Remove();
+				ilcursor.EmitDelegate<Func<HealthComponent, float>>((self) =>
+				{
+					return self.fullCombinedHealth;
+				});
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": General - Improve Barrier Decay B - IL Hook failed");
 			}
 		}
 	}

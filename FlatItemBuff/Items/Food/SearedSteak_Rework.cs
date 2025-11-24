@@ -9,23 +9,24 @@ using UnityEngine.AddressableAssets;
 
 namespace FlatItemBuff.Items
 {
-	public class BisonSteak_Rework
+	public class SearedSteak_Rework
 	{
-		public static BuffDef FreshRegenBuff;
-		private const string LogName = "Bison Steak Rework";
+		public static BuffDef SearedRegenBuff;
+		private const string LogName = "Seared Steak Rework";
 		internal static bool Enable = false;
+		internal static float BasePercentHP = 0.05f;
 		internal static bool NerfFakeKill = false;
 		internal static float ExtendDuration = 1f;
-		internal static float BaseRegen = 1f;
+		internal static float BaseRegen = 2f;
 		internal static float StackRegen = 0f;
 		internal static float BaseDuration = 3f;
 		internal static float StackDuration = 3f;
 		internal static bool Comp_AssistManager = true;
-		public BisonSteak_Rework()
+		public SearedSteak_Rework()
 		{
 			if (!Enable)
             {
-				new BisonSteak();
+				new SearedSteak();
 				return;
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
@@ -53,12 +54,15 @@ namespace FlatItemBuff.Items
 			BaseDuration = Math.Max(0f, BaseDuration);
 			StackDuration = Math.Max(0f, StackDuration);
 			ExtendDuration = Math.Max(0f, ExtendDuration);
+			BasePercentHP = Math.Max(0f, BasePercentHP);
 		}
 		private void CreateBuffs()
 		{
 			//"RoR2/Junk/Common/bdMeatRegenBoost.asset"
 			BuffDef MeatRegen = Addressables.LoadAssetAsync<BuffDef>("1c9bc2e1186d394429928b51b132114f").WaitForCompletion();
-			FreshRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, MeatRegen.buffColor, true, false, false, false, false);
+			//"RoR2/Base/AttackSpeedOnCrit/bdAttackSpeedOnCrit.asset"
+			BuffDef AttackSpeedOncrit = Addressables.LoadAssetAsync<BuffDef>("aabb5fce0f91514429bfa91cb2f790da").WaitForCompletion();
+			SearedRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, AttackSpeedOncrit.buffColor, true, false, false, false, false);
 		}
 		private void UpdateItemDef()
 		{
@@ -77,7 +81,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
-			pickup += "Regenerate health after killing an enemy.";
+			pickup += "Regenerate health after killing an enemy. Cooked to perfection.";
 			if (StackRegen > 0f)
 			{
 				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{1} hp/s per stack)</style></style>", BaseRegen, StackRegen);
@@ -98,8 +102,16 @@ namespace FlatItemBuff.Items
             {
 				desc += string.Format(" Consecutive kills extend the duration by <style=cIsUtility>{0}s</style>.", ExtendDuration);
 			}
-			LanguageAPI.Add("ITEM_FLATHEALTH_PICKUP", pickup);
-			LanguageAPI.Add("ITEM_FLATHEALTH_DESC", desc);
+			if (BasePercentHP > 0f)
+			{
+				if (desc.Length > 0)
+                {
+					desc += " ";
+                }
+				desc += string.Format("Increases <style=cIsHealing>maximum health</style> by <style=cIsHealing>{0}% <style=cStack>(+{0}% per stack)</style></style>.", BasePercentHP * 100f);
+			}
+			LanguageAPI.Add("ITEM_COOKEDSTEAK_PICKUP", pickup);
+			LanguageAPI.Add("ITEM_COOKEDSTEAK_DESC", desc);
 		}
 		private void Hooks()
 		{
@@ -116,7 +128,7 @@ namespace FlatItemBuff.Items
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			int buffCount = sender.GetBuffCount(FreshRegenBuff);
+			int buffCount = sender.GetBuffCount(SearedRegenBuff);
 			if (buffCount > 0)
 			{
 				int itemCount = 0;
@@ -141,17 +153,17 @@ namespace FlatItemBuff.Items
                     {
 						if (damageReport.victimMaster && damageReport.victimBody)
                         {
-							Utils.Helpers.Add_ExtendBuffDuration(attackerBody, FreshRegenBuff, ExtendDuration);
+							Utils.Helpers.Add_ExtendBuffDuration(attackerBody, SearedRegenBuff, ExtendDuration);
 						}
 					}
 					else
                     {
-						Utils.Helpers.Add_ExtendBuffDuration(attackerBody, FreshRegenBuff, ExtendDuration);
+						Utils.Helpers.Add_ExtendBuffDuration(attackerBody, SearedRegenBuff, ExtendDuration);
 					}
 					float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
 					if (duration > 0f)
 					{
-						attackerBody.AddTimedBuff(FreshRegenBuff, duration);
+						attackerBody.AddTimedBuff(SearedRegenBuff, duration);
 					}
 				}
 			}
@@ -171,17 +183,17 @@ namespace FlatItemBuff.Items
 				{
 					if (assist.victimBody && assist.victimBody.master)
 					{
-						Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
+						Utils.Helpers.Add_ExtendBuffDuration(assistBody, SearedRegenBuff, ExtendDuration);
 					}
 				}
 				else
 				{
-					Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
+					Utils.Helpers.Add_ExtendBuffDuration(assistBody, SearedRegenBuff, ExtendDuration);
 				}
 				float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
 				if (duration > 0f)
 				{
-					assistBody.AddTimedBuff(FreshRegenBuff, duration);
+					assistBody.AddTimedBuff(SearedRegenBuff, duration);
 				}
 			}
 		}
@@ -189,17 +201,34 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(RoR2Content.Items), "FlatHealth"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
+				x => x.MatchLdloc(93),
+				x => x.MatchLdloc(57),
+				x => x.MatchConvR4()
 			))
 			{
-				ilcursor.Index += 2;
-				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
+				ilcursor.Index += 3;
+				ilcursor.Remove();
+				ilcursor.Emit(OpCodes.Ldarg_0);
+				ilcursor.EmitDelegate<Func<CharacterBody, float>>((body) =>
+				{
+					return BasePercentHP;
+				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats - Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats A - Hook failed");
+			}
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(91),
+				x => x.MatchLdloc(57),
+				x => x.MatchConvR4()
+			))
+			{
+				ilcursor.RemoveRange(9);
+			}
+			else
+			{
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats B - Hook failed");
 			}
 		}
 	}

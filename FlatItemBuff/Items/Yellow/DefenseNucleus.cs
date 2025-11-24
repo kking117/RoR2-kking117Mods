@@ -19,8 +19,8 @@ namespace FlatItemBuff.Items
         internal static int MaxSummons = 4;
         internal static float SummonCooldown = 1f;
         internal static float SummonFullCooldown = 6f;
-        internal static float BaseArmor = 50;
-        internal static float StackArmor = 35;
+        internal static float BaseArmor = 30;
+        internal static float StackArmor = 30;
         internal static int BaseHealth = 10;
         internal static int StackHealth = 0;
         internal static int BaseAttack = 3;
@@ -159,7 +159,6 @@ namespace FlatItemBuff.Items
         }
         private void Hooks()
         {
-            MainPlugin.ModLogger.LogInfo("Applying IL");
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
             if (MaxSummons > 0)
             {
@@ -195,7 +194,7 @@ namespace FlatItemBuff.Items
                 return;
             }
 
-            int itemCount = assistInventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
+            int itemCount = assistInventory.GetItemCountEffective(DLC1Content.Items.MinorConstructOnKill);
             if (itemCount > 0)
             {
                 CharacterMaster assistMaster = assistBody.master;
@@ -218,7 +217,7 @@ namespace FlatItemBuff.Items
             CharacterMaster attackerMaster = damageReport.attackerMaster;
             if (damageReport.victimBody && attackerMaster)
             {
-                if (attackerMaster.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) > 0)
+                if (attackerMaster.inventory.GetItemCountEffective(DLC1Content.Items.MinorConstructOnKill) > 0)
                 {
                     Construct_CooldownManager comp = attackerMaster.GetComponent<Construct_CooldownManager>();
                     if (!comp)
@@ -246,13 +245,13 @@ namespace FlatItemBuff.Items
         }
         internal void SetupConstructInventory(CharacterMaster self, CharacterMaster owner)
         {
-            int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
+            int stackbonus = owner.inventory.GetItemCountEffective(DLC1Content.Items.MinorConstructOnKill) - 1;
             int hpitem = BaseHealth + (StackHealth * stackbonus);
             int atkitem = BaseAttack + (StackAttack * stackbonus);
             int dmgitem = BaseDamage + (StackDamage * stackbonus);
-            self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
-            self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-            self.inventory.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostAttackSpeed, atkitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, hpitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostDamage, dmgitem);
         }
         private void DeployConstructFromCorpse(CharacterMaster owner, CharacterBody victim)
         {

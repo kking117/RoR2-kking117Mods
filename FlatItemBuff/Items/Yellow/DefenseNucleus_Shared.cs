@@ -39,7 +39,7 @@ namespace FlatItemBuff.Items
         {
             ILCursor ilcursor = new ILCursor(il);
             if (ilcursor.TryGotoNext(
-                x => x.MatchLdloc(17),
+                x => x.MatchLdloc(18),
                 x => x.MatchLdsfld(typeof(DLC1Content.Items), "MinorConstructOnKill")
             ))
             {

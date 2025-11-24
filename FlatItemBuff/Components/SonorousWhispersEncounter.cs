@@ -21,9 +21,10 @@ namespace FlatItemBuff.Components
 		private CharacterBody lastKiller;
 		private CharacterBody lastBody;
 		private Vector3 LastDeathPos = new Vector3(0f, 0f, 0f);
-		private PickupIndex rewardIndex = PickupCatalog.FindPickupIndex(RoR2Content.Items.Pearl.itemIndex);
+		private UniquePickup rewardIndex = new UniquePickup();
 		private void Awake()
         {
+			rewardIndex.pickupIndex = PickupCatalog.FindPickupIndex(RoR2Content.Items.Pearl.itemIndex);
 			spawnState = 0;
 			spawnTimer = UnityEngine.Random.Range(SpawnDelayMin, SpawnDelayMax);
 		}
@@ -173,16 +174,16 @@ namespace FlatItemBuff.Components
 						if (inventory)
                         {
 							CharacterBody characterBody = characterMaster.GetBody();
-							inventory.ResetItem(RoR2Content.Items.InvadingDoppelganger);
-							inventory.GiveItem(RoR2Content.Items.TeleportWhenOob);
-							inventory.GiveItem(RoR2Content.Items.UseAmbientLevel);
+							inventory.ResetItemPermanent(RoR2Content.Items.InvadingDoppelganger);
+							inventory.GiveItemPermanent(RoR2Content.Items.TeleportWhenOob);
+							inventory.GiveItemPermanent(RoR2Content.Items.UseAmbientLevel);
 							if (SonorousWhispers_Rework.HasAdaptive)
                             {
-								inventory.GiveItem(RoR2Content.Items.AdaptiveArmor);
+								inventory.GiveItemPermanent(RoR2Content.Items.AdaptiveArmor);
 							}
 							if (SonorousWhispers_Rework.IsElite)
 							{
-								inventory.SetEquipmentIndex(DLC2Content.Equipment.EliteAurelioniteEquipment.equipmentIndex);
+								inventory.SetEquipmentIndex(DLC2Content.Equipment.EliteAurelioniteEquipment.equipmentIndex, true);
 							}
 
 							float itemMult = Math.Max(0, itemCount - 1);
@@ -197,8 +198,8 @@ namespace FlatItemBuff.Components
 
 							HPItem *= Mathf.Pow(playerCount, 0.5f);
 
-							inventory.GiveItem(RoR2Content.Items.BoostHp, Mathf.RoundToInt((HPItem - 1f) * 10f));
-							inventory.GiveItem(RoR2Content.Items.BoostDamage, Mathf.RoundToInt((DmgItem - 1f) * 10f));
+							inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, Mathf.RoundToInt((HPItem - 1f) * 10f));
+							inventory.GiveItemPermanent(RoR2Content.Items.BoostDamage, Mathf.RoundToInt((DmgItem - 1f) * 10f));
 						}
 						combatSquad.AddMember(characterMaster);
 					}
@@ -231,12 +232,13 @@ namespace FlatItemBuff.Components
             {
 				LastDeathPos = lastBody.transform.position;
 				DeathRewards deathRewards = lastBody.GetComponent<DeathRewards>();
-				PickupIndex pickupIndex = PickupIndex.none;
+				UniquePickup pickupIndex = UniquePickup.none;
 				if (deathRewards && deathRewards.bossDropTable)
                 {
-					pickupIndex = deathRewards.bossDropTable.GenerateDrop(Run.instance.runRNG);
+					//pickupIndex = deathRewards.bossDropTable.GenerateDrop(Run.instance.runRNG);
+					pickupIndex = deathRewards.bossDropTable.GeneratePickup(Run.instance.runRNG);
 				}
-				if (pickupIndex != PickupIndex.none)
+				if (pickupIndex != UniquePickup.none)
                 {
 					rewardIndex = pickupIndex;
 				}
@@ -253,7 +255,7 @@ namespace FlatItemBuff.Components
 				int i = 0;
 				while (i < rewardCount)
 				{
-					PickupDropletController.CreatePickupDroplet(rewardIndex, LastDeathPos, vector);
+					PickupDropletController.CreatePickupDroplet(rewardIndex, LastDeathPos, vector, false);
 					i++;
 					vector = quaternion * vector;
 				}

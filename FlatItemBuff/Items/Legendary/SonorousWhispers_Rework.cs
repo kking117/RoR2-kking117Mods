@@ -166,6 +166,23 @@ namespace FlatItemBuff.Items
 			//"RoR2/DLC2/helminthroost/helminthroost.asset"
 			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("56cef57fbbd34d247bbd21a2c315db7d").WaitForCompletion());
 			SceneSpawn.Add(new Vector3(-708.69f, 15.35f, 282.79f));
+
+			//DLC3
+			//"RoR2/DLC3/nest/nest.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("211fd01a390c9904c9f822bd949311bc").WaitForCompletion());
+			SceneSpawn.Add(new Vector3(-105.72f, 65.88f, 13.5f));
+			//"RoR2/DLC3/ironalluvium/ironalluvium.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("c44438fa966c1b44aab740d5eacdc612").WaitForCompletion());
+			SceneSpawn.Add(new Vector3(-3.55f, 74.42f, 57.4f));
+			//"RoR2/DLC3/ironalluvium2/ironalluvium2.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("53756fbbd15268a489fb9f781fa3b200").WaitForCompletion());
+			SceneSpawn.Add(new Vector3(-3.55f, 74.42f, 57.4f));
+			//"RoR2/DLC3/conduitcanyon/conduitcanyon.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("1f3622d7a6e49184cb1a3f5bc06ee223").WaitForCompletion());
+			SceneSpawn.Add(new Vector3(95.64f, 117.05f, 127.71f));
+			//"RoR2/DLC3/repurposedcrater/repurposedcrater.asset"
+			SceneList.Add(Addressables.LoadAssetAsync<SceneDef>("c3b8b99631744564daf8944d1335901e").WaitForCompletion());
+			SceneSpawn.Add(new Vector3(-154.12f, 6.45f, 77.15f));
 		}
 		private void UpdateItemDef()
 		{
@@ -272,7 +289,7 @@ namespace FlatItemBuff.Items
 		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			int itemCount = self.inventory.GetItemCount(DLC2Content.Items.ItemDropChanceOnKill);
+			int itemCount = self.inventory.GetItemCountEffective(DLC2Content.Items.ItemDropChanceOnKill);
 			if (itemCount > 0)
 			{
 				StartEchoSummon(Stage.instance);

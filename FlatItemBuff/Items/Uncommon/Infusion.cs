@@ -106,7 +106,7 @@ namespace FlatItemBuff.Items
 				CharacterMaster owner = self.minionOwnership.ownerMaster;
 				if (owner && owner != self)
 				{
-					if (owner.inventory.GetItemCount(RoR2Content.Items.Infusion) > 0)
+					if (owner.inventory.GetItemCountEffective(RoR2Content.Items.Infusion) > 0)
 					{
 						self.inventory.infusionBonus = owner.inventory.infusionBonus;
 					}
@@ -121,7 +121,7 @@ namespace FlatItemBuff.Items
 				return;
 			}
 
-			int itemCount = assistInventory.GetItemCount(RoR2Content.Items.Infusion);
+			int itemCount = assistInventory.GetItemCountEffective(RoR2Content.Items.Infusion);
 			if (itemCount > 0)
 			{
 				CharacterBody victimBody = assist.victimBody;
@@ -135,7 +135,7 @@ namespace FlatItemBuff.Items
 			Inventory inventory = attackerBody.inventory;
 			if (inventory)
 			{
-				int itemCount = inventory.GetItemCount(RoR2Content.Items.Infusion);
+				int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Infusion);
 				if (itemCount > 0)
 				{
 					CharacterBody victimBody = damageReport.victimBody;
@@ -151,7 +151,7 @@ namespace FlatItemBuff.Items
 			Inventory inventory = body.inventory;
 			if (inventory)
 			{
-				int itemCount = inventory.GetItemCount(RoR2Content.Items.Infusion);
+				int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Infusion);
 				if (itemCount > 0)
 				{
 					float levelCost = 100f / StackLevel;

@@ -88,7 +88,7 @@ namespace FlatItemBuff.Items
 						Inventory inventory = damageReport.attackerBody.inventory;
 						if (inventory)
 						{
-							int itemCount = inventory.GetItemCount(RoR2Content.Items.DeathMark);
+							int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.DeathMark);
 							if (itemCount > 0)
 							{
 								float duration = GetDeathMarkDuration(itemCount) * procRate;
@@ -115,7 +115,7 @@ namespace FlatItemBuff.Items
 			)
 			&&
 			ilcursor.TryGotoNext(
-				x => x.MatchLdloc(7),
+				x => x.MatchLdloc(9),
 				x => x.MatchLdcR4(1.5f),
 				x => x.MatchMul()
 			))

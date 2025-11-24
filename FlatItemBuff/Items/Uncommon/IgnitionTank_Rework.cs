@@ -167,7 +167,7 @@ namespace FlatItemBuff.Items
 				Inventory inventory = damageReport.attackerBody.inventory;
 				if (inventory)
 				{
-					int itemCount = inventory.GetItemCount(DLC1Content.Items.StrengthenBurn);
+					int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.StrengthenBurn);
 					if (itemCount > 0)
 					{
 						
@@ -208,7 +208,7 @@ namespace FlatItemBuff.Items
 				Inventory inventory = damageReport.attackerBody.inventory;
 				if (inventory)
 				{
-					int itemCount = inventory.GetItemCount(DLC1Content.Items.StrengthenBurn);
+					int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.StrengthenBurn);
 					if (itemCount > 0)
 					{
 						if (BurnChance > 0f && Util.CheckRoll(procRate * BurnChance, damageReport.attackerMaster))

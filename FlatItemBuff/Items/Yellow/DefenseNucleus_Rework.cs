@@ -158,7 +158,7 @@ namespace FlatItemBuff.Items
                 CharacterMaster master = body.master;
                 if (master)
                 {
-                    int itemCount = master.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill);
+                    int itemCount = master.inventory.GetItemCountEffective(DLC1Content.Items.MinorConstructOnKill);
                     if (itemCount > 0)
                     {
                         if (SummonCount > 0)
@@ -197,13 +197,13 @@ namespace FlatItemBuff.Items
         }
         internal void SetupConstructInventory(CharacterMaster self, CharacterMaster owner)
         {
-            int stackbonus = owner.inventory.GetItemCount(DLC1Content.Items.MinorConstructOnKill) - 1;
+            int stackbonus = owner.inventory.GetItemCountEffective(DLC1Content.Items.MinorConstructOnKill) - 1;
             int hpitem = BaseHealth + (StackHealth * stackbonus);
             int atkitem = BaseAttack + (StackAttack * stackbonus);
             int dmgitem = BaseDamage + (StackDamage * stackbonus);
-            self.inventory.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-            self.inventory.GiveItem(RoR2Content.Items.BoostAttackSpeed, atkitem);
-            self.inventory.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, hpitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostAttackSpeed, atkitem);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostDamage, dmgitem);
         }
         private void DeployConstructs(CharacterMaster owner, int summonCount)
         {

@@ -38,7 +38,7 @@ namespace FlatItemBuff.Items
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
         {
-			int itemCount = inventory.GetItemCount(DLC1Content.Items.CritDamage);
+			int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.CritDamage);
 			if (itemCount > 0)
 			{
 				args.critAdd += BaseCrit;

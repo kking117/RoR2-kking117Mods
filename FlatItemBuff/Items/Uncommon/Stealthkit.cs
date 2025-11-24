@@ -135,7 +135,7 @@ namespace FlatItemBuff.Items
 
 							if (CleanseDoT)
 							{
-								Util.CleanseBody(self.body, false, false, false, true, true, false);
+								CleanseSystem.CleanseBodyServer(self.body, false, false, false, true, false, false);
 							}
 							if (CancelDanger)
 							{

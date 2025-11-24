@@ -73,7 +73,7 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if(ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Knurl"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCount")
+				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
 			{
 				ilcursor.Index -= 2;
@@ -86,7 +86,7 @@ namespace FlatItemBuff.Items
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
-			int itemCount = inventory.GetItemCount(RoR2Content.Items.Knurl);
+			int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Knurl);
 			if (itemCount > 0)
 			{
 				float levelBonus = sender.level - 1f;

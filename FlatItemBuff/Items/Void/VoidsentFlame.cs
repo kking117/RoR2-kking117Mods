@@ -102,8 +102,8 @@ namespace FlatItemBuff.Items
 				x => x.MatchLdloc(1),
 				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
-				x => x.MatchCallvirt(typeof(Inventory), "GetItemCount"),
-				x => x.MatchStloc(32)
+				x => x.MatchCallvirt(typeof(Inventory), "GetItemCountEffective"),
+				x => x.MatchStloc(37)
 			))
 			{
 				//Add new condition
@@ -121,7 +121,7 @@ namespace FlatItemBuff.Items
 					CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
 					if (tracker.RegisterAttacker(attackerBody.master))
 					{
-						int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.ExplodeOnDeathVoid);
+						int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.ExplodeOnDeathVoid);
 						if (itemCount > 0f)
 						{
 							TeamIndex teamIndex = attackerBody.teamComponent.teamIndex;

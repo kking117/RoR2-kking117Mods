@@ -98,7 +98,7 @@ namespace FlatItemBuff.Items
 				if (attackerMaster)
 				{
 					Inventory inventory = attackerMaster.inventory;
-					int itemCount = inventory.GetItemCount(DLC1Content.Items.CritGlassesVoid);
+					int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.CritGlassesVoid);
 					if (itemCount > 0)
 					{
 						float effectChance = BaseChance + (StackChance * (itemCount - 1));
