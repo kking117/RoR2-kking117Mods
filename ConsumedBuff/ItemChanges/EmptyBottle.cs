@@ -64,7 +64,7 @@ namespace ConsumedBuff.ItemChanges
             if (sender && sender.inventory)
             {
                 float levelBonus = Math.Max(0f, sender.level - 1f);
-                int itemCount = sender.inventory.GetItemCount(DLC1Content.Items.HealingPotionConsumed);
+                int itemCount = sender.inventory.GetItemCountEffective(DLC1Content.Items.HealingPotionConsumed);
                 if(itemCount > 0)
                 {
                     levelBonus = MainPlugin.Elixir_Regen * 0.2f * levelBonus;

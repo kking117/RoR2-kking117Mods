@@ -42,7 +42,7 @@ namespace ConsumedBuff.ItemChanges
                                 Inventory inventory = self.body.inventory;
                                 if (inventory)
                                 {
-                                    int itemCount = inventory.GetItemCount(RoR2Content.Items.ExtraLifeConsumed);
+                                    int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.ExtraLifeConsumed);
                                     if (itemCount > 0 && Util.CheckRoll(Util.ConvertAmplificationPercentageIntoReductionPercentage(MainPlugin.Dio_BlockChance * itemCount), 0f, null))
                                     {
                                         EffectData effectData = new EffectData

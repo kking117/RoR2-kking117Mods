@@ -17,7 +17,7 @@ namespace ConsumedBuff
     {
         public const string MODUID = "com.kking117.ConsumedBuff";
         public const string MODNAME = "ConsumedBuff";
-        public const string MODVERSION = "1.3.0";
+        public const string MODVERSION = "1.4.0";
         public const string MODTOKEN = "KKING117_CONSUMEDBUFF_";
 
         private const string Section_Elixir = "Empty Bottle";
@@ -47,6 +47,7 @@ namespace ConsumedBuff
         public static int Watch_ProcsToDouble = 12;
         public static float Watch_SlowBase = 1f;
         public static float Watch_SlowStack = 0.25f;
+        public static bool Watch_VFX = true;
         private void Awake()
         {
             ReadConfig();
@@ -81,6 +82,7 @@ namespace ConsumedBuff
             Watch_Damage = Config.Bind(Section_Watch, "Damage On Proc", 0.2f, "Damage bonus on procs.").Value;
             Watch_SlowBase = Config.Bind(Section_Watch, "Base Slow On Proc", 1f, "Base duration of the slow effect that this applies on proc.").Value;
             Watch_SlowStack = Config.Bind(Section_Watch, "Stack Slow On Proc", 0.25f, "Stack duration of the slow effect.").Value;
+            Watch_VFX = Config.Bind(Section_Watch, "Play Proc VFX", true, "Play a VFX on the target when proccing the item?").Value;
 
             VoidDio_Enable = Config.Bind(Section_VoidDio, "Enable Changes", false, "Allows this mod to make changes to the Pluripotent Larva (Consumed) item.").Value;
             VoidDio_BlockCooldown = Config.Bind(Section_VoidDio, "Block Cooldown", 0.9f, "How much to multiply the block cooldown per stack. (Higher than 1 disables this)").Value;

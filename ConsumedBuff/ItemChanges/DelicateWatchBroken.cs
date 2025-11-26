@@ -30,7 +30,9 @@ namespace ConsumedBuff.ItemChanges
         }
         private static void CreateBuff()
         {
-            Sprite buffIcon = Addressables.LoadAssetAsync<BuffDef>("RoR2/Base/LaserTurbine/bdLaserTurbineKillCharge.asset").WaitForCompletion().iconSprite;
+            
+            //"RoR2/Base/LaserTurbine/bdLaserTurbineKillCharge.asset"
+            Sprite buffIcon = Addressables.LoadAssetAsync<BuffDef>("291df3bb6aed0cd44af68779095c1398").WaitForCompletion().iconSprite;
             TrackerBuff = Modules.Buffs.AddNewBuff("BrokenWatchCounter", buffIcon, buffColor, true, false, true);
             if (canDouble)
             {
@@ -39,7 +41,7 @@ namespace ConsumedBuff.ItemChanges
         }
         private static string GetNthString(int number)
         {
-            String result = "th";
+            String result = string.Format("{0}th hit", MainPlugin.Watch_HitsToProc);
             if(number < 0)
             {
                 number *= -1;
@@ -51,13 +53,13 @@ namespace ConsumedBuff.ItemChanges
                 switch(number)
                 {
                     case 1:
-                        result = "st";
+                        result = "hit";
                         break;
                     case 2:
-                        result = "nd";
+                        result = string.Format("{0}nd hit", MainPlugin.Watch_HitsToProc);
                         break;
                     case 3:
-                        result = "rd";
+                        result = string.Format("{0}rd hit", MainPlugin.Watch_HitsToProc);
                         break;
                 }
             }
@@ -70,8 +72,8 @@ namespace ConsumedBuff.ItemChanges
 
             bool addAnd = false;
 
-            pickup = string.Format("Every {0}{1} hit", MainPlugin.Watch_HitsToProc, GetNthString(MainPlugin.Watch_HitsToProc));
-            desc = string.Format("Every <style=cIsDamage>{0}{1} hit</style>", MainPlugin.Watch_HitsToProc, GetNthString(MainPlugin.Watch_HitsToProc));
+            pickup = string.Format("Every {0}", GetNthString(MainPlugin.Watch_HitsToProc));
+            desc = string.Format("Every <style=cIsDamage>{0}</style>", GetNthString(MainPlugin.Watch_HitsToProc));
             if (MainPlugin.Watch_Damage > 0f)
             {
                 pickup += string.Format(" deals bonus damage");
@@ -110,7 +112,7 @@ namespace ConsumedBuff.ItemChanges
                         {
                             if (attackerBody.inventory)
                             {
-                                int itemCount = attackerBody.inventory.GetItemCount(DLC1Content.Items.FragileDamageBonusConsumed);
+                                int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.FragileDamageBonusConsumed);
                                 if (itemCount > 0)
                                 {
                                     AddWatchCounter(attackerBody);
@@ -119,14 +121,16 @@ namespace ConsumedBuff.ItemChanges
                                     {
                                         damageInfo.damage *= 1f + (itemCount * MainPlugin.Watch_Damage * powerMult);
                                         //The funny effect
-                                        EffectData watchEffect = new EffectData
+                                        if (MainPlugin.Watch_VFX)
                                         {
-                                            origin = self.body.transform.position
-                                        };
-                                        watchEffect.SetNetworkedObjectReference(self.body.gameObject);
-                                        EffectManager.SpawnEffect(HealthComponent.AssetReferences.fragileDamageBonusBreakEffectPrefab, watchEffect, true);
+                                            EffectData watchEffect = new EffectData
+                                            {
+                                                origin = self.body.transform.position
+                                            };
+                                            watchEffect.SetNetworkedObjectReference(self.body.gameObject);
+                                            EffectManager.SpawnEffect(HealthComponent.AssetReferences.fragileDamageBonusBreakEffectPrefab, watchEffect, true);
+                                        }
                                         //The buff
-
                                         float buffdur = MainPlugin.Watch_SlowBase + (Math.Max(0, itemCount - 1) * MainPlugin.Watch_SlowStack) * powerMult;
                                         if (buffdur > 0f)
                                         {

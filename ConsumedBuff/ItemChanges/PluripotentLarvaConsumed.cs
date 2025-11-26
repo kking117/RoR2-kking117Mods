@@ -10,7 +10,6 @@ namespace ConsumedBuff.ItemChanges
 {
     public class PluripotentLarvaConsumed
     {
-        private static float StackDamage;
         public static void Enable()
         {
             UpdateText();
@@ -89,7 +88,7 @@ namespace ConsumedBuff.ItemChanges
         {
             if (sender && sender.inventory)
             {
-                int itemCount = sender.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+                int itemCount = sender.inventory.GetItemCountEffective(DLC1Content.Items.ExtraLifeVoidConsumed);
                 if (MainPlugin.VoidDio_Corrupt)
                 {
                     ManageCorruption(sender, itemCount);
@@ -142,7 +141,7 @@ namespace ConsumedBuff.ItemChanges
                 {
                     if (buffDef == DLC1Content.Buffs.BearVoidCooldown)
                     {
-                        int itemCount = self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+                        int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.ExtraLifeVoidConsumed);
                         if (itemCount > 0)
                         {
                             duration *= Mathf.Pow(MainPlugin.VoidDio_BlockCooldown, itemCount);
@@ -182,7 +181,7 @@ namespace ConsumedBuff.ItemChanges
                     {
                         Inventory inventory = attackerMaster.inventory;
 
-                        int itemCount = inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+                        int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.ExtraLifeVoidConsumed);
                         if (itemCount > 0 && Util.CheckRoll(dr.damageInfo.procCoefficient * itemCount * MainPlugin.VoidDio_CollapseChance, attackerMaster))
                         {
                             DotController.DotDef dotDef = DotController.GetDotDef(DotController.DotIndex.Fracture);
@@ -200,7 +199,7 @@ namespace ConsumedBuff.ItemChanges
 
                             if (damage > 0.0f)
                             {
-                                DotController.InflictDot(victimBody.gameObject, attackerBody.gameObject, DotController.DotIndex.Fracture, dotDef.interval, damage, MaxStacks);
+                                DotController.InflictDot(victimBody.gameObject, attackerBody.gameObject, dr.damageInfo.inflictedHurtbox, DotController.DotIndex.Fracture, dotDef.interval, damage, MaxStacks);
                             }
                         }
                     }
@@ -210,7 +209,7 @@ namespace ConsumedBuff.ItemChanges
         private static void OnInventoryChanged(On.RoR2.CharacterMaster.orig_OnInventoryChanged orig, CharacterMaster self)
         {
             orig(self);
-            int itemCount = self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoidConsumed);
+            int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.ExtraLifeVoidConsumed);
             if (itemCount > 0)
             {
                 CorruptAllItems(self.inventory);

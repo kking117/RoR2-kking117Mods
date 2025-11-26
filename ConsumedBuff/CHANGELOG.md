@@ -1,3 +1,12 @@
+**1.4.0**
+
+```
+- Updated DLLs, Dependencies and some code to stay up to date with Alloyed Collective.
+
+Delicate Watch (Broken):
+- Added "Play Proc VFX" configuration, controls if the proc VFX is used. (Default: true)
+```
+
 **1.3.0**
 
 ```
