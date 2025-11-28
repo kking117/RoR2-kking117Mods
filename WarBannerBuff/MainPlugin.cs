@@ -18,7 +18,7 @@ namespace WarBannerBuff
 		public const string MODUID = "com.kking117.WarBannerBuff";
 		public const string MODNAME = "WarBannerBuff";
 		public const string MODTOKEN = "KKING117_WARBANNERBUFF_";
-		public const string MODVERSION = "5.3.1";
+		public const string MODVERSION = "5.4.0";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -49,6 +49,8 @@ namespace WarBannerBuff
 		public static float FocusBanner;
 		public static float MeridianBanner;
 		public static float HalcyonBanner;
+		public static float PrisonBanner;
+		public static float SolusHeartBanner;
 
 		public static bool Merge_Enable;
 		public static float Merge_MinOverlap;
@@ -114,6 +116,8 @@ namespace WarBannerBuff
 			BossBanner = Config.Bind("Placement Events", "Mithrix Phase Banners", 1.0f, "Players equipped with Warbanners will place one down at the start of Mithrix's phases. (Except the item steal phase.) (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			PillarBanner = Config.Bind("Placement Events", "Moon Pillar Banners", 0.75f, "Players equipped with Warbanners will place one down at the start of a Moon Pillar event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			DeepVoidBanner = Config.Bind("Placement Events", "Deep Void Signal Banners", 0.75f, "Players equipped with Warbanners will place one down at the start of a Deep Void Signal event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
+			PrisonBanner = Config.Bind("Placement Events", "Solus Wing Banners", 1.0f, "Players equipped with Warbanners will place one down at the start of Solus Wing phases. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
+			SolusHeartBanner = Config.Bind("Placement Events", "Solus Heart Banners", 1.0f, "Players equipped with Warbanners will place one down at the start of Solus Heart phases. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			VoidBanner = Config.Bind("Placement Events", "Void Cell Banners", 0.5f, "Players equipped with Warbanners will place one down at the start of a Void Cell event. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 			FocusBanner = Config.Bind("Placement Events", "Focus Banners", 1f, "Players equipped with Warbanners will place one down when activating the Focus in Simulacrum. (X = Banner radius multiplier for banners placed from this.) (0.0 or less disables this.)").Value;
 

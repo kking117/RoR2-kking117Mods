@@ -1,3 +1,11 @@
+**5.4.0**
+
+```
+- Updated referenced DLLs and Dependencies for Alloyed Collective.
+- Added "Solus Wing Banners" configuration, allows for Warbanners to be placed upon entering certain Phases of the fight. (Specifically Opening the Door, Laser Beam and Heating Phases.)
+- Added "Solus Heart Banners" configuration, allows for Warbanners to be placed upon entering certain Phases of the fight. (Specifically the Start, and two Big Mode™ Phases.)
+```
+
 **5.3.1**
 
 ````

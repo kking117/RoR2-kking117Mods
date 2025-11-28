@@ -89,6 +89,18 @@ namespace WarBannerBuff.ItemChanges
 				On.EntityStates.MeridianEvent.Phase2.OnEnter += Meridian_Phase2;
 				On.EntityStates.MeridianEvent.Phase3.OnEnter += Meridian_Phase3;
 			}
+			if (MainPlugin.PrisonBanner > 0f)
+            {
+				On.EntityStates.SolusWing2.Mission2Fight.OnEnter += SolusWing_StartPhase;
+				On.EntityStates.SolusWing2.Mission3Darkness.OnEnter += SolusWing_BeamPhase;
+				On.EntityStates.SolusWing2.Mission4Desperation.OnEnter += SolusWing_DesperationPhase;
+			}
+			if (MainPlugin.SolusHeartBanner > 0f)
+			{
+				On.EntityStates.SolusHeart.Phase0.Mission0.OnEnter += SolusHeart_Phase0;
+				On.EntityStates.SolusHeart.Phase1.Mission1.OnEnter += SolusHeart_Phase1;
+				On.EntityStates.SolusHeart.Phase2.Mission2.OnEnter += SolusHeart_Phase2;
+			}
 			if (MainPlugin.Merge_Enable)
 			{
 				On.RoR2.BuffWard.Start += BuffWard_Start;
@@ -242,6 +254,54 @@ namespace WarBannerBuff.ItemChanges
 			orig(self);
 			SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.HalcyonBanner);
 		}
+		private static void SolusHeart_Phase0(On.EntityStates.SolusHeart.Phase0.Mission0.orig_OnEnter orig, EntityStates.SolusHeart.Phase0.Mission0 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.SolusHeartBanner);
+			}
+		}
+		private static void SolusHeart_Phase1(On.EntityStates.SolusHeart.Phase1.Mission1.orig_OnEnter orig, EntityStates.SolusHeart.Phase1.Mission1 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.SolusHeartBanner);
+			}
+		}
+		private static void SolusHeart_Phase2(On.EntityStates.SolusHeart.Phase2.Mission2.orig_OnEnter orig, EntityStates.SolusHeart.Phase2.Mission2 self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.SolusHeartBanner);
+			}
+		}
+		private static void SolusWing_StartPhase(On.EntityStates.SolusWing2.Mission2Fight.orig_OnEnter orig, EntityStates.SolusWing2.Mission2Fight self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.PrisonBanner);
+			}
+		}
+		private static void SolusWing_BeamPhase(On.EntityStates.SolusWing2.Mission3Darkness.orig_OnEnter orig, EntityStates.SolusWing2.Mission3Darkness self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.PrisonBanner);
+			}
+		}
+		private static void SolusWing_DesperationPhase(On.EntityStates.SolusWing2.Mission4Desperation.orig_OnEnter orig, EntityStates.SolusWing2.Mission4Desperation self)
+		{
+			orig(self);
+			if (NetworkServer.active)
+			{
+				SpawnTeamWarBanners(TeamIndex.Player, MainPlugin.PrisonBanner);
+			}
+		}
 		private static void Meridian_Phase1(On.EntityStates.MeridianEvent.Phase1.orig_OnEnter orig, EntityStates.MeridianEvent.Phase1 self)
 		{
 			orig(self);
@@ -323,7 +383,7 @@ namespace WarBannerBuff.ItemChanges
 							{
 								if (body.inventory)
 								{
-									int itemCount = body.inventory.GetItemCount(RoR2Content.Items.WardOnLevel);
+									int itemCount = body.inventory.GetItemCountEffective(RoR2Content.Items.WardOnLevel);
 									if (itemCount > 0)
 									{
 										GameObject gameObject = UnityEngine.Object.Instantiate(BannerWard, teamlist[i].transform.position, Quaternion.identity);
