@@ -1,3 +1,9 @@
+**1.6.0**
+
+```
+- Updated referenced DLLs and Dependencies for Alloyed Collective.
+```
+
 **1.5.5**
 
 ```

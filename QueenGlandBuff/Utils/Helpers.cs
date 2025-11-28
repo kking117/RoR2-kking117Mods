@@ -25,11 +25,11 @@ namespace QueenGlandBuff.Utils
 				int result = rng.Next(Changes.QueensGland.StageEliteEquipmentDefs.Count);
 				if (Changes.QueensGland.StageEliteEquipmentDefs[result])
 				{
-					self.inventory.SetEquipmentIndex(Changes.QueensGland.StageEliteEquipmentDefs[result].equipmentIndex);
+					self.inventory.SetEquipmentIndex(Changes.QueensGland.StageEliteEquipmentDefs[result].equipmentIndex, true);
 					return;
 				}
 			}
-			self.inventory.SetEquipmentIndex(Changes.QueensGland.DefaultAffixIndex);
+			self.inventory.SetEquipmentIndex(Changes.QueensGland.DefaultAffixIndex, true);
 		}
 	}
 }

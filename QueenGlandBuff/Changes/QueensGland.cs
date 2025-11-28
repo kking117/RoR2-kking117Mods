@@ -183,7 +183,7 @@ namespace QueenGlandBuff.Changes
             {
 				baseMult = 2;
             }
-			return Math.Min(MaxSummons, self.inventory.GetItemCount(RoR2Content.Items.BeetleGland)) * baseMult;
+			return Math.Min(MaxSummons, self.inventory.GetItemCountEffective(RoR2Content.Items.BeetleGland)) * baseMult;
 		}
 		private static void CharacterBody_OnInventoryChanged(CharacterBody self)
 		{
@@ -200,7 +200,7 @@ namespace QueenGlandBuff.Changes
 				if (owner.deployablesList != null)
 				{
 					int deployableCount = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
-					int itemCount = owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland);
+					int itemCount = owner.inventory.GetItemCountEffective(RoR2Content.Items.BeetleGland);
 					int stackBonus = Math.Max(0, itemCount - MaxSummons);
 					int dmgitem = BaseDamage + (StackDamage * stackBonus);
 					int hpitem = BaseHealth + (StackHealth * stackBonus);
@@ -225,12 +225,12 @@ namespace QueenGlandBuff.Changes
 										Inventory inv = deployableMaster.inventory;
 										if (inv)
 										{
-											inv.ResetItem(RoR2Content.Items.BoostDamage);
-											inv.ResetItem(RoR2Content.Items.BoostHp);
-											inv.ResetItem(RoR2Content.Items.MinionLeash);
-											inv.GiveItem(RoR2Content.Items.BoostDamage, dmgitem);
-											inv.GiveItem(RoR2Content.Items.BoostHp, hpitem);
-											inv.GiveItem(RoR2Content.Items.MinionLeash);
+											inv.ResetItemPermanent(RoR2Content.Items.BoostDamage);
+											inv.ResetItemPermanent(RoR2Content.Items.BoostHp);
+											inv.ResetItemPermanent(RoR2Content.Items.MinionLeash);
+											inv.GiveItemPermanent(RoR2Content.Items.BoostDamage, dmgitem);
+											inv.GiveItemPermanent(RoR2Content.Items.BoostHp, hpitem);
+											inv.GiveItemPermanent(RoR2Content.Items.MinionLeash);
 											//RiskyMod already supports this mod so we don't need this.
 											/*if (MainPlugin.RiskyMod_Loaded)
                                             {
@@ -271,7 +271,7 @@ namespace QueenGlandBuff.Changes
 						self.guardResummonCooldown -= Time.fixedDeltaTime;
 						if (self.guardResummonCooldown <= 0f)
 						{
-							int extraglands = Math.Max(0, owner.inventory.GetItemCount(RoR2Content.Items.BeetleGland) - MaxSummons);
+							int extraglands = Math.Max(0, owner.inventory.GetItemCountEffective(RoR2Content.Items.BeetleGland) - MaxSummons);
 							int deployableCount = owner.GetDeployableCount(DeployableSlot.BeetleGuardAlly);
 							int maxdeployable = owner.GetDeployableSameSlotLimit(DeployableSlot.BeetleGuardAlly);
 							self.guardResummonCooldown = 1f;
