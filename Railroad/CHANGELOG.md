@@ -1,3 +1,29 @@
+**1.1.0**
+
+No Solus Web and Solutional Haunt configs yet because I'm lazy.
+
+```
+- Updated DLLs for Alloyed Collective.
+- Added five portals from Alloyed Collective to the available portal choices.
+- Renamed configuration files so they're easier to find in Gale's config editor.
+
+- Looping
+- Removed "Min Stage Clears" configuration from "!LoopDefinition".
+^ The game checks for loops slightly differently now so this shouldn't be needed anymore.
+- Removed "Enable Honor" configuration in favour of the new "Loop Artifacts" configuration.
+
+- Stages
+- Added measures to prevent the extra portal being hard to reach in the Planetarium.
+- Planetarium's item reward now uses Void Potentials containing a choice of Legendary items.
+- Added "Time Flow" configurations for Void Fields and Planetarium, may refine these settings and extend them to similar stages in the future.
+```
+
+**1.0.4**
+
+```
+- Fixed Commencement item rewards clumping together.
+```
+
 **1.0.3**
 
 ```

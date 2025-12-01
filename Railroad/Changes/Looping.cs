@@ -2,9 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using RoR2;
+using RoR2.ExpansionManagement;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace Railroad.Changes
 {
@@ -12,19 +15,19 @@ namespace Railroad.Changes
     {
         internal static bool Enable = false;
 
-        public static int Loop_MinStageCount = 5;
+        //public static int Loop_MinStageCount = 5;
         public static bool Loop_DejaVu = false;
-
-        internal static bool Loop_EnableHonor = false;
 
         internal static bool Loop_LoopTeleporter = false;
         internal static int Loop_OrderTeleporter = 0;
 
         public static bool AreLooping = false;
 
-        private static ArtifactDef HonorDef = Addressables.LoadAssetAsync<ArtifactDef>("RoR2/Base/EliteOnly/EliteOnly.asset").WaitForCompletion();
         private static InteractableSpawnCard BaseTeleporter = Addressables.LoadAssetAsync<InteractableSpawnCard>("RoR2/Base/Teleporters/iscTeleporter.asset").WaitForCompletion();
         private static InteractableSpawnCard LunarTeleporter = Addressables.LoadAssetAsync<InteractableSpawnCard>("RoR2/Base/Teleporters/iscLunarTeleporter.asset").WaitForCompletion();
+
+        internal static string Loop_ArtifactRaw = "";
+        internal static List<ArtifactDef> Loop_Artifacts = null;
         public Looping()
         {
             if (!Enable)
@@ -39,6 +42,35 @@ namespace Railroad.Changes
             if (Loop_LoopTeleporter || Loop_OrderTeleporter > 0)
             {
                 SceneDirector.onPrePopulateSceneServer += OnPrePopulateScene;
+            }
+            if (Loop_ArtifactRaw.Length > 0)
+            {
+                On.RoR2.ArtifactCatalog.Init += ArtifactCatalog_Init;
+            }
+        }
+        internal static void ArtifactCatalog_Init(On.RoR2.ArtifactCatalog.orig_Init orig)
+        {
+            orig();
+            Loop_Artifacts = new List<ArtifactDef>();
+            string[] items = Loop_ArtifactRaw.Split(',');
+            for (int i = 0; i < items.Length; i++)
+            {
+                ArtifactDef artifactDef = ArtifactCatalog.FindArtifactDef(items[i].Trim());
+                if (artifactDef && artifactDef.artifactIndex > ArtifactIndex.None)
+                {
+                    if (!Loop_Artifacts.Contains(artifactDef))
+                    {
+                        Loop_Artifacts.Add(artifactDef);
+                    }
+                }
+                else
+                {
+                    MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + items[i] + "]");
+                }
+            }
+            if (Loop_Artifacts.Count < 1)
+            {
+                Loop_Artifacts = null;
             }
         }
         private void OnPrePopulateScene(SceneDirector self)
@@ -71,11 +103,11 @@ namespace Railroad.Changes
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
         {
             orig(self);
-            if (Run.instance.stageClearCount < 1)
+            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
+            if (self.loopClearCount < 1)
             {
                 AreLooping = false;
             }
-            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
             if (scene)
             {
                 if (StageCountsForLoop(scene))
@@ -84,9 +116,19 @@ namespace Railroad.Changes
                     //MainPlugin.ModLogger.LogDebug("Current stage counts as looping.");
                 }
             }
-            if (Loop_EnableHonor && AreLooping)
+            if (AreLooping)
             {
-                RunArtifactManager.instance.SetArtifactEnabledServer(HonorDef, true);
+                if (Loop_Artifacts != null)
+                {
+                    for(int i = 0; i < Loop_Artifacts.Count; i++)
+                    {
+                        ExpansionDef reqDLC = Loop_Artifacts[i].requiredExpansion;
+                        if (reqDLC == null || Run.instance.IsExpansionEnabled(reqDLC))
+                        {
+                            RunArtifactManager.instance.SetArtifactEnabledServer(Loop_Artifacts[i], true);
+                        }
+                    }
+                }
             }
         }
 
@@ -120,11 +162,11 @@ namespace Railroad.Changes
                 }
                 if (scene.stageOrder == 1)
                 {
-                    return Run.instance.stageClearCount >= Loop_MinStageCount;
+                    return Run.instance.loopClearCount > 0;
                 }
                 return false;
             }
-            return Run.instance.stageClearCount >= Loop_MinStageCount;
+            return Run.instance.loopClearCount > 0;
         }
     }
 }

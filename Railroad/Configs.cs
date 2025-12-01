@@ -24,7 +24,12 @@ namespace Railroad
 		VoidOutro = 5,
 		Goldshores = 6,
 		Colossus = 7,
-		Destination = 8
+		Destination = 8,
+		HardwareProg = 9,
+		HardwareProg_Haunt = 10,
+		SolusShop = 11,
+		SolusBackout = 12,
+		SolusWeb = 13
 	}
 	public enum ConfigGoldPortal : int
 	{
@@ -64,8 +69,8 @@ namespace Railroad
 
 		public static void Setup()
         {
-			LoopConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Looping.cfg"), true);
-			StageConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Stages.cfg"), true);
+			LoopConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Railroad_Looping.cfg"), true);
+			StageConfig = new ConfigFile(System.IO.Path.Combine(ConfigFolderPath, $"Railroad_Stages.cfg"), true);
 			Read_StageConfig();
 			Read_LoopConfig();
 		}
@@ -73,10 +78,10 @@ namespace Railroad
         {
 			Changes.Looping.Enable = LoopConfig.Bind(Section_Enable, Label_Enable, false, "Allows all changes within this config to happen. Note that everything here affects this mod and has no actual effect on what the game considers as a loop.").Value;
 
-			Changes.Looping.Loop_MinStageCount = LoopConfig.Bind(Section_Loop_Definition, "Min Stage Clears", 5, "The minimun number of stage clears to even consider that we've looped.").Value;
+			//Changes.Looping.Loop_MinStageCount = LoopConfig.Bind(Section_Loop_Definition, "Min Stage Clears", 5, "The minimun number of stage clears to even consider that we've looped.").Value;
 			Changes.Looping.Loop_DejaVu = LoopConfig.Bind(Section_Loop_Definition, "Deja Vu Requirement", false, "Counts as looping once you've cleared the minimum amount of stages and are on a stage 1. (The same requirements for the Deja Vu achievement.)").Value;
 
-			Changes.Looping.Loop_EnableHonor = LoopConfig.Bind(Section_Loop_Effects, "Enable Honor", false, "Enables the Artifact of Honor upon looping.").Value;
+			Changes.Looping.Loop_ArtifactRaw = LoopConfig.Bind(Section_Loop_Effects, "Loop Artifacts", "EliteOnly, WeakAssKnees", "Enables the specified Artifact by their internal name upon looping.").Value;
 
 			Changes.Looping.Loop_LoopTeleporter = LoopConfig.Bind(Section_Loop_Teleporter, "Loop Primordial Teleporter", false, "Replaces the regular Teleporter with the Primordial Teleporter while considered looping.").Value;
 			Changes.Looping.Loop_OrderTeleporter = LoopConfig.Bind(Section_Loop_Teleporter, "Primordial Stage Order", 0, "Prevents the Primordial Teleporter from spawning if the Stage's order number is less than this. ('Loop Primordial Teleporter' has priority over this) (Set to 0 for vanilla behavior)").Value;
@@ -92,12 +97,14 @@ namespace Railroad
 			Changes.Stages.Meridian_Eclipse = StageConfig.Bind(Section_Stage_Meridian, Label_Eclipse, false, Desc_Eclipse).Value;
 			Changes.Stages.Meridian_Portal = StageConfig.Bind(Section_Stage_Meridian, Label_WinPortal, ConfigPortalType.Destination, "Portal to spawn upon defeating False Son.").Value;
 			Changes.Stages.Meridian_Reward = StageConfig.Bind(Section_Stage_Meridian, Label_WinReward, true, "Drop Aurelionite Blessings upon defeating False Son.").Value;
-			Changes.Stages.Meridian_AllowRebirth = StageConfig.Bind(Section_Stage_Meridian, "Allow Rebirth", true, "Allows the Rebirth Shrine to spawn even during Eclipse.").Value;
+			Changes.Stages.Meridian_AllowRebirth = StageConfig.Bind(Section_Stage_Meridian, "Allow Rebirth", true, "Allows the Rebirth Shrine to spawn.").Value;
+			Changes.Stages.Meridian_ACPortal = StageConfig.Bind(Section_Stage_Meridian, "Virtual Portal", true, "Allows the extra Virtual Portal to spawn.").Value;
 
 			Changes.Stages.VoidRaid_Eclipse = StageConfig.Bind(Section_Stage_VoidRaid, Label_Eclipse, false, Desc_Eclipse).Value;
 			Changes.Stages.VoidRaid_Portal = StageConfig.Bind(Section_Stage_VoidRaid, Label_WinPortal, ConfigPortalType.NoPortal, "Portal to spawn upon defeating Voidling.").Value;
-			Changes.Stages.VoidRaid_Reward = StageConfig.Bind(Section_Stage_VoidRaid, Label_WinReward, false, "Drop Legendary items upon defeating Voidling.").Value;
+			Changes.Stages.VoidRaid_Reward = StageConfig.Bind(Section_Stage_VoidRaid, Label_WinReward, false, "Drop Void Potentials that contain Legendary items upon defeating Voidling.").Value;
 			Changes.Stages.VoidRaid_VoidOutroPortal = StageConfig.Bind(Section_Stage_VoidRaid, "Void Outro Portal", true, "Allows the Void Outro Portal to spawn upon defeating Voidling.").Value;
+			Changes.Stages.VoidRaid_TimeFlows = StageConfig.Bind(Section_Stage_VoidRaid, "Time Flow", true, "Allows time to flow normally in the Planetarium.").Value;
 
 			Changes.Stages.GoldShores_MeridianPortal = StageConfig.Bind(Section_Stage_Goldshores, "Colossus Portal", ConfigGoldPortal.Vanilla, "Controls how the Colossus Portal spawns on Gilded Coast. (Meridian = Always spawns and takes you to Prime Meridian)").Value;
 
@@ -107,7 +114,8 @@ namespace Railroad
 			Changes.Stages.Limbo_Portal = StageConfig.Bind(Section_Stage_Limbo, Label_WinPortal, ConfigPortalType.NoPortal, "Portal to spawn upon defeating the Twisted Scavenger.").Value;
 			Changes.Stages.Limbo_Reward = StageConfig.Bind(Section_Stage_Limbo, Label_WinReward, false, "Drop Legendary items upon defeating the Twisted Scavenger.").Value;
 
-			Changes.Stages.Arena_VoidPortal = StageConfig.Bind(Section_Stage_Arena, "Void Portal", true, "Allows the void portal to spawn upon completing the Void Fields.").Value;
+			Changes.Stages.Arena_VoidPortal = StageConfig.Bind(Section_Stage_Arena, "Void Portal", true, "Allows the Void Portal to spawn upon completing the Void Fields.").Value;
+			Changes.Stages.Arena_TimeFlows = StageConfig.Bind(Section_Stage_Arena, "Time Flow", true, "Allows time to flow normally in the Void Fields.").Value;
 		}
 	}
 }
