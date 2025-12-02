@@ -36,7 +36,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			UpdateItemDef();
 			CreateBuffs();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
 			{
@@ -80,7 +80,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string level = string.Format("<style=cIsUtility>{0} <style=cStack>(+{0} per stack)</style></style>", StackLevel);
 
 			string pickup = "Killing enemies give samples. Collected samples increases your level.";

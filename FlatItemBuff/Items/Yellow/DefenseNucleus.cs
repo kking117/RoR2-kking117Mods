@@ -36,7 +36,7 @@ namespace FlatItemBuff.Items
             }
             MainPlugin.ModLogger.LogInfo(LogName);
             ClampConfig();
-            UpdateText();
+            SharedHooks.Handle_PostLoad_Actions += UpdateText;
             UpdateItemDef();
             Hooks();
             if (MainPlugin.AssistManager_Loaded)
@@ -76,7 +76,6 @@ namespace FlatItemBuff.Items
         }
         private void UpdateText()
         {
-            MainPlugin.ModLogger.LogInfo("Updating Text");
             string pickupText = "";
             string summonDesc = "";
             string statDesc = "";

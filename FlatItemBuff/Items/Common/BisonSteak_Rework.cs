@@ -32,7 +32,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			CreateBuffs();
 			UpdateItemDef();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
 			{
@@ -74,7 +74,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
 			pickup += "Regenerate health after killing an enemy.";

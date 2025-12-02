@@ -35,7 +35,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			if (MaxTurrets > 0)
             {
 				CreateDeployableSlot();
@@ -68,7 +68,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
         {
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "";
 			if (ApplyTar)
 			{

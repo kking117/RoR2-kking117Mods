@@ -45,7 +45,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			if (BaseRadius > 0f)
             {
 				UpdateItemDef();
@@ -71,7 +71,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating item text");
 			string pickup = "";
 			string desc = "";
 			if (BaseForce > 0f)

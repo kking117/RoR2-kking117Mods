@@ -34,7 +34,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			CreateBuffs();
 			Hooks();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 		}
 		private void ClampConfig()
 		{
@@ -46,7 +46,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Become stealthed at low health.";
 			string desc = string.Format("Falling below <style=cIsHealth>25% health</style> causes you to become <style=cIsUtility>stealthed</style> for <style=cIsUtility>{0}s</style>", BuffDuration);
 			string desc_stealth = " While <style=cIsUtility>stealthed</style> gain <style=cIsUtility>invisibility</style>";

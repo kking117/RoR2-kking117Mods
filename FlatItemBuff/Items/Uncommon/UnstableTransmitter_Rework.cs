@@ -44,7 +44,7 @@ namespace FlatItemBuff.Items
 			UpdateItemDef();
 			CreateDeployableSlot();
 			Hooks();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 		}
 		private void ClampConfig()
 		{
@@ -61,7 +61,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Allies periodically teleport to you";
 			string desc = "Gain a <style=cIsDamage>Strike Drone</style>.\n";
 			if (AllyStackCooldown > 0f)

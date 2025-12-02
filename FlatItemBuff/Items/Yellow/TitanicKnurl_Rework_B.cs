@@ -37,7 +37,7 @@ namespace FlatItemBuff.Items
 			}
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			CreateProjectiles();
 			CreateBuff();
 			Hooks();
@@ -59,7 +59,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string chargeDesc = "";
 			string laserDesc;

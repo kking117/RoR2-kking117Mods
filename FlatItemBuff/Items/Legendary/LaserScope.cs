@@ -17,7 +17,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -26,7 +26,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "";
 			desc += String.Format("Gain <style=cIsDamage>{0}% critical chance</style>.", BaseCrit);
 			desc += " <style=cIsDamage>Critical strikes</style> deal an additional <style=cIsDamage>100% damage</style><style=cStack> (+100% per stack)</style>.";

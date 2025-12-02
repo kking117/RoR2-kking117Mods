@@ -31,7 +31,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			UpdateVFX();
 			UpdateItemDef();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -61,7 +61,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string radius = "";
 			string damage = "";
 

@@ -31,7 +31,7 @@ namespace FlatItemBuff.Items
 			}
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			CreateProjectiles();
 			Hooks();
 		}
@@ -46,7 +46,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("Every few seconds a Stone Titan attacks a nearby enemy.");
 			string stackCool = "";
 			if (StackCooldown != 0f)

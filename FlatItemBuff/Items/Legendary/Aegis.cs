@@ -23,7 +23,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -35,7 +35,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup_overheal = "";
 			string pickup_maxbarrier = "";
 			string desc_overheal = "";

@@ -25,7 +25,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -37,7 +37,6 @@ namespace FlatItemBuff.Items
         }
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = String.Format("Prevents <style=cIsUtility>{0} <style=cStack>(+{1} per stack)</style></style> <style=cIsDamage>debuffs</style> and instead grants a <style=cIsHealing>temporary barrier</style> for <style=cIsHealing>10%</style> of <style=cIsHealing>maximum health</style>. Recharges every <style=cIsUtility>{2}</style> seconds.", BaseBlock, StackBlock, Cooldown);
 			LanguageAPI.Add("ITEM_IMMUNETODEBUFF_DESC", desc);
 		}

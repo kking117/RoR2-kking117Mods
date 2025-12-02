@@ -29,6 +29,10 @@ namespace FlatItemBuff
 
 		public delegate void Handle_GlobalInventoryChangedEvent(CharacterBody self);
 		public static Handle_GlobalInventoryChangedEvent Handle_GlobalInventoryChangedEvent_Actions;
+
+		public delegate void Handle_PostLoad();
+		public static Handle_PostLoad Handle_PostLoad_Actions;
+		
 		public static void Setup()
         {
 			if (Handle_GetStatCoefficients_Actions != null)
@@ -59,8 +63,17 @@ namespace FlatItemBuff
 			{
 				On.RoR2.CharacterMaster.OnBodyDeath += CharacterMaster_OnBodyDeath;
 			}
+			if (Handle_PostLoad_Actions != null)
+			{
+				GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad_GameModeCatalog));
+			}
 		}
-		
+
+		internal static void PostLoad_GameModeCatalog()
+		{
+			Handle_PostLoad_Actions.Invoke();
+		}
+
 		internal static void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
 		{
 			if (sender.inventory)

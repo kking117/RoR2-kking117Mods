@@ -26,7 +26,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			CreateProjectiles();
 			Hooks();
 		}
@@ -47,7 +47,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			//string pickup = "";
 			string description = "Missile items, equipment and skills fire an additional <style=cIsDamage>2</style> missiles and deal <style=cIsDamage>0%</style> <style=cStack>(+50% per stack)</style> more damage.";
 			if (BaseChance > 0f && BaseDamage > 0f)

@@ -30,7 +30,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateItemDef();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -54,7 +54,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Detonate an enemy on your first hit against them. <style=cIsVoid>Corrupts all Will-o'-the-wisps</style>.";
 			string stackA = "";
 			if (StackRadius != 0)

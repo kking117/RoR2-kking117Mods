@@ -23,7 +23,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			UpdateItemDef();
 			Hooks();
 		}
@@ -34,7 +34,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Slightly increase";
 			string desc = "Increases";
 			if (StackArmor > 0f)

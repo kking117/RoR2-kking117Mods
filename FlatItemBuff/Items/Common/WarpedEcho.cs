@@ -29,7 +29,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			UpdateBuff();
 			Hooks();
 		}
@@ -46,7 +46,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("Delays half of incoming damage. Increases armor until all delayed damage passes.");
 			string description = string.Format("<style=cIsDamage>50%</style> of incoming damage is delayed for <style=cIsDamage>3</style> seconds. Increases <style=cIsHealing>armor</style> by <style=cIsHealing>{0} <style=cStack>(+{1} per stack)</style></style> until all delayed damage has passed.", BaseArmor, StackArmor);
 			LanguageAPI.Add("ITEM_DELAYEDDAMAGE_PICKUP", pickup);
@@ -181,7 +180,11 @@ namespace FlatItemBuff.Items
 				ilcursor.RemoveRange(3);
 				ilcursor.EmitDelegate<Func<HealthComponent, bool>>((self) =>
 				{
-					return self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0;
+					if (self.body.inventory)
+                    {
+						return self.body.inventory.GetItemCountEffective(DLC2Content.Items.DelayedDamage) > 0;
+					}
+					return false;
 				});
 			}
 			else
@@ -219,7 +222,7 @@ namespace FlatItemBuff.Items
 
 				ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, bool, float, float>>((self, damageInfo, ignoreBlock, returnValue) =>
 				{
-					MainPlugin.ModLogger.LogInfo("old damage = " + returnValue);
+					//MainPlugin.ModLogger.LogInfo("old damage = " + returnValue);
 					if (!InCountArmor || (damageInfo.damageType & DamageType.BypassArmor) == DamageType.Generic)
 					{
 						if (!InCountBlock || !ignoreBlock)
@@ -266,7 +269,7 @@ namespace FlatItemBuff.Items
 							}
 						}
 					}
-					MainPlugin.ModLogger.LogInfo("new damage = " + returnValue);
+					//MainPlugin.ModLogger.LogInfo("new damage = " + returnValue);
 					return returnValue;
 				});
 			}

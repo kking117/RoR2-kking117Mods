@@ -20,7 +20,7 @@ namespace FlatItemBuff.Items
 			}
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -30,7 +30,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = string.Format("Dealing damage <style=cIsHealing>heals</style> you for <style=cIsHealing>{0} <style=cStack>(+{0} per stack)</style> health</style>.", ProcHeal + BaseHeal);
 			LanguageAPI.Add("ITEM_SEED_DESC", desc);
 		}

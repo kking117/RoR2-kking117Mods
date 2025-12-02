@@ -10,10 +10,10 @@ namespace FlatItemBuff.Items
 	{
 		private const string LogName = "Topaz Brooch";
 		internal static bool Enable = false;
-		internal static float BaseFlatBarrier = 8.0f;
+		internal static float BaseFlatBarrier = 12.0f;
 		internal static float StackFlatBarrier = 0.0f;
-		internal static float BaseCentBarrier = 0.02f;
-		internal static float StackCentBarrier = 0.02f;
+		internal static float BaseCentBarrier = 0.01f;
+		internal static float StackCentBarrier = 0.01f;
 		internal static bool Comp_AssistManager = true;
 		public TopazBrooch()
 		{
@@ -23,7 +23,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
 			{
@@ -47,7 +47,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "Gain a <style=cIsHealing>temporary barrier</style> on kill for ";
 			if (BaseFlatBarrier > 0f || StackFlatBarrier > 0f)
 			{

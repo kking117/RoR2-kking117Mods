@@ -35,8 +35,8 @@ namespace FlatItemBuff.Items
             }
             MainPlugin.ModLogger.LogInfo(LogName);
             ClampConfig();
-            
-            UpdateText();
+
+            SharedHooks.Handle_PostLoad_Actions += UpdateText;
             UpdateItemDef();
             Hooks();
             DefenseNucleus_Shared.EnableChanges();
@@ -66,7 +66,6 @@ namespace FlatItemBuff.Items
         }
         private void UpdateText()
         {
-            MainPlugin.ModLogger.LogInfo("Updating Text");
             string deployDesc = string.Format("Activating your equipment");
             string shieldDesc = "";
             string summonDesc = "";

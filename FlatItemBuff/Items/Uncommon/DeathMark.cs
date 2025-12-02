@@ -25,7 +25,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -37,9 +37,7 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = string.Format("Mark enemies for death on hit");
-
 			string desc = string.Format("Enemies are <style=cIsDamage>marked for death</style> on hit for <style=cIsUtility>{0}s</style>", BaseDuration);
 			if (StackDuration > 0)
             {

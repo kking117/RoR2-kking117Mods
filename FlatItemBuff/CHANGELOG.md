@@ -1,3 +1,39 @@
+**1.26.3**
+
+```
+- Descriptions are now updated later in loading and no longer have logging info.
+^ Should allow description changes to have priority over others, especially mods that correct vanilla item descriptions.
+
+- Topaz Brooch Buff:
+- Changed "Base Flat Barrier" default configuration. (8 -> 12)
+- Changed "Base Percent Barrier" default configuration. (0.02 -> 0.01)
+- Changed "Stack Percent Barrier" default configuration. (0.02 -> 0.01)
+
+- Growth Nectar Buff:
+- Fixed stacks past the first having no effect.
+
+- Lost Seer's Lenses Buff:
+- No longer causes void deaths to targets that are immune to void deaths, to prevent a potential softlock.
+^ Still functions against said targets but now their bodies won't be instantly deleted.
+```
+
+**1.26.2**
+
+```
+- Warped Echo Buff:
+- Fixed Pots and other non-master bodies from refusing to take damage and red texting your logs.
+```
+
+**1.26.1**
+
+```
+- Defense Nucleus Buff:
+- Actually uses the new default configurations
+
+- Seared Steak Rework:
+- Fixed the regen buff being applied incorrectly.
+```
+
 **1.26.0**
 
 Update to get it working with Alloyed Collective.

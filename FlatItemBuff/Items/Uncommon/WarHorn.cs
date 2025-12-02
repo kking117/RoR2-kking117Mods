@@ -22,7 +22,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 
@@ -35,7 +35,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string desc = "Activating your Equipment gives you ";
 			desc += string.Format("<style=cIsDamage>+{0}% ", BaseAttack * 100f);
 			if (StackAttack > 0f)

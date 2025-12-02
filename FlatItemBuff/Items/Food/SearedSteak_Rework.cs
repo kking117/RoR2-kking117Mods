@@ -33,7 +33,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			CreateBuffs();
 			UpdateItemDef();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
 			{
@@ -62,7 +62,7 @@ namespace FlatItemBuff.Items
 			BuffDef MeatRegen = Addressables.LoadAssetAsync<BuffDef>("1c9bc2e1186d394429928b51b132114f").WaitForCompletion();
 			//"RoR2/Base/AttackSpeedOnCrit/bdAttackSpeedOnCrit.asset"
 			BuffDef AttackSpeedOncrit = Addressables.LoadAssetAsync<BuffDef>("aabb5fce0f91514429bfa91cb2f790da").WaitForCompletion();
-			SearedRegenBuff = Utils.ContentManager.AddBuff("MeatRegen", MeatRegen.iconSprite, AttackSpeedOncrit.buffColor, true, false, false, false, false);
+			SearedRegenBuff = Utils.ContentManager.AddBuff("SearedRegen", MeatRegen.iconSprite, AttackSpeedOncrit.buffColor, true, false, false, false, false);
 		}
 		private void UpdateItemDef()
 		{
@@ -78,7 +78,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "";
 			string desc = "";
 			pickup += "Regenerate health after killing an enemy. Cooked to perfection.";
@@ -134,7 +133,7 @@ namespace FlatItemBuff.Items
 				int itemCount = 0;
 				if (sender.inventory)
                 {
-					itemCount = Math.Max(0, sender.inventory.GetItemCountEffective(RoR2Content.Items.FlatHealth) - 1);
+					itemCount = Math.Max(0, sender.inventory.GetItemCountEffective(DLC3Content.Items.CookedSteak) - 1);
 				}
 				float itemRegen = BaseRegen + (itemCount * StackRegen);
 				float levelRegen = 1f + (sender.level - 1f) * 0.2f;
@@ -146,7 +145,7 @@ namespace FlatItemBuff.Items
 			CharacterBody attackerBody = damageReport.attackerBody;
 			if (attackerBody.inventory)
 			{
-				int itemCount = attackerBody.inventory.GetItemCountEffective(RoR2Content.Items.FlatHealth);
+				int itemCount = attackerBody.inventory.GetItemCountEffective(DLC3Content.Items.CookedSteak);
 				if (itemCount > 0)
 				{
 					if (NerfFakeKill)
@@ -176,7 +175,7 @@ namespace FlatItemBuff.Items
 				return;
 			}
 
-			int itemCount = assistInventory.GetItemCountEffective(RoR2Content.Items.FlatHealth);
+			int itemCount = assistInventory.GetItemCountEffective(DLC3Content.Items.CookedSteak);
 			if (itemCount > 0)
 			{
 				if (NerfFakeKill)

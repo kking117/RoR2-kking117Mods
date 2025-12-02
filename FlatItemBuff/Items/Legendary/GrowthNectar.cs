@@ -27,7 +27,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			CreateBuff();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -48,7 +48,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Become marked for greatness, increasing ALL of your stats for each unique buff.";
 			string description = "Become <style=cIsUtility>marked for greatness</style>,";
 			if (BaseBoost > 0f)
@@ -111,7 +110,7 @@ namespace FlatItemBuff.Items
 				ilcursor.Index += 1;
 				ilcursor.RemoveRange(5);
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 54);
+				ilcursor.Emit(OpCodes.Ldloc, 67);
 				ilcursor.EmitDelegate<Func<float, CharacterBody, int, float>>((oldvalue, self, itemCount) =>
 				{
 					itemCount = Math.Max(0, itemCount - 1);

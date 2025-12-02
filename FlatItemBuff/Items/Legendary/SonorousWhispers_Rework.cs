@@ -19,7 +19,7 @@ namespace FlatItemBuff.Items
 		internal static GameObject CombatEncounterObject = Addressables.LoadAssetAsync<GameObject>("21c30a52b0ea4074580b6528804b0efb").WaitForCompletion();
 		internal static SpawnCard BaseSpawnCard = Addressables.LoadAssetAsync<SpawnCard>("5d95c9377c88031459b0e9d3c41c69c8").WaitForCompletion();
 		internal static SpawnCard BossCardTemplate = Addressables.LoadAssetAsync<SpawnCard>("01d9753594cff56448b8326d4254c7e0").WaitForCompletion();
-		private const string LogName = "Sonorous Whispers";
+		private const string LogName = "Sonorous Whispers Rework";
 		internal static bool Enable = false;
 		internal static bool HasAdaptive = false;
 		internal static bool IsElite = true;
@@ -49,7 +49,7 @@ namespace FlatItemBuff.Items
 			ClampConfig();
 			UpdateItemDef();
 			CreateSpawnList();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -200,7 +200,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string pickup = "Summons a powerful monster each stage";
 			string description = "";
 			if (StackPower > 0f)

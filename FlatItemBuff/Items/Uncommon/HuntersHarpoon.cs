@@ -40,7 +40,7 @@ namespace FlatItemBuff.Items
             }
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			CreateBuff();
 			Hooks();
 			if (MainPlugin.AssistManager_Loaded)
@@ -62,10 +62,6 @@ namespace FlatItemBuff.Items
 			StackDuration = Math.Max(0f, StackDuration);
 			MovementSpeed = Math.Max(0f, MovementSpeed);
 			BaseCooldownReduction = Math.Max(0f, BaseCooldownReduction);
-			if (!CoolPrimary && !CoolSecondary && !CoolUtility && !CoolSpecial)
-			{
-				
-			}
 			int total = 0;
 			if (CoolPrimary)
             {
@@ -101,7 +97,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
 			string cooldown_pickup = "";
 			string speed_pickup = "";
 			string cooldown_description = "";

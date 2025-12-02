@@ -26,7 +26,7 @@ namespace FlatItemBuff.Items
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
 			UpdateVFX();
-			UpdateText();
+			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
 		private void ClampConfig()
@@ -52,8 +52,6 @@ namespace FlatItemBuff.Items
 		}
 		private void UpdateText()
 		{
-			MainPlugin.ModLogger.LogInfo("Updating Text");
-
 			string descChance = string.Format("<style=cIsDamage>{0}%", BaseChance);
 			if (StackChance > 0.0f)
             {
@@ -124,8 +122,10 @@ namespace FlatItemBuff.Items
 								procCoefficient = 0f
 							};
 							victimBody.healthComponent.TakeDamage(detainInfo);
-							victimBody.healthComponent.killingDamageType = DamageType.VoidDeath;
-
+							if (!victimBody.bodyFlags.HasFlag(CharacterBody.BodyFlags.ImmuneToVoidDeath))
+                            {
+								victimBody.healthComponent.killingDamageType = DamageType.VoidDeath;
+							}
 							EffectManager.SpawnEffect(HitEffect, new EffectData
 							{
 								origin = damageInfo.position,

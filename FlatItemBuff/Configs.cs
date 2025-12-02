@@ -168,7 +168,7 @@ namespace FlatItemBuff
 		private static void Read_General()
         {
 			//Section_Bugs
-			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier, recommended and specifically catered for Aegis changes.").Value;
+			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier. (Legacy changes from before Barrier Decay was changed in Alloyed Collective)").Value;
 		}
 		private static void Read_BisonSteak()
         {
@@ -194,10 +194,10 @@ namespace FlatItemBuff
 		private static void Read_TopazBrooch()
         {
 			TopazBrooch.Enable = Item_Common_Config.Bind(Section_TopazBrooch_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			TopazBrooch.BaseFlatBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Base Flat Barrier", 8.0f, "Flat amount of barrier given at a single stack.").Value;
+			TopazBrooch.BaseFlatBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Base Flat Barrier", 12.0f, "Flat amount of barrier given at a single stack.").Value;
 			TopazBrooch.StackFlatBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Stack Flat Barrier", 0.0f, "Flat amount of barrier given for each additional stack.").Value;
-			TopazBrooch.BaseCentBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Base Percent Barrier", 0.02f, "Percent amount of barrier given at a single stack.").Value;
-			TopazBrooch.StackCentBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Stack Percent Barrier", 0.02f, "Percent amount of barrier given for each additional stack.").Value;
+			TopazBrooch.BaseCentBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Base Percent Barrier", 0.01f, "Percent amount of barrier given at a single stack.").Value;
+			TopazBrooch.StackCentBarrier = Item_Common_Config.Bind(Section_TopazBrooch_Buff, "Stack Percent Barrier", 0.01f, "Percent amount of barrier given for each additional stack.").Value;
 			TopazBrooch.Comp_AssistManager = Item_Common_Config.Bind(Section_TopazBrooch_Buff, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 		private static void Read_RollOfPennies()
@@ -517,8 +517,8 @@ namespace FlatItemBuff
 			TitanicKnurl_Rework_B.Enable = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, Label_EnableRework, false, Desc_EnableRework_B).Value;
 			TitanicKnurl_Rework_B.LaserBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Base Damage", 0.625f, "Base damage per tick of the laser at a single stack.").Value;
 			TitanicKnurl_Rework_B.LaserStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Stack Damage", 0.0f, "Base damage per tick of the laser for each additional stack.").Value;
-			TitanicKnurl_Rework_B.ShotBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Base Damage", 1.5f, "Base damage the laser shots at a single stack.").Value;
-			TitanicKnurl_Rework_B.ShotStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Stack Damage", 0.0f, "Base damage the laser shots for each additional stack.").Value;
+			TitanicKnurl_Rework_B.ShotBaseDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Base Damage", 1.5f, "Base damage of the laser shots at a single stack.").Value;
+			TitanicKnurl_Rework_B.ShotStackDamage = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Shot Stack Damage", 0.0f, "Base damage of the laser shots for each additional stack.").Value;
 			TitanicKnurl_Rework_B.BaseDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Base Duration", 4.0f, "Laser duration at a single stack.").Value;
 			TitanicKnurl_Rework_B.StackDuration = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Stack Duration", 2.0f, "Laser duration for each additional stack.").Value;
 			TitanicKnurl_Rework_B.LaserProcRate = Item_Yellow_Config.Bind(Section_TitanicKnurl_Rework_B, "Laser Proc Coefficient", 0.15f, "Proc coefficient of the laser per tick.").Value;
@@ -530,8 +530,8 @@ namespace FlatItemBuff
 		private static void Read_DefenseNucleus()
         {
 			DefenseNucleus.Enable = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
-			DefenseNucleus.BaseArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Armor", 50, "How much armor allied minions get at a single stack.").Value;
-			DefenseNucleus.StackArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Armor", 35, "How much armor allied minions get for each additional stack.").Value;
+			DefenseNucleus.BaseArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Armor", 30, "How much armor allied minions get at a single stack.").Value;
+			DefenseNucleus.StackArmor = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Armor", 30, "How much armor allied minions get for each additional stack.").Value;
 			DefenseNucleus.BaseHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Health", 10, "Extra health the construct gets at a single stack. (1 = +10%)").Value;
 			DefenseNucleus.StackHealth = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Stack Health", 0, "Extra health the construct gets for each additional stack.").Value;
 			DefenseNucleus.BaseAttack = Item_Yellow_Config.Bind(Section_DefenseNucleus_Buff, "Base Attack Speed", 3, "Extra attack speed the construct gets at a single stack. (1 = +10%)").Value;
