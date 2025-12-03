@@ -26,7 +26,7 @@ namespace FlatItemBuff
 		public const string MODUID = "com.kking117.FlatItemBuff";
 		public const string MODNAME = "FlatItemBuff";
 		public const string MODTOKEN = "KKING117_FLATITEMBUFF_";
-		public const string MODVERSION = "1.26.3";
+		public const string MODVERSION = "1.26.4";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		public static PluginInfo pluginInfo;
@@ -47,7 +47,7 @@ namespace FlatItemBuff
 			RiskyMod_Loaded = Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskyMod");
 			EnableChanges();
 			SharedHooks.Setup();
-			GameModeCatalog.availability.CallWhenAvailable(new Action(PostLoad_GameModeCatalog));
+			ItemCatalog.availability.CallWhenAvailable(new Action(PostLoad_ItemCatalog));
 		}
 		private void EnableChanges()
         {
@@ -94,7 +94,7 @@ namespace FlatItemBuff
 			//Food
 			new Items.SearedSteak_Rework();
 		}
-		private void PostLoad_GameModeCatalog()
+		private void PostLoad_ItemCatalog()
         {
 			Items.DefenseNucleus_Shared.ExtraChanges();
 		}
