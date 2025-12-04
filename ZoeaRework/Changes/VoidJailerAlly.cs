@@ -36,7 +36,7 @@ namespace ZoeaRework.Changes
                 CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
                 if (body)
                 {
-                    body.baseMoveSpeed = MainPlugin.Config_VoidJailer_BaseSpeed.Value;
+                    body.baseMoveSpeed = MainPlugin.Config_VoidJailer_BaseSpeed;
                     body.baseMaxHealth *= 0.5f;
                     body.levelMaxHealth *= 0.5f;
                 }
@@ -159,7 +159,7 @@ namespace ZoeaRework.Changes
             aiskillDriver4.driverUpdateTimerOverride = 3f;
             aiskillDriver4.ignoreNodeGraph = false;
             aiskillDriver4.maxDistance = float.PositiveInfinity;
-            aiskillDriver4.minDistance = MainPlugin.Config_AIShared_MinRecallDist.Value;
+            aiskillDriver4.minDistance = MainPlugin.Config_AIShared_MinRecallDist;
             aiskillDriver4.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver4.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver4.minTargetHealthFraction = float.NegativeInfinity;
@@ -294,7 +294,7 @@ namespace ZoeaRework.Changes
             UtilitySkill.stockToConsume = 1;
             UtilitySkill.fullRestockOnAssign = true;
 
-            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidJailer_RecallCooldown.Value;
+            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidJailer_RecallCooldown;
             UtilitySkill.beginSkillCooldownOnSkillEnd = false;
 
             UtilitySkill.canceledFromSprinting = false;

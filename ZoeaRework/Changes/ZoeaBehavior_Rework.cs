@@ -13,7 +13,7 @@ namespace ZoeaRework.Changes
         private void Awake()
         {
             base.enabled = true;
-            spawntimerGoal = MainPlugin.Config_Rework_SpawnTime.Value;
+            spawntimerGoal = MainPlugin.Config_Rework_SpawnTime;
             spawnTimer = spawntimerGoal - 5f;
             spawnCard = VoidMegaCrabAlly.AllySpawnCard;
             placementRule = new DirectorPlacementRule

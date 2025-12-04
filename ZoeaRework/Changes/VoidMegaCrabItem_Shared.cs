@@ -50,16 +50,16 @@ namespace ZoeaRework.Changes
         internal static float GetLeashDistance()
         {
             Run run = Run.instance;
-            float distance = MainPlugin.Config_AIShared_MinRecallDist.Value;
+            float distance = MainPlugin.Config_AIShared_MinRecallDist;
             if (run)
             {
-                float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AIShared_RecallDistDiff.Value;
+                float diff = (run.difficultyCoefficient - 1f) * MainPlugin.Config_AIShared_RecallDistDiff;
                 if (diff > 0f)
                 {
                     distance += diff;
                 }
-                distance = Mathf.Min(MainPlugin.Config_AIShared_MaxRecallDist.Value, distance);
-                distance = Mathf.Max(MainPlugin.Config_AIShared_MinRecallDist.Value, distance);
+                distance = Mathf.Min(MainPlugin.Config_AIShared_MaxRecallDist, distance);
+                distance = Mathf.Max(MainPlugin.Config_AIShared_MinRecallDist, distance);
             }
             //MainPlugin.ModLogger.LogInfo("Recall distance: " + distance + "m.");
             return distance;

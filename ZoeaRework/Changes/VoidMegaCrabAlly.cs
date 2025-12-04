@@ -27,7 +27,7 @@ namespace ZoeaRework.Changes
         }
         internal static void PostLoad()
         {
-            if (MainPlugin.Config_VoidMegaCrab_EnableDisplays.Value)
+            if (MainPlugin.Config_VoidMegaCrab_EnableDisplays)
             {
                 CharacterMaster master = AllyMasterObject.GetComponent<CharacterMaster>();
                 if (master.bodyPrefab)
@@ -48,14 +48,14 @@ namespace ZoeaRework.Changes
                 CharacterBody body = master.bodyPrefab.GetComponent<CharacterBody>();
                 if (body)
                 {
-                    body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed.Value;
-                    if (MainPlugin.Config_Rework_Enable.Value)
+                    body.baseMoveSpeed = MainPlugin.Config_VoidMegaCrab_BaseSpeed;
+                    if (MainPlugin.Config_Rework_Enable)
                     {
-                        body.baseMaxHealth *= MainPlugin.Config_VoidMegaCrab_Rework_BaseHealth.Value;
-                        body.levelMaxHealth *= MainPlugin.Config_VoidMegaCrab_Rework_BaseHealth.Value;
+                        body.baseMaxHealth = MainPlugin.Config_VoidMegaCrab_Rework_BaseHealth;
+                        body.levelMaxHealth = MainPlugin.Config_VoidMegaCrab_Rework_LevelHealth;
 
-                        body.baseDamage *= MainPlugin.Config_VoidMegaCrab_Rework_BaseDamage.Value;
-                        body.levelDamage *= MainPlugin.Config_VoidMegaCrab_Rework_BaseDamage.Value;
+                        body.baseDamage = MainPlugin.Config_VoidMegaCrab_Rework_BaseDamage;
+                        body.levelDamage = MainPlugin.Config_VoidMegaCrab_Rework_LevelDamage;
                     }
                     else
                     {
@@ -182,7 +182,7 @@ namespace ZoeaRework.Changes
             aiskillDriver4.driverUpdateTimerOverride = 3f;
             aiskillDriver4.ignoreNodeGraph = false;
             aiskillDriver4.maxDistance = float.PositiveInfinity;
-            aiskillDriver4.minDistance = MainPlugin.Config_AIShared_MinRecallDist.Value;
+            aiskillDriver4.minDistance = MainPlugin.Config_AIShared_MinRecallDist;
             aiskillDriver4.maxTargetHealthFraction = float.PositiveInfinity;
             aiskillDriver4.maxUserHealthFraction = float.PositiveInfinity;
             aiskillDriver4.minTargetHealthFraction = float.NegativeInfinity;
@@ -364,7 +364,7 @@ namespace ZoeaRework.Changes
         {
             UtilitySkill = ScriptableObject.CreateInstance<SkillDef>();
 
-            if(MainPlugin.Config_Rework_Enable.Value)
+            if(MainPlugin.Config_Rework_Enable)
             {
                 UtilitySkill.activationState = new SerializableEntityStateType(typeof(States.VoidMegaCrab.Recall_Rework));
                 Modules.States.RegisterState(typeof(States.VoidMegaCrab.Recall_Rework));
@@ -389,7 +389,7 @@ namespace ZoeaRework.Changes
             UtilitySkill.stockToConsume = 1;
             UtilitySkill.fullRestockOnAssign = true;
 
-            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidMegaCrab_RecallCooldown.Value;
+            UtilitySkill.baseRechargeInterval = MainPlugin.Config_VoidMegaCrab_RecallCooldown;
             UtilitySkill.beginSkillCooldownOnSkillEnd = false;
 
             UtilitySkill.canceledFromSprinting = false;

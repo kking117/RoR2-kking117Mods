@@ -15,7 +15,7 @@ namespace ZoeaRework.Changes
         private void Awake()
         {
             base.enabled = true;
-            spawntimerGoal = MainPlugin.Config_Buff_SpawnTime.Value;
+            spawntimerGoal = MainPlugin.Config_Buff_SpawnTime;
             spawnTimer = spawntimerGoal - 5f;
             cardIndex = 0;
             RefreshCardList();

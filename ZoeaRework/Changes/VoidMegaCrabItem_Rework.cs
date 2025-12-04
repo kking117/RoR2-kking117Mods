@@ -24,22 +24,22 @@ namespace ZoeaRework.Changes
         }
         private static void UpdateText()
         {
-            string stat_text = String.Format("<style=cIsDamage>{0}% ", (MainPlugin.Config_Rework_DamageBase.Value + 10) * 10);
-            if(MainPlugin.Config_Rework_DamageStack.Value != 0)
+            string stat_text = String.Format("<style=cIsDamage>{0}% ", (MainPlugin.Config_Rework_DamageBase + 10) * 10);
+            if(MainPlugin.Config_Rework_DamageStack != 0)
             {
-                stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_DamageStack.Value * 10);
+                stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_DamageStack * 10);
             }
             stat_text += "damage</style>";
-            if (MainPlugin.Config_Rework_HealthBase.Value != 0 || MainPlugin.Config_Rework_HealthStack.Value != 0)
+            if (MainPlugin.Config_Rework_HealthBase != 0 || MainPlugin.Config_Rework_HealthStack != 0)
             {
                 if(stat_text.Length > 0)
                 {
                     stat_text += " and ";
                 }
-                stat_text += String.Format("<style=cIsHealing>{0}% ", (MainPlugin.Config_Rework_HealthBase.Value + 10) * 10);
-                if (MainPlugin.Config_Rework_HealthStack.Value != 0)
+                stat_text += String.Format("<style=cIsHealing>{0}% ", (MainPlugin.Config_Rework_HealthBase + 10) * 10);
+                if (MainPlugin.Config_Rework_HealthStack != 0)
                 {
-                    stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_HealthStack.Value * 10);
+                    stat_text += String.Format("<style=cStack>(+{0}% per stack)</style> ", MainPlugin.Config_Rework_HealthStack * 10);
                 }
                 stat_text += "health</style>";
             }
@@ -48,17 +48,17 @@ namespace ZoeaRework.Changes
             string desc_text = "";
             pickup_text += "Recruit a <style=cIsVoid>Void Devastator</style>";
             desc_text += String.Format("<style=cIsUtility>Summon</style> a <style=cIsVoid>Void Devastator</style> with {0}", stat_text);
-            if(MainPlugin.Config_ReworkInherit_Enable.Value)
+            if(MainPlugin.Config_ReworkInherit_Enable)
             {
                 pickup_text += " that inherits your items";
                 desc_text += " that <style=cIsUtility>inherits your items</style>";
             }
             pickup_text += ".";
             desc_text += ".";
-            if(MainPlugin.Config_Rework_CorruptText.Value.Length > 0)
+            if(MainPlugin.Config_Rework_CorruptText.Length > 0)
             {
-                pickup_text += " " + MainPlugin.Config_Rework_CorruptText.Value;
-                desc_text += " " + MainPlugin.Config_Rework_CorruptText.Value;
+                pickup_text += " " + MainPlugin.Config_Rework_CorruptText;
+                desc_text += " " + MainPlugin.Config_Rework_CorruptText;
             }
             R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_PICKUP", pickup_text);
             R2API.LanguageAPI.Add(MainPlugin.MODTOKEN + "ITEM_VOIDMEGACRABITEM_DESC", desc_text);
@@ -76,7 +76,7 @@ namespace ZoeaRework.Changes
         {
             orig();
             ItemBlackList = new List<ItemDef>();
-            string[] items = MainPlugin.Config_ReworkInherit_ItemBlackList.Value.Split(' ');
+            string[] items = MainPlugin.Config_ReworkInherit_ItemBlackList.Split(' ');
             for (int i = 0; i < items.Length; i++)
             {
                 ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
@@ -91,7 +91,7 @@ namespace ZoeaRework.Changes
                 }
             }
             TierBlackList = new List<ItemTier>();
-            string[] tiers = MainPlugin.Config_ReworkInherit_TierBlackList.Value.Split(' ');
+            string[] tiers = MainPlugin.Config_ReworkInherit_TierBlackList.Split(' ');
             for (int i = 0; i < tiers.Length; i++)
             {
                 ItemTierDef itemTier = ItemTierCatalog.FindTierDef(tiers[i]);
@@ -105,7 +105,7 @@ namespace ZoeaRework.Changes
         private static void SetItemRelationships(On.RoR2.ItemCatalog.orig_SetItemRelationships orig, ItemRelationshipProvider[] providers)
         {
             List<ItemDef> CorruptList = new List<ItemDef>();
-            string[] items = MainPlugin.Config_Rework_CorruptList.Value.Split(' ');
+            string[] items = MainPlugin.Config_Rework_CorruptList.Split(' ');
             for(int i=0; i<items.Length; i++)
             {
                 ItemIndex itemIndex = ItemCatalog.FindItemIndex(items[i]);
@@ -165,7 +165,7 @@ namespace ZoeaRework.Changes
             int amount = 0;
             if (self.inventory)
             {
-                if(self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) > 0)
+                if(self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem) > 0)
                 {
                     amount = 1;
                 }
@@ -178,8 +178,8 @@ namespace ZoeaRework.Changes
             {
                 if (self.inventory)
                 {
-                    int itemCount = self.inventory.GetItemCount(DLC1Content.Items.VoidMegaCrabItem);
-                    if (Stage.instance.sceneDef == MainPlugin.BazaarSceneDef)
+                    int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem);
+                    if (MainPlugin.NoSpawnScene.Contains(Stage.instance.sceneDef))
                     {
                         itemCount = 0;
                     }
@@ -277,17 +277,18 @@ namespace ZoeaRework.Changes
                 Inventory inv = summon.inventory;
                 if (inv)
                 {
-                    int itemCount = Math.Max(0, owneritems.GetItemCount(DLC1Content.Items.VoidMegaCrabItem) - 1);
-                    if (MainPlugin.Config_ReworkInherit_Enable.Value)
+                    int itemCount = Math.Max(0, owneritems.GetItemCountPermanent(DLC1Content.Items.VoidMegaCrabItem) - 1);
+                    if (MainPlugin.Config_ReworkInherit_Enable)
                     {
                         inv.CopyItemsFrom(owneritems);
                     }
                     inv = FilterInventory(inv);
-                    int dmg = MainPlugin.Config_Rework_DamageBase.Value + (MainPlugin.Config_Rework_DamageStack.Value * itemCount);
-                    int hp = MainPlugin.Config_Rework_HealthBase.Value + (MainPlugin.Config_Rework_HealthStack.Value * itemCount);
-                    inv.GiveItem(RoR2Content.Items.BoostDamage, dmg);
-                    inv.GiveItem(RoR2Content.Items.BoostHp, hp);
-                    inv.GiveItem(RoR2Content.Items.MinionLeash, 1);
+                    int dmg = MainPlugin.Config_Rework_DamageBase + (MainPlugin.Config_Rework_DamageStack * itemCount);
+                    int hp = MainPlugin.Config_Rework_HealthBase + (MainPlugin.Config_Rework_HealthStack * itemCount);
+                    inv.GiveItemPermanent(RoR2Content.Items.UseAmbientLevel, 1);
+                    inv.GiveItemPermanent(RoR2Content.Items.BoostDamage, dmg);
+                    inv.GiveItemPermanent(RoR2Content.Items.BoostHp, hp);
+                    inv.GiveItemPermanent(RoR2Content.Items.MinionLeash, 1);
                 }
             }
         }
@@ -295,18 +296,17 @@ namespace ZoeaRework.Changes
         private static Inventory FilterInventory(Inventory inventory)
         {
             //I can't be assed getting filters working.
-            inventory.ResetItem(RoR2Content.Items.BoostDamage);
-            inventory.ResetItem(RoR2Content.Items.BoostHp);
-            inventory.ResetItem(RoR2Content.Items.MinionLeash);
-            for(int i = 0; i< inventory.itemStacks.Length;i++)
+            inventory.ResetItemPermanent(RoR2Content.Items.UseAmbientLevel);
+            inventory.ResetItemPermanent(RoR2Content.Items.BoostDamage);
+            inventory.ResetItemPermanent(RoR2Content.Items.BoostHp);
+            inventory.ResetItemPermanent(RoR2Content.Items.MinionLeash);
+            for(int i = 0; i<ItemCatalog.itemCount; i++)
             {
-                if(inventory.itemStacks[i] != 0)
+                ItemDef itemDef = ItemCatalog.GetItemDef((ItemIndex)i);
+                if (IsBlackListed(itemDef))
                 {
-                    ItemDef itemDef = ItemCatalog.GetItemDef((ItemIndex)i);
-                    if(IsBlackListed(itemDef))
-                    {
-                        inventory.ResetItem(itemDef);
-                    }
+                    inventory.ResetItemPermanent(itemDef);
+                    inventory.ResetItemTemp((ItemIndex)i);
                 }
             }
             return inventory;
