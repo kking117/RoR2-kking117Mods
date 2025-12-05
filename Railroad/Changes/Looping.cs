@@ -48,6 +48,31 @@ namespace Railroad.Changes
                 On.RoR2.ArtifactCatalog.Init += ArtifactCatalog_Init;
             }
         }
+        internal static ArtifactDef ConvertStringToArtifactDef(string artifactName)
+        {
+            ArtifactDef returnDef = null;
+            returnDef = ArtifactCatalog.FindArtifactDef(artifactName);
+            if (returnDef == null)
+            {
+                for(int i = 0; i<ArtifactCatalog.artifactCount; i++)
+                {
+                    if (ArtifactCatalog.artifactDefs[i])
+                    {
+                        string enName = Language.GetString(ArtifactCatalog.artifactDefs[i].nameToken, "en").Replace(" ", "");
+                        if (enName == artifactName)
+                        {
+                            returnDef = ArtifactCatalog.artifactDefs[i];
+                            break;
+                        }
+                    }
+                }
+            }
+            if (returnDef == null || returnDef.artifactIndex <= ArtifactIndex.None)
+            {
+                return null;
+            }
+            return returnDef;
+        }
         internal static void ArtifactCatalog_Init(On.RoR2.ArtifactCatalog.orig_Init orig)
         {
             orig();
@@ -55,8 +80,9 @@ namespace Railroad.Changes
             string[] items = Loop_ArtifactRaw.Split(',');
             for (int i = 0; i < items.Length; i++)
             {
-                ArtifactDef artifactDef = ArtifactCatalog.FindArtifactDef(items[i].Trim());
-                if (artifactDef && artifactDef.artifactIndex > ArtifactIndex.None)
+                string artifactName = items[i].Trim();
+                ArtifactDef artifactDef = ConvertStringToArtifactDef(artifactName);
+                if (artifactDef != null)
                 {
                     if (!Loop_Artifacts.Contains(artifactDef))
                     {
@@ -65,7 +91,7 @@ namespace Railroad.Changes
                 }
                 else
                 {
-                    MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + items[i] + "]");
+                    MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + artifactName + "]");
                 }
             }
             if (Loop_Artifacts.Count < 1)

@@ -1,3 +1,18 @@
+**1.2.0**
+
+Changes made will require you to review your configs.
+Biggest of note is that multiple completion portals can be spawned now, spawning is a bit off but it's functional for now.
+
+```
+- Looping
+- "Loop Artifacts" configuration now also accepts English names with the spaces removed, along with internal names.
+^ Example: Artifact of Honor can be represented as "EliteOnly" (Internal Name) or "ArtifactofHonor" (English, space removed name).
+
+- Stages
+- "Completion Portal" configurations have been renamed to "Completion Portals" and will now accept a list of multiple portals.
+- Added configurations for Solus Web that include: "Completion Portals", "Completion Reward" and "Allow Decompile".
+```
+
 **1.1.0**
 
 No Solus Web and Solutional Haunt configs yet because I'm lazy.
