@@ -4,6 +4,7 @@ using R2API;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
@@ -169,8 +170,7 @@ namespace FlatItemBuff.Items
 					int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.StrengthenBurn);
 					if (itemCount > 0)
 					{
-						
-						if (BurnChance > 0f && Util.CheckRoll(procRate * BurnChance, damageReport.attackerMaster))
+						if (BurnChance > 0f && Helpers.CheckRollDamageInfo(damageReport.damageInfo, procRate * BurnChance, damageReport.attackerMaster))
 						{
 							float baseDamage = attackerBody.damage * BurnDuration * 0.5f;
 							float dmgMult = 1f + BurnBaseDamage;
@@ -210,7 +210,7 @@ namespace FlatItemBuff.Items
 					int itemCount = inventory.GetItemCountEffective(DLC1Content.Items.StrengthenBurn);
 					if (itemCount > 0)
 					{
-						if (BurnChance > 0f && Util.CheckRoll(procRate * BurnChance, damageReport.attackerMaster))
+						if (BurnChance > 0f && Helpers.CheckRollDamageInfo(damageReport.damageInfo, procRate * BurnChance, damageReport.attackerMaster))
 						{
 							float baseDamage = attackerBody.damage * BurnDuration * 0.5f;
 							float dmgMult = 1f + BurnBaseDamage;

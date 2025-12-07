@@ -11,8 +11,6 @@ namespace FlatItemBuff.Items
 {
 	public class GrowthNectar
 	{
-		public static BuffDef ImperfectBuff;
-		private static Color BuffColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 		private const string LogName = "Growth Nectar";
 		internal static bool Enable = false;
 		internal static float BaseBoost = 0.04f;
@@ -26,7 +24,6 @@ namespace FlatItemBuff.Items
 			}
 			MainPlugin.ModLogger.LogInfo(LogName);
 			ClampConfig();
-			CreateBuff();
 			SharedHooks.Handle_PostLoad_Actions += UpdateText;
 			Hooks();
 		}
@@ -35,16 +32,6 @@ namespace FlatItemBuff.Items
 			BaseBoost = Math.Max(0f, BaseBoost);
 			StackBoost = Math.Max(0f, StackBoost);
 			BaseCap = Math.Max(0, BaseCap);
-		}
-		private void CreateBuff()
-		{
-			//"RoR2/DLC2/bdBoostAllStatsBuff.asset"
-			BuffDef BoostAllStatsBuff = Addressables.LoadAssetAsync<BuffDef>("3bdd1fce23f153a41b3bf2e5434b5243").WaitForCompletion();
-			if (BoostAllStatsBuff)
-            {
-				BoostAllStatsBuff.ignoreGrowthNectar = false;
-				ImperfectBuff = Utils.ContentManager.AddBuff("BoostAllStatsWeak", BoostAllStatsBuff.iconSprite, BuffColor, false, false, false, false, false);
-			}
 		}
 		private void UpdateText()
 		{
@@ -66,6 +53,16 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_OnRecalculateStats);
+			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
+		}
+
+		private void OnInventoryChanged(CharacterBody self)
+		{
+			int itemCountA = self.inventory.GetItemCountEffective(DLC2Content.Items.BoostAllStats);
+			if (itemCountA == 0)
+            {
+				self.ClearAllBuffs(DLC2Content.Buffs.BoostAllStatsBuff);
+            }
 		}
 		private void IL_OnRecalculateStats(ILContext il)
 		{

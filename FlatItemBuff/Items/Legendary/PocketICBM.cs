@@ -4,6 +4,7 @@ using R2API;
 using RoR2.Projectile;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
@@ -95,7 +96,7 @@ namespace FlatItemBuff.Items
                 {
 					itemCount = Math.Max(0, itemCount - 1);
 					float effectChance = BaseChance + (itemCount * StackChance);
-					if (Util.CheckRoll(effectChance * damageInfo.procCoefficient, attackerBody.master))
+					if (Helpers.CheckRollDamageInfo(damageInfo, effectChance * damageInfo.procCoefficient, attackerBody.master))
                     {
 						float dmgMult = BaseDamage + (itemCount * StackDamage);
 						dmgMult = Util.OnHitProcDamage(damageInfo.damage, attackerBody.damage, dmgMult);

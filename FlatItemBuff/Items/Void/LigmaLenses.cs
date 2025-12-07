@@ -2,8 +2,10 @@
 using RoR2;
 using R2API;
 using MonoMod.Cil;
+using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
@@ -100,7 +102,7 @@ namespace FlatItemBuff.Items
 					if (itemCount > 0)
 					{
 						float effectChance = BaseChance + (StackChance * (itemCount - 1));
-						if (Util.CheckRoll(effectChance * damageInfo.procCoefficient, attackerMaster))
+						if (Helpers.CheckRollDamageInfo(damageInfo, effectChance * damageInfo.procCoefficient, attackerMaster))
 						{
 							float coefDamage = BaseDamage + (StackDamage * (itemCount - 1));
 							float baseDamage = attackerBody.damage;
@@ -139,7 +141,7 @@ namespace FlatItemBuff.Items
 		private void IL_TakeDamage(ILContext il)
 		{
 			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
+			/*if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "CritGlassesVoid")
 			)
 			&&
@@ -148,6 +150,16 @@ namespace FlatItemBuff.Items
 			))
 			{
 				ilcursor.Next.Operand = 0f;
+			}*/
+
+
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdsfld(typeof(DLC1Content.Items), "CritGlassesVoid")
+			))
+			{
+				ilcursor.Index -= 3;
+				ilcursor.RemoveRange(5);
+				ilcursor.Emit(OpCodes.Ldc_I4_0);
 			}
 			else
 			{

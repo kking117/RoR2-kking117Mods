@@ -11,6 +11,10 @@ namespace FlatItemBuff.Utils
 {
     internal class Helpers
     {
+		public static bool CheckRollDamageInfo(DamageInfo damageInfo, float chance, CharacterMaster roller)
+        {
+			return damageInfo.procChainMask.HasProc(ProcType.SureProc) || Util.CheckRoll(chance, roller);
+		}
 		public static bool InflictorHasModdedDamageType(GameObject inflictor, DamageAPI.ModdedDamageType moddedDamageType)
 		{
 			if (inflictor)

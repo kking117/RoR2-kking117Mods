@@ -42,14 +42,17 @@ namespace FlatItemBuff.Items
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
 			//This is pretty much a copy paste of Withor's LeechingSeedBuff
-			Inventory inventory = damageReport.attackerBody.inventory;
-			if (inventory)
-			{
-				int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Seed);
-				if (itemCount > 0)
+			if (damageReport.damageDealt > 0f)
+            {
+				Inventory inventory = damageReport.attackerBody.inventory;
+				if (inventory)
 				{
-					float healing = BaseHeal + (damageReport.damageInfo.procCoefficient * ProcHeal);
-					damageReport.attackerBody.healthComponent.Heal(healing * itemCount, damageReport.damageInfo.procChainMask, true);
+					int itemCount = inventory.GetItemCountEffective(RoR2Content.Items.Seed);
+					if (itemCount > 0)
+					{
+						float healing = BaseHeal + (damageReport.damageInfo.procCoefficient * ProcHeal);
+						damageReport.attackerBody.healthComponent.Heal(healing * itemCount, damageReport.damageInfo.procChainMask, true);
+					}
 				}
 			}
 		}

@@ -1,3 +1,28 @@
+**1.26.5**
+
+```
+- Leeching Seed Buff:
+- No longer activates if the hit does 0 or less damage.
+
+- Growth Nectar Buff:
+- Buff should be removed when all stacks of the item are lost.
+
+- Happiest Mask Rework:
+- No longer spawns ghosts in Bazaar and Computational Exchange.
+
+- Lost Seer's Lenses Rework:
+- Fixed original effect working from Deus Ex Machina's sure hit effect.
+
+- Fixed a few item effects not being affected by Deus Ex Machina's sure hit effect.
+```
+
+**1.26.4**
+
+```
+- Defense Nucleus Shared:
+- Spare Drone Parts displays should (finally) work again.
+```
+
 **1.26.3**
 
 ```
@@ -12,7 +37,7 @@
 - Growth Nectar Buff:
 - Fixed stacks past the first having no effect.
 
-- Lost Seer's Lenses Buff:
+- Lost Seer's Lenses Rework:
 - No longer causes void deaths to targets that are immune to void deaths, to prevent a potential softlock.
 ^ Still functions against said targets but now their bodies won't be instantly deleted.
 ```
@@ -141,7 +166,7 @@ If other parts are broken be sure to contact me.
 **1.24.8**
 
 ```
-- Warped Echo:
+- Warped Echo Buff:
 - Removed debug logging.
 
 - Fixed some buffs/debuffs counting towards Growth Nectar when they shouldn't.
@@ -194,7 +219,7 @@ If other parts are broken be sure to contact me.
 **1.24.3**
 
 ```
-- Warped Echo:
+- Warped Echo Buff:
 - Added an additional measure for one shot protection.
 - Changed "Base Armor" default configuration. (6 -> 8)
 - Changed "Stack Armor" default configuration. (6 -> 8)
@@ -231,7 +256,7 @@ Some damage interactions may not work as expected due to changes in the update.
 - Roll of Pennies Rework:
 - Added a VFX when above a certain number of buff stacks.
 
-- Warped Echo:
+- Warped Echo Buff:
 - Fixed for v1.3.6.
 - Added configs for ignore Block and Armor damage flags to taken and delayed damage.
 - If damage triggered OSP the delayed damage from that instance will be Non-Lethal.
@@ -254,7 +279,7 @@ Some damage interactions may not work as expected due to changes in the update.
 Also know as: "The Poorly Timed Warped Echo Update"
 
 ```
-- Warped Echo:
+- Warped Echo Buff:
 - Fixed changes causing Pots to become fucking invincible.
 ```
 
@@ -278,7 +303,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.23.6**
 
 ```
-- Chronobauble:
+- Chronobauble Buff:
 - Changed how debuff visuals are handled to hopefully fix an issue.
 ```
 
@@ -301,7 +326,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.23.4**
 
 ```
-- Lost Seer's Lenses:
+- Lost Seer's Lenses Rework:
 - Fixed chance not being affected by luck.
 ```
 
@@ -361,17 +386,17 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.22.5**
 
 ```
-- Antler Shield:
+- Antler Shield Rework:
 - Changed "Stack Armor" default configuration. (7.5 -> 5)
 ^ 7.5 armor is almost the same effective amount of health from a Personal Shield Generator.
 
-- Death Mark:
+- Death Mark Buff:
 - Fixed config category name.
 - Changed "Base Duration" default configuration. (7 -> 6)
 - Changed "Stack Duration" default configuration. (7 -> 4)
 - Duration is now scaled by proc coefficient, and can no longer proc on yourself.
 
-- Old War Stealthkit:
+- Old War Stealthkit Buff:
 - Removed "Cancel Combat" configuration.
 ^ Never felt that impactful and this is designed to allow you to escape combat situations anyway.
 - Added a stunning area of effect similar to Bandit's Smoke Bomb when activating.
@@ -445,7 +470,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Infusion
 - Defense Nucleus Buff (Disabled by default)
 
-- Bison Steak:
+- Bison Steak Buff:
 - Item description now states that the health amount increases with level to avoid confusion.
 
 - Knockback Fin:
@@ -454,13 +479,13 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - This means "Credit Fall Damage" will work even while Impact damage is disabled.
 - Will no longer proc when hitting yourself.
 
-- Topaz Brooch:
+- Topaz Brooch Buff:
 - Changed "Base Flat Barrier" default configuration. (15 -> 8)
 - Changed "Stack Flat Barrier" default configuration. (15 -> 0)
 - Changed "Base Percent Barrier" default configuration. (0.005 -> 0.02)
 - Changed "Stack Percent Barrier" default configuration. (0.005 -> 0.02)
 
-- Leeching Seed:
+- Leeching Seed Buff:
 - Changed "Proc Healing" and "Base Healing" default configurations. (0.75 -> 1)
 ```
 
@@ -492,10 +517,10 @@ Also know as: "The Poorly Timed Warped Echo Update"
 
 - Added a rework for Unstable Transmitter.
 
-- Squid Polyp:
+- Squid Polyp Buff:
 - Fixed Squids not spawning from interacting with Chests, has been broken since Devotion Update.
 
-- Aegis:
+- Aegis Buff:
 - Changed "Base Overheal" default configuration. (0.5 -> 1)
 - Changed "Stack Overheal" default configuration. (0.5 -> 0)
 - Changed "Base Max Barrier" default configuration. (0.25 -> 1)
@@ -541,7 +566,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.20.3**
 
 ```
-- Defense Nucleus:
+- Defense Nucleus Buff:
 - Item is not longer copied by Turrets.
 
 - Defense Nucleus Rework:
@@ -557,7 +582,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Leeching Seed Rework:
 - Changed the description to state "Damage over time" instead of "Status damage" for consistency.
 
-- Defense Nucleus:
+- Defense Nucleus Buff:
 - Removed "Cooldown" configuration, pretty sure it wasn't being used in the first place.
 - The cooldown for summoning Constructs is now 0.5s but goes up to 7s if it suspects you'll cap out.
 
@@ -573,7 +598,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Ignition Tank Rework:
 - Hits are now tracked per enemy.
 
-- Defense Nucleus:
+- Defense Nucleus Buff:
 - Improved in-game description slightly.
 
 - Defense Nucleus Rework:
@@ -603,7 +628,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Changed "Stack Armor" default configuration. (0 -> 1)
 - Changed "Base Armor Duration" default configuration. (1 -> 2)
 
-- Hunter's Harpoon:
+- Hunter's Harpoon Buff:
 - Buff doesn't have a fading effect, is now a full buff for the entire duration.
 - Buff doesn't increase skill cooldown rate, instead it reduces skill cooldown by a flat amount of seconds on kill.
 - Changed "Base Duration" default configuration. (1.5 -> 1)
@@ -614,17 +639,17 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Added "Cooldown Reduction" configuration. Default: (1)
 - Added "Extend Duration" configuration. Default: (true)
 
-- Lepton Daisy:
+- Lepton Daisy Buff:
 - Changed "Base Healing" default configuration. (0.15 -> 0.1)
 
-- Old War Stealthkit:
+- Old War Stealthkit Buff:
 - Stealth is now given as 5 stacks that expire one after another, similar to Hunter's Harpoon.
 - Combat and Danger cancels are now only applied while you have 5 stacks of Stealth or more.
 - Removed configuration "Cancel Duration" as a result of the above changes.
 - Added configuration "Stealth Movement Speed", controls the movement speed bonus from being Stealthed. Default: (0.4)
 - Added configuration "Stealth Armor", controls how much armor each stack of Stealth gives. Default: (20)
 
-- Squid Polyp:
+- Squid Polyp Buff:
 - Squid Turret base damage increased from 4 to 5, matching drone damage scaling.
 - The knockback on Squid Turret shots now scales down with attack speed, should stop them from pushing everything away at higher stacks.
 - Added "Stack Health" configuration, controls how much extra health Squid Turrets get per stack. Default: (2)
@@ -634,7 +659,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Removed "Inactive Removal" configuration, the above configuration is designed to replace its functionality.
 - Removed "Stack Armor" configuration.
 
-- Aegis:
+- Aegis Buff:
 - No longer increases armor, instead increases maximum barrier similar to its RoRR's version.
 - Added "Base Overheal" and "Stack Overheal" configurations, controls how much barrier to get from overhealing. Default: (0.5)
 - Added "Base Max Barrier" and "Stack Max Barrier" configurations, controls the maximum barrier increase. Default: (0.25)
@@ -653,26 +678,26 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Changed "Stack Damage" default configuration. (0 -> 5)
 - Changed "Shield Base Duration" default configuration. (3.5 -> 5)
 
-- Titanic Knurl:
+- Titanic Knurl Buff:
 - Changed "Base HP" default configuration. (40 -> 30)
 - Changed "Level HP" default configuration. (4 -> 9)
 - Default values have been changed to scale the same as player health.
 
-- Voidsent Flame:
+- Voidsent Flame Buff:
 - Has been given the "CannotCopy" item tag for simplicity.
 ```
 
 **1.19.2**
 
 ```
-- Death Mark Rework:
+- Death Mark Buff:
 - The Death Mark is applied in an earlier hook to (hopefully) prevent the item breaking in some mod setups.
 ```
 
 **1.19.1**
 
 ```
-- Wax Quail:
+- Wax Quail Buff:
 - Fixed the default config values being incorrect.
 
 - Happiest Mask Rework:
@@ -703,16 +728,16 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Changed "Leech Minimum Life Steal" default configuration. (0.5 -> 1)
 - Life steal from the Leech debuff now scales down with time.
 
-- War Horn:
+- War Horn Buff:
 - Changed "Stack Duration" default configuration. (2 -> 3)
 
-- Ben's Raincoat:
+- Ben's Raincoat Buff:
 - Added a brief grace period after consuming a debuff block which prevents further debuffs without consuming stacks.
 - Added configuration "Debuff Grace Time" for the above change. Default Value: (0.25)
 - Changed "Stack Block" default configuration. (2 -> 1)
 - For reference it would take roughly 27 Raincoats for 100% uptime with the new default configurations.
 
-- Defense Nucleus:
+- Defense Nucleus Buff:
 - Changed "Base Attack Speed" default configuration. (6 -> 5)
 - Changed "Base Damage" default configuration. (6 -> 5)
 
@@ -732,7 +757,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Newly Hatched Zoea Rework:
 - Added configurations for controlling its item corruption.
 
-- Added a rework for Death Mark.
+- Added a Buff for Death Mark.
 
 - Added a rework for Roll of Pennies.
 
@@ -752,7 +777,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Damage over time ticks from the Leech debuff no longer triggers its life steal effect, so it doesn't double dip with Leeching Seed.
 - Healing from the Leech debuff and Leeching Seed are now rolled into a singular instance of healing, for visual clarity and because they're both related to the same item.
 
-- Chronobauble:
+- Chronobauble Buff:
 - Fixed it applying the slow on hits with a proc coefficient of 0 or less.
 
 - Added a rework for Ignition Tank.
@@ -778,7 +803,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.16.0**
 
 ```
-- Infusion:
+- Infusion Buff:
 - Changed how levels are calculated so "Soft Cap" isn't skewed by "Stack Level".
 
 - Leeching Seed Rework:
@@ -805,42 +830,42 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Bison Steak:
 - Changed pickup text to be consistent with other pickup texts.
 
-- Topaz Brooch:
+- Topaz Brooch Buff:
 - Changed "Base Flat Barrier" default configuration. (14 -> 15)
 - Changed "Stack Flat Barrier" default configuration. (14 -> 15)
 
-- Infusion:
+- Infusion Buff:
 - Brought back the old infusion changes as per a user's request, the new infusion changes are now listed as a rework.
 
 - Infusion Rework:
 - Added "Leash Distance" configuration, gives the clone a custom minion leash distance.
 - Clones are automatically killed if their owner no longer exists.
 
-- Leeching Seed:
+- Leeching Seed Buff:
 - Changed "Proc Healing" default configuration. (0.5 -> 0.75)
 - Changed "Base Healing" default configuration. (0.5 -> 0.75)
 
 - Leeching Seed Rework:
 - Changed "Leech Minimum Life Steal" default configuration. (0.1 -> 0.02)
 
-- Squid Polyp:
+- Squid Polyp Buff:
 - Changed "Inactive Removal" default configuration. (20 -> 30)
 - Squid Turrets are now killed from inactive removal instead of having their healing disabled.
 
-- Ben's Raincoat:
+- Ben's Raincoat Buff:
 - Removed "Improve Cooldown" configuration, is now always in effect when changes are enabled.
 ```
 
 **1.15.1**
 
 ```
-- Infusion:
+- Infusion Buff:
 - Fixed changes breaking Cautious Slug.
 
-- Wax Quail:
+- Wax Quail Buff:
 - Actually uses the default configurations from the previous update.
 
-- Ben's Raincoat:
+- Ben's Raincoat Buff:
 - Changed "Stack Block" default configuration. (1 -> 2)
 
 - Fixed a few item descriptions that mention base damage to be consistent with vanilla.
@@ -851,16 +876,16 @@ Also know as: "The Poorly Timed Warped Echo Update"
 <details><summary>Notes</summary>Completely changed Lost Seer's Lenses effect since the bands mechanic was too complicated for a common item. Also completely changed Infusion since the previous version didn't address the scaling issue at all and there's a few other mods that already improve it.</details>
 
 ```
-- Infusion:
+- Infusion Buff:
 - Effect has been reworked completely.
 - Collecting enough blood from slain enemies creates a clone of yourself.
 - Further collection of blood increases the clone's level.
 
-- Old War Stealthkit:
+- Old War Stealthkit Buff:
 - Removes damage over time effects on activation.
 - Changed "Cancel Duration" default configuration. (1.0 -> 0.5)
 
-- Wax Quail:
+- Wax Quail Buff:
 - Changed "Capped Horizontal Boost" default configuration. (150 -> 240)
 - Changed "Capped Air Speed Bonus" default configuration. (1.5 -> 2.8)
 
@@ -885,7 +910,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Defense Nucleus Buff:
 - No longer procs itself when it kills, removed the "Minion Can Proc" configuration as a result.
 
-- Lepton Daisy:
+- Lepton Daisy Buff:
 - Fixed various bugs involving heal amounts.
 ```
 
@@ -903,10 +928,10 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.14.2**
 
 ```
-- Hunter's Harpoon:
+- Hunter's Harpoon Buff:
 - Added configurations to enable the cooldown effect for Primary, Secondary, Utility and Special skills.
 
-- Lepton Daisy:
+- Lepton Daisy Buff:
 - Changed "Base Healing" default configuration. (0.1 -> 0.15)
 
 - Lost Seer's Lenses:
@@ -964,13 +989,13 @@ Also know as: "The Poorly Timed Warped Echo Update"
 - Leech Debuff heals at minimum 20% of the attacker's level. (2 healing at level 10 for example)
 - Leech Debuff healing is now affected by Proc Coefficient, and is applied AFTER the minimum healing.
 
-- Lepton Daisy:
+- Lepton Daisy Buff:
 - Changed "Base Healing" default configuration. (0.15 -> 0.1)
 - Changed "Stack Healing" default configuration. (0.15 -> 0.1)
 - Caps at 200% of the target's maximum health instead of 100%.
 - Added "Capped Healing" configuration, controls the hyperbolic stacking cap of the healing.
 
-- Wax Quail:
+- Wax Quail Buff:
 - Changed "Base Horizontal Boost" default configuration. (15 -> 12)
 - Changed "Stack Horizontal Boost" default configuration. (5 -> 6)
 - Changed "Base Air Speed Bonus" default configuration. (0.14 -> 0.12)
@@ -996,7 +1021,7 @@ Also know as: "The Poorly Timed Warped Echo Update"
 **1.13.2**
 
 ```
-Old War Stealthkit:
+Old War Stealthkit Buff:
 - No longer activates if the user is still "Stealthed".
 - "danger" and "combat" cancels are no longer tied to the "Stealthed" buff.
 - Activation forces the user out of "danger" and "combat" for 1 second.
@@ -1009,7 +1034,7 @@ Old War Stealthkit:
 **1.13.1**
 
 ```
-Leeching Seed:
+Leeching Seed Buff:
 - Fixed "Normal Heal" configuration not being used.
 ```
 
@@ -1018,19 +1043,19 @@ Leeching Seed:
 _Would appreciate feedback on the Wax Quail changes, including default configurations. Felt Lepton Daisy was bit too weak for how situational it is and also might look into Simulacrum specific changes._
 
 ```
-Bison Steak:
+Bison Steak Buff:
 - Changed "Base HP" default configuration. (25.0 -> 20.0)
 - Changed "Level HP" default configuration. (2.5 -> 2.0)
 
-Leeching Seed:
+Leeching Seed Buff:
 - Healing is received in a single instance instead of two.
 - Changed "Normal Heal" default configuration. (1.0 -> 0.5)
 
-Lepton Daisy:
+Lepton Daisy Buff:
 - Changed "Base Healing" default configuration. (0.1 -> 0.15)
 - Changed "Stack Healing" default configuration. (0.1 -> 0.15)
 
-Wax Quail:
+Wax Quail Buff:
 - Added changes to Wax Quail.
 ```
 
@@ -1039,17 +1064,17 @@ Wax Quail:
 _This update includes balance changes for the Defense Nucleus Buff. The intent is to be less spammy, reducing the difference between this and the Vanilla version._
 
 ```
-Infusion:
+Infusion Buff:
 - No longer triggers a level up when gaining levels from samples.
 
-Lepton Daisy:
+Lepton Daisy Buff:
 - Changed "Base Healing" default configuration. (0.08 -> 0.1)
 - Changed "Stack Healing" default configuration. (0.08 -> 0.1)
 
-Squid Polyp:
+Squid Polyp Buff:
 - Damage and Proc Coefficient updated to reflect Patch 1.2.4's values.
 
-Voidsent Flame:
+Voidsent Flame Buff:
 - Fixed for Patch 1.2.4.
 
 Defense Nucleus Shared:

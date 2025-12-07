@@ -10,15 +10,21 @@ namespace FlatItemBuff.Items.Behaviors
 	{
 		private DeployableSlot deploySlot = Items.HappiestMask_Rework.Ghost_DeployableSlot;
 		private float summonTimer = 1f;
+		private float retryTimer = Math.Min(3f, Items.HappiestMask_Rework.BaseDuration);
 		private const float MinSummonDistance = 10f;
 		private const float MaxSummonDistance = 20f;
+		private bool DisableSpawns = false;
 		private void FixedUpdate()
 		{
-			if (!body)
+			if (!body || DisableSpawns)
 			{
 				return;
 			}
 			UpdateGhosts();
+		}
+		private void OnBodyAwakeGlobal(CharacterBody body)
+        {
+			DisableSpawns = GeneralChanges.BannedSceneSpawns.Contains(Stage.instance.sceneDef);
 		}
 		private void UpdateGhosts()
 		{
@@ -29,6 +35,10 @@ namespace FlatItemBuff.Items.Behaviors
 				if (summonTimer <= 0f)
 				{
 					CreateGhost(owner);
+					if (summonTimer <= 0f)
+                    {
+						summonTimer += retryTimer;
+					}
 				}
 				else
 				{
@@ -38,6 +48,11 @@ namespace FlatItemBuff.Items.Behaviors
 		}
 		private void CreateGhost(CharacterMaster ownerMaster)
 		{
+			if (GeneralChanges.BannedSceneSpawns.Contains(Stage.instance.sceneDef))
+            {
+				return;
+            }
+
 			CharacterBody ownerBody = ownerMaster.GetBody();
 			if (!ownerBody)
             {
@@ -74,25 +89,28 @@ namespace FlatItemBuff.Items.Behaviors
 					return;
 				}
 				CharacterMaster summonMaster = result.spawnedInstance.GetComponent<CharacterMaster>();
-				Deployable deployable = result.spawnedInstance.AddComponent<Deployable>();
-				ownerMaster.AddDeployable(deployable, deploySlot);
-				deployable.onUndeploy = deployable.onUndeploy ?? new UnityEvent();
-				deployable.onUndeploy.AddListener(new UnityAction(summonMaster.TrueKill));
-				GameObject bodyObject = summonMaster.GetBodyObject();
-				if (bodyObject)
-				{
-					CharacterBody summonBody = summonMaster.GetBody();
-					if (summonBody)
+				if (summonMaster)
+                {
+					Deployable deployable = result.spawnedInstance.AddComponent<Deployable>();
+					ownerMaster.AddDeployable(deployable, deploySlot);
+					deployable.onUndeploy = deployable.onUndeploy ?? new UnityEvent();
+					deployable.onUndeploy.AddListener(new UnityAction(summonMaster.TrueKill));
+					GameObject bodyObject = summonMaster.GetBodyObject();
+					if (bodyObject)
 					{
-						EffectData effectData = new EffectData();
-						effectData.origin = summonBody.corePosition;
-						effectData.SetNetworkedObjectReference(summonBody.gameObject);
-						effectData.scale = summonBody.radius;
-						EffectManager.SpawnEffect(Items.HappiestMask_Rework.GhostSpawnEffect, effectData, true);
-					}
-					foreach (EntityStateMachine entityStateMachine in bodyObject.GetComponents<EntityStateMachine>())
-					{
-						entityStateMachine.initialStateType = entityStateMachine.mainStateType;
+						CharacterBody summonBody = summonMaster.GetBody();
+						if (summonBody)
+						{
+							EffectData effectData = new EffectData();
+							effectData.origin = summonBody.corePosition;
+							effectData.SetNetworkedObjectReference(summonBody.gameObject);
+							effectData.scale = summonBody.radius;
+							EffectManager.SpawnEffect(Items.HappiestMask_Rework.GhostSpawnEffect, effectData, true);
+						}
+						foreach (EntityStateMachine entityStateMachine in bodyObject.GetComponents<EntityStateMachine>())
+						{
+							entityStateMachine.initialStateType = entityStateMachine.mainStateType;
+						}
 					}
 				}
 			}));

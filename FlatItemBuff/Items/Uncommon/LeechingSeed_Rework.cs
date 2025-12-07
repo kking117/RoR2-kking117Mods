@@ -5,6 +5,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using FlatItemBuff.Utils;
 
 namespace FlatItemBuff.Items
 {
@@ -134,7 +135,7 @@ namespace FlatItemBuff.Items
 						{
 							if (damageReport.victim)
 							{
-								if (Util.CheckRoll(procRate * LeechChance, damageReport.attackerMaster))
+								if (Helpers.CheckRollDamageInfo(damageReport.damageInfo, procRate * LeechChance, damageReport.attackerMaster))
 								{
 									DotController.InflictDot(damageReport.victimBody.gameObject, damageReport.attacker, damageReport.damageInfo.inflictedHurtbox, LeechDotIndex, GetLeechDuration(itemCount) * procRate, 1f, 1);
 								}

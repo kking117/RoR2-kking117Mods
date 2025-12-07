@@ -203,13 +203,13 @@ namespace FlatItemBuff.Items
 		private void OnInventoryChanged(CharacterBody self)
 		{
 			int itemCountA = self.inventory.GetItemCountEffective(GhostCloneIdentifier);
-			int itemCountB = self.inventory.GetItemCountEffective(RoR2Content.Items.GhostOnKill);
-			if (itemCountA > 0)
-			{
-				itemCountB = 0;
+			int itemCountB = 0;
+			if (itemCountA < 1)
+            {
+				itemCountB = self.inventory.GetItemCountEffective(RoR2Content.Items.GhostOnKill);
+				self.AddItemBehavior<Behaviors.HappiestMask_Rework>(itemCountB);
 			}
 			self.AddItemBehavior<Behaviors.GhostCloneIdentifier>(itemCountA);
-			self.AddItemBehavior<Behaviors.HappiestMask_Rework>(itemCountB);
 		}
 
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)

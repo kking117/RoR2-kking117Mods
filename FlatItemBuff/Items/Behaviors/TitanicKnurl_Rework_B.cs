@@ -278,7 +278,7 @@ namespace FlatItemBuff.Items.Behaviors
 			targetSearch.maxAngleFilter = laserAimAngle;
 			targetSearch.filterByLoS = true;
 			targetSearch.sortMode = BullseyeSearch.SortMode.DistanceAndAngle;
-			targetSearch.teamMaskFilter = TeamMask.allButNeutral;
+            targetSearch.teamMaskFilter = TeamMask.allButNeutral;
 			if (body.teamComponent)
 			{
 				targetSearch.teamMaskFilter.RemoveTeam(body.teamComponent.teamIndex);
@@ -346,7 +346,6 @@ namespace FlatItemBuff.Items.Behaviors
         }
 		private void FireLaser()
         {
-			Ray aimRay = GetAimRay();
 			if (bulletAttack == null)
 			{
 				bulletAttack = new BulletAttack();
