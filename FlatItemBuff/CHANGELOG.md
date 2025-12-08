@@ -1,3 +1,11 @@
+**1.26.6**
+
+```
+- Wax Quail:
+- IL code is no longer atrocious and generally less prone to conflicting with mods that modify EntityStates.GenericCharacterMain.ProcessJump.
+- Added "Boost Natural Air Jumps" configuration, allows Wax Quail to boost natural air jumps such as Mercenary's. (Default: false)
+```
+
 **1.26.5**
 
 ```

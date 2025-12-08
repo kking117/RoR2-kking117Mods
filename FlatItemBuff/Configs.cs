@@ -325,6 +325,7 @@ namespace FlatItemBuff
 			WaxQuail.BaseAirSpeed = Item_Uncommon_Config.Bind(Section_WaxQuail_Buff, "Base Air Speed", 0.12f, "Airborne movement speed at a single stack.").Value;
 			WaxQuail.StackAirSpeed = Item_Uncommon_Config.Bind(Section_WaxQuail_Buff, "Stack Air Speed", 0.08f, "Airborne movement speed for each additional stack.").Value;
 			WaxQuail.CapAirSpeed = Item_Uncommon_Config.Bind(Section_WaxQuail_Buff, "Capped Air Speed", 1.2f, "Hyperbolic cap to airborne movement speed. (Set to 0 or less to disable.)").Value;
+			WaxQuail.BoostNaturalAirJumps = Item_Uncommon_Config.Bind(Section_WaxQuail_Buff, "Boost Natural Air Jumps", false, "Allows natural air jumps (such as mercenary's) to be boosted by Wax Quail.").Value;
 		}
 		private static void Read_Stealthkit()
         {
