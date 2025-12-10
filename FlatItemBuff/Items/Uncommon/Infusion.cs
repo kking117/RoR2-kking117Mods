@@ -159,7 +159,7 @@ namespace FlatItemBuff.Items
 					if (Infinite && samples > maxCap)
 					{
 						levelBonus = maxCap / levelCost;
-						float capReduction = samples / maxCap;
+						float capReduction = 1f + (samples / maxCap * 0.5f);
 						levelBonus += ((samples - maxCap) / capReduction) / levelCost;
 					}
 					else

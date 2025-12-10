@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using FlatItemBuff.Utils;
 using RoR2;
 using R2API;
 using Mono.Cecil.Cil;
@@ -16,11 +17,13 @@ namespace FlatItemBuff.Items
 		internal static bool Enable = false;
 		internal static float BasePercentHP = 0.05f;
 		internal static bool NerfFakeKill = false;
-		internal static float ExtendDuration = 1f;
-		internal static float BaseRegen = 2f;
+		internal static float BaseRegen = 4f;
 		internal static float StackRegen = 0f;
 		internal static float BaseDuration = 3f;
 		internal static float StackDuration = 3f;
+		internal static int BaseCap = 1;
+		internal static int StackCap = 1;
+		internal static bool RefreshDuration = true;
 		internal static bool Comp_AssistManager = true;
 		public SearedSteak_Rework()
 		{
@@ -53,7 +56,8 @@ namespace FlatItemBuff.Items
 			StackRegen = Math.Max(0f, StackRegen);
 			BaseDuration = Math.Max(0f, BaseDuration);
 			StackDuration = Math.Max(0f, StackDuration);
-			ExtendDuration = Math.Max(0f, ExtendDuration);
+			BaseCap = Math.Max(0, BaseCap);
+			StackCap = Math.Max(0, StackCap);
 			BasePercentHP = Math.Max(0f, BasePercentHP);
 		}
 		private void CreateBuffs()
@@ -83,23 +87,34 @@ namespace FlatItemBuff.Items
 			pickup += "Regenerate health after killing an enemy. Cooked to perfection.";
 			if (StackRegen > 0f)
 			{
-				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{1} hp/s per stack)</style></style>", BaseRegen, StackRegen);
+				desc += string.Format("Killing an enemy Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{1} hp/s per stack)</style></style>", BaseRegen, StackRegen);
 			}
 			else
 			{
-				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s</style>", BaseRegen);
+				desc += string.Format("Killing an enemy Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s</style>", BaseRegen);
+			}
+			if (BaseCap > 0)
+			{
+				if (StackCap > 0)
+				{
+					desc += string.Format(" up to <style=cIsUtility>{0} <style=cStack>(+{1} per stack)</style></style> times, ", BaseCap, StackCap);
+				}
+				else
+				{
+					desc += string.Format(" up to <style=cIsUtility>{0}</style> times, ", BaseCap);
+				}
 			}
 			if (StackDuration > 0f)
             {
-				desc += string.Format(" for <style=cIsUtility>{0}s <style=cStack>(+{1}s per stack)</style></style> after killing an enemy.", BaseDuration, StackDuration);
+				desc += string.Format(" for <style=cIsUtility>{0}s <style=cStack>(+{1}s per stack)</style></style>.", BaseDuration, StackDuration);
 			}
 			else
             {
 				desc += string.Format(" for <style=cIsUtility>{0}s</style> after killing an enemy.", BaseDuration);
 			}
-			if (ExtendDuration > 0f)
+			if (RefreshDuration)
             {
-				desc += string.Format(" Consecutive kills extend the duration by <style=cIsUtility>{0}s</style>.", ExtendDuration);
+				desc += string.Format(" Kills also refresh the duration of all stacks.");
 			}
 			if (BasePercentHP > 0f)
 			{
@@ -148,19 +163,22 @@ namespace FlatItemBuff.Items
 				int itemCount = attackerBody.inventory.GetItemCountEffective(DLC3Content.Items.CookedSteak);
 				if (itemCount > 0)
 				{
-					if (NerfFakeKill)
-                    {
-						if (damageReport.victimMaster && damageReport.victimBody)
-                        {
-							Utils.Helpers.Add_ExtendBuffDuration(attackerBody, SearedRegenBuff, ExtendDuration);
-						}
-					}
-					else
-                    {
-						Utils.Helpers.Add_ExtendBuffDuration(attackerBody, SearedRegenBuff, ExtendDuration);
-					}
 					float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
-					if (duration > 0f)
+					int maxStacks = BaseCap;
+					if (maxStacks > 0)
+					{
+						maxStacks += StackCap * Math.Max(0, itemCount - 1);
+					}
+					bool refresh = RefreshDuration;
+					if (NerfFakeKill && (!damageReport.victimMaster || !damageReport.victimBody))
+					{
+						refresh = false;
+					}
+					if (refresh)
+					{
+						Helpers.RefreshBuffDuration(attackerBody, SearedRegenBuff, duration);
+					}
+					if (maxStacks < 1 || attackerBody.GetBuffCount(SearedRegenBuff) < maxStacks)
 					{
 						attackerBody.AddTimedBuff(SearedRegenBuff, duration);
 					}
@@ -178,19 +196,22 @@ namespace FlatItemBuff.Items
 			int itemCount = assistInventory.GetItemCountEffective(DLC3Content.Items.CookedSteak);
 			if (itemCount > 0)
 			{
-				if (NerfFakeKill)
-				{
-					if (assist.victimBody && assist.victimBody.master)
-					{
-						Utils.Helpers.Add_ExtendBuffDuration(assistBody, SearedRegenBuff, ExtendDuration);
-					}
-				}
-				else
-				{
-					Utils.Helpers.Add_ExtendBuffDuration(assistBody, SearedRegenBuff, ExtendDuration);
-				}
 				float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
-				if (duration > 0f)
+				int maxStacks = BaseCap;
+				if (maxStacks > 0)
+				{
+					maxStacks += StackCap * Math.Max(0, itemCount - 1);
+				}
+				bool refresh = RefreshDuration;
+				if (NerfFakeKill && (!assist.victimBody || !assist.victimBody.master))
+				{
+					refresh = false;
+				}
+				if (refresh)
+				{
+					Helpers.RefreshBuffDuration(assistBody, SearedRegenBuff, duration);
+				}
+				if (maxStacks < 1 || assistBody.GetBuffCount(SearedRegenBuff) < maxStacks)
 				{
 					assistBody.AddTimedBuff(SearedRegenBuff, duration);
 				}

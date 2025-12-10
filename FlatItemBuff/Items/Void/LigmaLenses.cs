@@ -18,6 +18,7 @@ namespace FlatItemBuff.Items
 		internal static float BaseChance = 0.5f;
 		internal static float StackChance = 0.5f;
 		internal static bool UseTotalDamage = false;
+		internal static bool VoidKillImmune = true;
 		private static GameObject HitEffect;
 		public LigmaLenses()
 		{
@@ -124,8 +125,8 @@ namespace FlatItemBuff.Items
 								procCoefficient = 0f
 							};
 							victimBody.healthComponent.TakeDamage(detainInfo);
-							if (!victimBody.bodyFlags.HasFlag(CharacterBody.BodyFlags.ImmuneToVoidDeath))
-                            {
+							if (VoidKillImmune || !victimBody.bodyFlags.HasFlag(CharacterBody.BodyFlags.ImmuneToVoidDeath))
+							{
 								victimBody.healthComponent.killingDamageType = DamageType.VoidDeath;
 							}
 							EffectManager.SpawnEffect(HitEffect, new EffectData

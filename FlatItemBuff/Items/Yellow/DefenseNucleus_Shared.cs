@@ -171,9 +171,37 @@ namespace FlatItemBuff.Items
                                 }
                             }
                         };
+
+                        //Box of Dynamite
+                        //"RoR2/DLC3/Items/DronesDropDynamite/DronesDropDynamiteDisplay.prefab"
+                        GameObject DynamitePrefab = Addressables.LoadAssetAsync<GameObject>("4df70a7b428d7254f8371feda485fa1d").WaitForCompletion();
+                        ItemDisplayRuleSet.KeyAssetRuleGroup droneDynamiteDisplay = new ItemDisplayRuleSet.KeyAssetRuleGroup
+                        {
+                            keyAsset = DLC3Content.Items.DroneDynamiteDisplay,
+                            //"RoR2/DLC3/Items/DronesDropDynamite/DroneDynamiteDisplay.asset"
+                            keyAssetAddress = new IDRSKeyAssetReference("ad887924c62aeb444aef1c3c2b181f48"),
+                            displayRuleGroup = new DisplayRuleGroup
+                            {
+                                rules = new ItemDisplayRule[]
+                                {
+                                    new ItemDisplayRule
+                                    {
+                                        ruleType = ItemDisplayRuleType.ParentedPrefab,
+                                        followerPrefab = DynamitePrefab,
+                                        followerPrefabAddress = new AssetReferenceGameObject("4df70a7b428d7254f8371feda485fa1d"),
+                                        childName = "CapMid",
+                                        localPos = new Vector3(0.06916f, 0.14187f, 1.31313f),
+                                        localAngles = new Vector3(10f, 180f, 0f),
+                                        localScale = new Vector3(0.8f, 0.8f, 0.8f),
+                                        limbMask = LimbFlags.None
+                                    }
+                                }
+                            }
+                        };
                         ArrayUtils.ArrayAppend<ItemDisplayRuleSet.KeyAssetRuleGroup>(ref itemdisplayruleSet2.keyAssetRuleGroups, droneBoostDisplay);
                         ArrayUtils.ArrayAppend<ItemDisplayRuleSet.KeyAssetRuleGroup>(ref itemdisplayruleSet2.keyAssetRuleGroups, dronePart1Display);
                         ArrayUtils.ArrayAppend<ItemDisplayRuleSet.KeyAssetRuleGroup>(ref itemdisplayruleSet2.keyAssetRuleGroups, dronePart2Display);
+                        ArrayUtils.ArrayAppend<ItemDisplayRuleSet.KeyAssetRuleGroup>(ref itemdisplayruleSet2.keyAssetRuleGroups, droneDynamiteDisplay);
                     }
                 }
             }

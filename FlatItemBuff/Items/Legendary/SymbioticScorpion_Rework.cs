@@ -201,13 +201,13 @@ namespace FlatItemBuff.Items
             {
 				if (ilcursor.TryGotoNext(
 					//x => x.MatchLdfld(typeof(DamageInfo), "damage"), //Was disabled for compat with SkillsReturns
-					x => x.MatchStloc(9)
+					x => x.MatchStloc(10)
 				))
 				{
 					ilcursor.Index += 2;
 					ilcursor.Emit(OpCodes.Ldarg, 0);
 					ilcursor.Emit(OpCodes.Ldarg, 1);
-					ilcursor.Emit(OpCodes.Ldloc, 9);
+					ilcursor.Emit(OpCodes.Ldloc, 10);
 					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, returnDamage) =>
 					{
 						if (damageInfo.dotIndex != DotController.DotIndex.None)
@@ -232,7 +232,7 @@ namespace FlatItemBuff.Items
 						}
 						return returnDamage;
 					});
-					ilcursor.Emit(OpCodes.Stloc, 9);
+					ilcursor.Emit(OpCodes.Stloc, 10);
 				}
 				else
 				{

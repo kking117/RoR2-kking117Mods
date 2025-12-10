@@ -27,6 +27,7 @@ namespace FlatItemBuff.Utils
 			}
 			return false;
 		}
+
 		public static void AddOrExtendBuff(CharacterBody body, BuffDef buffDef, float duration)
 		{
 			BuffIndex buffIndex = buffDef.buffIndex;
@@ -40,6 +41,16 @@ namespace FlatItemBuff.Utils
 			}
 			body.ClearTimedBuffs(buffIndex);
 			body.AddTimedBuff(buffDef, duration);
+		}
+		public static void RefreshBuffDuration(CharacterBody body, BuffDef buffDef, float duration)
+		{
+			int buffCount = body.GetBuffCount(buffDef);
+			BuffIndex buffIndex = buffDef.buffIndex;
+			body.ClearTimedBuffs(buffIndex);
+			for (int i = 0; i < buffCount; i++)
+			{
+				body.AddTimedBuff(buffDef, duration);
+			}
 		}
 		public static void Add_ExtendBuffDuration(CharacterBody body, BuffDef buffDef, float addDuration)
 		{

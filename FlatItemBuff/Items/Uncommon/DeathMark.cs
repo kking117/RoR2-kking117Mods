@@ -113,7 +113,7 @@ namespace FlatItemBuff.Items
 			)
 			&&
 			ilcursor.TryGotoNext(
-				x => x.MatchLdloc(9),
+				x => x.MatchLdloc(10),
 				x => x.MatchLdcR4(1.5f),
 				x => x.MatchMul()
 			))

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using RoR2;
+using FlatItemBuff.Utils;
 using R2API;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -15,11 +16,13 @@ namespace FlatItemBuff.Items
 		private const string LogName = "Bison Steak Rework";
 		internal static bool Enable = false;
 		internal static bool NerfFakeKill = false;
-		internal static float ExtendDuration = 1f;
-		internal static float BaseRegen = 1f;
+		internal static float BaseRegen = 2f;
 		internal static float StackRegen = 0f;
 		internal static float BaseDuration = 3f;
 		internal static float StackDuration = 3f;
+		internal static int BaseCap = 1;
+		internal static int StackCap = 1;
+		internal static bool RefreshDuration = true;
 		internal static bool Comp_AssistManager = true;
 		public BisonSteak_Rework()
 		{
@@ -52,7 +55,8 @@ namespace FlatItemBuff.Items
 			StackRegen = Math.Max(0f, StackRegen);
 			BaseDuration = Math.Max(0f, BaseDuration);
 			StackDuration = Math.Max(0f, StackDuration);
-			ExtendDuration = Math.Max(0f, ExtendDuration);
+			BaseCap = Math.Max(0, BaseCap);
+			StackCap = Math.Max(0, StackCap);
 		}
 		private void CreateBuffs()
 		{
@@ -79,23 +83,34 @@ namespace FlatItemBuff.Items
 			pickup += "Regenerate health after killing an enemy.";
 			if (StackRegen > 0f)
 			{
-				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{1} hp/s per stack)</style></style>", BaseRegen, StackRegen);
+				desc += string.Format("Killing an enemy increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s <style=cStack>(+{1} hp/s per stack)</style></style>", BaseRegen, StackRegen);
 			}
 			else
 			{
-				desc += string.Format("Increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s</style>", BaseRegen);
+				desc += string.Format("Killing an enemy increases <style=cIsHealing>base health regeneration</style> by <style=cIsHealing>+{0} hp/s</style>", BaseRegen);
+			}
+			if (BaseCap > 0)
+			{
+				if (StackCap > 0)
+                {
+					desc += string.Format(" up to <style=cIsUtility>{0} <style=cStack>(+{1} per stack)</style></style> times, ", BaseCap, StackCap);
+				}
+				else
+				{
+					desc += string.Format(" up to <style=cIsUtility>{0}</style> times, ", BaseCap);
+				}
 			}
 			if (StackDuration > 0f)
             {
-				desc += string.Format(" for <style=cIsUtility>{0}s <style=cStack>(+{1}s per stack)</style></style> after killing an enemy.", BaseDuration, StackDuration);
+				desc += string.Format(" for <style=cIsUtility>{0}s <style=cStack>(+{1}s per stack)</style></style>.", BaseDuration, StackDuration);
 			}
 			else
             {
-				desc += string.Format(" for <style=cIsUtility>{0}s</style> after killing an enemy.", BaseDuration);
+				desc += string.Format(" for <style=cIsUtility>{0}s</style>.", BaseDuration);
 			}
-			if (ExtendDuration > 0f)
+			if (RefreshDuration)
             {
-				desc += string.Format(" Consecutive kills extend the duration by <style=cIsUtility>{0}s</style>.", ExtendDuration);
+				desc += string.Format(" Kills also refresh the duration of all stacks.");
 			}
 			LanguageAPI.Add("ITEM_FLATHEALTH_PICKUP", pickup);
 			LanguageAPI.Add("ITEM_FLATHEALTH_DESC", desc);
@@ -136,19 +151,22 @@ namespace FlatItemBuff.Items
 				int itemCount = attackerBody.inventory.GetItemCountEffective(RoR2Content.Items.FlatHealth);
 				if (itemCount > 0)
 				{
-					if (NerfFakeKill)
-                    {
-						if (damageReport.victimMaster && damageReport.victimBody)
-                        {
-							Utils.Helpers.Add_ExtendBuffDuration(attackerBody, FreshRegenBuff, ExtendDuration);
-						}
-					}
-					else
-                    {
-						Utils.Helpers.Add_ExtendBuffDuration(attackerBody, FreshRegenBuff, ExtendDuration);
-					}
 					float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
-					if (duration > 0f)
+					int maxStacks = BaseCap;
+					if (maxStacks > 0)
+                    {
+						maxStacks += StackCap * Math.Max(0, itemCount - 1);
+					}
+					bool refresh = RefreshDuration;
+					if (NerfFakeKill && (!damageReport.victimMaster || !damageReport.victimBody))
+                    {
+						refresh = false;
+					}
+					if (refresh)
+					{
+						Helpers.RefreshBuffDuration(attackerBody, FreshRegenBuff, duration);
+					}
+					if (maxStacks < 1 || attackerBody.GetBuffCount(FreshRegenBuff) < maxStacks)
 					{
 						attackerBody.AddTimedBuff(FreshRegenBuff, duration);
 					}
@@ -166,19 +184,22 @@ namespace FlatItemBuff.Items
 			int itemCount = assistInventory.GetItemCountEffective(RoR2Content.Items.FlatHealth);
 			if (itemCount > 0)
 			{
-				if (NerfFakeKill)
-				{
-					if (assist.victimBody && assist.victimBody.master)
-					{
-						Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
-					}
-				}
-				else
-				{
-					Utils.Helpers.Add_ExtendBuffDuration(assistBody, FreshRegenBuff, ExtendDuration);
-				}
 				float duration = BaseDuration + (Math.Max(0, itemCount - 1) * StackDuration);
-				if (duration > 0f)
+				int maxStacks = BaseCap;
+				if (maxStacks > 0)
+				{
+					maxStacks += StackCap * Math.Max(0, itemCount - 1);
+				}
+				bool refresh = RefreshDuration;
+				if (NerfFakeKill && (!assist.victimBody || !assist.victimBody.master))
+				{
+					refresh = false;
+				}
+				if (refresh)
+				{
+					Helpers.RefreshBuffDuration(assistBody, FreshRegenBuff, duration);
+				}
+				if (maxStacks < 1 || assistBody.GetBuffCount(FreshRegenBuff) < maxStacks)
 				{
 					assistBody.AddTimedBuff(FreshRegenBuff, duration);
 				}

@@ -1,7 +1,44 @@
+**1.27.0**
+
+Small fix to various launch errors from Patch 1.4.1.
+Please do contact me if there's anything to fix.
+
+```
+- Bison Steak Rework:
+- Stacks are capped at 1 (+1 per stack) and kills refresh the duration.
+- To compensate the health regen is now 2HP/s instead of 1HP/s.
+^ With a Hearty Stew and a Forgive Me Please this could easily create insane amounts of damage, dialing the buff stacking back but making it a bit stronger by base.
+
+- Warped Echo Buff:
+- Fixed launch errors.
+
+- Death Mark Buff:
+- Fixed launch errors.
+
+- Infusion Buff:
+- Adjusted the soft cap so that it takes a bit longer to reach the hard limit.
+^ If my math is correct I don't think it was realistically possible to reach twice the soft cap's value.
+^ May expose the strength of the cap as a config setting in the future.
+
+- Symbiotic Scorpion Rework:
+- Fixed launch errors.
+
+- Defense Nucleus Shared:
+- Added item display for Box of Dynamite.
+
+- Lost Seer's Lenses Rework:
+- Added "Void Kill Immune Targets" configuration, allows the item to inflict void deaths even on targets immune to void deaths, added so end users can prevent future softlocks. (Default: true)
+
+- Seared Steak Rework:
+- Bison Steak Rework changes were applied the same here.
+
+- Added a buff for Box of Dynamite.
+```
+
 **1.26.6**
 
 ```
-- Wax Quail:
+- Wax Quail Buff:
 - IL code is no longer atrocious and generally less prone to conflicting with mods that modify EntityStates.GenericCharacterMain.ProcessJump.
 - Added "Boost Natural Air Jumps" configuration, allows Wax Quail to boost natural air jumps such as Mercenary's. (Default: false)
 ```

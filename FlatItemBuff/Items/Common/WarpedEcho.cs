@@ -192,10 +192,10 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
 			}
 
-			//Num9 = The number of delayed hits we should take based on our item count.
+			//Num16 = The number of delayed hits we should take based on our item count.
 			//Setting this to 0 so we can run our own code.
 			if (ilcursor.TryGotoNext(
-				x => x.MatchStloc(56)
+				x => x.MatchStloc(69)
 			))
 			{
 				ilcursor.Index -= 7;
@@ -207,18 +207,19 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - IL Hook failed");
 			}
 
-			//Num3 = The amount of damage we actually take in HealthComponent
+			//Num15 = The amount of damage we take from the hit.
+			//Num3 = The amount of damage we take as a number visual.
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.0f),
-				x => x.MatchStloc(9)
+				x => x.MatchStloc(11)
 			))
 			{
 				//ilcursor.Index -= 1;
 				ilcursor.RemoveRange(1);
 				ilcursor.Emit(OpCodes.Ldarg, 0);
 				ilcursor.Emit(OpCodes.Ldarg, 1);
-				ilcursor.Emit(OpCodes.Ldloc, 7);
-				ilcursor.Emit(OpCodes.Ldloc, 9);
+				ilcursor.Emit(OpCodes.Ldloc, 7); //block flag
+				ilcursor.Emit(OpCodes.Ldloc, 10);
 
 				ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, bool, float, float>>((self, damageInfo, ignoreBlock, returnValue) =>
 				{
@@ -272,22 +273,22 @@ namespace FlatItemBuff.Items
 					//MainPlugin.ModLogger.LogInfo("new damage = " + returnValue);
 					return returnValue;
 				});
+				if (ilcursor.TryGotoNext(
+				x => x.MatchLdcR4(0.0f),
+				x => x.MatchStloc(10)
+				))
+				{
+					ilcursor.RemoveRange(1);
+					ilcursor.Emit(OpCodes.Ldloc, 11);
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage D - IL Hook failed");
+				}
 			}
 			else
 			{
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage C - IL Hook failed");
-			}
-
-			if (ilcursor.TryGotoNext(
-				x => x.MatchStloc(11)
-			))
-			{
-				ilcursor.Index -= 1;
-				ilcursor.RemoveRange(2);
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage D - IL Hook failed");
 			}
 
 			if (ilcursor.TryGotoNext(

@@ -34,6 +34,8 @@ namespace FlatItemBuff
 
 		private const string Section_BreachingFin_Rework = "Breaching Fin Rework";
 
+		private const string Section_BoxOfDynamite_Buff = "Box of Dynamite";
+
 		private const string Section_Chronobauble_Buff = "Chronobauble";
 
 		private const string Section_DeathMark_Buff = "Death Mark";
@@ -129,6 +131,7 @@ namespace FlatItemBuff
 			Read_WarpedEcho();
 			//Uncommon
 			Read_BreachingFin();
+			Read_BoxOfDynamite();
 			Read_Chronobauble();
 			Read_DeathMark();
 			Read_HuntersHarpoon();
@@ -177,12 +180,14 @@ namespace FlatItemBuff
 			BisonSteak.LevelHP = Item_Common_Config.Bind(Section_BisonSteak_Buff, "Level HP", 3f, "Health each stack gives per level.").Value;
 
 			BisonSteak_Rework.Enable = Item_Common_Config.Bind(Section_BisonSteak_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
-			BisonSteak_Rework.BaseRegen = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Base Regen", 1f, "Health regen at a single stack. (Scales with level)").Value;
+			BisonSteak_Rework.BaseRegen = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Base Regen", 2f, "Health regen at a single stack. (Scales with level)").Value;
 			BisonSteak_Rework.StackRegen = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Stack Regen", 0f, "Health regen for each additional stack. (Scales with level)").Value;
 			BisonSteak_Rework.BaseDuration = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Base Regen Duration", 3f, "Duration of the regen buff at a single stack.").Value;
 			BisonSteak_Rework.StackDuration = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
-			BisonSteak_Rework.ExtendDuration = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
-			BisonSteak_Rework.NerfFakeKill = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
+			BisonSteak_Rework.BaseCap = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Base Buff Cap", 1, "Buff stack cap at single stack. (Set to 0 for no cap.)").Value;
+			BisonSteak_Rework.StackCap = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Stack Buff Cap", 1, "Buff stack cap for each additional stack.").Value;
+			BisonSteak_Rework.RefreshDuration = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Refresh Duration", true, "Kills also refresh the duration?").Value;
+			BisonSteak_Rework.NerfFakeKill = Item_Common_Config.Bind(Section_BisonSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from refreshing the duration.").Value;
 			BisonSteak_Rework.Comp_AssistManager = Item_Common_Config.Bind(Section_BisonSteak_Rework, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 		private static void Read_ElusiveAntlers()
@@ -243,6 +248,14 @@ namespace FlatItemBuff
 			BreachingFin_Rework.CreditFall = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Credit Fall Damage", false, "Credits any fall damage the target takes to the inflictor of the knockback.").Value;
 			BreachingFin_Rework.Cooldown = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "Cooldown", 10, "The cooldown between knockbacks.").Value;
 			BreachingFin_Rework.OnSkill = Item_Uncommon_Config.Bind(Section_BreachingFin_Rework, "On Skills", true, "Only activate on Skill damage?").Value;
+		}
+
+		private static void Read_BoxOfDynamite()
+		{
+			BoxOfDynamite.Enable = Item_Uncommon_Config.Bind(Section_BoxOfDynamite_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			BoxOfDynamite.BaseDamage = Item_Uncommon_Config.Bind(Section_BoxOfDynamite_Buff, "Base Damage", 2.5f, "Base damage of dynamite at a single stack.").Value;
+			BoxOfDynamite.StackDamage = Item_Uncommon_Config.Bind(Section_BoxOfDynamite_Buff, "Stack Damage", 1.5f, "Base damage of dynamite for each additional stack.").Value;
+			BoxOfDynamite.BaseRadius = Item_Uncommon_Config.Bind(Section_BoxOfDynamite_Buff, "Blast Radius", 7.0f, "Blast radius of dynamite.").Value;
 		}
 		private static void Read_Chronobauble()
         {
@@ -554,7 +567,7 @@ namespace FlatItemBuff
 
 			DefenseNucleus_Shared.TweakAI = Item_Yellow_Config.Bind(Section_DefenseNucleus_Shared, "Better AI", false, "Gives 360 Degree vision and prevents retaliation against allies.").Value;
 			DefenseNucleus_Shared.ForceMechanical = Item_Yellow_Config.Bind(Section_DefenseNucleus_Shared, "Is Mechanical", false, "Gives it the Mechanical flag, allowing it to get Spare Drone Parts and Captain's Microbots.").Value;
-			DefenseNucleus_Shared.ExtraDisplays = Item_Yellow_Config.Bind(Section_DefenseNucleus_Shared, "Modded Displays", false, "Adds Spare Drone Parts item displays to the Alpha Construct.").Value;
+			DefenseNucleus_Shared.ExtraDisplays = Item_Yellow_Config.Bind(Section_DefenseNucleus_Shared, "Modded Displays", false, "Adds item displays to the Alpha Construct for vanilla drone items like Spare Drone Parts and Box of Dynamite.").Value;
 		}
 		private static void Read_LigmaLenses()
         {
@@ -564,6 +577,7 @@ namespace FlatItemBuff
 			LigmaLenses.BaseDamage = Item_Void_Config.Bind(Section_LigmaLenses_Buff, "Base Damage", 50.0f, "Base damage at a single stack.").Value;
 			LigmaLenses.StackDamage = Item_Void_Config.Bind(Section_LigmaLenses_Buff, "Stack Damage", 0.0f, "Base damage for each additional stack.").Value;
 			LigmaLenses.UseTotalDamage = Item_Void_Config.Bind(Section_LigmaLenses_Buff, "Deal Total", false, "Deal Total Damage of the attack instead of the attacker's damage stat?").Value;
+			LigmaLenses.VoidKillImmune = Item_Void_Config.Bind(Section_LigmaLenses_Buff, "Void Kill Immune Targets", true, "Allows the item to trigger void style deaths even against targets that are immune to it. (Visual, but can cause softlocks due to death animations being skipped.)").Value;
 		}
 		private static void Read_VoidsentFlame()
         {
@@ -598,12 +612,14 @@ namespace FlatItemBuff
 
 			SearedSteak_Rework.Enable = Item_Food_Config.Bind(Section_SearedSteak_Rework, Label_EnableRework, false, Desc_EnableRework).Value;
 			SearedSteak_Rework.BasePercentHP = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Percent HP", 0.05f, "Percent Health each stack gives.").Value;
-			SearedSteak_Rework.BaseRegen = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Regen", 2f, "Health regen at a single stack. (Scales with level)").Value;
+			SearedSteak_Rework.BaseRegen = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Regen", 4f, "Health regen at a single stack. (Scales with level)").Value;
 			SearedSteak_Rework.StackRegen = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Stack Regen", 0f, "Health regen for each additional stack. (Scales with level)").Value;
 			SearedSteak_Rework.BaseDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Regen Duration", 3f, "Duration of the regen buff at a single stack.").Value;
 			SearedSteak_Rework.StackDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Stack Regen Duration", 3f, "Duration of the regen buff for each additional stack.").Value;
-			SearedSteak_Rework.ExtendDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Extend Duration", 1f, "How much to extend the effect duration on kill.").Value;
-			SearedSteak_Rework.NerfFakeKill = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from extending the duration.").Value;
+			SearedSteak_Rework.BaseCap = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Base Buff Cap", 1, "Buff stack cap at single stack. (Set to 0 for no cap.)").Value;
+			SearedSteak_Rework.StackCap = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Stack Buff Cap", 1, "Buff stack cap for each additional stack.").Value;
+			SearedSteak_Rework.RefreshDuration = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Refresh Duration", true, "Kills also refresh the duration?").Value;
+			SearedSteak_Rework.NerfFakeKill = Item_Food_Config.Bind(Section_SearedSteak_Rework, "Nerf Fake Kills", false, "Prevents fake kills from refreshing the duration.").Value;
 			SearedSteak_Rework.Comp_AssistManager = Item_Food_Config.Bind(Section_SearedSteak_Rework, Label_AssistManager, true, Desc_AssistManager).Value;
 		}
 	}
