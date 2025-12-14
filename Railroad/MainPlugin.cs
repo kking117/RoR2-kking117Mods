@@ -14,7 +14,7 @@ namespace Railroad
 	{
 		public const string MODUID = "com.kking117.Railroad";
 		public const string MODNAME = "Railroad";
-		public const string MODVERSION = "1.2.0";
+		public const string MODVERSION = "1.2.1";
 
 		internal static BepInEx.Logging.ManualLogSource ModLogger;
 		internal static PluginInfo pluginInfo;
@@ -30,6 +30,7 @@ namespace Railroad
 		{
 			new Changes.Looping();
 			new Changes.Stages();
+			//new Changes.InteractablePaths();
 		}
 	}
 }

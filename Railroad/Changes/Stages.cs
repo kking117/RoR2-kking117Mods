@@ -532,9 +532,10 @@ namespace Railroad.Changes
         }
         private void VoidRaidOnPortal(On.RoR2.VoidRaidGauntletController.orig_SpawnOutroPortal orig, VoidRaidGauntletController self)
         {
+			//I don't think this gets called on the client end, but whatever.
             if (!NetworkServer.active)
             {
-                return;
+                orig(self);
             }
             if (VoidRaid_Eclipse || !IsEclipse())
             {
@@ -544,9 +545,9 @@ namespace Railroad.Changes
                 }
 
                 Vector3 position = self.currentDonut.returnPoint.transform.position;
-                if (Moon2_Portals != null)
+                if (VoidRaid_Portals != null)
                 {
-                    List<ConfigPortalType> UsablePortals = GetValidPortals(Moon2_Portals);
+                    List<ConfigPortalType> UsablePortals = GetValidPortals(VoidRaid_Portals);
                     TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 20f, true);
                 }
                 if (VoidRaid_Reward)

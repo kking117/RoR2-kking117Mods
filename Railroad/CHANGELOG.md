@@ -1,3 +1,10 @@
+**1.2.1**
+
+```
+- Stages
+- Fixed Planetarium portals using the Commencement Portal configuration.
+```
+
 **1.2.0**
 
 Changes made will require you to review your configs.
