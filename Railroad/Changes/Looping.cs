@@ -13,40 +13,47 @@ namespace Railroad.Changes
 {
     public class Looping
     {
-        internal static bool Enable = false;
-
-        //public static int Loop_MinStageCount = 5;
-        public static bool Loop_DejaVu = false;
-
         internal static bool Loop_LoopTeleporter = false;
         internal static int Loop_OrderTeleporter = 0;
 
-        public static bool AreLooping = false;
-
         private static InteractableSpawnCard BaseTeleporter = Addressables.LoadAssetAsync<InteractableSpawnCard>("RoR2/Base/Teleporters/iscTeleporter.asset").WaitForCompletion();
         private static InteractableSpawnCard LunarTeleporter = Addressables.LoadAssetAsync<InteractableSpawnCard>("RoR2/Base/Teleporters/iscLunarTeleporter.asset").WaitForCompletion();
+        private static string LunarTeleporterOBJName = "LunarTeleporter Variant(Clone)";
 
-        internal static string Loop_ArtifactRaw = "";
-        internal static List<ArtifactDef> Loop_Artifacts = null;
+        internal static string ModeStandard_PrimordialTele_ReplaceReq_Input = "";
+        internal static string ModeEclipse_PrimordialTele_ReplaceReq_Input = "";
+        internal static List<ReqAllowData> ModeStandard_PrimordialTele_Data = null;
+        internal static List<ReqAllowData> ModeEclipse_PrimordialTele_Data = null;
+
+        internal static string ModeStandard_Artifact_Input = "";
+        internal static string ModeEclipse_Artifact_Input = "";
+        internal static List<ArtifactDef> ModeStandard_Artifacts = null;
+        internal static List<ArtifactDef> ModeEclipse_Artifacts = null;
         public Looping()
         {
-            if (!Enable)
-            {
-                return;
-            }
+            ProcessConfig();
             Hooks();
+        }
+        private void ProcessConfig()
+        {
+            if (ModeStandard_PrimordialTele_ReplaceReq_Input.Length > 0)
+            {
+                ModeStandard_PrimordialTele_Data = ReqList.ReadStageNumberInput(ModeStandard_PrimordialTele_ReplaceReq_Input, "Looping|Standard|Primordial Teleporter Conditions");
+            }
+            if (ModeEclipse_PrimordialTele_ReplaceReq_Input.Length > 0)
+            {
+                ModeEclipse_PrimordialTele_Data = ReqList.ReadStageNumberInput(ModeEclipse_PrimordialTele_ReplaceReq_Input, "Looping|Eclipse|Primordial Teleporter Conditions");
+            }
         }
         private void Hooks()
         {
             On.RoR2.Run.BeginStage += Run_BeginStage;
-            if (Loop_LoopTeleporter || Loop_OrderTeleporter > 0)
-            {
-                SceneDirector.onPrePopulateSceneServer += OnPrePopulateScene;
-            }
-            if (Loop_ArtifactRaw.Length > 0)
-            {
-                On.RoR2.ArtifactCatalog.Init += ArtifactCatalog_Init;
-            }
+            SceneDirector.onPrePopulateSceneServer += OnPrePopulateScene;
+            On.RoR2.ArtifactCatalog.Init += ArtifactCatalog_Init;
+            //On.RoR2.Run.OnServerTeleporterPlaced += OnTeleporterPlaced;
+            //To Lock the Primordial Teleporter Prongs
+            //Discuss this with Matsan post update, to discuss the viability of doing something like this, since portal orbs exist.
+            //On.EntityStates.LunarTeleporter.Active.OnEnter += LunarProngs_Active;
         }
         internal static ArtifactDef ConvertStringToArtifactDef(string artifactName)
         {
@@ -76,123 +83,143 @@ namespace Railroad.Changes
         internal static void ArtifactCatalog_Init(On.RoR2.ArtifactCatalog.orig_Init orig)
         {
             orig();
-            Loop_Artifacts = new List<ArtifactDef>();
-            string[] items = Loop_ArtifactRaw.Split(',');
-            for (int i = 0; i < items.Length; i++)
+            ModeStandard_Artifacts = new List<ArtifactDef>();
+            if (ModeStandard_Artifact_Input.Length > 0)
             {
-                string artifactName = items[i].Trim();
-                ArtifactDef artifactDef = ConvertStringToArtifactDef(artifactName);
-                if (artifactDef != null)
+                string[] items = ModeStandard_Artifact_Input.Split(',');
+                for (int i = 0; i < items.Length; i++)
                 {
-                    if (!Loop_Artifacts.Contains(artifactDef))
+                    string artifactName = items[i].Trim();
+                    ArtifactDef artifactDef = ConvertStringToArtifactDef(artifactName);
+                    if (artifactDef != null)
                     {
-                        Loop_Artifacts.Add(artifactDef);
+                        if (!ModeStandard_Artifacts.Contains(artifactDef))
+                        {
+                            ModeStandard_Artifacts.Add(artifactDef);
+                        }
+                    }
+                    else
+                    {
+                        MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + artifactName + "]");
                     }
                 }
-                else
+                if (ModeStandard_Artifacts.Count < 1)
                 {
-                    MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + artifactName + "]");
+                    ModeStandard_Artifacts = null;
                 }
             }
-            if (Loop_Artifacts.Count < 1)
+            ModeEclipse_Artifacts = new List<ArtifactDef>();
+            if (ModeEclipse_Artifact_Input.Length > 0)
             {
-                Loop_Artifacts = null;
+                string[] items = ModeEclipse_Artifact_Input.Split(',');
+                for (int i = 0; i < items.Length; i++)
+                {
+                    string artifactName = items[i].Trim();
+                    ArtifactDef artifactDef = ConvertStringToArtifactDef(artifactName);
+                    if (artifactDef != null)
+                    {
+                        if (!ModeEclipse_Artifacts.Contains(artifactDef))
+                        {
+                            ModeEclipse_Artifacts.Add(artifactDef);
+                        }
+                    }
+                    else
+                    {
+                        MainPlugin.ModLogger.LogWarning("Could not find ArtifactDef: [" + artifactName + "]");
+                    }
+                }
+                if (ModeEclipse_Artifacts.Count < 1)
+                {
+                    ModeEclipse_Artifacts = null;
+                }
             }
         }
+        /*private void OnTeleporterPlaced(On.RoR2.Run.orig_OnServerTeleporterPlaced orig, Run self, SceneDirector sceneDirector, GameObject teleporter)
+        {
+            orig(self, sceneDirector, teleporter);
+            if (teleporter)
+            {
+                if (teleporter.name == LunarTeleporterOBJName)
+                {
+                    MainPlugin.ModLogger.LogInfo("Lunar Teleporter");
+                }
+            }
+        }*/
+        /*private void LunarProngs_Active(On.EntityStates.LunarTeleporter.Active.orig_OnEnter orig, EntityStates.LunarTeleporter.Active self)
+        {
+            orig(self);
+            if ((RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Mithrix) == 0)
+            {
+                self.preferredInteractability = Interactability.ConditionsNotMet;
+            }
+        }*/
         private void OnPrePopulateScene(SceneDirector self)
         {
             if (!self.teleporterSpawnCard)
             {
                 return;
             }
-            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
-            if (AreLooping)
+            //This may cause issues if another mod adds special teleporters.
+            //It may not however, Conduit Canyon seems to work properly.
+            //I assume these cases use their own systems.
+            SceneDef sceneDef = SceneCatalog.GetSceneDefForCurrentScene();
+            if (IsEclipse())
             {
-                if (Loop_LoopTeleporter)
+                if (ReqList.PassesReqDataList(ModeEclipse_PrimordialTele_Data, Run.instance.stageClearCount+1, sceneDef))
                 {
                     self.teleporterSpawnCard = LunarTeleporter;
                     return;
                 }
+                self.teleporterSpawnCard = BaseTeleporter;
             }
-            if (Loop_OrderTeleporter > 0)
+            else
             {
-                if (scene.stageOrder < Loop_OrderTeleporter)
-                {
-                    self.teleporterSpawnCard = BaseTeleporter;
-                }
-                else
+                if (ReqList.PassesReqDataList(ModeStandard_PrimordialTele_Data, Run.instance.stageClearCount + 1, sceneDef))
                 {
                     self.teleporterSpawnCard = LunarTeleporter;
+                    return;
                 }
+                self.teleporterSpawnCard = BaseTeleporter;
             }
         }
         private void Run_BeginStage(On.RoR2.Run.orig_BeginStage orig, Run self)
         {
             orig(self);
-            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
-            if (self.loopClearCount < 1)
+            if ((RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Looping) != 0)
             {
-                AreLooping = false;
-            }
-            if (scene)
-            {
-                if (StageCountsForLoop(scene))
+                if (IsEclipse())
                 {
-                    AreLooping = true;
-                    //MainPlugin.ModLogger.LogDebug("Current stage counts as looping.");
-                }
-            }
-            if (AreLooping)
-            {
-                if (Loop_Artifacts != null)
-                {
-                    for(int i = 0; i < Loop_Artifacts.Count; i++)
+                    for (int i = 0; i < ModeEclipse_Artifacts.Count; i++)
                     {
-                        ExpansionDef reqDLC = Loop_Artifacts[i].requiredExpansion;
+                        ExpansionDef reqDLC = ModeEclipse_Artifacts[i].requiredExpansion;
                         if (reqDLC == null || Run.instance.IsExpansionEnabled(reqDLC))
                         {
-                            RunArtifactManager.instance.SetArtifactEnabledServer(Loop_Artifacts[i], true);
+                            RunArtifactManager.instance.SetArtifactEnabledServer(ModeEclipse_Artifacts[i], true);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < ModeStandard_Artifacts.Count; i++)
+                    {
+                        ExpansionDef reqDLC = ModeStandard_Artifacts[i].requiredExpansion;
+                        if (reqDLC == null || Run.instance.IsExpansionEnabled(reqDLC))
+                        {
+                            RunArtifactManager.instance.SetArtifactEnabledServer(ModeStandard_Artifacts[i], true);
                         }
                     }
                 }
             }
         }
 
-        private bool StageCountsForLoop(SceneDef scene)
+        private bool IsEclipse()
         {
-            //MainPlugin.ModLogger.LogDebug(scene.nameToken + ".stageOrder = " + scene.stageOrder);
-            //MainPlugin.ModLogger.LogDebug(scene.nameToken + ".sceneType = " + scene.sceneType);
-            //Void Field = 97-Intermission
-            //Prime Meridian = 96-Untimed
-            //Gilded Coast = 96-Intermission
-            //Moon = 6-Invalid
-            //Moon2 = 6-Stage
-            //Void Locus = 99-Stage
-            //Planetarium = 99-Stage
-            //Bazaar = 98-Intermission
-            //A Moment, Fractured = 100-Intermission
-            //A Moment, Whole = 99-Intermission
-            //So from this:
-            //Stage = Time Moves and it counts as a Stage Clear
-            //Untimed = Time does not move and it counts as a Stage Clear
-            //Intermission = Time does not move and it does not count as a Stage Clear
-            if (Loop_DejaVu)
+            Run runInstance = Run.instance;
+            if (runInstance)
             {
-                if (scene.sceneType != SceneType.Stage)
-                {
-                    return false;
-                }
-                if (scene.isFinalStage)
-                {
-                    return false;
-                }
-                if (scene.stageOrder == 1)
-                {
-                    return Run.instance.loopClearCount > 0;
-                }
-                return false;
+                return runInstance.selectedDifficulty >= DifficultyIndex.Eclipse1;
             }
-            return Run.instance.loopClearCount > 0;
+            return false;
         }
     }
 }

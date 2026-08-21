@@ -6,6 +6,7 @@ using RoR2.ExpansionManagement;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
+using UnityEngine.SceneManagement;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
@@ -13,103 +14,95 @@ namespace Railroad.Changes
 {
     public class Stages
     {
-        internal static bool Enable = false;
+        internal static bool Enable = true;
 
-        internal static bool Moon2_Eclipse = false;
-        internal static string Moon2_Portal_Input = "";
-        internal static List<ConfigPortalType> Moon2_Portals;
-        internal static bool Moon2_Reward = false;
+        internal static string ModeStandard_Moon2_Portal_Input = "";
+        internal static string ModeEclipse_Moon2_Portal_Input = "";
+        internal static List<PortalSpawnData> ModeStandard_Moon2_Portals;
+        internal static List<PortalSpawnData> ModeEclipse_Moon2_Portals;
+        internal static bool ModeStandard_Moon2_Reward = false;
+        internal static bool ModeEclipse_Moon2_Reward = false;
 
-        internal static bool Meridian_Eclipse = false;
-        internal static string Meridian_Portal_Input = "";
-        internal static List<ConfigPortalType> Meridian_Portals;
-        internal static bool Meridian_Modify_Portal = false;
-        internal static bool Meridian_Reward = true;
-        internal static bool Meridian_AllowRebirth = true;
-        internal static bool Meridian_ACPortal = true;
+        internal static string ModeStandard_Meridian_Portal_Input = "";
+        internal static string ModeEclipse_Meridian_Portal_Input = "";
+        internal static List<PortalSpawnData> ModeStandard_Meridian_Portals;
+        internal static List<PortalSpawnData> ModeEclipse_Meridian_Portals;
+        internal static bool ModeStandard_Meridian_Modify_Portal = false;
+        internal static bool ModeEclipse_Meridian_Modify_Portal = false;
+        internal static bool ModeStandard_Meridian_Reward = true;
+        internal static bool ModeEclipse_Meridian_Reward = true;
+        internal static bool ModeStandard_Meridian_AllowRebirth = true;
+        internal static bool ModeEclipse_Meridian_AllowRebirth = false;
+        internal static bool ModeStandard_Meridian_ACPortal = true;
+        internal static bool ModeEclipse_Meridian_ACPortal = true;
 
-        internal static bool VoidRaid_Eclipse = false;
-        internal static string VoidRaid_Portal_Input = "";
-        internal static List<ConfigPortalType> VoidRaid_Portals;
-        internal static bool VoidRaid_Reward = false;
-        internal static bool VoidRaid_VoidOutroPortal = true;
-        internal static bool VoidRaid_TimeFlows = true;
+        internal static string ModeStandard_VoidRaid_Portal_Input = "";
+        internal static string ModeEclipse_VoidRaid_Portal_Input = "";
+        internal static List<PortalSpawnData> ModeStandard_VoidRaid_Portals;
+        internal static List<PortalSpawnData> ModeEclipse_VoidRaid_Portals;
+        internal static bool ModeStandard_VoidRaid_Reward = false;
+        internal static bool ModeEclipse_VoidRaid_Reward = false;
+        internal static bool ModeStandard_VoidRaid_VoidOutroPortal = true;
+        internal static bool ModeEclipse_VoidRaid_VoidOutroPortal = true;
 
-        internal static bool MS_NeedBeads = true;
+        internal static bool ModeStandard_MS_NeedBeads = true;
+        internal static bool ModeEclipse_MS_NeedBeads = true;
+        internal static string ModeStandard_MS_OrbReq_Input = "";
+        internal static string ModeEclipse_MS_OrbReq_Input = "";
+        internal static List<ReqAllowData> ModeStandard_MS_OrbReq_Data = null;
+        internal static List<ReqAllowData> ModeEclipse_MS_OrbReq_Data = null;
 
-        internal static bool Limbo_Eclipse = false;
-        internal static string Limbo_Portal_Input = "";
-        internal static List<ConfigPortalType> Limbo_Portals;
-        internal static bool Limbo_Reward = true;
+        internal static string ModeStandard_Limbo_Portal_Input = "";
+        internal static string ModeEclipse_Limbo_Portal_Input = "";
+        internal static List<PortalSpawnData> ModeStandard_Limbo_Portals;
+        internal static List<PortalSpawnData> ModeEclipse_Limbo_Portals;
+        internal static bool ModeStandard_Limbo_Reward = false;
+        internal static bool ModeEclipse_Limbo_Reward = false;
+        internal static float Limbo_ExtraTime = 8f;
 
-        internal static bool SolusWeb_Eclipse = false;
-        internal static string SolusWeb_Portal_Input = "";
-        internal static List<ConfigPortalType> SolusWeb_Portals;
-        internal static bool SolusWeb_Reward = true;
-        internal static bool SolusWeb_AllowDecompile = true;
+        internal static string ModeStandard_SolusWeb_Portal_Input = "";
+        internal static string ModeEclipse_SolusWeb_Portal_Input = "";
+        internal static List<PortalSpawnData> ModeStandard_SolusWeb_Portals;
+        internal static List<PortalSpawnData> ModeEclipse_SolusWeb_Portals;
+        internal static bool ModeStandard_SolusWeb_Reward = true;
+        internal static bool ModeEclipse_SolusWeb_Reward = true;
+        internal static bool ModeStandard_SolusWeb_AllowDecompile = true;
+        internal static bool ModeEclipse_SolusWeb_AllowDecompile = false;
 
-        internal static bool Arena_VoidPortal = true;
-        internal static bool Arena_TimeFlows = true;
+        internal static ConfigPortalType Bazaar_ArenaRepeat_Portal = ConfigPortalType.Void;
 
-        internal static ConfigGoldPortal GoldShores_MeridianPortal = ConfigGoldPortal.Vanilla;
+        internal static bool ModeStandard_Arena_VoidPortal = true;
+        internal static bool ModeEclipse_Arena_VoidPortal = false;
+        //internal static bool Arena_TimeFlows = true;
+
+        internal static ConfigGoldPortal ModeStandard_GoldShores_MeridianPortal = ConfigGoldPortal.Vanilla;
+        internal static ConfigGoldPortal ModeEclipse_GoldShores_MeridianPortal = ConfigGoldPortal.Vanilla;
 
         //internal static bool MeridianPath_Allow_Seer = true;
         //internal static bool MeridianPath_Allow_Shrine = true;
 
         //internal static bool VoidPath_Allow_Seer = true;
         //internal static bool VoidPath_Allow_Portal = true;
+        private static Vector3 Bazaar_Pos = new Vector3(280.83f, -445.67f, -126.48f);
         private static Vector3 Moon2_Pos = new Vector3(-89f, 493.0f, 1.15f);
         private static Vector3 Limbo_Pos = new Vector3(-6.7f, -8.6f, 87f);
-        private static Vector3 Meridian_Pos = new Vector3(109.21f, 151.11f, -121.78f);
+        private static Vector3 Meridian_Pos = new Vector3(109.21f, 146.5f, -121.78f);
 
         //"RoR2/DLC1/OptionPickup/OptionPickup.prefab"
-        private GameObject VoidPotential = Addressables.LoadAssetAsync<GameObject>("f8e3413a378bd7c44aa09bed0020eaf5").WaitForCompletion();
+        private GameObject VoidPotential = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/OptionPickup/OptionPickup.prefab").WaitForCompletion();
 
         //"RoR2/Base/Common/dtTier3Item.asset"
-        private RoR2.BasicPickupDropTable Tier3PickupTable = Addressables.LoadAssetAsync<BasicPickupDropTable>("abd505260a23e9b449202c055554b77b").WaitForCompletion();
+        private RoR2.BasicPickupDropTable Tier3PickupTable = Addressables.LoadAssetAsync<BasicPickupDropTable>("RoR2/Base/Common/dtTier3Item.asset").WaitForCompletion();
 
         //"RoR2/Base/arena/arena.asset"
-        private SceneDef Scene_Arena = Addressables.LoadAssetAsync<SceneDef>("a478a034d8da76244b2e1fb463ef1b81").WaitForCompletion();
+        private SceneDef Scene_Arena = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/arena/arena.asset").WaitForCompletion();
         //"RoR2/DLC1/voidraid/voidraid.asset"
-        private SceneDef Scene_VoidRaid = Addressables.LoadAssetAsync<SceneDef>("223a0f0a86052654a9e473d13f77cb41").WaitForCompletion();
-
-        //"RoR2/Base/PortalShop/iscShopPortal.asset"
-        private InteractableSpawnCard Portal_Shop = Addressables.LoadAssetAsync<InteractableSpawnCard>("b7909967e0f972543ab5f7367f45561b").WaitForCompletion();
-        //"RoR2/Base/PortalMS/iscMSPortal.asset"
-        private InteractableSpawnCard Portal_MS = Addressables.LoadAssetAsync<InteractableSpawnCard>("f6b2da500512ed5478412902e42605be").WaitForCompletion();
-        private InteractableSpawnCard Portal_Arena = null;
-        //"RoR2/DLC1/PortalVoid/iscVoidPortal.asset"
-        private InteractableSpawnCard Portal_Void = Addressables.LoadAssetAsync<InteractableSpawnCard>("4f32e6a9f71d4e44dad18dec8eb07ef8").WaitForCompletion();
-        //"RoR2/DLC1/DeepVoidPortal/iscDeepVoidPortal.asset"
-        private InteractableSpawnCard Portal_DeepVoid = Addressables.LoadAssetAsync<InteractableSpawnCard>("19dc6bf0a4d213340980ead7d91df95c").WaitForCompletion();
-        //"RoR2/DLC1/VoidOutroPortal/iscVoidOutroPortal.asset"
-        private InteractableSpawnCard Portal_VoidOutro = Addressables.LoadAssetAsync<InteractableSpawnCard>("c3bd3e121f973f04599d514386333d47").WaitForCompletion();
-        //"RoR2/Base/PortalGoldshores/iscGoldshoresPortal.asset"
-        private InteractableSpawnCard Portal_Goldshores = Addressables.LoadAssetAsync<InteractableSpawnCard>("824a39e11dff6d847996704ffe6be27f").WaitForCompletion();
-        //"RoR2/DLC2/iscColossusPortal.asset"
-        private InteractableSpawnCard Portal_Colossus = Addressables.LoadAssetAsync<InteractableSpawnCard>("f5ecc008531950140a8137d2a3637395").WaitForCompletion();
-        //"RoR2/DLC2/iscDestinationPortal.asset"
-        private InteractableSpawnCard Portal_Destination = Addressables.LoadAssetAsync<InteractableSpawnCard>("644f245483eced544bf8885e0080023f").WaitForCompletion();
-        //"RoR2/DLC3/iscHardwareProgPortal.asset"
-        private InteractableSpawnCard Portal_HardwareProg = Addressables.LoadAssetAsync<InteractableSpawnCard>("c4e7a9ed6153edf488cf434d843311f5").WaitForCompletion();
-        //"RoR2/DLC3/iscHardwareProgPortal_Haunt.asset"
-        private InteractableSpawnCard Portal_HardwareProg_Haunt = Addressables.LoadAssetAsync<InteractableSpawnCard>("7c01731f4ba8cb548af2a35bce9105d3").WaitForCompletion();
-        //"RoR2/DLC3/iscSolusShopPortal.asset"
-        private InteractableSpawnCard Portal_SolusShop = Addressables.LoadAssetAsync<InteractableSpawnCard>("07fc379a8d5d3c44c9211730bf4e1572").WaitForCompletion();
-        //"RoR2/DLC3/iscSolusPortalBackout.asset"
-        private InteractableSpawnCard Portal_SolusBackout = Addressables.LoadAssetAsync<InteractableSpawnCard>("b95252d60a5a463488b6d8c4fcb4bd4d").WaitForCompletion();
-        private InteractableSpawnCard Portal_SolusWeb = null;
+        private SceneDef Scene_VoidRaid = Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/voidraid/voidraid.asset").WaitForCompletion();
 
         //"RoR2/Base/arena/arena.asset"
-        private SceneDef Arena_SceneDef = Addressables.LoadAssetAsync<SceneDef>("a478a034d8da76244b2e1fb463ef1b81").WaitForCompletion();
+        private SceneDef Arena_SceneDef = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/arena/arena.asset").WaitForCompletion();
         //"RoR2/DLC2/meridian/meridian.asset"
-        private SceneDef Meridian_SceneDef = Addressables.LoadAssetAsync<SceneDef>("520b764e3ac5743459fd923204083395").WaitForCompletion();
-        //"RoR2/DLC1/Common/DLC1.asset"
-        private ExpansionDef DLC1Def = Addressables.LoadAssetAsync<ExpansionDef>("d4f30c23b971a9b428e2796dc04ae099").WaitForCompletion();
-        //"RoR2/DLC2/Common/DLC2.asset"
-        private ExpansionDef DLC2Def = Addressables.LoadAssetAsync<ExpansionDef>("851f234056d389b42822523d1be6a167").WaitForCompletion();
-        //"RoR2/DLC3/DLC3.asset"
-        private ExpansionDef DLC3Def = Addressables.LoadAssetAsync<ExpansionDef>("234e83997deed274291470be69e7662e").WaitForCompletion();
+        private SceneDef Meridian_SceneDef = Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC2/meridian/meridian.asset").WaitForCompletion();
         public Stages()
         {
             if (!Enable)
@@ -118,272 +111,131 @@ namespace Railroad.Changes
             }
             ClampConfig();
             BuildLists();
-            CreateSpawnCards();
-            UpdateSceneDefs();
             Hooks();
         }
         private void BuildLists()
         {
-            if (Moon2_Portal_Input.Length > 0)
+            if (ModeStandard_MS_OrbReq_Input.Length > 0)
             {
-                Moon2_Portals = new List<ConfigPortalType>();
-                string[] items = Moon2_Portal_Input.Split(',');
-                for (int i = 0; i < items.Length; i++)
-                {
-                    string portalType = items[i].Trim();
-                    ConfigPortalType enumPortalType = ConfigPortalType.NoPortal;
-                    if (!Enum.TryParse(portalType, out enumPortalType))
-                    {
-                        MainPlugin.ModLogger.LogWarning("[Commencement] Could not find Portal Type: [" + portalType + "]");
-                    }
-                    else if (!Moon2_Portals.Contains(enumPortalType))
-                    {
-                        Moon2_Portals.Add(enumPortalType);
-                    }
-                }
-                if (Moon2_Portals.Count < 1)
-                {
-                    Moon2_Portals = null;
-                }
+                ModeStandard_MS_OrbReq_Data = ReqList.ReadStageNumberInput(ModeStandard_MS_OrbReq_Input, "Stages|Standard|Celestial Orb");
+            }
+            if (ModeEclipse_MS_OrbReq_Input.Length > 0)
+            {
+                ModeEclipse_MS_OrbReq_Data = ReqList.ReadStageNumberInput(ModeEclipse_MS_OrbReq_Input, "Stages|Eclipse|Celestial Orb");
             }
 
-            if (Limbo_Portal_Input.Length > 0)
-            {
-                Limbo_Portals = new List<ConfigPortalType>();
-                string[] items = Limbo_Portal_Input.Split(',');
-                for (int i = 0; i < items.Length; i++)
-                {
-                    string portalType = items[i].Trim();
-                    ConfigPortalType enumPortalType = ConfigPortalType.NoPortal;
-                    if (!Enum.TryParse(portalType, out enumPortalType))
-                    {
-                        MainPlugin.ModLogger.LogWarning("[A Moment, Whole] Could not find Portal Type: [" + portalType + "]");
-                    }
-                    else if(!Limbo_Portals.Contains(enumPortalType))
-                    {
-                        Limbo_Portals.Add(enumPortalType);
-                    }
-                }
-                if (Limbo_Portals.Count < 1)
-                {
-                    Limbo_Portals = null;
-                }  
-            }
+            ModeEclipse_Moon2_Portals = PortalUtility.BuildPortalList(ModeEclipse_Moon2_Portal_Input, "Eclipse, Commencement");
+            ModeStandard_Moon2_Portals = PortalUtility.BuildPortalList(ModeStandard_Moon2_Portal_Input, "Standard, Commencement");
 
-            if (VoidRaid_Portal_Input.Length > 0)
-            {
-                VoidRaid_Portals = new List<ConfigPortalType>();
-                string[] items = VoidRaid_Portal_Input.Split(',');
-                for (int i = 0; i < items.Length; i++)
-                {
-                    string portalType = items[i].Trim();
-                    ConfigPortalType enumPortalType = ConfigPortalType.NoPortal;
-                    if (!Enum.TryParse(portalType, out enumPortalType))
-                    {
-                        MainPlugin.ModLogger.LogWarning("[Planetarium] Could not find Portal Type: [" + portalType + "]");
-                    }
-                    else if (!VoidRaid_Portals.Contains(enumPortalType))
-                    {
-                        VoidRaid_Portals.Add(enumPortalType);
-                    }
-                }
-                if (VoidRaid_Portals.Count < 1)
-                {
-                    VoidRaid_Portals = null;
-                }
-            }
+            ModeEclipse_Limbo_Portals = PortalUtility.BuildPortalList(ModeEclipse_Limbo_Portal_Input, "Eclipse, A Moment Whole");
+            ModeStandard_Limbo_Portals = PortalUtility.BuildPortalList(ModeStandard_Limbo_Portal_Input, "Standard, A Moment Whole");
+
+            ModeEclipse_VoidRaid_Portals = PortalUtility.BuildPortalList(ModeEclipse_VoidRaid_Portal_Input, "Eclipse, Planetarium");
+            ModeStandard_VoidRaid_Portals = PortalUtility.BuildPortalList(ModeStandard_VoidRaid_Portal_Input, "Standard, Planetarium");
             
-
-            Meridian_Modify_Portal = true;
-            if (Meridian_Portal_Input.Length > 0)
+            //Overhaul how socket Portals are handled please
+            ModeEclipse_Meridian_Portals = PortalUtility.BuildPortalList(ModeEclipse_Meridian_Portal_Input, "Eclipse, Prime Meridian");
+            ModeStandard_Meridian_Portals = PortalUtility.BuildPortalList(ModeStandard_Meridian_Portal_Input, "Standard, Prime Meridian");
+            ModeStandard_Meridian_Modify_Portal = true;
+            if (ModeStandard_Meridian_Portals != null && ModeStandard_Meridian_Portals.Count == 1)
             {
-                Meridian_Portals = new List<ConfigPortalType>();
-                string[] items = Meridian_Portal_Input.Split(',');
-                for (int i = 0; i < items.Length; i++)
+                if (ModeStandard_Meridian_Portals[0].PortalType == ConfigPortalType.Destination)
                 {
-                    string portalType = items[i].Trim();
-                    ConfigPortalType enumPortalType = ConfigPortalType.NoPortal;
-                    if (!Enum.TryParse(portalType, out enumPortalType))
-                    {
-                        MainPlugin.ModLogger.LogWarning("[Prime Meridian] Could not find Portal Type: [" + portalType + "]");
-                    }
-                    else if (!Meridian_Portals.Contains(enumPortalType))
-                    {
-                        Meridian_Portals.Add(enumPortalType);
-                    }
+                    ModeStandard_Meridian_Modify_Portal = false;
                 }
-                if (Meridian_Portals.Count < 1)
+            }
+            ModeEclipse_Meridian_Modify_Portal = true;
+            if (ModeEclipse_Meridian_Portals != null && ModeEclipse_Meridian_Portals.Count == 1)
+            {
+                if (ModeEclipse_Meridian_Portals[0].PortalType == ConfigPortalType.Destination)
                 {
-                    Meridian_Portals = null;
-                }
-                if (Meridian_Portals.Count == 1)
-                {
-                    if (Meridian_Portals[0] == ConfigPortalType.Destination)
-                    {
-                        Meridian_Modify_Portal = false;
-                    }
+                    ModeEclipse_Meridian_Modify_Portal = false;
                 }
             }
 
-            if (SolusWeb_Portal_Input.Length > 0)
-            {
-                SolusWeb_Portals = new List<ConfigPortalType>();
-                string[] items = SolusWeb_Portal_Input.Split(',');
-                for (int i = 0; i < items.Length; i++)
-                {
-                    string portalType = items[i].Trim();
-                    ConfigPortalType enumPortalType = ConfigPortalType.NoPortal;
-                    if (!Enum.TryParse(portalType, out enumPortalType))
-                    {
-                        MainPlugin.ModLogger.LogWarning("[Solus Web] Could not find Portal Type: [" + portalType + "]");
-                    }
-                    else if (!SolusWeb_Portals.Contains(enumPortalType))
-                    {
-                        SolusWeb_Portals.Add(enumPortalType);
-                    }
-                }
-                if (SolusWeb_Portals.Count < 1)
-                {
-                    SolusWeb_Portals = null;
-                }
-            }
+            ModeEclipse_SolusWeb_Portals = PortalUtility.BuildPortalList(ModeEclipse_SolusWeb_Portal_Input, "Eclipse, Solus Web");
+            ModeStandard_SolusWeb_Portals = PortalUtility.BuildPortalList(ModeStandard_SolusWeb_Portal_Input, "Standard, Solus Web");
         }
         private void ClampConfig()
         {
-            GoldShores_MeridianPortal = (ConfigGoldPortal)Math.Min((int)GoldShores_MeridianPortal, (int)ConfigGoldPortal.Meridian);
+            ModeStandard_GoldShores_MeridianPortal = (ConfigGoldPortal)Math.Min((int)ModeStandard_GoldShores_MeridianPortal, (int)ConfigGoldPortal.Meridian);
+            ModeEclipse_GoldShores_MeridianPortal = (ConfigGoldPortal)Math.Min((int)ModeEclipse_GoldShores_MeridianPortal, (int)ConfigGoldPortal.Meridian);
         }
-        private void UpdateSceneDefs()
-        {
-            if (Scene_Arena && !Arena_TimeFlows)
-            {
-                if (Scene_Arena.sceneType == SceneType.TimedIntermission)
-                {
-                    Scene_Arena.sceneType = SceneType.Intermission;
-                }
-                if (Scene_Arena.sceneType == SceneType.Stage)
-                {
-                    Scene_Arena.sceneType = SceneType.UntimedStage;
-                }
-            }
-            if (Scene_VoidRaid && !VoidRaid_TimeFlows)
-            {
-                if (Scene_VoidRaid.sceneType == SceneType.TimedIntermission)
-                {
-                    Scene_VoidRaid.sceneType = SceneType.Intermission;
-                }
-                if (Scene_VoidRaid.sceneType == SceneType.Stage)
-                {
-                    Scene_VoidRaid.sceneType = SceneType.UntimedStage;
-                }
-            }
-        }
-        private void CreateSpawnCards()
-        {
-            Portal_Arena = ScriptableObject.CreateInstance<InteractableSpawnCard>();
-            //"RoR2/Base/PortalArena/PortalArena.prefab"
-            Portal_Arena.prefab = Addressables.LoadAssetAsync<GameObject>("36b16aad972162e44a8ab73cca22e16e").WaitForCompletion();
-            Portal_Arena.name = Portal_Arena.prefab.name;
-            Portal_Arena.sendOverNetwork = Portal_Destination.sendOverNetwork;
-            Portal_Arena.hullSize = Portal_Destination.hullSize;
-            Portal_Arena.nodeGraphType = Portal_Destination.nodeGraphType;
-            Portal_Arena.requiredFlags = Portal_Destination.requiredFlags;
-            Portal_Arena.forbiddenFlags = Portal_Destination.forbiddenFlags;
-            Portal_Arena.directorCreditCost = Portal_Destination.directorCreditCost;
-            Portal_Arena.occupyPosition = Portal_Destination.occupyPosition;
-            Portal_Arena.orientToFloor = Portal_Destination.orientToFloor;
-            Portal_Arena.skipSpawnWhenDevotionArtifactEnabled = Portal_Destination.skipSpawnWhenDevotionArtifactEnabled;
-            Portal_Arena.skipSpawnWhenSacrificeArtifactEnabled = Portal_Destination.skipSpawnWhenSacrificeArtifactEnabled;
-
-            Portal_SolusWeb = ScriptableObject.CreateInstance<InteractableSpawnCard>();
-            //"RoR2/DLC3/SolusWebPortal.prefab"
-            Portal_SolusWeb.prefab = Addressables.LoadAssetAsync<GameObject>("9592265fcd09fc643b2495b5e4ebac8f").WaitForCompletion();
-            Portal_SolusWeb.name = Portal_SolusWeb.prefab.name;
-            Portal_SolusWeb.sendOverNetwork = Portal_Destination.sendOverNetwork;
-            Portal_SolusWeb.hullSize = Portal_Destination.hullSize;
-            Portal_SolusWeb.nodeGraphType = Portal_Destination.nodeGraphType;
-            Portal_SolusWeb.requiredFlags = Portal_Destination.requiredFlags;
-            Portal_SolusWeb.forbiddenFlags = Portal_Destination.forbiddenFlags;
-            Portal_SolusWeb.directorCreditCost = Portal_Destination.directorCreditCost;
-            Portal_SolusWeb.occupyPosition = Portal_Destination.occupyPosition;
-            Portal_SolusWeb.orientToFloor = Portal_Destination.orientToFloor;
-            Portal_SolusWeb.skipSpawnWhenDevotionArtifactEnabled = Portal_Destination.skipSpawnWhenDevotionArtifactEnabled;
-            Portal_SolusWeb.skipSpawnWhenSacrificeArtifactEnabled = Portal_Destination.skipSpawnWhenSacrificeArtifactEnabled;
-        }
+        
         private void Hooks()
         {
-            if (Moon2_Portals != null || Moon2_Reward)
+            SharedHooks.Handle_Mithrix_Clear_Actions += Mithrix_Clear;
+            On.RoR2.VoidRaidGauntletController.SpawnOutroPortal += VoidRaidOnPortal;
+            if (ModeStandard_VoidRaid_VoidOutroPortal == false || ModeEclipse_VoidRaid_VoidOutroPortal == false)
             {
-                On.EntityStates.Missions.BrotherEncounter.EncounterFinished.OnEnter += Moon2Complete;
+                IL.RoR2.VoidRaidGauntletController.SpawnOutroPortal += new ILContext.Manipulator(IL_VoidRaid_SpawnOutroPortal);
             }
-            if (VoidRaid_Portals != null || VoidRaid_Reward)
-            {
-                On.RoR2.VoidRaidGauntletController.SpawnOutroPortal += VoidRaidOnPortal;
-            }
-            if (!Arena_VoidPortal)
-            {
-                On.RoR2.PortalSpawner.AttemptSpawnPortalServer += PortalSpawner_SpawnPortal;
-            }
-            if (Meridian_Modify_Portal)
-            {
-                On.RoR2.ShrineRebirthController.Start += ShrineRebirthController_Start;
-            }
-            if (!Meridian_AllowRebirth || !Meridian_ACPortal)
-            {
-                On.EntityStates.ShrineRebirth.RebirthOrPortalChoice.FixedUpdate += RebirthShrine_Update;
-                On.EntityStates.ShrineRebirth.RevealRebirthShriine.FixedUpdate += RebirthShrine_UpdateNoRebirth;
-            }
-            if (!Meridian_Reward)
+            On.RoR2.ArenaMissionController.GeneratePlayerSpawnPointsServer += ArenaMissionController_GeneratePlayerSpawnPointsServer;
+            On.RoR2.ShrineRebirthController.Start += ShrineRebirthController_Start;
+            if (!ModeStandard_Meridian_Reward || !ModeEclipse_Meridian_Reward)
             {
                 IL.EntityStates.FalseSonBoss.SkyJumpDeathState.GiveColossusItem += new ILContext.Manipulator(IL_FalseSonBossComplete);
             }
+            IL.EntityStates.ShrineRebirth.RebirthOrPortalChoice.OnEnter += new ILContext.Manipulator(IL_RebirthOrPortalChoice);
             IL.EntityStates.ShrineRebirth.RevealRebirthShriine.OnEnter += new ILContext.Manipulator(IL_RevealRebirthShrine);
-            if (!MS_NeedBeads)
+            if (!ModeStandard_MS_NeedBeads || !ModeEclipse_MS_NeedBeads)
             {
                 IL.EntityStates.Interactables.MSObelisk.EndingGame.DoFinalAction += new ILContext.Manipulator(IL_OnObliteration);
             }
-            if (GoldShores_MeridianPortal == ConfigGoldPortal.Meridian)
-            {
-                On.EntityStates.Missions.Goldshores.Exit.IsValidStormTier += IsValidStormTier;
-                On.EntityStates.Missions.Goldshores.Exit.OnEnter += Goldshores_Exit;
-            }
-            else if (GoldShores_MeridianPortal == ConfigGoldPortal.Never)
-            {
-                On.EntityStates.Missions.Goldshores.Exit.IsValidStormTier += IsValidStormTier;
-            }
-            if (Limbo_Portals != null || Limbo_Reward)
-            {
-                On.EntityStates.Missions.LunarScavengerEncounter.FadeOut.OnEnter += LimboComplete;
-            }
+            On.EntityStates.Missions.Goldshores.Exit.IsValidStormTier += IsValidStormTier;
+            On.EntityStates.Missions.Goldshores.Exit.OnEnter += Goldshores_Exit;
+            On.EntityStates.Missions.LunarScavengerEncounter.FadeOut.OnEnter += LimboComplete;
             On.RoR2.SolusWebMissionController.SpawnExitPortal += SolusWeb_SpawnExitPortals;
-            if (!SolusWeb_AllowDecompile)
+            if (!ModeStandard_SolusWeb_AllowDecompile)
             {
                 On.RoR2.Run.Start += RunStart;
             }
-            if (SolusWeb_Eclipse && SolusWeb_AllowDecompile)
+            SharedHooks.Handle_EclipseRun_Start_Actions += EclipseRun_Start;
+            /*if (Bazaar_ArenaRepeat_Portal != ConfigPortalType.NoPortal)
             {
-                On.RoR2.EclipseRun.Start += EclipseStart;
-            }
+                On.RoR2.OnPlayerEnterEvent.OnTriggerEnter += OnPlayerEnterEvent;
+            }*/
             IL.EntityStates.SolusHeart.Death.SolusHeartFinaleSequence.Death.OnEnter += new ILContext.Manipulator(IL_SolusHeartDeath);
+            IL.RoR2.TeleporterInteraction.Start += new ILContext.Manipulator(IL_TeleInteractionStart);
+
         }
         private void RunStart(On.RoR2.Run.orig_Start orig, Run self)
         {
             orig(self);
             self.SetEventFlag("NoSolusHeartOffer");
         }
-
-        private void EclipseStart(On.RoR2.EclipseRun.orig_Start orig, EclipseRun self)
+        private void EclipseRun_Start(EclipseRun self)
         {
-            orig(self);
-            self.ResetEventFlag("NoSolusHeartOffer");
+            if (NetworkServer.active)
+            {
+                if (ModeEclipse_SolusWeb_AllowDecompile)
+                {
+                    self.ResetEventFlag("NoSolusHeartOffer");
+                }
+            }
         }
+
+        /*private void OnPlayerEnterEvent(On.RoR2.OnPlayerEnterEvent.orig_OnTriggerEnter orig, OnPlayerEnterEvent self, Collider other)
+        {
+            orig(self, other);
+            if (self.gameObject)
+            {
+                MainPlugin.ModLogger.LogInfo("Trigger Name = " + self.gameObject.name);
+                MainPlugin.ModLogger.LogInfo("ServerOnly = " + self.serverOnly);
+                GameObject parentObject = self.gameObject.GetComponentInParent<GameObject>();
+                if (parentObject)
+                {
+                    MainPlugin.ModLogger.LogInfo("Parent Object = " + parentObject.name);
+                }
+            }
+        }*/
         private void SolusWeb_SpawnExitPortals(On.RoR2.SolusWebMissionController.orig_SpawnExitPortal orig, RoR2.SolusWebMissionController self)
         {
-            if (SolusWeb_Eclipse || !IsEclipse())
+            if (IsEclipse())
             {
                 self.PortalPrefab = null;
                 self.VoidPrefab = null;
-                orig(self);
-                if (SolusWeb_Portals != null)
+                if (ModeEclipse_SolusWeb_Portals != null)
                 {
                     Vector3 position = self.EscapePortalPos.transform.position;
                     if (self.offeringMaster)
@@ -395,94 +247,157 @@ namespace Railroad.Changes
                         }
                     }
                     position.y += 1f;
-                    List<ConfigPortalType> UsablePortals = GetValidPortals(SolusWeb_Portals);
-                    TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeEclipse_SolusWeb_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
                 }
             }
             else
             {
-                orig(self);
+                self.PortalPrefab = null;
+                self.VoidPrefab = null;
+                if (ModeStandard_SolusWeb_Portals != null)
+                {
+                    Vector3 position = self.EscapePortalPos.transform.position;
+                    if (self.offeringMaster)
+                    {
+                        CharacterBody offerBody = self.offeringMaster.GetBody();
+                        if (offerBody)
+                        {
+                            position = offerBody.footPosition;
+                        }
+                    }
+                    position.y += 1f;
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeStandard_SolusWeb_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
+                }
+            }
+            orig(self);
+        }
+        private void ArenaMissionController_GeneratePlayerSpawnPointsServer(On.RoR2.ArenaMissionController.orig_GeneratePlayerSpawnPointsServer orig, ArenaMissionController self)
+        {
+            orig(self);
+            //self.totalRoundsMax = 1;
+            if (self.completionPortalSpawners != null)
+            {
+                //MainPlugin.ModLogger.LogInfo("WillSpawn = " + self.completionPortalSpawners[0].willSpawn);
+                if (IsEclipse())
+                {
+                    if (ModeEclipse_Arena_VoidPortal)
+                    {
+                        self.completionPortalSpawners[0].willSpawn = true;
+                    }
+                    else
+                    {
+                        self.completionPortalSpawners = new PortalSpawner[0];
+                    }
+                }
+                else if (ModeStandard_Arena_VoidPortal == false)
+                {
+                    self.completionPortalSpawners = new PortalSpawner[0];
+                }
+                //some reason setting "willspawn = false" does not work
+                //Finding the entry with the void portal and reappending the array without it would be the correct choice, but I'm lazy.
+            }
+            else
+            {
+                MainPlugin.ModLogger.LogInfo("Arena Portal List is Empty or Null");
             }
         }
-
-        private void RebirthShrine_Update(On.EntityStates.ShrineRebirth.RebirthOrPortalChoice.orig_FixedUpdate orig, EntityStates.ShrineRebirth.RebirthOrPortalChoice self)
+        private bool IsValidStormTier(On.EntityStates.Missions.Goldshores.Exit.orig_IsValidStormTier orig, EntityStates.Missions.Goldshores.Exit self)
         {
-            if (!self.isACExpansionEnabled || !Meridian_ACPortal)
+            if (IsEclipse())
             {
-                return;
+                if (ModeEclipse_GoldShores_MeridianPortal == ConfigGoldPortal.Never)
+                {
+                    return false;
+                }
             }
-            self.timer -= self.GetDeltaTime();
-            if (self.timer <= 0f && !self.acPortalTriggered)
+            else
             {
-                self.acPortalTriggered = true;
-                self.SpawnACPortal();
-            }
-        }
-        private void RebirthShrine_UpdateNoRebirth(On.EntityStates.ShrineRebirth.RevealRebirthShriine.orig_FixedUpdate orig, EntityStates.ShrineRebirth.RevealRebirthShriine self)
-        {
-            if (!self.isACExpansionEnabled || !Meridian_ACPortal)
-            {
-                return;
-            }
-            if (!self.isEclipse && Meridian_AllowRebirth)
-            {
-                return;
-            }
-            self.timer -= self.GetDeltaTime();
-            if (self.timer <= 0f && !self.acPortalTriggered)
-            {
-                self.acPortalTriggered = true;
-                self.SpawnACPortal();
-            }
-        }
-        private bool PortalSpawner_SpawnPortal(On.RoR2.PortalSpawner.orig_AttemptSpawnPortalServer orig, PortalSpawner self)
-        {
-            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
-            if (scene)
-            {
-                if (scene == Arena_SceneDef)
+                if (ModeStandard_GoldShores_MeridianPortal == ConfigGoldPortal.Never)
                 {
                     return false;
                 }
             }
             return orig(self);
         }
-        private bool IsValidStormTier(On.EntityStates.Missions.Goldshores.Exit.orig_IsValidStormTier orig, EntityStates.Missions.Goldshores.Exit self)
-        {
-            return false;
-        }
         private void Goldshores_Exit(On.EntityStates.Missions.Goldshores.Exit.orig_OnEnter orig, EntityStates.Missions.Goldshores.Exit self)
         {
             orig(self);
-            GameObject gameObject = TrySpawnPortal(ConfigPortalType.Colossus, self.transform.position);
-            if (gameObject)
+            if (IsEclipse())
             {
-                SceneExitController comp = gameObject.GetComponent<SceneExitController>();
-                if (comp)
+                if (ModeEclipse_GoldShores_MeridianPortal == ConfigGoldPortal.Meridian)
                 {
-                    comp.destinationScene = Meridian_SceneDef;
-                    comp.tier1AlternateDestinationScene = null;
-                    comp.tier2AlternateDestinationScene = null;
-                    comp.tier3AlternateDestinationScene = null;
-                    comp.tier4AlternateDestinationScene = null;
-                    comp.tier5AlternateDestinationScene = null;
+                    GameObject gameObject = PortalUtility.TrySpawnPortal(ConfigPortalType.Colossus, self.transform.position);
+                    if (gameObject)
+                    {
+                        SceneExitController comp = gameObject.GetComponent<SceneExitController>();
+                        if (comp)
+                        {
+                            comp.destinationScene = Meridian_SceneDef;
+                            comp.tier1AlternateDestinationScene = null;
+                            comp.tier2AlternateDestinationScene = null;
+                            comp.tier3AlternateDestinationScene = null;
+                            comp.tier4AlternateDestinationScene = null;
+                            comp.tier5AlternateDestinationScene = null;
+                        }
+                        Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                        {
+                            baseToken = "PORTAL_STORM_OPEN"
+                        });
+                    }
                 }
-                Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+            }
+            else if (ModeStandard_GoldShores_MeridianPortal == ConfigGoldPortal.Meridian)
+            {
+                GameObject gameObject = PortalUtility.TrySpawnPortal(ConfigPortalType.Colossus, self.transform.position);
+                if (gameObject)
                 {
-                    baseToken = "PORTAL_STORM_OPEN"
-                });
+                    SceneExitController comp = gameObject.GetComponent<SceneExitController>();
+                    if (comp)
+                    {
+                        comp.destinationScene = Meridian_SceneDef;
+                        comp.tier1AlternateDestinationScene = null;
+                        comp.tier2AlternateDestinationScene = null;
+                        comp.tier3AlternateDestinationScene = null;
+                        comp.tier4AlternateDestinationScene = null;
+                        comp.tier5AlternateDestinationScene = null;
+                    }
+                    Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                    {
+                        baseToken = "PORTAL_STORM_OPEN"
+                    });
+                }
             }
         }
         private void ShrineRebirthController_Start(On.RoR2.ShrineRebirthController.orig_Start orig, ShrineRebirthController self)
         {
             orig(self);
-            if (Meridian_Eclipse || !IsEclipse())
+            if (IsEclipse())
             {
-                if (Meridian_Portals.Count == 1)
+                if (ModeEclipse_Meridian_Portals.Count == 1)
                 {
-                    if (CanSpawnPortal(Meridian_Portals[0]))
+                    if (PortalUtility.CanSpawnPortal(ModeEclipse_Meridian_Portals[0].PortalType))
                     {
-                        self.helminthPortalISC = GetSpawnCardFromIndex(Meridian_Portals[0]);
+                        self.helminthPortalISC = PortalUtility.GetSpawnCardFromIndex(ModeEclipse_Meridian_Portals[0].PortalType);
+                    }
+                    else
+                    {
+                        self.helminthPortalISC = null;
+                    }
+                }
+                else
+                {
+                    self.helminthPortalISC = null;
+                }
+            }
+            else
+            {
+                if (ModeStandard_Meridian_Portals.Count == 1)
+                {
+                    if (PortalUtility.CanSpawnPortal(ModeStandard_Meridian_Portals[0].PortalType))
+                    {
+                        self.helminthPortalISC = PortalUtility.GetSpawnCardFromIndex(ModeStandard_Meridian_Portals[0].PortalType);
                     }
                     else
                     {
@@ -498,67 +413,118 @@ namespace Railroad.Changes
         private void LimboComplete(On.EntityStates.Missions.LunarScavengerEncounter.FadeOut.orig_OnEnter orig, EntityStates.Missions.LunarScavengerEncounter.FadeOut self)
         {
             orig(self);
-            if (Limbo_Eclipse || !IsEclipse())
+            self.startTime -= Limbo_ExtraTime;
+            if (IsEclipse())
             {
                 Vector3 position = Limbo_Pos;
-                if (Limbo_Portals != null)
+                if (ModeEclipse_Limbo_Portals != null)
                 {
-                    List<ConfigPortalType> UsablePortals = GetValidPortals(Limbo_Portals);
-                    TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Approximate);
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeEclipse_Limbo_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Approximate);
                 }
-                if (Limbo_Reward)
+                if (ModeEclipse_Limbo_Reward)
                 {
                     position.y += 1f;
-                    TryDropItems(Run.instance.availableTier3DropList, position);
+                    PortalUtility.TryDropItems(Run.instance.availableTier3DropList, position);
+                }
+            }
+            else
+            {
+                Vector3 position = Limbo_Pos;
+                if (ModeStandard_Limbo_Portals != null)
+                {
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeStandard_Limbo_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Approximate);
+                }
+                if (ModeStandard_Limbo_Reward)
+                {
+                    position.y += 1f;
+                    PortalUtility.TryDropItems(Run.instance.availableTier3DropList, position);
                 }
             }
         }
-        private void Moon2Complete(On.EntityStates.Missions.BrotherEncounter.EncounterFinished.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.EncounterFinished self)
+        private void Mithrix_Clear(EntityStates.Missions.BrotherEncounter.EncounterFinished self)
         {
-            orig(self);
-            if (Moon2_Eclipse || !IsEclipse())
+            Vector3 position = Moon2_Pos;
+            if (IsEclipse())
             {
-                Vector3 position = Moon2_Pos;
-                if (Moon2_Portals != null)
+                if (ModeEclipse_Moon2_Portals != null)
                 {
-                    List<ConfigPortalType> UsablePortals = GetValidPortals(Moon2_Portals);
-                    TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeEclipse_Moon2_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
                 }
-                if (Moon2_Reward)
+                if (ModeEclipse_Moon2_Reward)
                 {
-                    TryDropItems(Run.instance.availableTier3DropList, Moon2_Pos);
+                    PortalUtility.TryDropItems(Run.instance.availableTier3DropList, Moon2_Pos);
+                }
+            }
+            else
+            {
+                
+                if (ModeStandard_Moon2_Portals != null)
+                {
+                    List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeStandard_Moon2_Portals);
+                    PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct);
+                }
+                if (ModeStandard_Moon2_Reward)
+                {
+                    PortalUtility.TryDropItems(Run.instance.availableTier3DropList, Moon2_Pos);
                 }
             }
         }
         private void VoidRaidOnPortal(On.RoR2.VoidRaidGauntletController.orig_SpawnOutroPortal orig, VoidRaidGauntletController self)
         {
-			//I don't think this gets called on the client end, but whatever.
-            if (!NetworkServer.active)
+            orig(self);
+            if (NetworkServer.active)
             {
-                orig(self);
-            }
-            if (VoidRaid_Eclipse || !IsEclipse())
-            {
-                if (VoidRaid_VoidOutroPortal)
+                if (IsEclipse())
                 {
-                    orig(self);
+                    bool needOutroPortal = true;
+                    Vector3 position = self.currentDonut.returnPoint.transform.position;
+                    if (ModeEclipse_VoidRaid_Portals != null)
+                    {
+                        /*if (ModeEclipse_VoidRaid_Portals.Contains(ConfigPortalType.VoidOutro))
+                        {
+                            needOutroPortal = false;
+                        }*/
+                        List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeEclipse_VoidRaid_Portals);
+                        PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 20f, true);
+                    }
+                    if (ModeEclipse_VoidRaid_Reward)
+                    {
+                        position.y += 1f;
+                        PortalUtility.TryDropPotential(Tier3PickupTable, position, 3);
+                    }
+                    if (needOutroPortal && ModeEclipse_VoidRaid_VoidOutroPortal == false)
+                    {
+                        //Spawn the outro portal somewhere in Narnia to finish the boss music.
+                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), DirectorPlacementRule.PlacementMode.Direct);
+                    }
                 }
-
-                Vector3 position = self.currentDonut.returnPoint.transform.position;
-                if (VoidRaid_Portals != null)
+                else
                 {
-                    List<ConfigPortalType> UsablePortals = GetValidPortals(VoidRaid_Portals);
-                    TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 20f, true);
+                    bool needOutroPortal = true;
+                    Vector3 position = self.currentDonut.returnPoint.transform.position;
+                    if (ModeStandard_VoidRaid_Portals != null)
+                    {
+                        /*if (ModeStandard_VoidRaid_Portals.Contains(ConfigPortalType.VoidOutro))
+                        {
+                            needOutroPortal = false;
+                        }*/
+                        List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeStandard_VoidRaid_Portals);
+                        PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 20f, true);
+                    }
+                    if (ModeStandard_VoidRaid_Reward)
+                    {
+                        position.y += 1f;
+                        PortalUtility.TryDropPotential(Tier3PickupTable, position, 3);
+                    }
+                    if (needOutroPortal && ModeStandard_VoidRaid_VoidOutroPortal == false)
+                    {
+                        //Spawn the outro portal somewhere in Narnia to finish the boss music.
+                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), DirectorPlacementRule.PlacementMode.Direct);
+                    }
                 }
-                if (VoidRaid_Reward)
-                {
-                    position.y += 1f;
-                    TryDropPotential(Tier3PickupTable, position, 3);
-                }
-            }
-            else
-            {
-                orig(self);
             }
         }
         private bool IsEclipse()
@@ -571,249 +537,6 @@ namespace Railroad.Changes
             return false;
         }
         
-        private List<ConfigPortalType> GetValidPortals(List<ConfigPortalType> PortalList)
-        {
-            List<ConfigPortalType> returnList = new List<ConfigPortalType>();
-            for (int i = 0; i<PortalList.Count; i++)
-            {
-                if (CanSpawnPortal(PortalList[i]))
-                {
-                    returnList.Add(PortalList[i]);
-                }
-            }
-            return returnList;
-        }
-        private bool CanSpawnPortal(ConfigPortalType portalType)
-        {
-            if (portalType == ConfigPortalType.NoPortal)
-            {
-                return false;
-            }
-            if (portalType == ConfigPortalType.Void || portalType == ConfigPortalType.DeepVoid || portalType == ConfigPortalType.VoidOutro)
-            {
-                return Run.instance.IsExpansionEnabled(DLC1Def);
-            }
-            if (portalType == ConfigPortalType.Colossus || portalType == ConfigPortalType.Destination)
-            {
-                return Run.instance.IsExpansionEnabled(DLC2Def);
-            }
-            if (portalType == ConfigPortalType.HardwareProg || portalType == ConfigPortalType.HardwareProg_Haunt || portalType == ConfigPortalType.SolusShop || portalType == ConfigPortalType.SolusBackout || portalType == ConfigPortalType.SolusWeb)
-            {
-                return Run.instance.IsExpansionEnabled(DLC3Def);
-            }
-            return true;
-        }
-        private InteractableSpawnCard GetSpawnCardFromIndex(ConfigPortalType portalType)
-        {
-            switch (portalType)
-            {
-                case ConfigPortalType.Shop:
-                    return Portal_Shop;
-                case ConfigPortalType.MS:
-                    return Portal_MS;
-                case ConfigPortalType.Null:
-                    return Portal_Arena;
-                case ConfigPortalType.Void:
-                    return Portal_Void;
-                case ConfigPortalType.DeepVoid:
-                    return Portal_DeepVoid;
-                case ConfigPortalType.VoidOutro:
-                    return Portal_VoidOutro;
-                case ConfigPortalType.Goldshores:
-                    return Portal_Goldshores;
-                case ConfigPortalType.Colossus:
-                    return Portal_Colossus;
-                case ConfigPortalType.Destination:
-                    return Portal_Destination;
-                case ConfigPortalType.HardwareProg:
-                    return Portal_HardwareProg;
-                case ConfigPortalType.HardwareProg_Haunt:
-                    return Portal_HardwareProg_Haunt;
-                case ConfigPortalType.SolusShop:
-                    return Portal_SolusShop;
-                case ConfigPortalType.SolusBackout:
-                    return Portal_SolusBackout;
-                case ConfigPortalType.SolusWeb:
-                    return Portal_SolusWeb;
-            }
-            return null;
-        }
-
-        private GameObject TrySpawnPortal_FindFloor(ConfigPortalType portalType, Vector3 location, DirectorPlacementRule.PlacementMode placementMode = DirectorPlacementRule.PlacementMode.Approximate)
-        {
-            if (CanSpawnPortal(portalType))
-            {
-                InteractableSpawnCard spawnCard = GetSpawnCardFromIndex(portalType);
-                if (spawnCard)
-                {
-                    RaycastHit raycastHit;
-                    Physics.Raycast(location, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
-                    {
-                    "World"
-                    }));
-                    if (raycastHit.point.y +1f <= location.y)
-                    {
-                        location.y = raycastHit.point.y + 1f;
-                    }
-                    else
-                    {
-                        location.y = raycastHit.point.y;
-                    }
-
-                    GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
-                    {
-                        maxDistance = 30f,
-                        minDistance = 10f,
-                        placementMode = placementMode,
-                        position = location
-                    }, Run.instance.stageRng));
-                    return gameObject;
-                }
-            }
-            return null;
-        }
-
-        private void TrySpawnPortalCircle(List<ConfigPortalType> portalList, Vector3 baselocation, DirectorPlacementRule.PlacementMode placementMode = DirectorPlacementRule.PlacementMode.Approximate, float baseDistance = 20f, bool groundPortals = false)
-        {
-            int portalCount = portalList.Count;
-            if (portalCount == 1)
-            {
-                if (groundPortals)
-                {
-                    TrySpawnPortal_FindFloor(portalList[0], baselocation, placementMode);
-                }
-                else
-                {
-                    TrySpawnPortal(portalList[0], baselocation, placementMode);
-                }
-            }
-            else if (portalCount > 0)
-            {
-                //MainPlugin.ModLogger.LogInfo("Spawning total portals: " + Limbo_Portals.Count);
-                float horiAngle = 360f / portalCount;
-
-                Vector3 vector = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up) * (Vector3.forward);
-                Quaternion quaternion = Quaternion.AngleAxis(horiAngle, Vector3.up);
-                int i = 0;
-                while (i < portalCount)
-                {
-                    InteractableSpawnCard spawnCard = GetSpawnCardFromIndex(portalList[i]);
-                    if (spawnCard)
-                    {
-                        Vector3 placeLoc = baselocation + (vector * baseDistance);
-                        //MainPlugin.ModLogger.LogInfo("Portal Loc: " + placeLoc.x + " " + placeLoc.y + " " + placeLoc.z);
-                        if (groundPortals)
-                        {
-                            RaycastHit raycastHit;
-                            Physics.Raycast(placeLoc, Vector3.down, out raycastHit, float.PositiveInfinity, LayerMask.GetMask(new string[]
-                            {
-                            "World"
-                            }));
-                            if (raycastHit.point.y + 1f <= placeLoc.y)
-                            {
-                                placeLoc.y = raycastHit.point.y + 1f;
-                            }
-                            else
-                            {
-                                placeLoc.y = raycastHit.point.y;
-                            }
-                        }
-                        GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
-                        {
-                            maxDistance = 30f,
-                            minDistance = 10f,
-                            placementMode = placementMode,
-                            position = placeLoc,
-                            rotation = Quaternion.identity
-                        }, Run.instance.stageRng));
-                    }
-                    i++;
-                    vector = quaternion * vector;
-                }
-            }
-        }
-        private GameObject TrySpawnPortal(ConfigPortalType portalType, Vector3 location, DirectorPlacementRule.PlacementMode placementMode = DirectorPlacementRule.PlacementMode.Approximate)
-        {
-            if (CanSpawnPortal(portalType))
-            {
-                InteractableSpawnCard spawnCard = GetSpawnCardFromIndex(portalType);
-                if (spawnCard)
-                {
-                    GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
-                    {
-                        maxDistance = 30f,
-                        minDistance = 10f,
-                        placementMode = placementMode,
-                        position = location
-                    }, Run.instance.stageRng));
-                    return gameObject;
-                }
-            }
-            return null;
-        }
-        private void TryDropPotential(PickupDropTable dropTable, Vector3 location, int optionCount)
-        {
-            if (dropTable == null)
-            {
-                return;
-            }
-            int playerCount = Run.instance.participatingPlayerCount;
-            if (playerCount > 0)
-            {
-                List<UniquePickup> list = new List<UniquePickup>();
-                dropTable.GenerateDistinctPickups(list, optionCount, Run.instance.treasureRng, true);
-
-                if (list.Count > 0)
-                {
-                    ItemTier itemTier = PickupCatalog.GetPickupDef(list[0].pickupIndex).itemTier;
-
-                    float horiAngle = 360f / playerCount;
-                    Vector3 vector = Quaternion.AngleAxis((float)UnityEngine.Random.Range(0, 360), Vector3.up) * (Vector3.up * 40f + Vector3.forward * 5f);
-                    Quaternion quaternion = Quaternion.AngleAxis(horiAngle, Vector3.up);
-                    int i = 0;
-                    while (i < playerCount)
-                    {
-                        GenericPickupController.CreatePickupInfo pickupInfo = new GenericPickupController.CreatePickupInfo
-                        {
-                            pickerOptions = PickupPickerController.GenerateOptionsFromList<List<UniquePickup>>(list),
-                            prefabOverride = VoidPotential,
-                            position = location,
-                            rotation = Quaternion.identity,
-                            pickup = new UniquePickup(PickupCatalog.FindPickupIndex(itemTier))
-                        };
-
-                        PickupDropletController.CreatePickupDroplet(pickupInfo, location, vector);
-                        i++;
-                        vector = quaternion * vector;
-                    }
-                }
-            }
-        }
-        private void TryDropItems(List<PickupIndex> dropList, Vector3 location)
-        {
-            int playerCount = Run.instance.participatingPlayerCount;
-            if (playerCount > 0)
-            {
-                int maxItems = dropList.Count;
-                if (maxItems > 0)
-                {
-                    //PickupIndex pickupIndex = null;
-                    UniquePickup pickupNew = new UniquePickup();
-                    pickupNew.pickupIndex = dropList[UnityEngine.Random.Range(0, maxItems - 1)];
-
-                    float horiAngle = 360f / playerCount;
-                    Vector3 vector = Quaternion.AngleAxis((float)UnityEngine.Random.Range(0, 360), Vector3.up) * (Vector3.up * 40f + Vector3.forward * 5f);
-                    Quaternion quaternion = Quaternion.AngleAxis(horiAngle, Vector3.up);
-                    int i = 0;
-                    while (i < playerCount)
-                    {
-                        PickupDropletController.CreatePickupDroplet(pickupNew, location, vector, false);
-                        i++;
-                        vector = quaternion * vector;
-                    }
-                }
-            }
-        }
         private void IL_OnObliteration(ILContext il)
         {
             ILCursor ilcursor = new ILCursor(il);
@@ -823,11 +546,42 @@ namespace Railroad.Changes
             ))
             {
                 ilcursor.Remove();
-                ilcursor.Emit(OpCodes.Ldc_I4_1);
+                ilcursor.EmitDelegate<Func<bool>>(() =>
+                {
+                    if (IsEclipse() && !ModeEclipse_MS_NeedBeads)
+                    {
+                        return true;
+                    }
+                    if (!IsEclipse() && !ModeStandard_MS_NeedBeads)
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+                //ilcursor.Emit(OpCodes.Ldc_I4_1);
             }
             else
             {
                 UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": OnObliteration IL Hook failed");
+            }
+        }
+        private void IL_VoidRaid_SpawnOutroPortal(ILContext il)
+        {
+            //Prevents the outro portal from spawning, we'll place it manually.
+            ILCursor ilcursor = new ILCursor(il);
+            if (ilcursor.TryGotoNext(
+                x => x.MatchLdfld(typeof(VoidRaidGauntletController), "currentDonut")
+            ))
+            {
+                ilcursor.Remove();
+                ilcursor.EmitDelegate<Func<VoidRaidGauntletController, bool>>((self) =>
+                {
+                    return false;
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": VoidRaid_SpawnOutroPortal IL Hook failed");
             }
         }
         private void IL_FalseSonBossComplete(ILContext il)
@@ -838,7 +592,18 @@ namespace Railroad.Changes
             ))
             {
                 ilcursor.Index += 1;
-                ilcursor.Emit(OpCodes.Ldc_I4_0);
+                ilcursor.EmitDelegate<Func<int>>(() =>
+                {
+                    if (IsEclipse() && ModeEclipse_Meridian_Reward)
+                    {
+                        return 1;
+                    }
+                    if (!IsEclipse() && ModeStandard_Meridian_Reward)
+                    {
+                        return 1;
+                    }
+                    return 0;
+                });
                 ilcursor.Emit(OpCodes.Mul);
             }
             else
@@ -857,26 +622,73 @@ namespace Railroad.Changes
                 ilcursor.RemoveRange(2);
                 ilcursor.EmitDelegate<Func<DifficultyIndex>>(() =>
                 {
-                    if (Meridian_Modify_Portal && Meridian_Portals != null && Meridian_Portals.Count > 1)
+                    if (IsEclipse())
                     {
-                        Vector3 position = Meridian_Pos;
-                        List<ConfigPortalType> UsablePortals = GetValidPortals(Meridian_Portals);
-                        TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Approximate, 30f);
+                        if (ModeEclipse_Meridian_Modify_Portal && ModeEclipse_Meridian_Portals != null && ModeEclipse_Meridian_Portals.Count > 1)
+                        {
+                            Vector3 position = Meridian_Pos;
+                            List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeEclipse_Meridian_Portals);
+                            PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 30f, false);
+                        }
+                        if (!ModeEclipse_Meridian_AllowRebirth)
+                        {
+                            return DifficultyIndex.Eclipse1;
+                        }
                     }
-                    if (IsEclipse() && !Meridian_Eclipse)
+                    else
                     {
-                        return Run.instance.selectedDifficulty;
+                        if (ModeStandard_Meridian_Modify_Portal && ModeStandard_Meridian_Portals != null && ModeStandard_Meridian_Portals.Count > 1)
+                        {
+                            Vector3 position = Meridian_Pos;
+                            List<ConfigPortalType> UsablePortals = PortalUtility.GetValidPortals_NEO(ModeStandard_Meridian_Portals);
+                            PortalUtility.TrySpawnPortalCircle(UsablePortals, position, DirectorPlacementRule.PlacementMode.Direct, 30f, false);
+                        }
+                        if (!ModeStandard_Meridian_AllowRebirth)
+                        {
+                            return DifficultyIndex.Eclipse1;
+                        }
                     }
-                    if (Meridian_AllowRebirth)
-                    {
-                        return DifficultyIndex.Normal;
-                    }
-                    return DifficultyIndex.Eclipse1;
+                    return DifficultyIndex.Normal;
                 });
             }
             else
             {
-                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": RevealRebirthShrine IL Hook failed");
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": RevealRebirthShrine IL Hook A failed");
+            }
+            if (ilcursor.TryGotoNext(
+                x => x.MatchStfld(typeof(EntityStates.ShrineRebirth.RevealRebirthShriine), "isACExpansionEnabled")
+            ))
+            {
+                ilcursor.Index -= 5;
+                ilcursor.RemoveRange(5);
+                ilcursor.EmitDelegate<Func<bool>>(() =>
+                {
+                    return false;
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": RevealRebirthShrine IL Hook B failed");
+            }
+        }
+
+        private void IL_RebirthOrPortalChoice(ILContext il)
+        {
+            ILCursor ilcursor = new ILCursor(il);
+            if (ilcursor.TryGotoNext(
+                x => x.MatchStfld(typeof(EntityStates.ShrineRebirth.RebirthOrPortalChoice), "isACExpansionEnabled")
+            ))
+            {
+                ilcursor.Index -= 5;
+                ilcursor.RemoveRange(5);
+                ilcursor.EmitDelegate<Func<bool>>(() =>
+                {
+                    return false;
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": RebirthOrPortalChoice IL Hook failed");
             }
         }
 
@@ -891,9 +703,16 @@ namespace Railroad.Changes
                 ilcursor.RemoveRange(2);
                 ilcursor.EmitDelegate<Func<int>>(() =>
                 {
-                    if (!SolusWeb_Reward)
+                    if (IsEclipse())
                     {
-                        if (SolusWeb_Eclipse || !IsEclipse())
+                        if (!ModeEclipse_SolusWeb_Reward)
+                        {
+                            return 0;
+                        }
+                    }
+                    else
+                    {
+                        if (!ModeStandard_SolusWeb_Reward)
                         {
                             return 0;
                         }
@@ -904,6 +723,48 @@ namespace Railroad.Changes
             else
             {
                 UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": SolusHeartDeath IL Hook failed");
+            }
+        }
+
+        private void IL_TeleInteractionStart(ILContext il)
+        {
+            //override the spawn conditions for the Celestial Orb
+            ILCursor ilcursor = new ILCursor(il);
+            if (ilcursor.TryGotoNext(
+                x => x.MatchCallOrCallvirt(typeof(Run), "get_stageClearCountInCurrentLoop")
+            ))
+            {
+                ilcursor.Index += 3;
+                ilcursor.Remove();
+                ilcursor.Emit(OpCodes.Ldarg_0);
+                ilcursor.EmitDelegate<Func<TeleporterInteraction, int>>((self) =>
+                {
+                    bool result = false;
+                    SceneDef sceneDef = SceneCatalog.GetSceneDefForCurrentScene();
+                    if (!Run.instance.GetEventFlag("NoMysterySpace"))
+                    {
+                        if (IsEclipse())
+                        {
+                            if (ReqList.PassesReqDataList(ModeEclipse_MS_OrbReq_Data, Run.instance.stageClearCount + 1, sceneDef))
+                            {
+                                result = true;
+                            }
+                        }
+                        else
+                        {
+                            if (ReqList.PassesReqDataList(ModeStandard_MS_OrbReq_Data, Run.instance.stageClearCount + 1, sceneDef))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    self.shouldAttemptToSpawnMSPortal = result;
+                    return Run.instance.stageClearCountInCurrentLoop - 3;
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": Celestial Orb IL Hook failed");
             }
         }
     }

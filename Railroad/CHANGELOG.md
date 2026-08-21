@@ -1,3 +1,35 @@
+**1.3.0**
+
+This update has been planned for a while and is mostly near completion. The mod has undergone
+large changes to how it functions but is working "good enough" to release as is. I've been
+dragging my feet working on it and hope that releasing it will help me figure out
+what's left to do and what could be improved or fixed and any major incompatibilities.
+Ideally I want this version to be in a more refined state before Hallowed Concepts.
+
+```
+- Proper Save Support!
+- Proper Save is now supported to retain memory of certain run achievements (mainly boss defeats) when loading a save.
+
+- Glass Frog configs:
+- Configure the amount of times to pet the frog, the portal it spawns and the currency required.
+
+- Eclipse configs:
+- Added "Allow Beads of Fealty", allows Beads of Fealty to appear during Eclipse runs.
+
+- Planetarium:
+- Spawns the Void Outro Portal somewhere inaccessible if disabled, so that the boss music finishes properly. (Top Tier Jank)
+
+- Celestial Orb:
+- Added configurations to change when this portal orb appears.
+
+- General Changes:
+- Removed randomness from how multiple portals are placed, any randomness left is likely from the director.
+- Added tags for most config portal spawns, tags are mostly major boss defeats so you can have certain portals spawn or not spawn based on run progress.
+- Separated a large set of configs into Eclipse and Non-Eclipse runs.
+
+- Probably a few more small things I forgot about.
+```
+
 **1.2.1**
 
 ```
