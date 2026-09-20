@@ -8,6 +8,9 @@ namespace Railroad
 {
 	public class SharedHooks
 	{
+		public delegate void Handle_Stage_Begin(Stage self);
+		public static Handle_Stage_Begin Handle_Stage_Begin_Actions;
+
 		public delegate void Handle_EclipseRun_Start(EclipseRun self);
 		public static Handle_EclipseRun_Start Handle_EclipseRun_Start_Actions;
 
@@ -34,6 +37,10 @@ namespace Railroad
 
 		public static void Setup()
 		{
+			if (Handle_Stage_Begin_Actions != null)
+			{
+				On.RoR2.Stage.BeginServer += StageStart;
+			}
 			if (Handle_EclipseRun_Start_Actions != null)
 			{
 				On.RoR2.EclipseRun.Start += EclipseRun_Start;
@@ -71,6 +78,11 @@ namespace Railroad
 		internal static void PostLoad_GameModeCatalog()
 		{
 			Handle_PostLoad_Actions.Invoke();
+		}
+		internal static void StageStart(On.RoR2.Stage.orig_BeginServer orig, Stage self)
+		{
+			orig(self);
+			Handle_Stage_Begin_Actions.Invoke(self);
 		}
 		internal static void Mithrix_Clear(On.EntityStates.Missions.BrotherEncounter.EncounterFinished.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.EncounterFinished self)
 		{

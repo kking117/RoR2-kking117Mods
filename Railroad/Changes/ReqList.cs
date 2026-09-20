@@ -16,7 +16,10 @@ namespace Railroad.Changes
     public class ReqAllowData
     {
         internal int StageNumber = -1;
-        internal bool UseStageOrder = false;
+        internal int UsageType = 0;
+        //0 or else = Stage Number
+        //1 = Stage Number Modulo
+        //2 = Stage Order
         internal ConfigPortalType PortalType = ConfigPortalType.NoPortal;
         internal PortalProgReqTags ReqTags = PortalProgReqTags.None;
     }
@@ -36,6 +39,10 @@ namespace Railroad.Changes
             {
                 return true;
             }
+            if (inputstring.Contains("SL"))
+            {
+                return true;
+            }
             int stageNum = 0;
             if (Int32.TryParse(inputstring, out stageNum))
             {
@@ -52,9 +59,19 @@ namespace Railroad.Changes
                 {
                     if (allowDataList[i].StageNumber > -1)
                     {
-                        if (allowDataList[i].UseStageOrder)
+                        if (allowDataList[i].UsageType == 2)
                         {
                             if (allowDataList[i].StageNumber == 0 || allowDataList[i].StageNumber == sceneDef.stageOrder)
+                            {
+                                if (PortalUtility.PassesPortalTags(allowDataList[i].ReqTags))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                        else if (allowDataList[i].UsageType == 1)
+                        {
+                            if (allowDataList[i].StageNumber == 0 || allowDataList[i].StageNumber % 5 == stageNumber % 5)
                             {
                                 if (PortalUtility.PassesPortalTags(allowDataList[i].ReqTags))
                                 {
@@ -107,10 +124,15 @@ namespace Railroad.Changes
                         {
                             if (portalType.Contains("SO"))
                             {
-                                thisReqData.UseStageOrder = true;
+                                thisReqData.UsageType = 2;
+                            }
+                            else if (portalType.Contains("SL"))
+                            {
+                                thisReqData.UsageType = 1;
                             }
                             string portalNum = portalType.Replace("SO", "");
                             portalNum = portalNum.Replace("SN", "");
+                            portalNum = portalNum.Replace("SL", "");
                             if (Int32.TryParse(portalNum, out stageNum))
                             {
                                 thisReqData.StageNumber = stageNum;

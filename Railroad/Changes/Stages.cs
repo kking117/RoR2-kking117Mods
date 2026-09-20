@@ -69,7 +69,12 @@ namespace Railroad.Changes
         internal static bool ModeStandard_SolusWeb_AllowDecompile = true;
         internal static bool ModeEclipse_SolusWeb_AllowDecompile = false;
 
-        internal static ConfigPortalType Bazaar_ArenaRepeat_Portal = ConfigPortalType.Void;
+        internal static string ModeStandard_Bazaar_ArenaRepeat_Portal_Input = "";
+        internal static string ModeEclipse_Bazaar_ArenaRepeat_Portal_Input = "";
+        internal static PortalSpawnData ModeStandard_Bazaar_ArenaRepeat_Portal = null;
+        internal static PortalSpawnData ModeEclipse_Bazaar_ArenaRepeat_Portal = null;
+
+        internal static bool ArenaRepeat_HookOn = false;
 
         internal static bool ModeStandard_Arena_VoidPortal = true;
         internal static bool ModeEclipse_Arena_VoidPortal = false;
@@ -96,6 +101,8 @@ namespace Railroad.Changes
 
         //"RoR2/Base/arena/arena.asset"
         private SceneDef Scene_Arena = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/arena/arena.asset").WaitForCompletion();
+        //"RoR2/Base/arena/arena.asset"
+        private SceneDef Scene_Bazaar = Addressables.LoadAssetAsync<SceneDef>("RoR2/Base/bazaar/bazaar.asset").WaitForCompletion();
         //"RoR2/DLC1/voidraid/voidraid.asset"
         private SceneDef Scene_VoidRaid = Addressables.LoadAssetAsync<SceneDef>("RoR2/DLC1/voidraid/voidraid.asset").WaitForCompletion();
 
@@ -155,6 +162,17 @@ namespace Railroad.Changes
 
             ModeEclipse_SolusWeb_Portals = PortalUtility.BuildPortalList(ModeEclipse_SolusWeb_Portal_Input, "Eclipse, Solus Web");
             ModeStandard_SolusWeb_Portals = PortalUtility.BuildPortalList(ModeStandard_SolusWeb_Portal_Input, "Standard, Solus Web");
+
+            List<PortalSpawnData> dummyList = PortalUtility.BuildPortalList(ModeStandard_Bazaar_ArenaRepeat_Portal_Input, "Standard, Bazaar");
+            if (dummyList != null && dummyList.Count > 0)
+            {
+                ModeStandard_Bazaar_ArenaRepeat_Portal = dummyList[0];
+            }
+            dummyList = PortalUtility.BuildPortalList(ModeEclipse_Bazaar_ArenaRepeat_Portal_Input, "Eclipse, Bazaar");
+            if (dummyList != null && dummyList.Count > 0)
+            {
+                ModeEclipse_Bazaar_ArenaRepeat_Portal = dummyList[0];
+            }
         }
         private void ClampConfig()
         {
@@ -191,10 +209,10 @@ namespace Railroad.Changes
                 On.RoR2.Run.Start += RunStart;
             }
             SharedHooks.Handle_EclipseRun_Start_Actions += EclipseRun_Start;
-            /*if (Bazaar_ArenaRepeat_Portal != ConfigPortalType.NoPortal)
+            if (ModeStandard_Bazaar_ArenaRepeat_Portal != null || ModeEclipse_Bazaar_ArenaRepeat_Portal != null)
             {
-                On.RoR2.OnPlayerEnterEvent.OnTriggerEnter += OnPlayerEnterEvent;
-            }*/
+                SharedHooks.Handle_Stage_Begin_Actions += Stage_Begin;
+            }
             IL.EntityStates.SolusHeart.Death.SolusHeartFinaleSequence.Death.OnEnter += new ILContext.Manipulator(IL_SolusHeartDeath);
             IL.RoR2.TeleporterInteraction.Start += new ILContext.Manipulator(IL_TeleInteractionStart);
 
@@ -215,20 +233,31 @@ namespace Railroad.Changes
             }
         }
 
-        /*private void OnPlayerEnterEvent(On.RoR2.OnPlayerEnterEvent.orig_OnTriggerEnter orig, OnPlayerEnterEvent self, Collider other)
+        //Bazaar Post-Void Portal
+        private void Stage_Begin(Stage self)
         {
-            orig(self, other);
-            if (self.gameObject)
+            if (self.sceneDef == Scene_Bazaar)
             {
-                MainPlugin.ModLogger.LogInfo("Trigger Name = " + self.gameObject.name);
-                MainPlugin.ModLogger.LogInfo("ServerOnly = " + self.serverOnly);
-                GameObject parentObject = self.gameObject.GetComponentInParent<GameObject>();
-                if (parentObject)
+                if (Run.instance && Run.instance.GetEventFlag("ArenaPortalTaken"))
                 {
-                    MainPlugin.ModLogger.LogInfo("Parent Object = " + parentObject.name);
+                    if (IsEclipse())
+                    {
+                        if (ModeEclipse_Bazaar_ArenaRepeat_Portal != null && PortalUtility.AllowedToSpawnPortal(ModeEclipse_Bazaar_ArenaRepeat_Portal.PortalType, ModeEclipse_Bazaar_ArenaRepeat_Portal.ReqTags))
+                        {
+                            PortalUtility.TrySpawnPortal(ModeEclipse_Bazaar_ArenaRepeat_Portal.PortalType, Bazaar_Pos, 90f, DirectorPlacementRule.PlacementMode.DirectWithoutRandomRotation);
+                        }
+                        
+                    }
+                    else
+                    {
+                        if (ModeStandard_Bazaar_ArenaRepeat_Portal != null && PortalUtility.AllowedToSpawnPortal(ModeStandard_Bazaar_ArenaRepeat_Portal.PortalType, ModeStandard_Bazaar_ArenaRepeat_Portal.ReqTags))
+                        {
+                            PortalUtility.TrySpawnPortal(ModeStandard_Bazaar_ArenaRepeat_Portal.PortalType, Bazaar_Pos, 90f, DirectorPlacementRule.PlacementMode.DirectWithoutRandomRotation);
+                        }
+                    }
                 }
             }
-        }*/
+        }
         private void SolusWeb_SpawnExitPortals(On.RoR2.SolusWebMissionController.orig_SpawnExitPortal orig, RoR2.SolusWebMissionController self)
         {
             if (IsEclipse())
@@ -498,7 +527,7 @@ namespace Railroad.Changes
                     if (needOutroPortal && ModeEclipse_VoidRaid_VoidOutroPortal == false)
                     {
                         //Spawn the outro portal somewhere in Narnia to finish the boss music.
-                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), DirectorPlacementRule.PlacementMode.Direct);
+                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), 0f, DirectorPlacementRule.PlacementMode.Direct);
                     }
                 }
                 else
@@ -522,7 +551,7 @@ namespace Railroad.Changes
                     if (needOutroPortal && ModeStandard_VoidRaid_VoidOutroPortal == false)
                     {
                         //Spawn the outro portal somewhere in Narnia to finish the boss music.
-                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), DirectorPlacementRule.PlacementMode.Direct);
+                        PortalUtility.TrySpawnPortal(ConfigPortalType.VoidOutro, new Vector3(99999f, 99999f, 99999f), 0f, DirectorPlacementRule.PlacementMode.Direct);
                     }
                 }
             }

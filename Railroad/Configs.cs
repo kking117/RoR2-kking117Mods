@@ -71,6 +71,7 @@ namespace Railroad
 		private const string Section_Stage_Limbo = "A Moment, Whole";
 		private const string Section_Stage_SolusWeb = "Solus Web";
 
+		private const string Section_Stage_Bazaar = "Bazaar Between Time";
 		private const string Section_Stage_Arena = "Void Fields";
 
 		private const string Section_Loop_Definition = "Loop Definition";
@@ -121,8 +122,8 @@ namespace Railroad
 			Changes.Looping.ModeStandard_Artifact_Input = ConfigFile_ModeStandard_Looping.Bind(Section_Loop_Effects, "Loop Artifacts", "", "Enables the specified Artifact by their internal name upon looping.").Value;
 			Changes.Looping.ModeEclipse_Artifact_Input = ConfigFile_ModeEclipse_Looping.Bind(Section_Loop_Effects, "Loop Artifacts", "", "Enables the specified Artifact by their internal name upon looping.").Value;
 
-			Changes.Looping.ModeStandard_PrimordialTele_ReplaceReq_Input = ConfigFile_ModeStandard_Looping.Bind(Section_Loop_Teleporter, "Primordial Teleporter Conditions", "5", "Stage number for when the Primordial Teleporter will replace the regular Teleporter, can take Portal Tags for additional requirements. 0 allows any Stage number.").Value;
-			Changes.Looping.ModeEclipse_PrimordialTele_ReplaceReq_Input = ConfigFile_ModeEclipse_Looping.Bind(Section_Loop_Teleporter, "Primordial Teleporter Conditions", "5", "Stage number for when the Primordial Teleporter will replace the regular Teleporter, can take Portal Tags for additional requirements. 0 allows any Stage number.").Value;
+			Changes.Looping.ModeStandard_PrimordialTele_ReplaceReq_Input = ConfigFile_ModeStandard_Looping.Bind(Section_Loop_Teleporter, "Primordial Teleporter Conditions", "SO5", "Stage number for when the Primordial Teleporter will replace the regular Teleporter, can take Portal Tags for additional requirements. 0 allows any Stage number.").Value;
+			Changes.Looping.ModeEclipse_PrimordialTele_ReplaceReq_Input = ConfigFile_ModeEclipse_Looping.Bind(Section_Loop_Teleporter, "Primordial Teleporter Conditions", "SO5", "Stage number for when the Primordial Teleporter will replace the regular Teleporter, can take Portal Tags for additional requirements. 0 allows any Stage number.").Value;
 		}
 		private static void Read_StageConfig()
         {
@@ -172,6 +173,11 @@ namespace Railroad
 			Changes.Stages.ModeStandard_SolusWeb_AllowDecompile = ConfigFile_ModeStandard_Stages.Bind(Section_Stage_SolusWeb, "Allow Decompile", true, "Allows you to accept Solus Heart's offering and end the run.").Value;
 			Changes.Stages.ModeEclipse_SolusWeb_AllowDecompile = ConfigFile_ModeEclipse_Stages.Bind(Section_Stage_SolusWeb, "Allow Decompile", false, "Allows you to accept Solus Heart's offering and end the run.").Value;
 
+
+			Changes.Stages.ModeStandard_Bazaar_ArenaRepeat_Portal_Input = ConfigFile_ModeStandard_Stages.Bind(Section_Stage_Bazaar, "Post Void Portal", "", "Single Portal to spawn where the Null Portal was after attempting the Void Fields. Can take Run Flags.").Value;
+			Changes.Stages.ModeEclipse_Bazaar_ArenaRepeat_Portal_Input = ConfigFile_ModeEclipse_Stages.Bind(Section_Stage_Bazaar, "Post Void Portal", "", "Single Portal to spawn where the Null Portal was after attempting the Void Fields. Can take Run Flags.").Value;
+
+
 			Changes.Stages.ModeStandard_Arena_VoidPortal = ConfigFile_ModeStandard_Stages.Bind(Section_Stage_Arena, "Void Portal", true, "Allows the Void Portal to spawn upon completing the Void Fields.").Value;
 			Changes.Stages.ModeEclipse_Arena_VoidPortal = ConfigFile_ModeEclipse_Stages.Bind(Section_Stage_Arena, "Void Portal", false, "Allows the Void Portal to spawn upon completing the Void Fields.").Value;
 		}
@@ -202,7 +208,7 @@ namespace Railroad
 
 		private static void Read_InputHelpConfig()
         {
-			PortalListHelp = ConfigFile_InputHelp.Bind(Section_PortalHelp, "Portal List", "NoPortal, Shop, MS, Null, Void, DeepVoid, VoidOutro, GoldShores, Colossus, Destination, HardwareProg, HardwareProg_Haunt, SolusShop, SolusBackout, SolusWeb", "List of all Portal types this mod uses, check the mod's Thunderstore Page for more details.").Value;
+			PortalListHelp = ConfigFile_InputHelp.Bind(Section_PortalHelp, "Portal List", "NoPortal, Shop, MS, Null, Void, DeepVoid, VoidOutro, Goldshores, Colossus, Destination, HardwareProg, HardwareProg_Haunt, SolusShop, SolusBackout, SolusWeb", "List of all Portal types this mod uses, check the mod's Thunderstore Page for more details.").Value;
 			PortalTagHelp = ConfigFile_InputHelp.Bind(Section_PortalHelp, "Portal Tags", "PreLoop, PostLoop, PreMithrix, PostMithrix, PreTwistedScavenger, PostTwistedScavenger, PreVoidling, PostVoidling, PreFalseSon, PostFalseSon, PreSolusWing, PostSolusWing, PreSolusHeart, PostSolusHeart, PreVoidFields, PostVoidFields", "List of Tags that can be inputed along with portals, used to add additional conditions to when this mod spawns portals. Most configs should specify whether or not they accept Portal Tags.").Value;
 			PortalTagExample = ConfigFile_InputHelp.Bind(Section_PortalHelp, "Portal Plus Tags Example", "Shop, VoidOutro;PostMithrix;PreVoidling, Colossus;PreFalseSon", "An example input of multiple portals using tags, this will spawn a Shop Portal, a VoidOutro Portal(If during the run Mithrix has been defeated and Voidling has not.) and Colossus Portal (If during the run False Son has not been defeated.).").Value;
 			PortalStageNumExample = ConfigFile_InputHelp.Bind(Section_PortalHelp, "Portal Stage Number and Order", "SO5, 0;PostLoop", "Used by Primordial Teleport Conditions and Celestial Orb settings. SO and SN stand for Stage Order and Stage Number followed by the specific number. Stage Order is the stage's order number, while Stage Number is the run's stage number. In this example SO5 means Stage Order 5, which is Sky Meadow, Helminth Hatchery or anything modded that's a stage 5.").Value;

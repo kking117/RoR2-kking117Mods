@@ -481,7 +481,7 @@ namespace Railroad.Changes
                 }
                 else
                 {
-                    TrySpawnPortal(portalList[0], baselocation, placementMode);
+                    TrySpawnPortal(portalList[0], baselocation, 0f, placementMode);
                 }
             }
             else if (portalCount > 0)
@@ -537,13 +537,14 @@ namespace Railroad.Changes
                 }
             }
         }
-        internal static GameObject TrySpawnPortal(ConfigPortalType portalType, Vector3 location, DirectorPlacementRule.PlacementMode placementMode = DirectorPlacementRule.PlacementMode.Approximate)
+        internal static GameObject TrySpawnPortal(ConfigPortalType portalType, Vector3 location, float baseAngle = 0f, DirectorPlacementRule.PlacementMode placementMode = DirectorPlacementRule.PlacementMode.Approximate)
         {
             if (CanSpawnPortal(portalType))
             {
                 InteractableSpawnCard spawnCard = GetSpawnCardFromIndex(portalType);
                 if (spawnCard)
                 {
+                    Quaternion rotatE = Quaternion.AngleAxis(baseAngle, Vector3.up);
                     GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
                     {
                         maxDistance = 30f,
@@ -551,6 +552,12 @@ namespace Railroad.Changes
                         placementMode = placementMode,
                         position = location
                     }, Run.instance.stageRng));
+                    //forcing the rotation like this works, the above does not even when using the correct placementrule
+                    //okay, we'll just do it like this
+                    if (gameObject)
+                    {
+                        gameObject.transform.rotation = rotatE;
+                    }
                     return gameObject;
                 }
             }

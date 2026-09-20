@@ -1,3 +1,13 @@
+**1.3.1**
+
+```
+- Edited Railroad_InputHelp.cfg and ReadMe to use "Goldshores" instead of the incorrect "GoldShores" for portal types.
+
+- Added [Eclipse/Standard|Stages|Bazaar Between Time|Post Void Portal] configuration, allows a single portal to spawn where the Void Portal was after attempting Void Fields in a run.
+
+- [Eclipse/Standard|Looping|Teleporter|Primordial Teleporter Conditions] Default value changed. (5 -> SO5)
+```
+
 **1.3.0**
 
 This update has been planned for a while and is mostly near completion. The mod has undergone
