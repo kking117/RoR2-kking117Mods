@@ -250,42 +250,42 @@ namespace Railroad.Changes
             //This works for now, but surely there's a more concise way of doing this?
             //No this is not a performance concern, the function runs once a stage at most.
             //It just looks bad and reads worse.
-            if ((portalReqs & PortalProgReqTags.PostSolusHeart) == PortalProgReqTags.PostSolusWing && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusHeart) != RunProgressFlags.SolusHeart)
+            if ((portalReqs & PortalProgReqTags.PostSolusHeart) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusHeart) != RunProgressFlags.SolusHeart)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Solus Heart Defeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PreSolusHeart) == PortalProgReqTags.PreSolusHeart && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusHeart) == RunProgressFlags.SolusHeart)
+            if ((portalReqs & PortalProgReqTags.PreSolusHeart) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusHeart) == RunProgressFlags.SolusHeart)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Solus Heart Undefeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PostSolusWing) == PortalProgReqTags.PostSolusWing && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusWing) != RunProgressFlags.SolusWing)
+            if ((portalReqs & PortalProgReqTags.PostSolusWing) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusWing) != RunProgressFlags.SolusWing)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Solus Wing Defeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PreSolusWing) == PortalProgReqTags.PreSolusWing && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusWing) == RunProgressFlags.SolusWing)
+            if ((portalReqs & PortalProgReqTags.PreSolusWing) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.SolusWing) == RunProgressFlags.SolusWing)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Solus Wing Undefeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PostFalseSon) == PortalProgReqTags.PostFalseSon && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.FalseSon) != RunProgressFlags.FalseSon)
+            if ((portalReqs & PortalProgReqTags.PostFalseSon) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.FalseSon) != RunProgressFlags.FalseSon)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires False Son Defeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PreFalseSon) == PortalProgReqTags.PreFalseSon && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.FalseSon) == RunProgressFlags.FalseSon)
+            if ((portalReqs & PortalProgReqTags.PreFalseSon) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.FalseSon) == RunProgressFlags.FalseSon)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires False Son Undefeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PostVoidling) == PortalProgReqTags.PostFalseSon && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Voidling) != RunProgressFlags.Voidling)
+            if ((portalReqs & PortalProgReqTags.PostVoidling) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Voidling) != RunProgressFlags.Voidling)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Voidling Defeated to Spawn");
                 return false;
             }
-            if ((portalReqs & PortalProgReqTags.PreVoidling) == PortalProgReqTags.PreFalseSon && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Voidling) == RunProgressFlags.Voidling)
+            if ((portalReqs & PortalProgReqTags.PreVoidling) != 0 && (RunFlags.SaveData_RunProgressFlags & RunProgressFlags.Voidling) == RunProgressFlags.Voidling)
             {
                 //MainPlugin.ModLogger.LogWarning("Skipped Portal, requires Voidling Undefeated to Spawn");
                 return false;

@@ -336,14 +336,14 @@ namespace Railroad.Changes
         {
             if (IsEclipse())
             {
-                if (ModeEclipse_GoldShores_MeridianPortal == ConfigGoldPortal.Never)
+                if (ModeEclipse_GoldShores_MeridianPortal != ConfigGoldPortal.Vanilla)
                 {
                     return false;
                 }
             }
             else
             {
-                if (ModeStandard_GoldShores_MeridianPortal == ConfigGoldPortal.Never)
+                if (ModeStandard_GoldShores_MeridianPortal != ConfigGoldPortal.Vanilla)
                 {
                     return false;
                 }
