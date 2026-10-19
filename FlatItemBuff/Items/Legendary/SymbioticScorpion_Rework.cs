@@ -198,52 +198,53 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (!SlayerDot_AffectTotalDamage && Slayer_BaseDamage > 0f)
-            {
+			{
 				if (ilcursor.TryGotoNext(
 					//x => x.MatchLdfld(typeof(DamageInfo), "damage"), //Was disabled for compat with SkillsReturns
-					x => x.MatchStloc(10)
+					x => x.MatchStloc(12)
 				))
 				{
-					ilcursor.Index += 2;
+					ilcursor.Index += 1;
 					ilcursor.Emit(OpCodes.Ldarg, 0);
 					ilcursor.Emit(OpCodes.Ldarg, 1);
-					ilcursor.Emit(OpCodes.Ldloc, 10);
+					ilcursor.Emit(OpCodes.Ldloc, 12);
 					ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((self, damageInfo, returnDamage) =>
 					{
 						if (damageInfo.dotIndex != DotController.DotIndex.None)
 						{
 							if (damageInfo.attacker)
-                            {
+							{
 								CharacterBody attackerBody = damageInfo.attacker.GetComponent<CharacterBody>();
 								if (attackerBody && attackerBody.inventory)
-                                {
+								{
 									int itemCount = attackerBody.inventory.GetItemCountEffective(DLC1Content.Items.PermanentDebuffOnHit);
 									if (itemCount > 0)
-                                    {
+									{
 										itemCount = Math.Max(0, itemCount - 1);
 										float slayerDmg = Slayer_BaseDamage + (itemCount * Slayer_StackDamage);
 										if (slayerDmg > 0f)
 										{
-											return returnDamage *= Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction);
+											//MainPlugin.ModLogger.LogInfo("SlayDMG: " + Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction));
+											return returnDamage * Mathf.Lerp(1f + slayerDmg, 1f, self.combinedHealthFraction);
 										}
-                                    }
+									}
 								}
 							}
 						}
 						return returnDamage;
 					});
-					ilcursor.Emit(OpCodes.Stloc, 10);
+					ilcursor.Emit(OpCodes.Stloc, 12);
 				}
 				else
 				{
 					UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - Hook failed");
 				}
 			}
-			if(ilcursor.TryGotoNext(
+			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "PermanentDebuffOnHit"),
 				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
 			))
-            {
+			{
 				ilcursor.Index += 2;
 				ilcursor.Emit(OpCodes.Ldc_I4_0);
 				ilcursor.Emit(OpCodes.Mul);

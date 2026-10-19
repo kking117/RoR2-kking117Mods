@@ -1,3 +1,28 @@
+**1.29.0**
+
+Updated to work with Hallowed Concepts.
+Most basic errors have been cleared and changes have been briefly tested to confirm they work.
+Don't hesitate to contact me if there's still issues.
+
+```
+- N'Kuhana's Opinion:
+- Fixed some configuration names and descriptions.
+- Health Regen also grants soul charge. (HC Vanilla change that has been carried over.)
+
+- Happiest Mask Rework:
+- Minions spawned by Ghost Clones now also inherit the effect, less drone factories from Operator.
+- This also means they'll now benefit from the damage increase for being a Ghost Clone.
+
+- Old War Stealthkit:
+- Cooldown can be cleared by using a Blast Shower. (HC Vanilla change that has been carried over.)
+```
+
+**1.28.0**
+
+```
+- Added a buff to N'Kuhana's Opinion
+```
+
 **1.27.0**
 
 Small fix to various launch errors from Patch 1.4.1.

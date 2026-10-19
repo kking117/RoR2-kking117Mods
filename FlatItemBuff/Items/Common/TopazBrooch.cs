@@ -108,14 +108,14 @@ namespace FlatItemBuff.Items
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(15),
-				x => x.MatchLdloc(55),
+				x => x.MatchLdloc(56),
 				x => x.MatchConvR4(),
 				x => x.MatchMul()
 			))
 			{
 				ilcursor.RemoveRange(4);
 				ilcursor.Emit(OpCodes.Ldarg_1);
-				ilcursor.Emit(OpCodes.Ldloc, 55);
+				ilcursor.Emit(OpCodes.Ldloc, 56);
 				ilcursor.EmitDelegate<Func<DamageReport, int, float>>((damageReport, itemCount) =>
 				{
 					return GetFlatBarrier(damageReport.attackerBody.healthComponent, itemCount);

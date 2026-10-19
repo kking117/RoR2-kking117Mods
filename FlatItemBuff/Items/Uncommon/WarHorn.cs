@@ -52,7 +52,7 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.RoR2.EquipmentSlot.OnEquipmentExecuted_byte_byte_EquipmentIndex += new ILContext.Manipulator(IL_OnEquipmentExecuted);
+			IL.RoR2.EquipmentSlot.OnEquipmentExecuted_refEquipmentLocation_EquipmentIndex += new ILContext.Manipulator(IL_OnEquipmentExecuted);
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_RecalculateStats);
 		}
 		private void IL_RecalculateStats(ILContext il)
@@ -88,7 +88,7 @@ namespace FlatItemBuff.Items
 			{
 				ilcursor.Index += 1;
 				ilcursor.RemoveRange(8);
-				ilcursor.Emit(OpCodes.Ldloc_0);
+				ilcursor.Emit(OpCodes.Ldloc_3);
 				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 				{
 					return BaseDuration + (StackDuration * (itemCount - 1));

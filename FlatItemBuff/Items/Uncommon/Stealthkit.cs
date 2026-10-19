@@ -113,60 +113,55 @@ namespace FlatItemBuff.Items
                 {
 					return;
                 }
-				self.rechargeStopwatch += Time.fixedDeltaTime;
 				if(body.healthComponent.isHealthLow)
                 {
-					if (!body.HasBuff(StealthBuff.buffIndex))
+					if (!body.HasBuff(StealthBuff.buffIndex) && !body.HasBuff(RoR2Content.Buffs.PhasingCooldown))
 					{
-						float cooldown = BaseRecharge / (1 + (StackRecharge * (self.stack - 1)));
-						if (self.rechargeStopwatch >= cooldown)
+						float cooldown = (BuffDuration * 5) + (BaseRecharge / (1 + (StackRecharge * (self.stack - 1))));
+						body.AddTimedBuff(RoR2Content.Buffs.PhasingCooldown, cooldown);
+						for (int i = 0; i < 5; i++)
 						{
-							for (int i = 0; i < 5; i++)
-							{
-								body.AddTimedBuff(StealthBuff.buffIndex, BuffDuration * (i + 1) / 5);
-							}
-							EffectManager.SpawnEffect(self.effectPrefab, new EffectData
-							{
-								origin = self.transform.position,
-								rotation = Quaternion.identity
-							}, true);
-							self.rechargeStopwatch = 0f;
+							body.AddTimedBuff(StealthBuff.buffIndex, BuffDuration * (i + 1) / 5);
+						}
+						EffectManager.SpawnEffect(self.effectPrefab, new EffectData
+						{
+							origin = self.transform.position,
+							rotation = Quaternion.identity
+						}, true);
+						if (CleanseDoT)
+						{
+							CleanseSystem.CleanseBodyServer(self.body, false, false, false, true, false, false);
+						}
+						if (CancelDanger)
+						{
+							self.body.outOfDanger = true;
+							self.body.outOfDangerStopwatch = float.PositiveInfinity;
+						}
 
-							if (CleanseDoT)
-							{
-								CleanseSystem.CleanseBodyServer(self.body, false, false, false, true, false, false);
-							}
-							if (CancelDanger)
-							{
-								self.body.outOfDanger = true;
-								self.body.outOfDangerStopwatch = float.PositiveInfinity;
-							}
+						if (SmokeBomb)
+						{
+							BlastAttack blastAttack = new BlastAttack();
+							blastAttack.radius = 12f;
+							blastAttack.procCoefficient = 1f;
+							blastAttack.position = body.transform.position;
+							blastAttack.attacker = body.gameObject;
+							blastAttack.crit = Util.CheckRoll(body.crit, body.master);
+							blastAttack.baseDamage = body.damage * 2f;
+							blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+							blastAttack.damageType = DamageType.Stun1s;
+							blastAttack.baseForce = 60f;
+							blastAttack.teamIndex = TeamComponent.GetObjectTeam(blastAttack.attacker);
+							blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+							blastAttack.Fire();
 
-							if (SmokeBomb)
-                            {
-								BlastAttack blastAttack = new BlastAttack();
-								blastAttack.radius = 12f;
-								blastAttack.procCoefficient = 1f;
-								blastAttack.position = body.transform.position;
-								blastAttack.attacker = body.gameObject;
-								blastAttack.crit = Util.CheckRoll(body.crit, body.master);
-								blastAttack.baseDamage = body.damage * 2f;
-								blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-								blastAttack.damageType = DamageType.Stun1s;
-								blastAttack.baseForce = 60f;
-								blastAttack.teamIndex = TeamComponent.GetObjectTeam(blastAttack.attacker);
-								blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-								blastAttack.Fire();
-
-								GameObject smokePrefab = EntityStates.Bandit2.StealthMode.smokeBombEffectPrefab;
-								if (smokePrefab)
-								{
-									EffectData effectData = new EffectData();
-									effectData.origin = body.corePosition;
-									effectData.SetNetworkedObjectReference(body.gameObject);
-									effectData.scale = 1f;
-									EffectManager.SpawnEffect(SmokePrefab, effectData, true);
-								}
+							GameObject smokePrefab = EntityStates.Bandit2.StealthMode.smokeBombEffectPrefab;
+							if (smokePrefab)
+							{
+								EffectData effectData = new EffectData();
+								effectData.origin = body.corePosition;
+								effectData.SetNetworkedObjectReference(body.gameObject);
+								effectData.scale = 1f;
+								EffectManager.SpawnEffect(SmokePrefab, effectData, true);
 							}
 						}
 					}

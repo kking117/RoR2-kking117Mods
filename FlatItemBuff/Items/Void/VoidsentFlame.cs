@@ -102,7 +102,7 @@ namespace FlatItemBuff.Items
 				x => x.MatchCallvirt(typeof(CharacterMaster), "get_inventory"),
 				x => x.MatchLdsfld(typeof(DLC1Content.Items), "ExplodeOnDeathVoid"),
 				x => x.MatchCallvirt(typeof(Inventory), "GetItemCountEffective"),
-				x => x.MatchStloc(37)
+				x => x.MatchStloc(42)
 			))
 			{
 				//Add new condition

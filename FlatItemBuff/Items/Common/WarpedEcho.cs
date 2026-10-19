@@ -150,7 +150,7 @@ namespace FlatItemBuff.Items
 			//This means the old comment is obsolete, keeping it for document purposes.
 			ILCursor ilcursor = new ILCursor(il);
 			//Allows delayed damage to be affected by armor, provided it has the correct damage flags.
-			if (ilcursor.TryGotoNext(
+			/*if (ilcursor.TryGotoNext(
 				x => x.MatchLdfld(typeof(DamageInfo), "delayedDamageSecondHalf")
 			))
 			{
@@ -170,8 +170,9 @@ namespace FlatItemBuff.Items
 			else
 			{
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage A - IL Hook failed");
-			}
+			}*/
 
+			//Replace the conditional that checks for the DelayDamageBuff. Now checks if we have the item instead.
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "DelayedDamageBuff")
 			))
@@ -195,7 +196,7 @@ namespace FlatItemBuff.Items
 			//Num16 = The number of delayed hits we should take based on our item count.
 			//Setting this to 0 so we can run our own code.
 			if (ilcursor.TryGotoNext(
-				x => x.MatchStloc(69)
+				x => x.MatchStloc(79)
 			))
 			{
 				ilcursor.Index -= 7;
@@ -207,19 +208,19 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnTakeDamage B - IL Hook failed");
 			}
 
-			//Num15 = The amount of damage we take from the hit.
+			//Num4 = The amount of damage we take from the hit.
 			//Num3 = The amount of damage we take as a number visual.
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.0f),
-				x => x.MatchStloc(11)
+				x => x.MatchStloc(13)
 			))
 			{
 				//ilcursor.Index -= 1;
 				ilcursor.RemoveRange(1);
 				ilcursor.Emit(OpCodes.Ldarg, 0);
 				ilcursor.Emit(OpCodes.Ldarg, 1);
-				ilcursor.Emit(OpCodes.Ldloc, 7); //block flag
-				ilcursor.Emit(OpCodes.Ldloc, 10);
+				ilcursor.Emit(OpCodes.Ldloc, 9); //block flag
+				ilcursor.Emit(OpCodes.Ldloc, 13);
 
 				ilcursor.EmitDelegate<Func<HealthComponent, DamageInfo, bool, float, float>>((self, damageInfo, ignoreBlock, returnValue) =>
 				{
@@ -232,14 +233,14 @@ namespace FlatItemBuff.Items
 							{
 								returnValue *= 0.5f;
 								DamageTypeCombo damageType = DamageType.Generic;
-								/*if (OutIgnoreArmor)
+								if (OutIgnoreArmor)
 								{
 									damageType |= DamageType.BypassArmor;
 								}
 								if (OutIgnoreBlock)
 								{
 									damageType |= DamageType.BypassBlock;
-								}*/
+								}
 								if (self.ospTimer > 0f || (damageInfo.damageType & DamageType.NonLethal) > DamageType.Generic)
 								{
 									damageType |= DamageType.NonLethal;
@@ -275,11 +276,11 @@ namespace FlatItemBuff.Items
 				});
 				if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.0f),
-				x => x.MatchStloc(10)
+				x => x.MatchStloc(12)
 				))
 				{
 					ilcursor.RemoveRange(1);
-					ilcursor.Emit(OpCodes.Ldloc, 11);
+					ilcursor.Emit(OpCodes.Ldloc, 13);
 				}
 				else
 				{

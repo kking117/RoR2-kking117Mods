@@ -70,8 +70,13 @@ namespace FlatItemBuff.Items
 		private void Hooks()
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
-			IL.RoR2.CharacterBody.OnInventoryChanged += new ILContext.Manipulator(IL_OnInventoryChanged);
+			On.RoR2.ElusiveAntlersBehavior.GetItemDef += ElusiveAntlersBehavior_Old;
 			SharedHooks.Handle_GetStatCoefficients_Actions += GetStatCoefficients;
+		}
+
+		private ItemDef ElusiveAntlersBehavior_Old(On.RoR2.ElusiveAntlersBehavior.orig_GetItemDef orig)
+		{
+			return null;
 		}
 		private void GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args, Inventory inventory)
 		{
@@ -83,24 +88,6 @@ namespace FlatItemBuff.Items
 					args.moveSpeedMultAdd += itemCount * StackSpeed;
 					args.armorAdd += itemCount * StackArmor;
 				}
-			}
-		}
-		private void IL_OnInventoryChanged(ILContext il)
-		{
-			//doing this since it shits the bed otherwise
-			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Items), "SpeedBoostPickup"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
-			))
-			{
-				ilcursor.Index += 2;
-				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnInventoryChanged - Hook failed.");
 			}
 		}
 	}

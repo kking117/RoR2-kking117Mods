@@ -53,7 +53,9 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL modifications");
 			IL.RoR2.CharacterBody.RecalculateStats += new ILContext.Manipulator(IL_OnRecalculateStats);
-			SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
+			On.RoR2.Items.BoostAllStatsBehavior.RecalculateBuffCount += RecalculateBuffCount;
+			On.RoR2.Items.BoostAllStatsBehavior.OnBuffFirstStackGained += OnBuffFirstStackGained;
+			//SharedHooks.Handle_GlobalInventoryChangedEvent_Actions += OnInventoryChanged;
 		}
 
 		private void OnInventoryChanged(CharacterBody self)
@@ -64,60 +66,83 @@ namespace FlatItemBuff.Items
 				self.ClearAllBuffs(DLC2Content.Buffs.BoostAllStatsBuff);
             }
 		}
-		private void IL_OnRecalculateStats(ILContext il)
+		internal static void OnBuffFirstStackGained(On.RoR2.Items.BoostAllStatsBehavior.orig_OnBuffFirstStackGained orig, RoR2.Items.BoostAllStatsBehavior self, CharacterBody body, BuffDef buffDef)
 		{
-			ILCursor ilcursor = new ILCursor(il);	
-			if(ilcursor.TryGotoNext(
-				x => x.MatchStfld(typeof(RoR2.CharacterBody).GetField("maxGrowthNectarBuffCount"))
-			))
+			if (body == self.body && self.IsValidBuff(buffDef.buffIndex))
             {
-				ilcursor.Index -= 3;
-				ilcursor.RemoveRange(3);
+				self.RecalculateBuffCount();
+			}
+		}
+		internal static void RecalculateBuffCount(On.RoR2.Items.BoostAllStatsBehavior.orig_RecalculateBuffCount orig, RoR2.Items.BoostAllStatsBehavior self)
+		{
+			if (self.body)
+			{
+				int buffCount = 1;
+				foreach (BuffIndex buffIndex in BuffCatalog.nonHiddenBuffIndices)
+				{
+					if (buffCount < BaseCap)
+                    {
+						if (self.body.HasBuff(buffIndex) && self.IsValidBuff(buffIndex))
+						{
+							buffCount++;
+						}
+					}
+					else
+                    {
+						break;
+                    }
+				}
+				if (buffCount >= BaseCap)
+				{
+					buffCount = BaseCap;
+				}
+				self.UpdateBuffCount(buffCount);
+			}
+		}
+		private void IL_ItemBehavior(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
+			if (ilcursor.TryGotoNext(
+				x => x.MatchLdloc(0)
+			))
+			{
+				ilcursor.Remove();
 				ilcursor.Emit(OpCodes.Ldc_I4, BaseCap);
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats A - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_ItemBehavior A - IL Hook failed");
 			}
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdcI4(0)
-			))
-			{
-				ilcursor.Remove();
-				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.EmitDelegate<Func<CharacterBody, int>>((self) =>
-				{
-					if (!self.HasBuff(DLC2Content.Buffs.BoostAllStatsBuff))
-					{
-						self.AddBuff(DLC2Content.Buffs.BoostAllStatsBuff);
-					}
-					return 1;
-				});
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats B - IL Hook failed");
-			}
+		}
+		private void IL_OnRecalculateStats(ILContext il)
+		{
+			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(0.04f),
-				x => x.MatchLdarg(0),
-				x => x.MatchLdsfld(typeof(DLC2Content.Buffs), "BoostAllStatsBuff")
+				x => x.MatchLdloc(68)
 			))
 			{
-				ilcursor.Index += 1;
-				ilcursor.RemoveRange(5);
+				//ilcursor.Index -= 2;
+				ilcursor.RemoveRange(4);
 				ilcursor.Emit(OpCodes.Ldarg, 0);
-				ilcursor.Emit(OpCodes.Ldloc, 67);
-				ilcursor.EmitDelegate<Func<float, CharacterBody, int, float>>((oldvalue, self, itemCount) =>
+				ilcursor.Emit(OpCodes.Ldloc, 68);
+				ilcursor.EmitDelegate<Func<CharacterBody, int, float>>((self, buffCount) =>
 				{
-					itemCount = Math.Max(0, itemCount - 1);
-					float statPerBuff = BaseBoost + (StackBoost * itemCount);
-					return statPerBuff * self.GetBuffCount(DLC2Content.Buffs.BoostAllStatsBuff);
+					if (self.master)
+                    {
+						Inventory inv = self.master.inventory;
+						if (inv)
+                        {
+							int itemCount = Math.Max(0, inv.GetItemCountEffective(DLC2Content.Items.BoostAllStats) - 1);
+							return buffCount * (BaseBoost + (StackBoost * itemCount));
+						}
+                    }
+					return buffCount * BaseBoost;
 				});
 			}
 			else
 			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats C - IL Hook failed");
+				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnRecalculateStats A - IL Hook failed");
 			}
 		}
 	}

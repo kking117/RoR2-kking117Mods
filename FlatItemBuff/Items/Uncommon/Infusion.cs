@@ -248,7 +248,7 @@ namespace FlatItemBuff.Items
 		private void IL_RecalculateStats(ILContext il)
 		{
 			//Kill old function
-			//Note: Using R2API's addlevel stat hook, does not increase the actual level but does give level up stats.
+			//Note: Using R2API's addlevel stat hook does not increase the actual level but does give level up stats.
 			//For this reason we cannot use that and must use IL for this.
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(

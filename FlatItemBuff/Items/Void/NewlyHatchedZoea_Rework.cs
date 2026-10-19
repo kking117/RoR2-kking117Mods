@@ -90,6 +90,7 @@ namespace FlatItemBuff.Items
 			{
 				On.RoR2.Items.ContagiousItemManager.Init += ContagiousItemManager_Init_Remove;
 			}
+			On.RoR2.VoidMegaCrabItemBehavior.GetItemDef += VoidMegaCrabItemBehavior_Old;
 		}
 		private void CreateProjectiles()
         {
@@ -104,9 +105,14 @@ namespace FlatItemBuff.Items
 			projController.procCoefficient = ProcRate;
 			Utils.ContentManager.AddProjectile(VoidMissileProjectile);
 		}
+
+		private ItemDef VoidMegaCrabItemBehavior_Old(On.RoR2.VoidMegaCrabItemBehavior.orig_GetItemDef orig)
+		{
+			return null;
+		}
 		private void OnInventoryChanged(CharacterBody self)
 		{
-			self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
+			//self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
 			self.AddItemBehavior<Behaviors.NewlyHatchedZoea_Rework>(self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem));
 		}
 		internal static float GetMissileDamage(int itemCount)

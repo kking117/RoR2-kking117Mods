@@ -145,7 +145,7 @@ namespace FlatItemBuff.Items
 			if (AllowRegen)
 			{
 				if (ilcursor.TryGotoNext(
-					x => x.MatchLdloc(2),
+					x => x.MatchLdloc(3),
 					x => x.MatchLdcR4(0.0f)
 				))
                 {
@@ -158,7 +158,7 @@ namespace FlatItemBuff.Items
 				}
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(2),
+				x => x.MatchLdloc(3),
 				x => x.MatchLdarg(0),
 				x => x.MatchLdflda(typeof(HealthComponent), "itemCounts"),
 				x => x.MatchLdfld(typeof(HealthComponent.ItemCounts), "barrierOnOverHeal")

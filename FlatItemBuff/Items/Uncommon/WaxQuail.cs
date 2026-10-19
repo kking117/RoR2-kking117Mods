@@ -177,13 +177,13 @@ namespace FlatItemBuff.Items
 			//Adjust boost numbers
 			if (ilcursor.TryGotoNext(
 				x => x.MatchLdcR4(10f),
-				x => x.MatchLdloc(4)
+				x => x.MatchLdloc(7)
 			))
 			{
 				ilcursor.RemoveRange(7);
 
 				//Vertical Changes
-				ilcursor.Emit(OpCodes.Ldloc, 4);
+				ilcursor.Emit(OpCodes.Ldloc, 7);
 				ilcursor.EmitDelegate<Func<int, float>>((itemCount) =>
 				{
 					float returnValue = 1f;
@@ -196,11 +196,11 @@ namespace FlatItemBuff.Items
 					}
 					return returnValue;
 				});
-				ilcursor.Emit(OpCodes.Stloc, 6); //verticalBonus
+				ilcursor.Emit(OpCodes.Stloc, 9); //verticalBonus
 
 				//Horizontal Changes
-				ilcursor.Emit(OpCodes.Ldloc, 4);
 				ilcursor.Emit(OpCodes.Ldloc, 7);
+				ilcursor.Emit(OpCodes.Ldloc, 10);
 				ilcursor.EmitDelegate<Func<int, float, float>>((itemCount, airControl) =>
 				{
 					float returnValue = 1f;

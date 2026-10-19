@@ -199,8 +199,8 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(6),
 				x => x.MatchLdloc(5),
+				x => x.MatchLdloc(4),
 				x => x.MatchLdsfld(typeof(RoR2Content.Items), "Squid")
 			))
 			{

@@ -75,6 +75,8 @@ namespace FlatItemBuff
 
 		private const string Section_LaserScope_Buff = "Laser Scope";
 
+		private const string Section_NkuhanasOpinion_Buff = "Nkuhanas Opinion";
+
 		private const string Section_PocketICBM_Buff = "Pocket ICBM";
 
 		private const string Section_SonorousWhispers_Rework = "Sonorous Whispers Rework";
@@ -152,6 +154,7 @@ namespace FlatItemBuff
 			Read_GrowthNectar();
 			Read_HappiestMask_Rework();
 			Read_LaserScope();
+			Read_NkuhanasOpinion();
 			Read_PocketICBM();
 			Read_SonorousWhispers();
 			Read_SymbioticScorpion();
@@ -171,7 +174,7 @@ namespace FlatItemBuff
 		private static void Read_General()
         {
 			//Section_Bugs
-			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier. (Legacy changes from before Barrier Decay was changed in Alloyed Collective)").Value;
+			GeneralChanges.TweakBarrierDecay = GeneralConfig.Bind(Section_General_Mechanics, "Tweak Barrier Decay", false, "Changes barrier decay to scale from max health + shields instead of max barrier. (Legacy changes from before Barrier Decay was changed in Alloyed Collective, still works with current mechanics if you wish to buff it further.)").Value;
 		}
 		private static void Read_BisonSteak()
         {
@@ -215,7 +218,7 @@ namespace FlatItemBuff
 			RollOfPennies_Rework.BaseDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Base Armor Duration", 2f, "Duration given to the armor at a single stack.").Value;
 			RollOfPennies_Rework.StackDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Stack Armor Duration", 2f, "Duration given to the armor for each additional stack.").Value;
 			RollOfPennies_Rework.GoldDuration = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "Gold Armor Duration", 0.5f, "Multiplier for the gold's value when calculating the extra duration.").Value;
-			RollOfPennies_Rework.VFXAmount = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "VFX Amount", 10, "How many stacks of the armor buff are needed for the gold shield VFX active. (Set to 0 to disable this)").Value;
+			RollOfPennies_Rework.VFXAmount = Item_Common_Config.Bind(Section_RollOfPennies_Rework, "VFX Amount", 10, "How many stacks of the armor buff are needed for the gold shield VFX to become active. (Set to 0 to disable this)").Value;
 		}
 		private static void Read_WarpedEcho()
         {
@@ -458,6 +461,22 @@ namespace FlatItemBuff
 			LaserScope.Enable = Item_Legendary_Config.Bind(Section_LaserScope_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
 			LaserScope.BaseCrit = Item_Legendary_Config.Bind(Section_LaserScope_Buff, "Crit Chance", 5f, "Crit chance at a single stack.").Value;
 		}
+
+		private static void Read_NkuhanasOpinion()
+		{
+			NkuhanasOpinion.Enable = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
+			NkuhanasOpinion.BaseGain = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Base Soul Gain", 1.5f, "Healing to Soul Charge rate at a single stack.").Value;
+			NkuhanasOpinion.StackGain = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Stack Soul Gain", 0.75f, "Healing to Soul Charge rate for each additional stack.").Value;
+			NkuhanasOpinion.BaseSoul = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Base Soul Capacity", 1.5f, "Max Soul Charge at a single stack.").Value;
+			NkuhanasOpinion.StackSoul = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Stack Soul Capacity", 0.75f, "Max Soul Charge for each additional stack.").Value;
+			NkuhanasOpinion.BaseSkullBase = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Base Skull Base Damage", 0.4f, "Base of damage the skulls at a single stack.").Value;
+			NkuhanasOpinion.StackSkullBase = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Stack Skull Base Damage", 0.0f, "Base of damage the skulls for each additional stack.").Value;
+			NkuhanasOpinion.SoulFireRate = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Skull Fire Delay", 0.4f, "Delay between shots.").Value;
+			NkuhanasOpinion.SkullProc = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Skull Proc", 0.2f, "Proc Coeffecient of the skulls.").Value;
+			NkuhanasOpinion.LifeSteal = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Heal Steal", 0.25f, "Amount of healing to steal from others.").Value;
+			NkuhanasOpinion.EnemyMult = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Enemy Multiplier", 0.05f, "Damage Multiplier when used by non-Player team characters.").Value;
+			NkuhanasOpinion.WeakDuration = Item_Legendary_Config.Bind(Section_NkuhanasOpinion_Buff, "Weak Duration", 1.5f, "Duration of the Weak debuff applied.").Value;
+	}
 		private static void Read_PocketICBM()
 		{
 			PocketICBM.Enable = Item_Legendary_Config.Bind(Section_PocketICBM_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;
@@ -602,7 +621,6 @@ namespace FlatItemBuff
 			NewlyHatchedZoea_Rework.CorruptList = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Corruption List", "", "List of items that this item will corrupt. (Leave blank for vanilla values.)").Value;
 			NewlyHatchedZoea_Rework.CorruptText = Item_Void_Config.Bind(Section_NewlyHatchedZoea_Rework, "Corruption Text", "<style=cIsTierBoss>yellow items</style>", "The item(s) for the \"Corrupts all X\" text.").Value;
 		}
-
 		private static void Read_SearedSteak()
 		{
 			SearedSteak.Enable = Item_Food_Config.Bind(Section_SearedSteak_Buff, Label_EnableBuff, false, Desc_EnableBuff).Value;

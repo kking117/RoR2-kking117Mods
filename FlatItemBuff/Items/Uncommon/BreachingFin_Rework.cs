@@ -152,7 +152,6 @@ namespace FlatItemBuff.Items
 		{
 			MainPlugin.ModLogger.LogInfo("Applying IL");
 			IL.RoR2.HealthComponent.TakeDamageProcess += new ILContext.Manipulator(IL_TakeDamageProcess);
-			IL.RoR2.CharacterBody.OnInventoryChanged += new ILContext.Manipulator(IL_OnInventoryChanged);
 			On.RoR2.RigidbodyMotor.OnCollisionEnter += RigidBody_OnImpact;
 			On.RoR2.CharacterMotor.OnGroundHit += CharacterMotor_OnImpact;
 			SharedHooks.Handle_GlobalDamageEvent_Actions += GlobalDamageEvent;
@@ -162,6 +161,11 @@ namespace FlatItemBuff.Items
 				IL.RoR2.RigidbodyMotor.OnCollisionEnter += new ILContext.Manipulator(IL_OnCollisionEnter);
 			}
 			On.RoR2.CharacterBody.UpdateKnockBackHitVisualsAndGracePeriod += UpdateKBVisuals;
+			On.RoR2.KnockbackFinBodyBehavior.GetItemDef += KnockbackFinBodyBehavior_Old;
+		}
+		private ItemDef KnockbackFinBodyBehavior_Old(On.RoR2.KnockbackFinBodyBehavior.orig_GetItemDef orig)
+		{
+			return null;
 		}
 		private void GlobalDamageEvent(DamageReport damageReport)
 		{
@@ -451,25 +455,6 @@ namespace FlatItemBuff.Items
 			else
 			{
 				MainPlugin.ModLogger.LogError(MainPlugin.MODNAME + ": " + LogName  + " - IL_OnCollisionEnter - Hook failed");
-			}
-		}
-
-		private void IL_OnInventoryChanged(ILContext il)
-		{
-			//doing this since it shits the bed otherwise
-			ILCursor ilcursor = new ILCursor(il);
-			if (ilcursor.TryGotoNext(
-				x => x.MatchLdsfld(typeof(DLC2Content.Items), "KnockBackHitEnemies"),
-				x => x.MatchCallOrCallvirt<Inventory>("GetItemCountEffective")
-			))
-			{
-				ilcursor.Index += 2;
-				ilcursor.Emit(OpCodes.Ldc_I4_0);
-				ilcursor.Emit(OpCodes.Mul);
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_OnInventoryChanged - Hook failed.");
 			}
 		}
 	}

@@ -70,8 +70,8 @@ namespace FlatItemBuff.Items
 		{
 			ILCursor ilcursor = new ILCursor(il);
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(93),
-				x => x.MatchLdloc(57),
+				x => x.MatchLdloc(115),
+				x => x.MatchLdloc(58),
 				x => x.MatchConvR4()
 			))
 			{
@@ -88,8 +88,8 @@ namespace FlatItemBuff.Items
 				UnityEngine.Debug.LogError(MainPlugin.MODNAME + ": " + LogName + " - IL_RecalculateStats A - Hook failed");
 			}
 			if (ilcursor.TryGotoNext(
-				x => x.MatchLdloc(91),
-				x => x.MatchLdloc(57),
+				x => x.MatchLdloc(113),
+				x => x.MatchLdloc(58),
 				x => x.MatchConvR4()
 			))
             {

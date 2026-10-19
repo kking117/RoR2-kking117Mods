@@ -149,6 +149,27 @@ namespace FlatItemBuff.Items
 			{
 				SharedHooks.Handle_CharacterMaster_OnBodyDeath_Actions += CharacterMasterBodyDeath;
 			}
+			On.RoR2.CharacterMaster.Start += CharacterMaster_Start;
+		}
+		private void CharacterMaster_Start(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
+		{
+			orig(self);
+			MinionOwnership ownership = self.minionOwnership;
+			if (ownership && self.inventory)
+            {
+				CharacterMaster ownerMaster = self.minionOwnership.ownerMaster;
+				if (ownerMaster && ownerMaster.inventory)
+				{
+					if (ownerMaster.inventory.GetItemCountPermanent(GhostCloneIdentifier) >= 1)
+					{
+						int DecayItem = Math.Max(ownerMaster.inventory.GetItemCountPermanent(RoR2Content.Items.HealthDecay) - self.inventory.GetItemCountPermanent(RoR2Content.Items.HealthDecay), 0);
+						int CloneItem = Math.Max(ownerMaster.inventory.GetItemCountPermanent(GhostCloneIdentifier) - self.inventory.GetItemCountPermanent(GhostCloneIdentifier), 0);
+						self.inventory.GiveItemPermanent(RoR2Content.Items.Ghost);
+						self.inventory.GiveItemPermanent(GhostCloneIdentifier, CloneItem);
+						self.inventory.GiveItemPermanent(RoR2Content.Items.HealthDecay, DecayItem);
+					}
+				}
+            }
 		}
 		private void GlobalEventManager_OnCharacterDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager instance, DamageReport damageReport)
 		{
