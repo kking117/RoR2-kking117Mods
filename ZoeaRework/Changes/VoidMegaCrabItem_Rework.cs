@@ -68,9 +68,14 @@ namespace ZoeaRework.Changes
             On.RoR2.ItemCatalog.Init += ItemCatalog_Init;
             On.RoR2.ItemCatalog.SetItemRelationships += SetItemRelationships;
             //Prevent the old behaviour from running, run our own.
+            On.RoR2.VoidMegaCrabItemBehavior.GetItemDef += VoidMegaCrabItemBehavior_Old;
             CharacterBody.onBodyInventoryChangedGlobal += OnInventoryChange;
             //Deployable slot changes
             On.RoR2.CharacterMaster.GetDeployableSameSlotLimit += CharacterMaster_GetDeployableSameSlotLimit;
+        }
+        private static ItemDef VoidMegaCrabItemBehavior_Old(On.RoR2.VoidMegaCrabItemBehavior.orig_GetItemDef orig)
+        {
+            return null;
         }
         private static void ItemCatalog_Init(On.RoR2.ItemCatalog.orig_Init orig)
         {
@@ -176,17 +181,13 @@ namespace ZoeaRework.Changes
         {
             if (NetworkServer.active)
             {
-                if (self.inventory)
+                int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem);
+                if (Stage.instance && Stage.instance.sceneDef && MainPlugin.NoSpawnScene.Contains(Stage.instance.sceneDef))
                 {
-                    int itemCount = self.inventory.GetItemCountEffective(DLC1Content.Items.VoidMegaCrabItem);
-                    if (MainPlugin.NoSpawnScene.Contains(Stage.instance.sceneDef))
-                    {
-                        itemCount = 0;
-                    }
-                    self.AddItemBehavior<VoidMegaCrabItemBehavior>(0);
-                    self.AddItemBehavior<ZoeaBehavior_Rework>(itemCount);
-                    CullSummons(self.master);
+                    itemCount = 0;
                 }
+                self.AddItemBehavior<ZoeaBehavior_Rework>(itemCount);
+                CullSummons(self.master);
             }
         }
         internal static void CullSummons(CharacterMaster owner)

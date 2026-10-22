@@ -1,3 +1,15 @@
+**1.2.2**
+
+```
+- Recompiled for Hallowed Concepts.
+```
+
+**1.2.1**
+
+```
+- Null checked some code in OnInventoryChanged, unsure if this will fix a recurring issue.
+```
+
 **1.2.0**
 
 Updated for Alloyed Collective, please contact me if there's any problems.
